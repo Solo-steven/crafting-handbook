@@ -5,13 +5,9 @@ import { transformSyntaxKindToLiteral } from  "../tests/transform";
 import fs from 'fs';
 import { performance } from "node:perf_hooks";
 
-const code =  `class Component {
-    #someMethod() {
-        for(const item of this.someArray) {
-            console.log(item)
-        }
-    }
-}`;
+const code =  `
+for (var [p]=1 in q);
+`;
 console.log("=================================");
 console.log("Test JavaScript Code:");
 console.log("=================================");

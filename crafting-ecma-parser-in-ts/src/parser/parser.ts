@@ -92,6 +92,7 @@ interface Context {
     inAsync: boolean;
     inClass: boolean,
     maybeForIn: boolean,
+    inFor: boolean,
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -109,6 +110,7 @@ function createContext(): Context {
         inAsync: false,
         inClass: false,
         maybeForIn: false,
+        inFor: false
     }
 }
 function getBinaryPrecedence(kind: SyntaxKinds) {
@@ -455,7 +457,10 @@ export function createParser(code: string) {
             case SyntaxKinds.IfKeyword:
                 return parseIfStatement();
             case SyntaxKinds.ForKeyword:
-                return parseForStatement();
+                context.inFor = true;
+                const forStatement =  parseForStatement();
+                context.inFor = false;
+                return forStatement;
             case SyntaxKinds.WhileKeyword:
                 return parseWhileStatement();
             case SyntaxKinds.DoKeyword:
@@ -848,10 +853,20 @@ export function createParser(code: string) {
             }
             // parseBindingElement is not equal to parseBindingPattern or identifier
             let id: Pattern ;
+            let isBindingPattern = false;
             if(match(SyntaxKinds.Identifier)) {
                 id = parseIdentifer();
             }else {
+                isBindingPattern = true;
                 id = parseBindingPattern();
+            }
+            if(
+                // variable declarations binding pattern but but have init.
+                (isBindingPattern && !match(SyntaxKinds.AssginOperator)) &&
+                // variable declaration in for statement can existed with `of`, `in` operator 
+                !(context.inFor && (match(SyntaxKinds.InKeyword) ||  getValue() === "of" ))
+            ) {
+                throw createMessageError("lexical binding must have init");
             }
             if(match(SyntaxKinds.AssginOperator)) {
                 nextToken();
