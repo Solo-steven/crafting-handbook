@@ -14,6 +14,9 @@ const jsFileRegex = new RegExp('.*\.js$');
 // eslint-disable-next-line no-useless-escape
 const jsonFileRegex = new RegExp('.*\.json$');
 const invalidFileReg = new RegExp('invalid');
+const TempIgnoreCases = [
+    
+];
 /**
  * Test structure for test case.
  * @property {string} jsPath  absolute path for js file in current os file system
@@ -174,6 +177,16 @@ async function updateTestCase(testCase: TestCase) {
     try {
         const code = await readFile(testCase.jsPath);
         const astString = toASTString(code.toString());
+        if(testCase.jsonPath) {
+            const existedASTString = await readFile(testCase.jsPath);
+            if(existedASTString.toString() === astString) {
+                passTestCases.push({
+                    fileName: testCase.fileName,
+                    result: "",
+                })
+                return;
+            }
+        }
         await writeFile(testCase.jsonPath, astString, { flag: isExisted ? "w" : "wx" });
         updateTestCases.push({
             fileName: testCase.fileName,
@@ -215,7 +228,8 @@ function report() {
         console.log((`|PASS|: ${testCase.fileName}`));
     }
     for(const testCase of skipTestCases) {
-        console.log((`|Skip|: ${testCase.fileName}`))
+        console.log((`|Skip|: ${testCase.fileName}`));
+        console.log((`  |----> ${testCase.result}`));
     }
     for(const testCase of updateTestCases) {
         console.log((`|Update|: ${testCase.fileName}`));
@@ -229,9 +243,9 @@ function report() {
     const failedRate = failedTestCases.length / allTestCaseCount;
     const updateRate = updateTestCases.length / allTestCaseCount;
     console.log("\n==========================================================\n");
-    console.log(`Pass rate:  ${passRate}`);
-    console.log(`Update rate: ${updateRate}`);
-    console.log(`Failed rate : ${failedRate}`);
+    console.log(`Pass rate: ${passTestCases.length} / ${allTestCaseCount}(${passRate})`);
+    console.log(`Update rate: ${updateTestCases.length} / ${allTestCaseCount}(${updateRate})`);
+    console.log(`Failed rate : ${failedTestCases.length} / ${allTestCaseCount}(${failedRate})`);
     if(passRate < gate - updateRate) {
         process.exit(1);
     }else {

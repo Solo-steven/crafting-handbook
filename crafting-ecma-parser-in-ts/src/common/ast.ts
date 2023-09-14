@@ -50,6 +50,10 @@ export interface Super extends ModuleItem {
     kind: SyntaxKinds.Super;
     name: "super"
 }
+export interface Import extends ModuleItem {
+    kind: SyntaxKinds.Import;
+    name: "import";
+}
 export interface ThisExpression extends ModuleItem {
     kind: SyntaxKinds.ThisExpression;
     name: "this",
@@ -132,7 +136,7 @@ export interface ArrorFunctionExpression extends ModuleItem {
 }
 export interface MetaProperty extends ModuleItem {
     kind: SyntaxKinds.MetaProperty;
-    meta: Identifier;
+    meta: Identifier | Import;
     property: Identifier;
 }
 export interface AwaitExpression extends ModuleItem {
@@ -209,7 +213,7 @@ export interface SequenceExpression extends ModuleItem {
 export type Expression =
     Pattern |
     // identifer and super and ThisExpression
-    Identifier  | PrivateName | Super | ThisExpression |
+    Identifier  | PrivateName | Super | ThisExpression | Import |
     // literals 
     NumberLiteral | StringLiteral | BoolLiteral | TemplateLiteral | UndefinbedLiteral | NullLiteral |
     // structal literal
@@ -391,7 +395,7 @@ export interface FunctionBody extends ModuleItem {
 }
 export interface FunctionDeclaration extends ModuleItem, Function {
     kind: SyntaxKinds.FunctionDeclaration;
-    name: Identifier
+    name: Identifier;
 }
 export interface Class extends Omit<ModuleItem, "kind"> {
     id: Identifier | null;

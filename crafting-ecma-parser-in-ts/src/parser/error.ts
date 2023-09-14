@@ -15,4 +15,7 @@ export const ErrorMessageMap = {
     destructing_pattern_must_need_initializer: "destucturing pattern must have a initializer",
     object_property_can_not_have_initializer: "object property can not have initializer",
     invalid_left_value: "invalid left value",
+    function_parameter_can_not_have_empty_trailing_comma: "function parameter list can not have trailing comma when is empty",
+    sequence_expression_can_not_have_trailing_comma: "sequence expression can not have trailing comma",
+    function_argument_can_not_have_empty_trailing_comma: "function argument list can not have trailing comma when is empty",
 }

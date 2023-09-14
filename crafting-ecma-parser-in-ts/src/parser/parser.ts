@@ -93,6 +93,7 @@ interface Context {
     inClass: boolean,
     maybeForIn: boolean,
     inFor: boolean,
+    assignDestructingTopLevelIndex: number;
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -110,7 +111,8 @@ function createContext(): Context {
         inAsync: false,
         inClass: false,
         maybeForIn: false,
-        inFor: false
+        inFor: false,
+        assignDestructingTopLevelIndex: -1,
     }
 }
 function getBinaryPrecedence(kind: SyntaxKinds) {
@@ -468,24 +470,24 @@ export function createParser(code: string) {
             case SyntaxKinds.VarKeyword:
                 return parseVariableDeclaration();
             default:
-                if(getValue() === "async") {
-                    nextToken();
-                    context.inAsync = true;
-                    let statement: Statement | undefined;
-                    if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-                        context.maybeArrow = true;
-                        const arrowExpr = parseCoverExpressionORArrowFunction();
-                        context.maybeArrow = false;
-                        statement = Factory.createExpressionStatement(arrowExpr, cloneSourcePosition(arrowExpr.start), cloneSourcePosition(arrowExpr.end));
-                    }else {
-                        statement = Factory.createExpressionStatement(
-                            Factory.createIdentifier("async", getStartPosition(), getEndPosition()), 
-                            getStartPosition(), getEndPosition()
-                        );
-                    }
-                    context.inAsync = false;
-                    return statement;
-                }
+                // if(getValue() === "async") {
+                //     nextToken();
+                //     context.inAsync = true;
+                //     let statement: Statement | undefined;
+                //     if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
+                //         context.maybeArrow = true;
+                //         const arrowExpr = parseCoverExpressionORArrowFunction();
+                //         context.maybeArrow = false;
+                //         statement = Factory.createExpressionStatement(arrowExpr, cloneSourcePosition(arrowExpr.start), cloneSourcePosition(arrowExpr.end));
+                //     }else {
+                //         statement = Factory.createExpressionStatement(
+                //             Factory.createIdentifier("async", getStartPosition(), getEndPosition()), 
+                //             getStartPosition(), getEndPosition()
+                //         );
+                //     }
+                //     context.inAsync = false;
+                //     return statement;
+                // }
                 if(match(SyntaxKinds.Identifier)  && lookahead() === SyntaxKinds.ColonPunctuator ) {
                     return parseLabeledStatement();
                 }
@@ -945,6 +947,9 @@ export function createParser(code: string) {
         const params: Array<Pattern> = [];
         while(!match(SyntaxKinds.ParenthesesRightPunctuator)) {
             if(isStart) {
+                if(match(SyntaxKinds.CommaToken)) {
+                    throw createMessageError(ErrorMessageMap.function_parameter_can_not_have_empty_trailing_comma);
+                }
                 isStart = false;
             }else {
                 expect(SyntaxKinds.CommaToken)
@@ -1096,13 +1101,23 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.YieldKeyword)) {
             return parseYieldExpression();
         }
+        let isPossibleDestructing = false;
+        if(context.assignDestructingTopLevelIndex === -1) {
+            context.assignDestructingTopLevelIndex = 1
+            isPossibleDestructing = true;
+        }
         let left = parseConditionalExpression();
         if (!matchSet(AssigmentOperators)) {
+            if(isPossibleDestructing) {
+                // TODO: check if expression have object property.
+            }
             return left;
         }
         if(isArrayExpression(left) || isObjectExpression(left)) {
+            // TODO: check other valid left
             left = toAssignmentPattern(left) as Expression;
         }
+        // TODO: check other valid left hand side expression.
         const operator = getToken();
         nextToken();
         const right = parseAssigmentExpression();
@@ -1268,16 +1283,22 @@ export function createParser(code: string) {
      * ```
      * @returns {Array<Expression>}
      */
-    function parseArguments(): ASTArrayWithMetaData<Expression>  {
+    function parseArguments(): ASTArrayWithMetaData<Expression> & { trailingComma: boolean }  {
         const { start } = expectGuardAndEat([SyntaxKinds.ParenthesesLeftPunctuator]);
         let isStart = true;
         let shouldStop = false;
         // TODO: refactor logic to remove shoulStop
         const callerArguments: Array<Expression> = [];
+        let trailingComma = false
         while(!shouldStop && !match(SyntaxKinds.ParenthesesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
             if(isStart) {
                 isStart = false
+                if(match(SyntaxKinds.CommaToken)) {
+                    throw createMessageError(ErrorMessageMap.function_argument_can_not_have_empty_trailing_comma);
+                }
             } else {
+                trailingComma = true;
+                console.log(callerArguments);
                 expect(SyntaxKinds.CommaToken, "Argument should seprated by comma.");
             }
             // case 1: ',' following by ')'
@@ -1285,6 +1306,7 @@ export function createParser(code: string) {
                 shouldStop = true;
                 continue;
             }
+            trailingComma = false;
             // case 2: ',' following by SpreadElement, maybe follwed by ','
             if(match(SyntaxKinds.SpreadOperator)) {
                 const spreadElementStart = getStartPosition();
@@ -1292,7 +1314,8 @@ export function createParser(code: string) {
                 const argu = parseAssigmentExpression();
                 callerArguments.push(Factory.createSpreadElement(argu, spreadElementStart, cloneSourcePosition(argu.end)));
                 if(match(SyntaxKinds.CommaToken)) {
-                    throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
+                    nextToken();
+                    trailingComma = true;
                 }
                 shouldStop = true;
                 continue;
@@ -1303,7 +1326,8 @@ export function createParser(code: string) {
         const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
         return { 
             end, start,
-            nodes: callerArguments 
+            nodes: callerArguments ,
+            trailingComma
         };
     }
     /**
@@ -1358,9 +1382,13 @@ export function createParser(code: string) {
             case SyntaxKinds.TemplateHead:
             case SyntaxKinds.TemplateNoSubstitution:
                 return parseTemplateLiteral();
-            // TODO import call
             case SyntaxKinds.ImportKeyword:
-                return parseImportMeta();
+                const lookaheadToken = lookahead();
+                if(lookaheadToken === SyntaxKinds.DotOperator)
+                    return parseImportMeta();
+                if(lookaheadToken === SyntaxKinds.ParenthesesLeftPunctuator) {
+                    return parseImportCall();
+                }
             case SyntaxKinds.NewKeyword: {
                 const lookaheadToken = lookahead();
                 if(lookaheadToken === SyntaxKinds.DotOperator) {
@@ -1386,7 +1414,14 @@ export function createParser(code: string) {
             case SyntaxKinds.PrivateName:
                 return parsePrivateName();
             case SyntaxKinds.Identifier: {
-                if(lookahead() === SyntaxKinds.ArrowOperator) {
+                const lookaheadToken = lookahead();
+                if(
+                    lookaheadToken === SyntaxKinds.ArrowOperator || 
+                    (getValue() === "async"  && lookaheadToken === SyntaxKinds.Identifier)
+                ) {
+                    if(getValue() === "async") {
+                        nextToken();
+                    }
                     const argus = [parseIdentifer()];
                     return parseArrowFunctionExpression({
                         nodes: argus,
@@ -1394,12 +1429,19 @@ export function createParser(code: string) {
                         end: argus[0].end
                     });
                 }
-                if(getValue() === "async"  && lookahead() === SyntaxKinds.ParenthesesLeftPunctuator) {
+                if(getValue() === "async"  && lookaheadToken === SyntaxKinds.ParenthesesLeftPunctuator) {
                     nextToken();
                     context.inAsync = true;
                     const arrowFunExpr = parseArrowFunctionExpression(parseArguments());
                     context.inAsync = false;
                     return arrowFunExpr;
+                }
+                if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
+                    nextToken();
+                    context.inAsync = true;
+                    const functionExpr = parseFunctionExpression();
+                    context.inAsync = false;
+                    return functionExpr;
                 }
                 return parseIdentifer();
             }
@@ -1476,6 +1518,13 @@ export function createParser(code: string) {
         expect(SyntaxKinds.DotOperator);
         const property = parseIdentifer();
         return Factory.createMetaProperty(Factory.createIdentifier("import", start, end), property, start, cloneSourcePosition(property.end));
+    }
+    function parseImportCall() {
+        const { start, end } =  expectGuardAndEat([SyntaxKinds.ImportKeyword]);
+        expect(SyntaxKinds.ParenthesesLeftPunctuator);
+        const argument = parseAssigmentExpression();
+        const { end: finalEnd } = expect(SyntaxKinds.ParenthesesRightPunctuator);
+        return Factory.createCallExpression(Factory.createImport(start, end), [argument], false,  cloneSourcePosition(start), cloneSourcePosition(finalEnd));
     }
     function parseNewTarget() {
         const { start, end } = expectGuardAndEat([SyntaxKinds.NewKeyword]);
@@ -1812,11 +1861,14 @@ export function createParser(code: string) {
         if(!match(SyntaxKinds.ParenthesesLeftPunctuator)) {
             throw createUnreachError([SyntaxKinds.ParenthesesLeftPunctuator]);
         }
-        const { start, end, nodes } = parseArguments();
+        const { start, end, nodes, trailingComma } = parseArguments();
         if(!context.maybeArrow || !match(SyntaxKinds.ArrowOperator)) {
             // transfor to sequence or signal expression
             if(nodes.length === 1) {
                 return nodes[0];
+            }
+            if(trailingComma) {
+                throw createMessageError(ErrorMessageMap.sequence_expression_can_not_have_trailing_comma);
             }
             return Factory.createSequenceExpression(nodes, start, end);
         }
@@ -2163,26 +2215,18 @@ export function createParser(code: string) {
         expectGuardAndEat([SyntaxKinds.DefaultKeyword]);
         if(match(SyntaxKinds.ClassKeyword)) {
             let classDeclar = parseClass();
-            if(classDeclar.id === null) {
-                classDeclar = Factory.transFormClassToClassExpression(classDeclar)
-            }else {
-                classDeclar = Factory.transFormClassToClassDeclaration(classDeclar);
-            }
+            classDeclar = Factory.transFormClassToClassExpression(classDeclar)
             return Factory.createExportDefaultDeclaration(classDeclar as ClassDeclaration | ClassExpression, start, cloneSourcePosition(classDeclar.end));
         }
         if(match(SyntaxKinds.FunctionKeyword)) {
             let funDeclar = parseFunction()
-            if(funDeclar.name === null) {
-                funDeclar = Factory.transFormFunctionToFunctionExpression(funDeclar)
-            }else {
-                funDeclar = Factory.transFormFunctionToFunctionDeclaration(funDeclar);
-            }
+            funDeclar = Factory.transFormFunctionToFunctionExpression(funDeclar)
             return Factory.createExportDefaultDeclaration(funDeclar as FunctionDeclaration | FunctionExpression, start, cloneSourcePosition(funDeclar.end));
         }   
         if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
             nextToken();
             context.inAsync = true;
-            const funDeclar = parseFunctionDeclaration();
+            const funDeclar = parseFunctionExpression();
             context.inAsync = false;
             return Factory.createExportDefaultDeclaration(funDeclar, start, cloneSourcePosition(funDeclar.end));
         }

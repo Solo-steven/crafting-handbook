@@ -1,0 +1,127 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "let",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "xy",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        }
+                    },
+                    "init": {
+                        "kind": "ObjectExpression",
+                        "properties": [
+                            {
+                                "kind": "SpreadElement",
+                                "argument": {
+                                    "kind": "Identifer",
+                                    "name": "x",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 15,
+                                        "index": 14
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 16,
+                                        "index": 15
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 12,
+                                    "index": 11
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 16,
+                                    "index": 15
+                                }
+                            },
+                            {
+                                "kind": "SpreadElement",
+                                "argument": {
+                                    "kind": "Identifer",
+                                    "name": "y",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 21,
+                                        "index": 20
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 22,
+                                        "index": 21
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 18,
+                                    "index": 17
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 22,
+                                    "index": 21
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 24,
+                        "index": 23
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 24,
+                "index": 23
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 25,
+        "index": 24
+    }
+}

@@ -1,0 +1,156 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "IfStatement",
+            "test": {
+                "kind": "Identifer",
+                "name": "x",
+                "start": {
+                    "row": 1,
+                    "col": 5,
+                    "index": 4
+                },
+                "end": {
+                    "row": 1,
+                    "col": 6,
+                    "index": 5
+                }
+            },
+            "conseqence": {
+                "kind": "ExpressionStatement",
+                "expr": {
+                    "kind": "FunctionExpression",
+                    "name": {
+                        "kind": "Identifer",
+                        "name": "f",
+                        "start": {
+                            "row": 1,
+                            "col": 23,
+                            "index": 22
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        }
+                    },
+                    "generator": false,
+                    "async": true,
+                    "body": {
+                        "kind": "FunctionBody",
+                        "body": [
+                            {
+                                "kind": "ExpressionStatement",
+                                "expr": {
+                                    "kind": "AwaitExpression",
+                                    "argument": {
+                                        "kind": "Identifer",
+                                        "name": "a",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 36,
+                                            "index": 35
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 37,
+                                            "index": 36
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 30,
+                                        "index": 29
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 37,
+                                        "index": 36
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 30,
+                                    "index": 29
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 37,
+                                    "index": 36
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 28,
+                            "index": 27
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 39,
+                            "index": 38
+                        }
+                    },
+                    "params": [
+                        {
+                            "kind": "Identifer",
+                            "name": "a",
+                            "start": {
+                                "row": 1,
+                                "col": 25,
+                                "index": 24
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 26,
+                                "index": 25
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 14,
+                        "index": 13
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 39,
+                        "index": 38
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 14,
+                    "index": 13
+                },
+                "end": {
+                    "row": 1,
+                    "col": 39,
+                    "index": 38
+                }
+            },
+            "alternative": null,
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 39,
+                "index": 38
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 39
+    }
+}

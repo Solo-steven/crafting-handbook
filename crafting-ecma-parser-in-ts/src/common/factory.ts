@@ -145,6 +145,15 @@ export function createSuper(
         start, end
     }
 }
+export function createImport(
+    start: SourcePosition, end: SourcePosition
+): AST.Import {
+    return { 
+        kind: SyntaxKinds.Import, 
+        name: "import",
+        start, end
+    }
+}
 export function createThisExpression(
     start: SourcePosition, end: SourcePosition
 ): AST.ThisExpression {

@@ -1,0 +1,72 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportDefaultDeclaration",
+            "declaration": {
+                "kind": "FunctionExpression",
+                "name": {
+                    "kind": "Identifer",
+                    "name": "f",
+                    "start": {
+                        "row": 1,
+                        "col": 31,
+                        "index": 30
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 32,
+                        "index": 31
+                    }
+                },
+                "generator": false,
+                "async": true,
+                "body": {
+                    "kind": "FunctionBody",
+                    "body": [],
+                    "start": {
+                        "row": 1,
+                        "col": 35,
+                        "index": 34
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 37,
+                        "index": 36
+                    }
+                },
+                "params": [],
+                "start": {
+                    "row": 1,
+                    "col": 22,
+                    "index": 21
+                },
+                "end": {
+                    "row": 1,
+                    "col": 37,
+                    "index": 36
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 37,
+                "index": 36
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 37
+    }
+}

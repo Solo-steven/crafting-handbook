@@ -3,11 +3,10 @@ import { SyntaxKinds  } from "@/src/common";
 import { createParser } from "@/src/parser";
 import { transformSyntaxKindToLiteral } from  "../tests/transform";
 import fs from 'fs';
+import path from "path";
 import { performance } from "node:perf_hooks";
 
-const code =  `
-for (var [p]=1 in q);
-`;
+const code =  `1=10` // fs.readFileSync(path.join(__dirname, "test.js")).toString();
 console.log("=================================");
 console.log("Test JavaScript Code:");
 console.log("=================================");
@@ -22,6 +21,7 @@ while(lexer.getToken() != SyntaxKinds.EOFToken) {
     console.log(lexer.getToken(), lexer.getSourceValue(), lexer.getStartPosition(), lexer.getEndPosition());
     lexer.nextToken();
 }
+console.log(lexer.getToken(), lexer.getSourceValue(), lexer.getStartPosition(), lexer.getEndPosition());
 
 console.log("=================================");
 console.log("============ Parser =============");

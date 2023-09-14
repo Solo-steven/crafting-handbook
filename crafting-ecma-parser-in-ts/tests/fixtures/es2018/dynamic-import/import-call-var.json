@@ -1,0 +1,204 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "m",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        }
+                    },
+                    "init": {
+                        "kind": "StringLiteral",
+                        "value": "library.js",
+                        "start": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 23,
+                            "index": 22
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 23,
+                        "index": 22
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 23,
+                "index": 22
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "MemberExpression",
+                    "computed": false,
+                    "optional": false,
+                    "object": {
+                        "kind": "CallExpression",
+                        "optional": false,
+                        "callee": {
+                            "kind": 10152,
+                            "name": "import",
+                            "start": {
+                                "row": 2,
+                                "col": 0,
+                                "index": 24
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 6,
+                                "index": 30
+                            }
+                        },
+                        "arguments": [
+                            {
+                                "kind": "Identifer",
+                                "name": "m",
+                                "start": {
+                                    "row": 2,
+                                    "col": 7,
+                                    "index": 31
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 8,
+                                    "index": 32
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 2,
+                            "col": 0,
+                            "index": 24
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 9,
+                            "index": 33
+                        }
+                    },
+                    "property": {
+                        "kind": "Identifer",
+                        "name": "then",
+                        "start": {
+                            "row": 2,
+                            "col": 10,
+                            "index": 34
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 14,
+                            "index": 38
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 0,
+                        "index": 24
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 14,
+                        "index": 38
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "ArrowFunctionExpression",
+                        "expressionBody": false,
+                        "async": false,
+                        "arguments": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 2,
+                                "col": 21,
+                                "index": 45
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 23,
+                                "index": 47
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 15,
+                            "index": 39
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 23,
+                            "index": 47
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 0,
+                    "index": 24
+                },
+                "end": {
+                    "row": 2,
+                    "col": 24,
+                    "index": 48
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 0,
+                "index": 24
+            },
+            "end": {
+                "row": 2,
+                "col": 24,
+                "index": 48
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 0,
+        "index": 50
+    }
+}

@@ -28,6 +28,7 @@ interface Lexer {
     getToken: () => SyntaxKinds;
     nextToken: () => SyntaxKinds;
     lookahead: () => SyntaxKinds;
+    expectLineTermintate: () => boolean,
 }
 
 export function createLexer(code: string): Lexer {
@@ -82,6 +83,7 @@ export function createLexer(code: string): Lexer {
         getToken,
         nextToken,
         lookahead,
+        expectLineTermintate,
     }
 /**
  *  Private utils function 
@@ -625,7 +627,7 @@ export function createLexer(code: string): Lexer {
         }
         eatChar(1);
         let wordString = "";
-        while(!startWithSet(["${", "`"])&& !eof() ) {
+        while(!startWithSet(["${", "`"]) && !eof() ) {
             wordString += eatChar();
         }
         if(eof()) {
@@ -651,10 +653,10 @@ export function createLexer(code: string): Lexer {
         if(eof()) {
             throw lexicalError("template string not closed with '`'");
         }
+        context.templateStringStackCounter.push(1);
         context.sourceValue = wordString;
         if(startWith("${")) {
             eatChar(2);
-            context.templateStringStackCounter.push(1);
             return  finishToken(SyntaxKinds.TemplateMiddle, wordString);
         }
         eatChar(1);

@@ -78,6 +78,7 @@ import {
     EmptyStatement,
     NullLiteral,
     UndefinbedLiteral,
+    Import,
 } from "../ast";
 import { SyntaxKinds } from "../kind";
 import type { Visitor } from "./type";
@@ -129,6 +130,12 @@ const VisitorTable: { [key: number ]: (node: any, visior: Visitor) => void } = {
     },
     [SyntaxKinds.Super]: function bindSuper(node: Super, visitor: Visitor ) {
         if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+    },
+    [SyntaxKinds.Import]: function bindImport(node: Import, visitor: Visitor) {
+        if(!node) return;
         if(visitor[node.kind]) {
             visitor[node.kind](node);
         }

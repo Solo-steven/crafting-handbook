@@ -1,0 +1,187 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ImportDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ImportDefaultSpecifier",
+                    "imported": {
+                        "kind": "Identifer",
+                        "name": "$",
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 8,
+                        "index": 7
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 9,
+                        "index": 8
+                    }
+                }
+            ],
+            "source": {
+                "kind": "StringLiteral",
+                "value": "a",
+                "start": {
+                    "row": 1,
+                    "col": 15,
+                    "index": 14
+                },
+                "end": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 18,
+                "index": 17
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "MemberExpression",
+                    "computed": false,
+                    "optional": false,
+                    "object": {
+                        "kind": "CallExpression",
+                        "optional": false,
+                        "callee": {
+                            "kind": 10152,
+                            "name": "import",
+                            "start": {
+                                "row": 2,
+                                "col": 0,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 6,
+                                "index": 25
+                            }
+                        },
+                        "arguments": [
+                            {
+                                "kind": "StringLiteral",
+                                "value": "b",
+                                "start": {
+                                    "row": 2,
+                                    "col": 7,
+                                    "index": 26
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 10,
+                                    "index": 29
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 2,
+                            "col": 0,
+                            "index": 19
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 11,
+                            "index": 30
+                        }
+                    },
+                    "property": {
+                        "kind": "Identifer",
+                        "name": "then",
+                        "start": {
+                            "row": 2,
+                            "col": 12,
+                            "index": 31
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 16,
+                            "index": 35
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 0,
+                        "index": 19
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 16,
+                        "index": 35
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "Identifer",
+                        "name": "c",
+                        "start": {
+                            "row": 2,
+                            "col": 17,
+                            "index": 36
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 18,
+                            "index": 37
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 0,
+                    "index": 19
+                },
+                "end": {
+                    "row": 2,
+                    "col": 19,
+                    "index": 38
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 0,
+                "index": 19
+            },
+            "end": {
+                "row": 2,
+                "col": 19,
+                "index": 38
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 0,
+        "index": 40
+    }
+}

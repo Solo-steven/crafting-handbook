@@ -78,6 +78,7 @@ import {
     EmptyStatement,
     NullLiteral,
     UndefinbedLiteral,
+    Import,
 } from "../ast";
 import { SyntaxKinds } from "../kind";
 
@@ -111,6 +112,9 @@ const VisitorTable: { [key: number ]: (node: any, visior: Visitor) => void } = {
         visitIfNeed(node, visitor);
     },
     [SyntaxKinds.Super]: function bindSuper(node: Super, visitor: Visitor ) {
+        visitIfNeed(node, visitor);
+    },
+    [SyntaxKinds.Import]: function bindImport(node: Import, visitor: Visitor) {
         visitIfNeed(node, visitor);
     },
     [SyntaxKinds.ThisExpression]: function bindThisExpression(node: ThisExpression, visitor: Visitor) {
