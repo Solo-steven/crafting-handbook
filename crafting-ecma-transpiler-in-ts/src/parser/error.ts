@@ -18,4 +18,5 @@ export const ErrorMessageMap = {
     function_parameter_can_not_have_empty_trailing_comma: "function parameter list can not have trailing comma when is empty",
     sequence_expression_can_not_have_trailing_comma: "sequence expression can not have trailing comma",
     function_argument_can_not_have_empty_trailing_comma: "function argument list can not have trailing comma when is empty",
+    restelement_can_not_use_in_cover: "rest element can not use in cover expression",
 }

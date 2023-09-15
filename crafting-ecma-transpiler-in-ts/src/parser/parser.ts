@@ -78,6 +78,8 @@ import {
     SpreadElement,
     SytaxKindsMapLexicalLiteral,
     AssigmentExpression,
+    isRestElement,
+    isSpreadElement,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -475,24 +477,6 @@ export function createParser(code: string) {
             case SyntaxKinds.VarKeyword:
                 return parseVariableDeclaration();
             default:
-                // if(getValue() === "async") {
-                //     nextToken();
-                //     context.inAsync = true;
-                //     let statement: Statement | undefined;
-                //     if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-                //         context.maybeArrow = true;
-                //         const arrowExpr = parseCoverExpressionORArrowFunction();
-                //         context.maybeArrow = false;
-                //         statement = Factory.createExpressionStatement(arrowExpr, cloneSourcePosition(arrowExpr.start), cloneSourcePosition(arrowExpr.end));
-                //     }else {
-                //         statement = Factory.createExpressionStatement(
-                //             Factory.createIdentifier("async", getStartPosition(), getEndPosition()), 
-                //             getStartPosition(), getEndPosition()
-                //         );
-                //     }
-                //     context.inAsync = false;
-                //     return statement;
-                // }
                 if(match(SyntaxKinds.Identifier)  && lookahead() === SyntaxKinds.ColonPunctuator ) {
                     return parseLabeledStatement();
                 }
@@ -515,7 +499,7 @@ export function createParser(code: string) {
     /**
      * this function is a helper function for 
      */
-    function toAssignmentPattern(node: ModuleItem): ModuleItem {
+    function toAssignmentPattern(node: ModuleItem, isBinding: boolean = false): ModuleItem {
         switch(node.kind) {
             case SyntaxKinds.Identifier:
             case SyntaxKinds.MemberExpression:
@@ -527,7 +511,7 @@ export function createParser(code: string) {
             case SyntaxKinds.AssigmentExpression: {
                 const assignmentExpressionNode = node as AssigmentExpression;
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const left = toAssignmentPattern(assignmentExpressionNode.left);
+                const left = toAssignmentPattern(assignmentExpressionNode.left, isBinding);
                 return Factory.createAssignmentPattern(left as Pattern, assignmentExpressionNode.right, node.start, node.end);
             }
             case SyntaxKinds.SpreadElement: {
@@ -543,7 +527,7 @@ export function createParser(code: string) {
                         elements.push(element);
                         continue;
                     }
-                    const transformElement = toAssignmentPattern(element);
+                    const transformElement = toAssignmentPattern(element, isBinding);
                     elements.push(transformElement);
                     if(transformElement.kind === SyntaxKinds.RestElement) {
                         if(index !== arrayExpressionNode.elements.length -1 || arrayExpressionNode.trailingComma) {
@@ -557,12 +541,15 @@ export function createParser(code: string) {
                 const objecExpressionNode = node as ObjectExpression;
                 const properties: Array<ModuleItem> = []
                 for(const property of objecExpressionNode.properties) {
-                    properties.push(toAssignmentPattern(property));
+                    properties.push(toAssignmentPattern(property, isBinding));
                 }
                 return Factory.createObjectPattern(properties as Array<ObjectPatternProperty>, objecExpressionNode.start, objecExpressionNode.end);
             }
             case SyntaxKinds.ObjectProperty: {
                 const objectPropertyNode = node as ObjectPatternProperty;
+                if( isBinding && objectPropertyNode.value?.kind === SyntaxKinds.MemberExpression) {
+                    throw new Error("binding no member expression");
+                }
                 return Factory.createObjectPatternProperty(objectPropertyNode.key, objectPropertyNode.value, objectPropertyNode.computed, objectPropertyNode.shorted, objectPropertyNode.start, objectPropertyNode.end);
             }
             default:
@@ -1888,6 +1875,11 @@ export function createParser(code: string) {
         const { start, end, nodes, trailingComma } = parseArguments();
         if(!context.maybeArrow || !match(SyntaxKinds.ArrowOperator)) {
             // transfor to sequence or signal expression
+            for(const element of nodes) {
+                if(isSpreadElement(element)) {
+                    throw createMessageError(ErrorMessageMap.restelement_can_not_use_in_cover);
+                }
+            }
             if(nodes.length === 1) {
                 return nodes[0];
             }
@@ -1911,7 +1903,7 @@ export function createParser(code: string) {
             body = parseExpression();
             isExpression = true;
         }
-        const functionArguments = metaData.nodes.map(node => toAssignmentPattern(node)) as Array<Expression>;
+        const functionArguments = metaData.nodes.map(node => toAssignmentPattern(node, true)) as Array<Expression>;
         return Factory.createArrowExpression(isExpression, body,  functionArguments, context.inAsync, cloneSourcePosition(metaData.start), cloneSourcePosition(body.end));
     }
 /** ================================================================================

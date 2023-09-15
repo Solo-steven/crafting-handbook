@@ -520,6 +520,9 @@ export function isObjectAccessor(node: ModuleItem): node is ObjectAccessor {
 export function isSpreadElement(node: ModuleItem): node is SpreadElement {
     return node.kind === SyntaxKinds.SpreadElement;
 }
+export function isRestElement(node: ModuleItem): node is RestElement {
+    return node.kind === SyntaxKinds.RestElement;
+}
 export function isClassExpression(node: ModuleItem): node is ClassExpression {
     return node.kind === SyntaxKinds.ClassExpression;
 }
