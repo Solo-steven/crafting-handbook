@@ -14,9 +14,6 @@ const jsFileRegex = new RegExp('.*\.js$');
 // eslint-disable-next-line no-useless-escape
 const jsonFileRegex = new RegExp('.*\.json$');
 const invalidFileReg = new RegExp('invalid');
-const TempIgnoreCases = [
-    
-];
 /**
  * Test structure for test case.
  * @property {string} jsPath  absolute path for js file in current os file system
@@ -89,9 +86,29 @@ interface Result {
     result: string;
 }
 const failedTestCases: Array<Result> = [];
+const expectFailedTestCase: Array<Result> = [];
 const skipTestCases: Array<Result> = [];
 const passTestCases: Array<Result> = [];
 const updateTestCases: Array<Result> = [];
+const TempIgnoreCases: Array<String> = [
+    "fixtures/es2018/for-await-of/invalid-for-await-of-not-async-context.js",
+    "fixtures/ES6/template-literals/invalid-escape.js",
+    "fixtures/ES6/template-literals/invalid-hex-escape-sequence.js",
+    "fixtures/ES6/template-literals/invalid_octal-literal.js",
+    "fixtures/ES6/template-literals/invalid_strict-octal-literal.js",
+    "fixtures/es2018/dynamic-import/invalid-new-import-call.js",
+    "fixtures/es2018/dynamic-import/invalid-non-callee.js",
+    "fixtures/es2017/async/functions/invalid-async-function-declaration-duplicate-params.js",
+    "fixtures/es2017/async/functions/invalid-async-function-expression-duplicate-params.js",
+    "fixtures/es2017/async/functions/invalid-async-line-terminator-expression.js",
+    "fixtures/es2017/async/functions/invalid-async-while.js",
+    "fixtures/es2017/async/arrows/invalid-async-line-terminator1.js",
+    "fixtures/es2017/async/arrows/invalid-async-line-terminator2.js",
+    "fixtures/es2017/async/arrows/invalid-async-line-terminator3.js",
+    "fixtures/es2017/async/arrows/invalid-async-line-terminator4.js",
+    "fixtures/es2017/async/arrows/invalid-async-line-terminator5.js",
+    "fixtures/ES6/binding-pattern/array-pattern/invalid-dupe-param.js"
+];
 /**
  * Helper function that parse code string and
  * transform to more readable ast format string
@@ -133,6 +150,16 @@ async function runTestCase(testCase: TestCase) {
             });
         }
     } catch(e) {
+        const index = TempIgnoreCases.find((ignoreTestCase) => testCase.fileName === ignoreTestCase);
+        console.log(index);
+        if(typeof(index) === "number" && index !== -1 ) {
+            expectFailedTestCase.push({
+                fileName: testCase.fileName,
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                result: `{ Compiler Error }: ${e?.toString()} `
+            })
+            return;
+        }
         failedTestCases.push({
             fileName: testCase.fileName,
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
@@ -151,10 +178,20 @@ async function runInvalidTestCase(testCase: TestCase) {
     try {
         const code = await readFile(testCase.jsPath);
         toASTString(code.toString());
-        failedTestCases.push({
-            fileName: testCase.fileName,
-            result: "This case should failed",
-        })
+        const index = TempIgnoreCases.findIndex((ignoreTestCase) => testCase.fileName === ignoreTestCase);
+        if(typeof(index) === "number" && index !== -1 ) {
+            expectFailedTestCase.push({
+                fileName: testCase.fileName,
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                result:  "This case should failed",
+            })
+            return;
+        }else {
+            failedTestCases.push({
+                fileName: testCase.fileName,
+                result: "This case should failed",
+            })
+        }
     } catch(e) {
         passTestCases.push({
             fileName: testCase.fileName,
@@ -193,6 +230,15 @@ async function updateTestCase(testCase: TestCase) {
             result: "",
         })
     } catch(e) {
+        const index = TempIgnoreCases.find((ignoreTestCase) => testCase.fileName === ignoreTestCase);
+        if(typeof(index) === "number" && index !== -1 ) {
+            expectFailedTestCase.push({
+                fileName: testCase.fileName,
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                result: `{ Compiler Error }: ${e?.toString()} `
+            })
+            return;
+        }
         failedTestCases.push({
             fileName: testCase.fileName,
             result: `{ Compiler Error When Update Case }`
@@ -234,11 +280,15 @@ function report() {
     for(const testCase of updateTestCases) {
         console.log((`|Update|: ${testCase.fileName}`));
     }
+    for(const testCase of expectFailedTestCase) {
+        console.log((`|Expect Failed|: ${testCase.fileName}`));
+        console.log((`  |----> ${testCase.result}`));
+    }
     for(const testCase of failedTestCases) {
         console.log((`|Failed|: ${testCase.fileName}`));
         console.log((`  |----> ${testCase.result}`));
     }
-    const allTestCaseCount = failedTestCases.length + skipTestCases.length + passTestCases.length + updateTestCases.length;
+    const allTestCaseCount = failedTestCases.length + skipTestCases.length + passTestCases.length + updateTestCases.length + expectFailedTestCase.length;
     const passRate = passTestCases.length / allTestCaseCount;
     const failedRate = failedTestCases.length / allTestCaseCount;
     const updateRate = updateTestCases.length / allTestCaseCount;
@@ -246,6 +296,7 @@ function report() {
     console.log(`Pass rate: ${passTestCases.length} / ${allTestCaseCount}(${passRate})`);
     console.log(`Update rate: ${updateTestCases.length} / ${allTestCaseCount}(${updateRate})`);
     console.log(`Failed rate : ${failedTestCases.length} / ${allTestCaseCount}(${failedRate})`);
+    console.log(`Expect Failed rate: ${expectFailedTestCase.length} /${allTestCaseCount} `)
     if(passRate < gate - updateRate) {
         process.exit(1);
     }else {

@@ -93,7 +93,9 @@ interface Context {
     inClass: boolean,
     maybeForIn: boolean,
     inFor: boolean,
-    assignDestructingTopLevelIndex: number;
+    inArgumentOrParameter: boolean,
+    assignDestructingStack: Array<number> ;
+    coverInitMark: { [key: number]: Array<SourcePosition>}
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -112,7 +114,9 @@ function createContext(): Context {
         inClass: false,
         maybeForIn: false,
         inFor: false,
-        assignDestructingTopLevelIndex: -1,
+        inArgumentOrParameter: false,
+        assignDestructingStack: [],
+        coverInitMark: {},
     }
 }
 function getBinaryPrecedence(kind: SyntaxKinds) {
@@ -304,8 +308,9 @@ export function createParser(code: string) {
      * Create a Message error from parser's error map.
      * @param {string} messsage 
      */
-    function createMessageError(messsage: string) {
-        const position = getStartPosition();
+    function createMessageError(messsage: string, position?: SourcePosition) {
+        if(position === undefined)
+            position = getStartPosition();
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         return new Error(`[Syntax Error]: ${messsage} (${position.row}, ${position.col}), got token ${SytaxKindsMapLexicalLiteral[getToken()]}`);
     }
@@ -505,15 +510,6 @@ export function createParser(code: string) {
         }
         if(declaration.declarations[0].init !== null) {
             throw createMessageError(ErrorMessageMap.for_in_of_loop_can_not_using_initializer);
-        }
-    }
-    function checkObjectExpressionHaveCoverInit(node: ObjectExpression) {
-        for(const property of node.properties) {
-            if(property.kind === SyntaxKinds.ObjectProperty) {
-                if(property.shorted && property.value) {
-                    throw createMessageError(ErrorMessageMap.object_property_can_not_have_initializer);
-                }
-            }
         }
     }
     /**
@@ -945,6 +941,7 @@ export function createParser(code: string) {
         let isStart = true;
         let isEndWithRest = false;
         const params: Array<Pattern> = [];
+        context.inArgumentOrParameter = true;
         while(!match(SyntaxKinds.ParenthesesRightPunctuator)) {
             if(isStart) {
                 if(match(SyntaxKinds.CommaToken)) {
@@ -965,6 +962,7 @@ export function createParser(code: string) {
             }
             params.push(parseBindingElement());
         }
+        context.inArgumentOrParameter = false;
         if(!match(SyntaxKinds.ParenthesesRightPunctuator)) {
             if(isEndWithRest && match(SyntaxKinds.CommaToken)) {
                 throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
@@ -1101,20 +1099,36 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.YieldKeyword)) {
             return parseYieldExpression();
         }
-        let isPossibleDestructing = false;
-        if(context.assignDestructingTopLevelIndex === -1) {
-            context.assignDestructingTopLevelIndex = 1
-            isPossibleDestructing = true;
-        }
+        context.assignDestructingStack.push(context.assignDestructingStack.length + 1);
         let left = parseConditionalExpression();
+        const assignDestructureIndex = context.assignDestructingStack.pop();
         if (!matchSet(AssigmentOperators)) {
-            if(isPossibleDestructing) {
-                // TODO: check if expression have object property.
+            // should be destructure pattern but have no assigment operator with current level
+            if(assignDestructureIndex && (assignDestructureIndex ===  1|| context.inFor || context.inArgumentOrParameter )) {
+                // reset context 
+                let haveCoverInit = false;
+                for(const [key] of Object.entries(context.coverInitMark)) {
+                    const numbericIndex = Number(key);
+                    if(numbericIndex >= assignDestructureIndex) {
+                        const level = context.coverInitMark[numbericIndex].length > 0;
+                        context.coverInitMark[numbericIndex] = [];
+                        haveCoverInit ||= level;
+                    }
+                }
+                if(haveCoverInit && !context.inFor && !context.inArgumentOrParameter)
+                    throw createMessageError(ErrorMessageMap.object_property_can_not_have_initializer);
             }
             return left;
         }
+        if(assignDestructureIndex) {
+            for(const [key] of Object.entries(context.coverInitMark)) {
+                const numbericIndex = Number(key);
+                if(numbericIndex >= assignDestructureIndex) {
+                    context.coverInitMark[numbericIndex] = [];
+                }
+            }
+        }
         if(isArrayExpression(left) || isObjectExpression(left)) {
-            // TODO: check other valid left
             left = toAssignmentPattern(left) as Expression;
         }
         // TODO: check other valid left hand side expression.
@@ -1290,6 +1304,7 @@ export function createParser(code: string) {
         // TODO: refactor logic to remove shoulStop
         const callerArguments: Array<Expression> = [];
         let trailingComma = false
+        context.inArgumentOrParameter = true;
         while(!shouldStop && !match(SyntaxKinds.ParenthesesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
             if(isStart) {
                 isStart = false
@@ -1298,7 +1313,6 @@ export function createParser(code: string) {
                 }
             } else {
                 trailingComma = true;
-                console.log(callerArguments);
                 expect(SyntaxKinds.CommaToken, "Argument should seprated by comma.");
             }
             // case 1: ',' following by ')'
@@ -1323,6 +1337,7 @@ export function createParser(code: string) {
             // case 3 : ',' AssigmentExpression
             callerArguments.push(parseAssigmentExpression());
         }
+        context.inArgumentOrParameter = false;
         const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
         return { 
             end, start,
@@ -1653,6 +1668,15 @@ export function createParser(code: string) {
         }
         if(match(SyntaxKinds.AssginOperator)) {
             nextToken();
+            const assignDestructureIndex = context.assignDestructingStack.pop();
+            if(assignDestructureIndex) {
+                if(context.coverInitMark[assignDestructureIndex]) {
+                    context.coverInitMark[assignDestructureIndex].push(getStartPosition());
+                }else {
+                    context.coverInitMark[assignDestructureIndex] = [getStartPosition()];
+                }
+                context.assignDestructingStack.push(assignDestructureIndex);
+            }
             const expr = parseAssigmentExpression();
             return Factory.createObjectProperty(propertyName, expr , isComputedRef.isComputed, true, cloneSourcePosition(propertyName.start), cloneSourcePosition(expr.end));
 

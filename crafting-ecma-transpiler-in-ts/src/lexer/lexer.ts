@@ -730,7 +730,6 @@ export function createLexer(code: string): Lexer {
             word += eatChar()
         }
         if(eof()) {
-            console.log(position);
             throw lexicalError(`string literal start with ${mode} can't find closed char`);
         }
         eatChar();
