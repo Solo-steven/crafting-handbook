@@ -1115,9 +1115,7 @@ export function createParser(code: string) {
                 }
             }
         }
-        if(isArrayExpression(left) || isObjectExpression(left)) {
-            left = toAssignmentPattern(left) as Expression;
-        }
+        left = toAssignmentPattern(left) as Expression;
         // TODO: check other valid left hand side expression.
         const operator = getToken();
         nextToken();

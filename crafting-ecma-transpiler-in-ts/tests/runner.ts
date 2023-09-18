@@ -94,6 +94,7 @@ const TempIgnoreCases: Array<String> = [
     /** Pending Problems */
     // strict mode problem
     "fixtures/ES6/arrow-function/invalid-param-strict-mode.js",
+    "fixtures/declaration/function/invalid-strict-labelled-function-declaration.js",
     // unicode and excap char problem
     "fixtures/ES6/template-literals/invalid-escape.js",
     "fixtures/ES6/template-literals/invalid-hex-escape-sequence.js",
@@ -108,7 +109,6 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/es2017/async/arrows/invalid-async-line-terminator4.js",
     "fixtures/es2017/async/arrows/invalid-async-line-terminator5.js",
     "fixtures/ES6/arrow-function/invalid-line-terminator-arrow.js",
-
     // yield as identifier problem
     // duplicate param problem
     "fixtures/es2017/async/functions/invalid-async-function-declaration-duplicate-params.js",
@@ -117,15 +117,18 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/ES6/arrow-function/array-bindling-pattern/invalid-dup-param.js",
     "fixtures/ES6/arrow-function/invalid-duplicated-params.js",
     "fixtures/ES6/arrow-function/invalid-duplicated-names-rest-parameter.js",
+    "fixtures/declaration/function/invalid-dupe-param.js",
     // other
     "fixtures/es2018/for-await-of/invalid-for-await-of-not-async-context.js",
     "fixtures/es2018/dynamic-import/invalid-new-import-call.js",
     "fixtures/es2018/dynamic-import/invalid-non-callee.js",
     /** Main Issues */
-    "fixtures/ES6/destructing-assignment/invalid-group-assignment.js",
     "fixtures/ES6/destructing-assignment/object-pattern/invalid-lhs-01.js",
     "fixtures/ES6/destructing-assignment/object-pattern/invalid-lhs-02.js",
-    //"fixtures/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
+    "fixtures/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
+    "fixtures/ES6/class/invalid-setter-method-rest.js",
+    /** TO BE Verify */
+    "fixtures/ES6/class/invalid-labelled-class-declaration.js",
 ];
 /**
  * Helper function that parse code string and

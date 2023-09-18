@@ -1,0 +1,150 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "StringLiteral",
+                            "value": "constructor",
+                            "start": {
+                                "row": 1,
+                                "col": 10,
+                                "index": 9
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 23,
+                                "index": 22
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 1,
+                                "col": 25,
+                                "index": 24
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 27,
+                                "index": 26
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 27,
+                            "index": 26
+                        }
+                    },
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "StringLiteral",
+                            "value": "constructor",
+                            "start": {
+                                "row": 1,
+                                "col": 29,
+                                "index": 28
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 42,
+                                "index": 41
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 1,
+                                "col": 45,
+                                "index": 44
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 47,
+                                "index": 46
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 29,
+                            "index": 28
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 47,
+                            "index": 46
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 1,
+                    "col": 48,
+                    "index": 47
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 48,
+                "index": 47
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 48,
+        "index": 47
+    }
+}
