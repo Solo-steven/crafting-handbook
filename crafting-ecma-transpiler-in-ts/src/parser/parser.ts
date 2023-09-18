@@ -98,6 +98,7 @@ interface Context {
     inArgumentOrParameter: boolean,
     assignDestructingStack: Array<number> ;
     coverInitMark: { [key: number]: Array<SourcePosition>}
+    topLevelArgumentIndex: number,
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -116,9 +117,11 @@ function createContext(): Context {
         inClass: false,
         maybeForIn: false,
         inFor: false,
+        // for resolve check object property init is in pattern or not
         inArgumentOrParameter: false,
         assignDestructingStack: [],
         coverInitMark: {},
+        topLevelArgumentIndex: -1,
     }
 }
 function getBinaryPrecedence(kind: SyntaxKinds) {
@@ -1079,6 +1082,64 @@ export function createParser(code: string) {
         }
         return Factory.createSequenceExpression(exprs, cloneSourcePosition(exprs[0].start), cloneSourcePosition(exprs[exprs.length -1].end));
     }
+    function helperPushAssigmentPatternContext() {
+        context.assignDestructingStack.push(context.assignDestructingStack.length + 1);
+        if(context.topLevelArgumentIndex === -1 && context.inArgumentOrParameter) {
+            context.topLevelArgumentIndex = context.assignDestructingStack.length;
+        }
+    }
+    function helperPopAssigmentPatternContext() {
+        const assignDestructureIndex = context.assignDestructingStack.pop();
+        const isTopLevelArgumentIndex = context.topLevelArgumentIndex === assignDestructureIndex && context.inArgumentOrParameter;
+        if(isTopLevelArgumentIndex) {
+            context.topLevelArgumentIndex = -1;
+        }
+        return {
+            assignDestructureIndex,
+            isTopLevelArgumentIndex,
+        }
+    }
+    function checkAssgimentPattern({
+        assignDestructureIndex,
+        isTopLevelArgumentIndex
+    }:{
+        assignDestructureIndex: number | undefined,
+        isTopLevelArgumentIndex: boolean
+    }) {
+        if(assignDestructureIndex && (
+            (assignDestructureIndex ===  1 || context.inFor || context.inArgumentOrParameter) ||
+            (isTopLevelArgumentIndex) ||
+            (context.inFor)
+        )) {
+            let haveCoverInit = false;
+            for(const [key] of Object.entries(context.coverInitMark)) {
+                const numbericIndex = Number(key);
+                if(numbericIndex >= assignDestructureIndex) {
+                    const level = context.coverInitMark[numbericIndex].length > 0;
+                    context.coverInitMark[numbericIndex] = [];
+                    haveCoverInit ||= level;
+                }
+            }
+            if(haveCoverInit && !context.inFor && !context.inArgumentOrParameter) {
+                throw createMessageError(ErrorMessageMap.object_property_can_not_have_initializer);
+            }
+        }
+    }
+    function helperClearAssigmentPatternContext({
+            assignDestructureIndex,
+        }:{
+            assignDestructureIndex: number | undefined,
+            isTopLevelArgumentIndex: boolean
+        }) {
+            if(assignDestructureIndex) {
+                for(const [key] of Object.entries(context.coverInitMark)) {
+                    const numbericIndex = Number(key);
+                    if(numbericIndex >= assignDestructureIndex) {
+                        context.coverInitMark[numbericIndex] = [];
+                    }
+                }
+            }
+    }
     function parseAssigmentExpression(): Expression {
         if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
             context.maybeArrow = true;
@@ -1086,35 +1147,16 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.YieldKeyword)) {
             return parseYieldExpression();
         }
-        context.assignDestructingStack.push(context.assignDestructingStack.length + 1);
+        // push assigment destrcuture context
+        helperPushAssigmentPatternContext();
         let left = parseConditionalExpression();
-        const assignDestructureIndex = context.assignDestructingStack.pop();
+        // pop assigment destrcuture context
+        const meta = helperPopAssigmentPatternContext();
         if (!matchSet(AssigmentOperators)) {
-            // should be destructure pattern but have no assigment operator with current level
-            if(assignDestructureIndex && (assignDestructureIndex ===  1|| context.inFor || context.inArgumentOrParameter )) {
-                // reset context 
-                let haveCoverInit = false;
-                for(const [key] of Object.entries(context.coverInitMark)) {
-                    const numbericIndex = Number(key);
-                    if(numbericIndex >= assignDestructureIndex) {
-                        const level = context.coverInitMark[numbericIndex].length > 0;
-                        context.coverInitMark[numbericIndex] = [];
-                        haveCoverInit ||= level;
-                    }
-                }
-                if(haveCoverInit && !context.inFor && !context.inArgumentOrParameter)
-                    throw createMessageError(ErrorMessageMap.object_property_can_not_have_initializer);
-            }
+            checkAssgimentPattern(meta);
             return left;
         }
-        if(assignDestructureIndex) {
-            for(const [key] of Object.entries(context.coverInitMark)) {
-                const numbericIndex = Number(key);
-                if(numbericIndex >= assignDestructureIndex) {
-                    context.coverInitMark[numbericIndex] = [];
-                }
-            }
-        }
+        helperClearAssigmentPatternContext(meta);
         left = toAssignmentPattern(left) as Expression;
         // TODO: check other valid left hand side expression.
         const operator = getToken();
