@@ -10,6 +10,8 @@ interface Context {
     endPosition: SourcePosition;
 
     templateStringStackCounter: Array<number>;
+
+    lastTokenPosition: null | SourcePosition;
 }
 
 function cloneContext(source: Context) {
@@ -28,7 +30,7 @@ interface Lexer {
     getToken: () => SyntaxKinds;
     nextToken: () => SyntaxKinds;
     lookahead: () => SyntaxKinds;
-    expectLineTermintate: () => boolean,
+    predictLinTerminateOREOF: () => boolean,
 }
 
 export function createLexer(code: string): Lexer {
@@ -42,14 +44,17 @@ export function createLexer(code: string): Lexer {
         token: null,
         startPosition: createSourcePosition(),
         endPosition: createSourcePosition(),
+        lastTokenPosition: null,
         templateStringStackCounter: [],
     };
-    /**
-     * 
-     * @returns 
-     */
-    function expectLineTermintate() {
-        return startWith("\n");
+    function predictLinTerminateOREOF() {
+        const currentIndex = context.lastTokenPosition ? context.lastTokenPosition.index : 0;
+        const sliceCode = context.code.slice(currentIndex);
+        console.log(sliceCode);
+        if(/^ *\n/.test(sliceCode) || /^ *$/.test(sliceCode)) {
+            return true;
+        }
+        return false;
     }
     function getSourceValue() {
         return context.sourceValue;
@@ -83,7 +88,7 @@ export function createLexer(code: string): Lexer {
         getToken,
         nextToken,
         lookahead,
-        expectLineTermintate,
+        predictLinTerminateOREOF,
     }
 /**
  *  Private utils function 
@@ -92,6 +97,7 @@ export function createLexer(code: string): Lexer {
         context.startPosition = cloneSourcePosition(context.sourcePosition);
     }
     function finishToken(kind: SyntaxKinds, value: string): SyntaxKinds {
+        context.lastTokenPosition = context.endPosition;
         context.token = kind;
         context.sourceValue = value;
         context.endPosition = cloneSourcePosition(context.sourcePosition);
@@ -615,7 +621,7 @@ export function createLexer(code: string): Lexer {
             return finishToken(SyntaxKinds.BitwiseNOTAssginOperator, "^=");
         }
         eatChar();
-        return finishToken(SyntaxKinds.BitwiseNOTOperator, "^");
+        return finishToken(SyntaxKinds.BitwiseXOROperator, "^");
     }
     /** ================================================
      *     Template

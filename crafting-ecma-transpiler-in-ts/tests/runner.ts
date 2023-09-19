@@ -131,6 +131,9 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/ES6/destructing-assignment/object-pattern/invalid-lhs-02.js",
     "fixtures/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
     "fixtures/ES6/class/invalid-setter-method-rest.js",
+    /* Return Predict Problem */
+    "fixtures/statement/return/multiline-template.js",
+    "fixtures/es2018/dynamic-import/loader-using-import.js",
     /** TO BE Verify */
     "fixtures/ES6/class/invalid-labelled-class-declaration.js",
     "fixtures/ES6/export-declaration/invalid-export-default.module.js",

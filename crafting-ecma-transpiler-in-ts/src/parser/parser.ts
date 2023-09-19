@@ -302,13 +302,27 @@ export function createParser(code: string) {
         return metaData;
     }
     /**
-     * Some AST maybe end up with semi or line terminate
-     * so you can call this function for checking
+     * Some AST maybe end up with semi or line terminate or EOF
+     * so you can call this function for checking.
+     * it need lexer help for check EOF and line terminate.
+     * @param {boolean} canIgnore this flag is only used when dowhile case.
      */
-    function maybeSemi() {
+    function semi(canIgnore: boolean = false) {
         if(match(SyntaxKinds.SemiPunctuator)) {
             nextToken();
+            return;
         }
+        if(match(SyntaxKinds.BracesRightPunctuator)) {
+            return;
+        }
+        if(lexer.predictLinTerminateOREOF()) {
+            return;
+        }
+        if(canIgnore) {
+            return;
+        }
+        // TODO: add semi error
+        throw new Error("Test");
     }
     /**
      * Create a Message error from parser's error map.
@@ -667,7 +681,7 @@ export function createParser(code: string) {
         expect(SyntaxKinds.ParenthesesLeftPunctuator);
         const test = parseExpression();
         const { end: punctEnd } =  expect(SyntaxKinds.ParenthesesRightPunctuator);
-        maybeSemi();
+        semi(true);
         return Factory.createDoWhileStatement(test, body, keywordStart, punctEnd);
     }
    function parseBlockStatement() {
@@ -729,7 +743,7 @@ export function createParser(code: string) {
             const id = parseIdentifer();
             return Factory.createContinueStatement(id, keywordStart, cloneSourcePosition(id.end));
         }
-        maybeSemi();
+        semi();
         return Factory.createContinueStatement(null, keywordStart,  keywordEnd);
    }
    function parseBreakStatement(): BreakStatement {
@@ -738,7 +752,7 @@ export function createParser(code: string) {
             const label = parseIdentifer();
             return Factory.createBreakStatement(label, start, end);
         }
-        maybeSemi();
+        semi();
         return Factory.createBreakStatement(null, start, end);
    }
    function parseLabeledStatement(): LabeledStatement {
@@ -760,10 +774,10 @@ export function createParser(code: string) {
        // TODO: make it can predi expression
        if(matchSet([SyntaxKinds.Identifier, SyntaxKinds.StringLiteral, SyntaxKinds.NumberLiteral])) {
             const expr = parseExpression();
-            maybeSemi();
+            semi();
             return Factory.createReturnStatement(expr, start, cloneSourcePosition(expr.end));
        }
-       maybeSemi();
+       semi();
        return Factory.createReturnStatement(null, start, end);
    }
    function parseTryStatement(): TryStatement {
@@ -797,7 +811,7 @@ export function createParser(code: string) {
    function parseThrowStatement() {
       const { start, } =  expectGuardAndEat([SyntaxKinds.ThrowKeyword]);
       const expr = parseExpression();
-      maybeSemi();
+      semi();
       return Factory.createThrowStatement(expr, start, cloneSourcePosition(expr.end));
    }
    function parseWithStatement(): WithStatement {
@@ -810,7 +824,7 @@ export function createParser(code: string) {
    }
    function parseDebuggerStatement(): DebuggerStatement {
        const {start, end } =  expectGuardAndEat([SyntaxKinds.DebuggerKeyword]);
-       maybeSemi();
+       semi();
        return Factory.createDebuggerStatement(start, end);
    }
    function parseEmptyStatement(): EmptyStatement {
@@ -866,7 +880,7 @@ export function createParser(code: string) {
             declarations.push(Factory.createVariableDeclarator(id, null, cloneSourcePosition(id.start), cloneSourcePosition(id.end)));
         }
         if(shouldEatSemi) {
-             maybeSemi();
+             semi();
         }
         return Factory.createVariableDeclaration(declarations, variant as VariableDeclaration['variant'], keywordStart, declarations[declarations.length - 1].end);
     }
@@ -1057,13 +1071,12 @@ export function createParser(code: string) {
             key = parsePropertyName(isComputedRef);
         }
         if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-            console.log(key);
             return parseMethodDefintion(true, key, isStatic) as ClassMethodDefinition;
         }
         if(matchSet([SyntaxKinds.AssginOperator])) {
             nextToken();
-            const value = parseAssigmentExpression()
-            maybeSemi();
+            const value = parseAssigmentExpression();
+            semi();
             return Factory.createClassProperty(key, value , isComputedRef.isComputed, isStatic, false, cloneSourcePosition(key.start), cloneSourcePosition(value.end));
         }
         return Factory.createClassProperty(key, undefined, isComputedRef.isComputed, isStatic, true, cloneSourcePosition(key.start), cloneSourcePosition(key.end));
@@ -1076,7 +1089,7 @@ export function createParser(code: string) {
  */
     function parseExpressionStatement() {
         const expr = parseExpression();
-        maybeSemi();
+        semi();
         return Factory.createExpressionStatement(expr, cloneSourcePosition(expr.start), cloneSourcePosition(expr.end));
     }
     function parseExpression(): Expression {
@@ -2166,7 +2179,7 @@ export function createParser(code: string) {
         }
         expectFormKeyword();
         const source = parseStringLiteral();
-        maybeSemi();
+        semi();
         return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
     }
     /**
@@ -2279,13 +2292,13 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.ClassKeyword)) {
             let classDeclar = parseClass();
             classDeclar = Factory.transFormClassToClassExpression(classDeclar);
-            maybeSemi();
+            semi();
             return Factory.createExportDefaultDeclaration(classDeclar as ClassDeclaration | ClassExpression, start, cloneSourcePosition(classDeclar.end));
         }
         if(match(SyntaxKinds.FunctionKeyword)) {
             let funDeclar = parseFunction()
             funDeclar = Factory.transFormFunctionToFunctionExpression(funDeclar);
-            maybeSemi();
+            semi();
             return Factory.createExportDefaultDeclaration(funDeclar as FunctionDeclaration | FunctionExpression, start, cloneSourcePosition(funDeclar.end));
         }   
         if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
@@ -2293,11 +2306,11 @@ export function createParser(code: string) {
             context.inAsync = true;
             const funDeclar = parseFunctionExpression();
             context.inAsync = false;
-            maybeSemi();
+            semi();
             return Factory.createExportDefaultDeclaration(funDeclar, start, cloneSourcePosition(funDeclar.end));
         }
         const expr = parseAssigmentExpression();
-        maybeSemi();
+        semi();
         return Factory.createExportDefaultDeclaration(expr, start, cloneSourcePosition(expr.end));
     }
     function parseExportNamedDeclaration(start: SourcePosition): ExportNamedDeclarations {
@@ -2329,7 +2342,7 @@ export function createParser(code: string) {
             nextToken();
             source = parseStringLiteral();
         }
-        maybeSemi();
+        semi();
         const end = source ? source.end: specifier.length === 0 ? bracesRightPunctuatorEnd : specifier[specifier.length-1].end;
         return Factory.createExportNamedDeclaration(specifier, null, source, start, cloneSourcePosition(end));
     }
@@ -2344,7 +2357,7 @@ export function createParser(code: string) {
         }
         expectFormKeyword();
         const source = parseStringLiteral();
-        maybeSemi();
+        semi();
         return Factory.createExportAllDeclaration(exported, source, start, cloneSourcePosition(source.end));
     }
 }

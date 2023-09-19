@@ -600,6 +600,7 @@ export const BinaryOperators = [
     SyntaxKinds.StrictNotEqOperator,    // !==
     SyntaxKinds.BitwiseOROperator,      // |
     SyntaxKinds.BitwiseANDOperator,     // &
+    SyntaxKinds.BitwiseXOROperator,     // ^
     SyntaxKinds.BitwiseLeftShiftOperator,      // <<
     SyntaxKinds.BitwiseRightShiftOperator,     // >>
     SyntaxKinds.BitwiseRightShiftFillOperator,  // >>>
