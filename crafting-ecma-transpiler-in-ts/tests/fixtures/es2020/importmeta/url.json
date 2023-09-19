@@ -1,0 +1,215 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "MemberExpression",
+                    "computed": false,
+                    "optional": false,
+                    "object": {
+                        "kind": "MemberExpression",
+                        "computed": false,
+                        "optional": false,
+                        "object": {
+                            "kind": "NewExpression",
+                            "callee": {
+                                "kind": "Identifer",
+                                "name": "URL",
+                                "start": {
+                                    "row": 1,
+                                    "col": 5,
+                                    "index": 4
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 8,
+                                    "index": 7
+                                }
+                            },
+                            "arguments": [
+                                {
+                                    "kind": "MemberExpression",
+                                    "computed": false,
+                                    "optional": false,
+                                    "object": {
+                                        "kind": "MetaProperty",
+                                        "meta": {
+                                            "kind": "Identifer",
+                                            "name": "import",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 9,
+                                                "index": 8
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 15,
+                                                "index": 14
+                                            }
+                                        },
+                                        "property": {
+                                            "kind": "Identifer",
+                                            "name": "meta",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 16,
+                                                "index": 15
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 20,
+                                                "index": 19
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 1,
+                                            "col": 9,
+                                            "index": 8
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 20,
+                                            "index": 19
+                                        }
+                                    },
+                                    "property": {
+                                        "kind": "Identifer",
+                                        "name": "url",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 21,
+                                            "index": 20
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 24,
+                                            "index": 23
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 9,
+                                        "index": 8
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 24,
+                                        "index": 23
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 1,
+                                "index": 0
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 25,
+                                "index": 24
+                            }
+                        },
+                        "property": {
+                            "kind": "Identifer",
+                            "name": "searchParams",
+                            "start": {
+                                "row": 1,
+                                "col": 26,
+                                "index": 25
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 38,
+                                "index": 37
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 1,
+                            "index": 0
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 38,
+                            "index": 37
+                        }
+                    },
+                    "property": {
+                        "kind": "Identifer",
+                        "name": "get",
+                        "start": {
+                            "row": 1,
+                            "col": 39,
+                            "index": 38
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 42,
+                            "index": 41
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 42,
+                        "index": 41
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "StringLiteral",
+                        "value": "someURLInfo",
+                        "start": {
+                            "row": 1,
+                            "col": 43,
+                            "index": 42
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 56,
+                            "index": 55
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 57,
+                    "index": 56
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 57,
+                "index": 56
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 58,
+        "index": 57
+    }
+}

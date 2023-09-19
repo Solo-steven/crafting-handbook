@@ -100,6 +100,7 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/ES6/template-literals/invalid-hex-escape-sequence.js",
     "fixtures/ES6/template-literals/invalid_octal-literal.js",
     "fixtures/ES6/template-literals/invalid_strict-octal-literal.js",
+    "fixtures/es2020/importmeta/invalid-unicode-escape-import.module.js",
     // line terminator problem
     "fixtures/es2017/async/functions/invalid-async-line-terminator-expression.js",
     "fixtures/es2017/async/functions/invalid-async-while.js",
@@ -110,6 +111,8 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/es2017/async/arrows/invalid-async-line-terminator5.js",
     "fixtures/ES6/arrow-function/invalid-line-terminator-arrow.js",
     // yield as identifier problem
+    "fixtures/es2017/async/arrows/async-arrow-parenthesized-yield.js",
+    "fixtures/es2017/async/arrows/async-arrow-yield.js",
     // duplicate param problem
     "fixtures/es2017/async/functions/invalid-async-function-declaration-duplicate-params.js",
     "fixtures/es2017/async/functions/invalid-async-function-expression-duplicate-params.js",
@@ -251,7 +254,7 @@ async function updateTestCase(testCase: TestCase) {
             result: "",
         })
     } catch(e) {
-        const index = TempIgnoreCases.find((ignoreTestCase) => testCase.fileName === ignoreTestCase);
+        const index = TempIgnoreCases.findIndex((ignoreTestCase) => testCase.fileName === ignoreTestCase);
         if(typeof(index) === "number" && index !== -1 ) {
             expectFailedTestCase.push({
                 fileName: testCase.fileName,
@@ -262,7 +265,7 @@ async function updateTestCase(testCase: TestCase) {
         }
         failedTestCases.push({
             fileName: testCase.fileName,
-            result: `{ Compiler Error When Update Case }`
+            result: `{ Compiler Error When Update Case }(${e?.toString()})`
         })
     }
 }

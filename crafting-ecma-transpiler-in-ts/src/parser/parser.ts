@@ -80,6 +80,7 @@ import {
     AssigmentExpression,
     isRestElement,
     isSpreadElement,
+    ChainExpression,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -506,7 +507,6 @@ export function createParser(code: string) {
         switch(node.kind) {
             case SyntaxKinds.Identifier:
             case SyntaxKinds.MemberExpression:
-            case SyntaxKinds.ChainExpression:
             case SyntaxKinds.AssignmentPattern:
             case SyntaxKinds.ArrayPattern:
             case SyntaxKinds.ObjectPattern:
@@ -1006,6 +1006,10 @@ export function createParser(code: string) {
         const { start } =  expectGuardAndEat([SyntaxKinds.BracesLeftPunctuator]);
         const classbody: ClassBody['body'] = []
         while(!match(SyntaxKinds.BracesRightPunctuator) && ! match(SyntaxKinds.EOFToken)) {
+            if(match(SyntaxKinds.SemiPunctuator)) {
+                nextToken();
+                continue;
+            }
             classbody.push(parseClassElement());
         }
         const { end } = expect(SyntaxKinds.BracesRightPunctuator);
@@ -1016,9 +1020,10 @@ export function createParser(code: string) {
      * ```
      * ClassElement := MethodDefinition
      *              := 'static' MethodDefinition
-     *              := FieldDefintion
-     *              := 'static' FieldDefintion
+     *              := FieldDefintion ;
+     *              := 'static' FieldDefintion ;
      *              := ClassStaticBlock
+     *              := ; (this production rule handle by caller)
      * FieldDefintion := ClassElementName ('=' AssignmentExpression)?
      * ```
      * - frist, parse 'static' keyword if possible, next follow cases
@@ -1032,14 +1037,14 @@ export function createParser(code: string) {
     function parseClassElement(): ClassElement {
         // parse static modifier
         let isStatic = false;
-        if(getValue() === "static") {
+        if(getValue() === "static" && lookahead() !== SyntaxKinds.ParenthesesLeftPunctuator) {
             nextToken();
             isStatic = true;
         }    
         if(getValue() === "set" || getValue() === "get" || getValue() === "async" || match(SyntaxKinds.MultiplyOperator)) {
             return parseMethodDefintion(true, undefined, isStatic) as ClassMethodDefinition;
         }
-        if(match(SyntaxKinds.BracesLeftPunctuator)) {
+        if(match(SyntaxKinds.BracesLeftPunctuator) && isStatic) {
             // TODO: parse static block
         }
         // parse ClassElementName 
@@ -1051,11 +1056,13 @@ export function createParser(code: string) {
             key = parsePropertyName(isComputedRef);
         }
         if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
+            console.log(key);
             return parseMethodDefintion(true, key, isStatic) as ClassMethodDefinition;
         }
         if(matchSet([SyntaxKinds.AssginOperator])) {
             nextToken();
             const value = parseAssigmentExpression()
+            maybeSemi();
             return Factory.createClassProperty(key, value , isComputedRef.isComputed, isStatic, false, cloneSourcePosition(key.start), cloneSourcePosition(value.end));
         }
         return Factory.createClassProperty(key, undefined, isComputedRef.isComputed, isStatic, true, cloneSourcePosition(key.start), cloneSourcePosition(key.end));
@@ -1158,7 +1165,6 @@ export function createParser(code: string) {
         }
         helperClearAssigmentPatternContext(meta);
         left = toAssignmentPattern(left) as Expression;
-        // TODO: check other valid left hand side expression.
         const operator = getToken();
         nextToken();
         const right = parseAssigmentExpression();
@@ -1282,7 +1288,7 @@ export function createParser(code: string) {
             }
             else if (match(SyntaxKinds.TemplateHead) || match(SyntaxKinds.TemplateNoSubstitution)) {
                 // tag template expressuin
-                if(optional) {
+                if(hasOptional) {
                     throw createMessageError(ErrorMessageMap.tag_template_expression_can_not_use_option_chain);
                 }
                 base = parseTagTemplateExpression(base);
