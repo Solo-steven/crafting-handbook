@@ -324,6 +324,9 @@ export function createParser(code: string) {
         // TODO: add semi error
         throw new Error("Test");
     }
+    function predictLineTerminate() {
+        return lexer.predictLineTerminate();
+    }
     /**
      * Create a Message error from parser's error map.
      * @param {string} messsage 
@@ -437,6 +440,9 @@ export function createParser(code: string) {
             case SyntaxKinds.Identifier:
                 if(match(SyntaxKinds.Identifier) && getValue() === "async") {
                     nextToken();
+                    if(predictLineTerminate()) {
+                        throw createMessageError(ErrorMessageMap.missing_semicolon);
+                    }
                     context.inAsync = true;
                     const funDeclar = parseFunctionDeclaration();
                     context.inAsync = false;
@@ -1483,6 +1489,9 @@ export function createParser(code: string) {
                 ) {
                     if(getValue() === "async") {
                         nextToken();
+                        if(predictLineTerminate()) {
+                            throw createMessageError(ErrorMessageMap.missing_semicolon);
+                        }
                     }
                     const argus = [parseIdentifer()];
                     return parseArrowFunctionExpression({
@@ -1493,6 +1502,9 @@ export function createParser(code: string) {
                 }
                 if(getValue() === "async"  && lookaheadToken === SyntaxKinds.ParenthesesLeftPunctuator) {
                     nextToken();
+                    if(predictLineTerminate()) {
+                        throw createMessageError(ErrorMessageMap.missing_semicolon);
+                    }
                     context.inAsync = true;
                     const arrowFunExpr = parseArrowFunctionExpression(parseArguments());
                     context.inAsync = false;
@@ -1500,6 +1512,9 @@ export function createParser(code: string) {
                 }
                 if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
                     nextToken();
+                    if(predictLineTerminate()) {
+                        throw createMessageError(ErrorMessageMap.missing_semicolon);
+                    }
                     context.inAsync = true;
                     const functionExpr = parseFunctionExpression();
                     context.inAsync = false;
@@ -1953,6 +1968,9 @@ export function createParser(code: string) {
     function parseArrowFunctionExpression(metaData: ASTArrayWithMetaData<Expression>) {
         if(!match(SyntaxKinds.ArrowOperator)) {
             throw createUnexpectError(SyntaxKinds.ArrowOperator);
+        }
+        if(lexer.predictLineTerminate()) {
+            throw new Error("Not Ok");
         }
         nextToken();
         let body: Expression | FunctionBody | undefined; 

@@ -87,34 +87,27 @@ interface Result {
 }
 const failedTestCases: Array<Result> = [];
 const expectFailedTestCase: Array<Result> = [];
+const expectFaildButPassCase: Array<string> = []
 const skipTestCases: Array<Result> = [];
 const passTestCases: Array<Result> = [];
 const updateTestCases: Array<Result> = [];
 const TempIgnoreCases: Array<String> = [
     /** Pending Problems */
-    // strict mode problem
+    //  ==== strict mode problem
     "fixtures/ES6/arrow-function/invalid-param-strict-mode.js",
     "fixtures/declaration/function/invalid-strict-labelled-function-declaration.js",
-    // unicode and excap char problem
+    //  ==== unicode and excap char problem
     "fixtures/ES6/template-literals/invalid-escape.js",
     "fixtures/ES6/template-literals/invalid-hex-escape-sequence.js",
     "fixtures/ES6/template-literals/invalid_octal-literal.js",
     "fixtures/ES6/template-literals/invalid_strict-octal-literal.js",
     "fixtures/es2020/importmeta/invalid-unicode-escape-import.module.js",
-    // line terminator problem
-    "fixtures/es2017/async/functions/invalid-async-line-terminator-expression.js",
-    "fixtures/es2017/async/functions/invalid-async-while.js",
-    "fixtures/es2017/async/arrows/invalid-async-line-terminator1.js",
-    "fixtures/es2017/async/arrows/invalid-async-line-terminator2.js",
-    "fixtures/es2017/async/arrows/invalid-async-line-terminator3.js",
-    "fixtures/es2017/async/arrows/invalid-async-line-terminator4.js",
-    "fixtures/es2017/async/arrows/invalid-async-line-terminator5.js",
-    "fixtures/ES6/arrow-function/invalid-line-terminator-arrow.js",
+    // ==== line terminator problem
     "fixtures/ES6/export-declaration/invalid-export-named-default.module.js",
-    // yield as identifier problem
+    // === yield as identifier problem
     "fixtures/es2017/async/arrows/async-arrow-parenthesized-yield.js",
     "fixtures/es2017/async/arrows/async-arrow-yield.js",
-    // duplicate param problem
+    // === duplicate param problem
     "fixtures/es2017/async/functions/invalid-async-function-declaration-duplicate-params.js",
     "fixtures/es2017/async/functions/invalid-async-function-expression-duplicate-params.js",
     "fixtures/ES6/binding-pattern/array-pattern/invalid-dupe-param.js",
@@ -122,7 +115,7 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/ES6/arrow-function/invalid-duplicated-params.js",
     "fixtures/ES6/arrow-function/invalid-duplicated-names-rest-parameter.js",
     "fixtures/declaration/function/invalid-dupe-param.js",
-    // other
+    //  ==== other
     "fixtures/es2018/for-await-of/invalid-for-await-of-not-async-context.js",
     "fixtures/es2018/dynamic-import/invalid-new-import-call.js",
     "fixtures/es2018/dynamic-import/invalid-non-callee.js",
@@ -137,6 +130,7 @@ const TempIgnoreCases: Array<String> = [
     /** TO BE Verify */
     "fixtures/ES6/class/invalid-labelled-class-declaration.js",
     "fixtures/ES6/export-declaration/invalid-export-default.module.js",
+    "fixtures/ES6/export-declaration/invalid-export-named-default.module.js",
 ];
 /**
  * Helper function that parse code string and
@@ -168,6 +162,10 @@ async function runTestCase(testCase: TestCase) {
         const astString = toASTString(codeString);
         const expectASTString = expectAST.toString();
         if(astString === expectASTString) {
+            const index = TempIgnoreCases.findIndex((ignoreTestCase) => testCase.fileName === ignoreTestCase);
+            if(index !== -1) {
+                expectFaildButPassCase.push(testCase.fileName);
+            }
             passTestCases.push({
                 fileName: testCase.fileName,
                 result: "",
@@ -222,6 +220,10 @@ async function runInvalidTestCase(testCase: TestCase) {
             })
         }
     } catch(e) {
+        const index = TempIgnoreCases.findIndex((ignoreTestCase) => testCase.fileName === ignoreTestCase);
+        if(index !== -1) {
+            expectFaildButPassCase.push(testCase.fileName);
+        }
         passTestCases.push({
             fileName: testCase.fileName,
             result: ``
@@ -312,6 +314,9 @@ function report() {
     for(const testCase of expectFailedTestCase) {
         console.log((`|Expect Failed|: ${testCase.fileName}`));
         console.log((`  |----> ${testCase.result}`));
+    }
+    for(const testCase of expectFaildButPassCase) {
+        console.log((`|Expect Failed But Pass|: ${testCase}`));
     }
     for(const testCase of failedTestCases) {
         console.log((`|Failed|: ${testCase.fileName}`));

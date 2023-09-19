@@ -31,6 +31,7 @@ interface Lexer {
     nextToken: () => SyntaxKinds;
     lookahead: () => SyntaxKinds;
     predictLinTerminateOREOF: () => boolean,
+    predictLineTerminate: () => boolean,
 }
 
 export function createLexer(code: string): Lexer {
@@ -50,11 +51,12 @@ export function createLexer(code: string): Lexer {
     function predictLinTerminateOREOF() {
         const currentIndex = context.lastTokenPosition ? context.lastTokenPosition.index : 0;
         const sliceCode = context.code.slice(currentIndex);
-        console.log(sliceCode);
-        if(/^ *\n/.test(sliceCode) || /^ *$/.test(sliceCode)) {
-            return true;
-        }
-        return false;
+        return /^ *\n/.test(sliceCode) || /^ *$/.test(sliceCode);
+    }
+    function predictLineTerminate() {
+        const currentIndex = context.lastTokenPosition ? context.lastTokenPosition.index : 0;
+        const sliceCode = context.code.slice(currentIndex);
+        return /^ *\n/.test(sliceCode);
     }
     function getSourceValue() {
         return context.sourceValue;
@@ -89,6 +91,7 @@ export function createLexer(code: string): Lexer {
         nextToken,
         lookahead,
         predictLinTerminateOREOF,
+        predictLineTerminate,
     }
 /**
  *  Private utils function 
