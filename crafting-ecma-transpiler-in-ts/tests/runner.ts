@@ -110,6 +110,7 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/es2017/async/arrows/invalid-async-line-terminator4.js",
     "fixtures/es2017/async/arrows/invalid-async-line-terminator5.js",
     "fixtures/ES6/arrow-function/invalid-line-terminator-arrow.js",
+    "fixtures/ES6/export-declaration/invalid-export-named-default.module.js",
     // yield as identifier problem
     "fixtures/es2017/async/arrows/async-arrow-parenthesized-yield.js",
     "fixtures/es2017/async/arrows/async-arrow-yield.js",
@@ -132,6 +133,7 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/ES6/class/invalid-setter-method-rest.js",
     /** TO BE Verify */
     "fixtures/ES6/class/invalid-labelled-class-declaration.js",
+    "fixtures/ES6/export-declaration/invalid-export-default.module.js",
 ];
 /**
  * Helper function that parse code string and

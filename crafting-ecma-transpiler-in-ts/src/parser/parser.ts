@@ -357,6 +357,7 @@ export function createParser(code: string) {
         const body: Array<ModuleItem> = [];
         while(!match(SyntaxKinds.EOFToken)) {
             body.push(parseModuleItem());
+            
         }
         return Factory.createProgram(body, body.length === 0 ? getStartPosition() : cloneSourcePosition(body[0].start), getEndPosition());
     }
@@ -2277,12 +2278,14 @@ export function createParser(code: string) {
         expectGuardAndEat([SyntaxKinds.DefaultKeyword]);
         if(match(SyntaxKinds.ClassKeyword)) {
             let classDeclar = parseClass();
-            classDeclar = Factory.transFormClassToClassExpression(classDeclar)
+            classDeclar = Factory.transFormClassToClassExpression(classDeclar);
+            maybeSemi();
             return Factory.createExportDefaultDeclaration(classDeclar as ClassDeclaration | ClassExpression, start, cloneSourcePosition(classDeclar.end));
         }
         if(match(SyntaxKinds.FunctionKeyword)) {
             let funDeclar = parseFunction()
-            funDeclar = Factory.transFormFunctionToFunctionExpression(funDeclar)
+            funDeclar = Factory.transFormFunctionToFunctionExpression(funDeclar);
+            maybeSemi();
             return Factory.createExportDefaultDeclaration(funDeclar as FunctionDeclaration | FunctionExpression, start, cloneSourcePosition(funDeclar.end));
         }   
         if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
@@ -2290,6 +2293,7 @@ export function createParser(code: string) {
             context.inAsync = true;
             const funDeclar = parseFunctionExpression();
             context.inAsync = false;
+            maybeSemi();
             return Factory.createExportDefaultDeclaration(funDeclar, start, cloneSourcePosition(funDeclar.end));
         }
         const expr = parseAssigmentExpression();
@@ -2310,32 +2314,31 @@ export function createParser(code: string) {
                 break;
             }
             // TODO: reafacor into parseModuleName ?
-            const exported = match(SyntaxKinds.Identifier) ? parseIdentifer() : parseStringLiteral();
+            const exported = matchSet([SyntaxKinds.Identifier, ...Keywords]) ? parseIdentiferWithKeyword() : parseStringLiteral();
             if(getValue() === "as") {
                 nextToken();
-                const local = match(SyntaxKinds.Identifier) ? parseIdentifer() : parseStringLiteral();
+                const local = matchSet([SyntaxKinds.Identifier, ...Keywords]) ? parseIdentiferWithKeyword() : parseStringLiteral();
                 specifier.push(Factory.createExportSpecifier(exported, local, cloneSourcePosition(exported.start), cloneSourcePosition(local.end)));
                 continue;
             }
             specifier.push(Factory.createExportSpecifier(exported, null, cloneSourcePosition(exported.start), cloneSourcePosition(exported.end)));
         }
-        expect(SyntaxKinds.BracesRightPunctuator);
+        const { end: bracesRightPunctuatorEnd } = expect(SyntaxKinds.BracesRightPunctuator);
         let source: StringLiteral | null = null;
         if(getValue () === "from") {
             nextToken();
             source = parseStringLiteral();
-        }else {
-            throw createUnexpectError(SyntaxKinds.Identifier, "expect a from keyword");
         }
         maybeSemi();
-        return Factory.createExportNamedDeclaration(specifier, null, source, start, cloneSourcePosition(source.end));
+        const end = source ? source.end: specifier.length === 0 ? bracesRightPunctuatorEnd : specifier[specifier.length-1].end;
+        return Factory.createExportNamedDeclaration(specifier, null, source, start, cloneSourcePosition(end));
     }
     function parseExportAllDeclaration(start: SourcePosition): ExportAllDeclaration {
         expectGuardAndEat([SyntaxKinds.MultiplyOperator]);
         let exported: Identifier | null = null;
         if(getValue() === "as") {
             nextToken();
-            exported = parseIdentifer();
+            exported = parseIdentiferWithKeyword();
         }else {
             exported  = null;
         }
