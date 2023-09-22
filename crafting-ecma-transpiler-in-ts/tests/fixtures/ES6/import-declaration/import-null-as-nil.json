@@ -1,0 +1,85 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ImportDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ImportSpecifier",
+                    "imported": {
+                        "kind": "Identifer",
+                        "name": "null",
+                        "start": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        }
+                    },
+                    "local": {
+                        "kind": "Identifer",
+                        "name": "nil",
+                        "start": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 10,
+                        "index": 9
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 21,
+                        "index": 20
+                    }
+                }
+            ],
+            "source": {
+                "kind": "StringLiteral",
+                "value": "bar",
+                "start": {
+                    "row": 1,
+                    "col": 29,
+                    "index": 28
+                },
+                "end": {
+                    "row": 1,
+                    "col": 34,
+                    "index": 33
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 34,
+                "index": 33
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 34
+    }
+}

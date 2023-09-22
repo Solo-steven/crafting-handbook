@@ -1,0 +1,113 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ImportDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ImportSpecifier",
+                    "imported": {
+                        "kind": "Identifer",
+                        "name": "bar",
+                        "start": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        }
+                    },
+                    "local": {
+                        "kind": "Identifer",
+                        "name": "baz",
+                        "start": {
+                            "row": 1,
+                            "col": 16,
+                            "index": 15
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 9,
+                        "index": 8
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 19,
+                        "index": 18
+                    }
+                },
+                {
+                    "kind": "ImportSpecifier",
+                    "imported": {
+                        "kind": "Identifer",
+                        "name": "xyz",
+                        "start": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        }
+                    },
+                    "local": null,
+                    "start": {
+                        "row": 1,
+                        "col": 21,
+                        "index": 20
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 24,
+                        "index": 23
+                    }
+                }
+            ],
+            "source": {
+                "kind": "StringLiteral",
+                "value": "foo",
+                "start": {
+                    "row": 1,
+                    "col": 31,
+                    "index": 30
+                },
+                "end": {
+                    "row": 1,
+                    "col": 36,
+                    "index": 35
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 36,
+                "index": 35
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 37
+    }
+}

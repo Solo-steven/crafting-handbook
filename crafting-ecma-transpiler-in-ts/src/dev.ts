@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from "path";
 import { performance } from "node:perf_hooks";
 
-const code =  `export {default}` // fs.readFileSync(path.join(__dirname, "test.js")).toString();
+const code =  `import "foo";` // fs.readFileSync(path.join(__dirname, "test.js")).toString();
 console.log("=================================");
 console.log("Test JavaScript Code:");
 console.log("=================================");

@@ -21,4 +21,5 @@ export const ErrorMessageMap = {
     restelement_can_not_use_in_cover: "rest element can not use in cover expression",
     no_line_break_is_allowed_before_arrow: "No line break is allowed before '=>'",
     missing_semicolon: "Missing semicolon",
+    keyword_can_not_use_in_imported_when_just_a_specifier: "keyword can not use in imported_when just a specifier",
 }

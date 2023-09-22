@@ -81,6 +81,7 @@ import {
     isRestElement,
     isSpreadElement,
     ChainExpression,
+    KeywordLiteralMapSyntaxKind,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -2169,19 +2170,21 @@ export function createParser(code: string) {
         const specifiers: Array<ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier> = [];
         if(match(SyntaxKinds.StringLiteral)) {
             const source = parseStringLiteral();
-            expectFormKeyword();
+            semi();
             return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
         }
         if(match(SyntaxKinds.MultiplyOperator)) {
             specifiers.push(parseImportNamespaceSpecifier());
             expectFormKeyword();
             const source = parseStringLiteral();
+            semi();
             return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
         }
         if(match(SyntaxKinds.BracesLeftPunctuator)) {
             parseImportSpecifiers(specifiers);
             expectFormKeyword();
             const source = parseStringLiteral();
+            semi();
             return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
         }
         specifiers.push(parseImportDefaultSpecifier());
@@ -2232,7 +2235,7 @@ export function createParser(code: string) {
      * ```
      *  ImportNamed := '{' ImportList ','? '}'
      *  ImportList  := [ ImportItem ]
-     *  ImportItem  := Identifer 
+     *  ImportItem  := IdentiferWithKeyword
      *              := (Identifer | StringLiteral) 'as' Identifer
      * ```
      * @param specifiers
@@ -2250,10 +2253,15 @@ export function createParser(code: string) {
             if(match(SyntaxKinds.BracesRightPunctuator) || match(SyntaxKinds.EOFToken)) {
                 break;
             }
-            if(match(SyntaxKinds.Identifier)) {
-                const imported = parseIdentifer();
+            if(matchSet([SyntaxKinds.Identifier, ...Keywords])) {
+                const imported = parseIdentiferWithKeyword();
                 if(getValue() !== "as") {
-                    createUnexpectError(SyntaxKinds.Identifier, "if import specifier start with string literal, must has 'as' clause");
+                    // @ts-ignore
+                    if(KeywordLiteralMapSyntaxKind[imported.name]) {
+                        throw createMessageError(ErrorMessageMap.keyword_can_not_use_in_imported_when_just_a_specifier);
+                    }
+                    specifiers.push(Factory.createImportSpecifier(imported, null, cloneSourcePosition(imported.start), cloneSourcePosition(imported.end)));
+                    continue;
                 }
                 nextToken();
                 const local = parseIdentifer();
@@ -2261,13 +2269,14 @@ export function createParser(code: string) {
             }else if(match(SyntaxKinds.StringLiteral)) {
                 const imported = parseStringLiteral();
                 if(getValue() !== "as") {
-                    createUnexpectError(SyntaxKinds.Identifier, "if import specifier start with string literal, must has 'as' clause");
+                    specifiers.push(Factory.createImportSpecifier(imported, null, cloneSourcePosition(imported.start), cloneSourcePosition(imported.end)));
+                    continue;
                 }
                 nextToken();
                 const local = parseIdentifer();
                 specifiers.push(Factory.createImportSpecifier(imported, local, cloneSourcePosition(imported.start), cloneSourcePosition(local.end)));
             }else {
-                createUnexpectError(SyntaxKinds.Identifier, "import specifier must start with strinhLiteral or identifer")
+                throw createUnexpectError(SyntaxKinds.Identifier, "import specifier must start with strinhLiteral or identifer")
             }
         }
         expect(SyntaxKinds.BracesRightPunctuator);
