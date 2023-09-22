@@ -100,8 +100,7 @@
                                 }
                             },
                             "value": {
-                                "kind": "AssigmentExpression",
-                                "operator": "=",
+                                "kind": "AssigmentPattern",
                                 "left": {
                                     "kind": "Identifer",
                                     "name": "a",
@@ -171,10 +170,10 @@
                                 }
                             },
                             "value": {
-                                "kind": "ObjectExpression",
+                                "kind": "ObjectPattern",
                                 "properties": [
                                     {
-                                        "kind": "ObjectProperty",
+                                        "kind": "ObjectPatternProperty",
                                         "computed": false,
                                         "shorted": true,
                                         "key": {

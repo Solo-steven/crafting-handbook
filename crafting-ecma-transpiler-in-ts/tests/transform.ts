@@ -80,6 +80,7 @@ import {
     ExpressionStatement,
     BoolLiteral,
     UndefinbedLiteral,
+    EmptyStatement,
 } from "@/src/common";
 
 const VisitorTable: Visitor = {
@@ -215,6 +216,9 @@ const VisitorTable: Visitor = {
     },
     [SyntaxKinds.BlockStatement]: function BlockStatement(node: BlockStatement) {
         node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.BlockStatement];
+    },
+    [SyntaxKinds.EmptyStatement]: function(node: EmptyStatement) {
+        node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.EmptyStatement];
     },
     [SyntaxKinds.SwitchStatement]: function SwitchStatement(node: SwitchStatement) {
         node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.SwitchStatement]

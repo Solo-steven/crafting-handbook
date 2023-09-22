@@ -30,8 +30,7 @@
                                     }
                                 },
                                 "value": {
-                                    "kind": "AssigmentExpression",
-                                    "operator": "=",
+                                    "kind": "AssigmentPattern",
                                     "left": {
                                         "kind": "Identifer",
                                         "name": "y",

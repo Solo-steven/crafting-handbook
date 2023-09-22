@@ -82,6 +82,8 @@ import {
     isSpreadElement,
     ChainExpression,
     KeywordLiteralMapSyntaxKind,
+    isAssignmentPattern,
+    isVarDeclaration,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -575,7 +577,12 @@ export function createParser(code: string) {
                 if( isBinding && objectPropertyNode.value?.kind === SyntaxKinds.MemberExpression) {
                     throw new Error("binding no member expression");
                 }
-                return Factory.createObjectPatternProperty(objectPropertyNode.key, objectPropertyNode.value, objectPropertyNode.computed, objectPropertyNode.shorted, objectPropertyNode.start, objectPropertyNode.end);
+                return Factory.createObjectPatternProperty(
+                    objectPropertyNode.key, 
+                    !objectPropertyNode.value  ? objectPropertyNode.value : toAssignmentPattern(objectPropertyNode.value as ModuleItem) as unknown as any, 
+                    objectPropertyNode.computed, 
+                    objectPropertyNode.shorted, objectPropertyNode.start, objectPropertyNode.end
+                );
             }
             default:
                 throw createMessageError(ErrorMessageMap.invalid_left_value);
@@ -646,8 +653,11 @@ export function createParser(code: string) {
             if(leftOrInit.kind === SyntaxKinds.VariableDeclaration) {
                 helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit);
             }
-            if(isArrayExpression(leftOrInit) || isObjectExpression(leftOrInit)) {
+            if(!isVarDeclaration(leftOrInit)) {
                 leftOrInit = toAssignmentPattern(leftOrInit) as Expression;
+            }
+            if(isAssignmentPattern(leftOrInit)) {
+                throw createMessageError(ErrorMessageMap.invalid_left_value);
             }
             nextToken();
             const right = parseAssigmentExpression();

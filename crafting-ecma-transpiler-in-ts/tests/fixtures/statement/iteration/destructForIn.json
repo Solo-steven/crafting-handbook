@@ -157,7 +157,7 @@
                                     }
                                 },
                                 "value": {
-                                    "kind": "ArrayExpression",
+                                    "kind": "ArrayPattern",
                                     "elements": [
                                         {
                                             "kind": "Identifer",
@@ -275,7 +275,7 @@
                                             }
                                         },
                                         {
-                                            "kind": "SpreadElement",
+                                            "kind": "RestElement",
                                             "argument": {
                                                 "kind": "MemberExpression",
                                                 "computed": true,
@@ -331,7 +331,6 @@
                                             }
                                         }
                                     ],
-                                    "trailingComma": false,
                                     "start": {
                                         "row": 1,
                                         "col": 24,
