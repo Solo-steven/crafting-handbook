@@ -227,6 +227,9 @@ dependencies = [
 [[package]]
 name = "toy-land-backend"
 version = "0.1.0"
+dependencies = [
+ "toy-lang-compiler",
+]
 
 [[package]]
 name = "toy-lang-compiler"

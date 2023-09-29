@@ -5,8 +5,6 @@ mod ast;
 mod token;
 mod utils;
 
-
-use std::fmt::Display;
 use inkwell::context::Context;
 use parser::Parser;
 use codegen::Codegen;
