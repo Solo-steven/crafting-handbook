@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use crate::token::Token;
 use crate::utils::Position;
-mod test;
+use crate::syntax_error;
 pub struct Lexer {
     code: String,
     position: Position,
@@ -10,6 +10,8 @@ pub struct Lexer {
     start_position: Position,
     end_position: Position,
 }
+
+pub type LexerResult = Result<Token, String>;
 
 impl Lexer {
     pub fn new(code: String) -> Lexer {
@@ -22,24 +24,24 @@ impl Lexer {
             end_position: Position { row: 0, col: 0, index: 0 },
         }
     }
-    pub fn next_token(&mut self) -> Token {
-        let t = self.toknize();
+    pub fn next_token(&mut self) -> LexerResult {
+        let t = self.toknize()?;
         self.current_token = Some(t.clone());
-        t.clone()
+        Ok(t.clone())
     }
-    pub fn get_token(&mut self)-> Token {
+    pub fn get_token(&mut self)-> LexerResult {
         return match self.current_token.clone() {
             None => {
-                let t = self.toknize();
+                let t = self.toknize()?;
                 self.current_token = Some(t.clone());
-                t.clone()
+                Ok(t.clone())
             }
             Some(t) => {
-                t.clone()
+                Ok(t.clone())
             }
         }
     }
-    pub fn lookahead(&mut self) -> Token {
+    pub fn lookahead(&mut self) -> LexerResult {
         let last_poistion = self.get_position();
         let lookahead_token = self.next_token();
         self.position = last_poistion;
@@ -100,13 +102,13 @@ impl Lexer {
     fn end_token(&mut self) {
         self.end_position = self.get_position()
     }
-    fn toknize(&mut self) -> Token {
+    fn toknize(&mut self) -> LexerResult {
         self.skip_space_and_change_line();
         let current_char = self.get_char();
         self.start_token();
         return match current_char {
             None => {
-                Token::EOF
+                Ok(Token::EOF)
             }
             Some(current_ch) => {
                 match current_ch {
@@ -114,62 +116,62 @@ impl Lexer {
                     ';' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::Semi
+                        Ok(Token::Semi)
                     }
                     ',' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::Comma
+                        Ok(Token::Comma)
                     }
                     ':' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::Colon
+                        Ok(Token::Colon)
                     }
                     '#' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::HashTag
+                        Ok(Token::HashTag)
                     }
                     '{' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::BracesLeft
+                        Ok(Token::BracesLeft)
                     }
                     '}' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::BracesRight
+                        Ok(Token::BracesRight)
                     }
                     '[' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::BracketLeft
+                        Ok(Token::BracketLeft)
                     }
                     ']' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::BracketRight
+                        Ok(Token::BracketRight)
                     }
                     '(' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::ParenthesesLeft
+                        Ok(Token::ParenthesesLeft)
                     }
                     ')' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::ParenthesesRight
+                        Ok(Token::ParenthesesRight)
                     }
                     '.' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::Dot
+                        Ok(Token::Dot)
                     }
                     '?' => {
                         self.eat_char(1);
                         self.end_token();
-                        Token::Qustion   
+                        Ok(Token::Qustion)  
                     }
                     '\'' => {
                         panic!();
@@ -189,11 +191,11 @@ impl Lexer {
                     }
                     '*' => {
                         self.eat_char(1);
-                        Token::Multply
+                        Ok(Token::Multply)
                     }
                     '%' => {
                         self.eat_char(1);
-                        Token::Mod
+                        Ok(Token::Mod)
                     }
                     '=' => {
                         self.read_assign()
@@ -226,80 +228,81 @@ impl Lexer {
             }
         }
     }
-    fn read_plus(&mut self) -> Token {
+    fn read_plus(&mut self) -> LexerResult {
         if self.start_with("+=") {
-            panic!("[Error]: Not Support Plus Assigment")
+            syntax_error!("Not Support Plus Assigment");
         }
         if self.start_with("++") {
-            panic!("[Error]: Not Support Update Operator")
+            syntax_error!("Not Support Update Operator");
         }
         self.eat_char(1);
-        Token::Plus
+        Ok(Token::Plus)
     }
-    fn read_mius(&mut self) -> Token {
+    fn read_mius(&mut self) -> LexerResult {
         if self.start_with("-=") {
-            panic!("[Error]: Not Support Minu Assignment")
+            syntax_error!("Not Support Minu Assignment");
         }
         if self.start_with("--") {
-            panic!("[Error]: Not Support Update Operator")
+            syntax_error!("Not Support Update Operator");
         }
         self.eat_char(1);
-        Token::Minus
+        Ok(Token::Minus)
     }
-    fn read_divide(&mut self) -> Token {
+    fn read_divide(&mut self) -> LexerResult {
         if self.start_with("/=") {
-            panic!("[Error]: Not Support Divide Assignment")
+            syntax_error!("Not Support Divide Assignment");
         }
         self.eat_char(1);
-        Token::Divide
+        Ok(Token::Divide)
     }
-    fn read_assign(&mut self) -> Token {
+    fn read_assign(&mut self) -> LexerResult {
         if self.start_with("==") {
             self.eat_char(2);
-            return Token::Eq;
+            Ok(Token::Eq)
+        }else {
+            self.eat_char(1);
+            Ok(Token::Assign)
         }
-        self.eat_char(1);
-        Token::Assign
     }
-    fn read_gt(&mut self)-> Token {
+    fn read_gt(&mut self)-> LexerResult {
         if self.start_with(">=") {
             self.eat_char(2);
-            return Token::Gteq;
+            return Ok(Token::Gteq);
         }
         self.eat_char(1);
-        Token::Gt
+        Ok(Token::Gt)
     }
-    fn read_lt(&mut self)-> Token {
+    fn read_lt(&mut self)-> LexerResult {
         if self.start_with("<=") {
             self.eat_char(2);
-            return Token::Lteq;
+            return Ok(Token::Lteq);
         }
         self.eat_char(1);
-        Token::Lt
+        Ok(Token::Lt)
     }
-    fn read_not(&mut self) -> Token {
+    fn read_not(&mut self) -> LexerResult {
         if self.start_with("!=") {
             self.eat_char(2);
-            return Token::NotEq;
+            return Ok(Token::NotEq);
         }
         self.eat_char(1);
-        Token::LogicalNOT
+        Ok(Token::LogicalNOT)
     }
-    fn read_bitwise_or(&mut self) -> Token {
+    fn read_bitwise_or(&mut self) -> LexerResult {
         if self.start_with("||") {
             self.eat_char(2);
-            return Token::LogicalOR
+            return Ok(Token::LogicalOR)
         }
-        panic!("[Error]: Not Support Bitwise OR");
+        syntax_error!("Not Support Bitwise OR");
     }
-    fn read_bitwise_and(&mut self) -> Token {
+    fn read_bitwise_and(&mut self) -> LexerResult {
         if self.start_with("&&") {
             self.eat_char(2);
-            return Token::LogicalAND
+            return Ok(Token::LogicalAND)
         }
-        panic!("[Error]: Not Support Bitwise AND");
+        syntax_error!("Not Support Bitwise AND");
     }
-    fn read_number_literal(&mut self) -> Token {
+    fn read_number_literal(&mut self) -> LexerResult {
         // TODO
         let number_chars: HashSet<char> = vec![
             '0','1','2','3','4',
@@ -320,9 +323,9 @@ impl Lexer {
                 }
             }
         }
-        return Token::NumberLiteral(number_word.parse().unwrap());
+        Ok(Token::NumberLiteral(number_word.parse().unwrap()))
     }
-    fn read_keyword_or_identifier(&mut self) -> Token{
+    fn read_keyword_or_identifier(&mut self) -> LexerResult{
         // Resevered Word Start, TODO
        let resevered_word_start_set: HashSet<char> = vec![
             // Puncation
@@ -353,7 +356,7 @@ impl Lexer {
             }
         }
         // Match By Word's value
-        match word.as_str()  {
+        Ok(match word.as_str()  {
             // Keywords
             "while" => {
                 Token::WhileKeyword
@@ -385,7 +388,6 @@ impl Lexer {
             _ => {
                 Token::Identifier(word)
             }
-        }
-
+        })
     }
 }
