@@ -598,7 +598,8 @@ export function createParser(code: string) {
                 );
             }
             default:
-                throw createMessageError(ErrorMessageMap.invalid_left_value);
+                console.log(node);
+                throw createMessageError(ErrorMessageMap.invalid_left_value + ` get kind ${node.kind}.`);
         }
     }
     /**
@@ -1087,7 +1088,7 @@ export function createParser(code: string) {
             nextToken();
             isStatic = true;
         }    
-        if(getValue() === "set" || getValue() === "get" || getValue() === "async" || match(SyntaxKinds.MultiplyOperator)) {
+        if(helperIsMethodStartWithModifier()) {
             return parseMethodDefintion(true, undefined, isStatic) as ClassMethodDefinition;
         }
         if(match(SyntaxKinds.BracesLeftPunctuator) && isStatic) {
@@ -1235,12 +1236,12 @@ export function createParser(code: string) {
             return test;
         }
         nextToken();
-        const conseq = parseBinaryExpression();
+        const conseq = parseAssigmentExpression();
         if(!match(SyntaxKinds.ColonPunctuator)) {
             throw createUnexpectError(SyntaxKinds.ColonPunctuator, "conditional operator must and conseq and alter case");
         }
         nextToken();
-        const alter = parseBinaryExpression();
+        const alter = parseAssigmentExpression();
         return Factory.createConditionalExpression(test, conseq, alter, cloneSourcePosition(test.start), cloneSourcePosition(alter.end));
     }
     function parseBinaryExpression(): Expression {
@@ -1563,7 +1564,6 @@ export function createParser(code: string) {
         if(startWithAssignOperator) {
             pattern = "=" + pattern;
         }
-        console.log(pattern, flag);
         return Factory.createRegexLiteral(pattern, flag, start , getEndPosition());
     }
     function parseIdentifer(): Identifier {
@@ -1741,6 +1741,27 @@ export function createParser(code: string) {
      *   - otherwise, is ObjectProperty with or without init. 
      * #### ref: https://tc39.es/ecma262/#prod-PropertyDefinition
      */
+    function helperIsMethodStartWithModifier() {
+        const currentValue = getValue();
+        const lookaheadToken = lookahead();
+        if(currentValue === "set" && lookaheadToken === SyntaxKinds.Identifier) {
+            return true
+        }
+        if(currentValue === "get" && lookaheadToken === SyntaxKinds.Identifier) {
+            return true
+        }
+        if(
+            currentValue === "async" && 
+            (lookaheadToken === SyntaxKinds.Identifier || lookaheadToken === SyntaxKinds.MultiplyOperator)
+        ) {
+            return true
+        }
+        if(match(SyntaxKinds.MultiplyOperator)) {
+            return true;
+        }
+        return false;
+
+    }
     function parsePropertyDefinition(): PropertyDefinition {
         // semantics check for private 
         if(match(SyntaxKinds.PrivateName)) {
@@ -1753,8 +1774,8 @@ export function createParser(code: string) {
             const expr = parseAssigmentExpression();
             return Factory.createSpreadElement(expr, spreadElementStart, cloneSourcePosition(expr.end));
         }
-        // if token match '*', 'async', 'set', 'get' or privateName, is must be MethodDefintion
-        if(((getValue() === "set" || getValue() === "get" || getValue() === "async") && lookahead() === SyntaxKinds.Identifier) || match(SyntaxKinds.MultiplyOperator)) {
+        // if token match '*', 'async' , 'set', 'get'  is must be MethodDefintion
+        if(helperIsMethodStartWithModifier()) {
             return parseMethodDefintion() as ObjectMethodDefinition;
         }
         // otherwise, it would be Property start with PropertyName or MethodDeinftion start with PropertyName 
@@ -1845,10 +1866,7 @@ export function createParser(code: string) {
         withPropertyName: PropertyName | PrivateName | undefined = undefined, 
         isStatic: boolean = false
     ): ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor  | ClassConstructor{
-        if(
-            !(getValue() === "set" || getValue() === "get" || getValue() === "async" || match(SyntaxKinds.MultiplyOperator))
-            && !withPropertyName
-        ) {
+        if(!helperIsMethodStartWithModifier() && !withPropertyName) {
             throw createUnreachError([SyntaxKinds.MultiplyAssignOperator, SyntaxKinds.Identifier]);
         }
         /**

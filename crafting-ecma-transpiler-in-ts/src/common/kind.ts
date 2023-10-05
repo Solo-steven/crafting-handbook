@@ -239,13 +239,13 @@ export const LexicalLiteral = {
         // 
         "...",
         // Optional Chaining, Chaining
-        "?.", ".",
+        "?.", ".","?",
         // Template Literal
         "`",
         // Assignment operator,
         "=", "+=", "-=", "*=", "%=", "**=",
         "|=", "&=", ">>=", "<<=", ">>>=", "^=", "~=",
-        "||=", "&&=", "??="
+        "||=", "&&=", "??=",
     ],
     BooleanLiteral: ["true", "false"],
     NullLiteral: ["null"],

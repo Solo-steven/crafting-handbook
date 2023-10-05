@@ -703,6 +703,7 @@ export function createLexer(code: string): Lexer {
             eatChar();
             let floatWord = "";
             if(startWith(".")) {
+                eatChar();
                 while(startWithSet(LexicalLiteral.numberChars)) {
                     floatWord += eatChar();
                 }
@@ -711,7 +712,7 @@ export function createLexer(code: string): Lexer {
             if(!startWithSet(["x", "b", "o"])) {
                 return finishToken(SyntaxKinds.NumberLiteral, `0`);
             }
-            throw new Error(`[Error]: Not Support 0x 0b Number`)
+            throw new Error(`[Error]: Not Support 0x 0b Number, (${getStartPosition().row}, ${getStartPosition().col})`)
         }
         // Start With Non 0
         let intWord = "";
@@ -729,16 +730,26 @@ export function createLexer(code: string): Lexer {
     }
     function readStringLiteral() {
         let mode = "";
-        if(startWith("'")) {
-            mode = "'";
-        }else if(startWith("\"")) {
-            mode = "\""
+        if(startWith(`'`)) {
+            mode = `'`;
+        }else if(startWith(`"`)) {
+            mode = `"`
         }else {
             throw new Error("There");
         }
         eatChar();
         let word = "";
-        while(!startWith(mode) && !eof()) {
+        let isEscape = false;
+        while(!(startWith(mode) && !isEscape ) && !eof()) {
+            if(startWith('\\')) {
+                if(isEscape) {
+                    isEscape = false;
+                }else {
+                    isEscape = true;
+                }
+            }else {
+                isEscape = false;
+            }
             word += eatChar()
         }
         if(eof()) {
@@ -788,7 +799,17 @@ export function createLexer(code: string): Lexer {
     }
     function readRegex(): { pattern: string, flag: string } {
         let pattern = "";
-        while(!startWith("/") && !eof()) {
+        let isEscape = false;
+        while(!(startWith("/") && !isEscape )&& !eof()) {
+            if(startWith("\\")) {
+                if(isEscape) {
+                    isEscape = false;
+                }else {
+                    isEscape = true;
+                }
+            }else {
+                isEscape = false;
+            }
             pattern += eatChar();
         }
         eatChar();
