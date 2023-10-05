@@ -81,11 +81,15 @@ import {
     BoolLiteral,
     UndefinbedLiteral,
     EmptyStatement,
+    RegexLiteral,
 } from "@/src/common";
 
 const VisitorTable: Visitor = {
     [SyntaxKinds.Program]: function Program(node: Program) {
         node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.Program];
+    },
+    [SyntaxKinds.RegexLiteral]: function RegexLiteral(node: RegexLiteral) {
+        node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.RegexLiteral];
     },
     [SyntaxKinds.BooleanLiteral]: function BooleanLiteral(node: BoolLiteral) {
         node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.BooleanLiteral];

@@ -79,6 +79,7 @@ import {
     NullLiteral,
     UndefinbedLiteral,
     Import,
+    RegexLiteral,
 } from "../ast";
 import { SyntaxKinds } from "../kind";
 import type { Visitor } from "./type";
@@ -91,6 +92,12 @@ const VisitorTable: { [key: number ]: (node: any, visior: Visitor) => void } = {
             visitor[node.kind](node);
         }
         node.body.forEach(node => visitNode(node, visitor));
+    },
+    [SyntaxKinds.RegexLiteral]: function visitRegexLiteral(node: RegexLiteral, visitor: Visitor) {
+        if(!node) return;
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
     },
     [SyntaxKinds.NullLiteral]: function visitNullLiteral(node: NullLiteral, visitor: Visitor) {
         if(!node) return;

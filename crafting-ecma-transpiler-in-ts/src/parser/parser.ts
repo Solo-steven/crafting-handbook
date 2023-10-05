@@ -84,6 +84,7 @@ import {
     KeywordLiteralMapSyntaxKind,
     isAssignmentPattern,
     isVarDeclaration,
+    RegexLiteral,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -216,14 +217,22 @@ export function createParser(code: string) {
      * @returns {SyntaxKinds}
      */
     function nextToken(): SyntaxKinds {
-        return lexer.nextToken();
+        const token = lexer.nextToken();
+        if(token === SyntaxKinds.Comment || token == SyntaxKinds.BlockComment) {
+           return nextToken();
+        }
+        return token;
     }
     /**
      * Get current token in token stream
      * @returns {SyntaxKinds}
      */
     function getToken(): SyntaxKinds {
-        return lexer.getToken();
+       const token = lexer.getToken();
+       if(token === SyntaxKinds.Comment || token == SyntaxKinds.BlockComment) {
+            return nextToken();
+        }
+        return token;
     }
     /**
      * Get string value of current token
@@ -253,6 +262,9 @@ export function createParser(code: string) {
     function lookahead(): SyntaxKinds {
         return lexer.lookahead();
     }
+    function readRegex() {
+        return lexer.readRegex();
+    }
     /**
      * expect a token kind, if it is, return token,
      * and move to next token
@@ -281,7 +293,7 @@ export function createParser(code: string) {
             throw createUnreachError(startTokens);
         }
     }
-        /**
+    /**
      * Given that this parser is recurive decent parser, some
      * function must call with some start token, if function call
      * with unexecpt start token, it should throw this error.
@@ -325,7 +337,7 @@ export function createParser(code: string) {
             return;
         }
         // TODO: add semi error
-        throw new Error("Test");
+        throw new Error(`Test, ${getToken()}, ${getStartPosition().row}, ${getStartPosition().col}`);
     }
     function predictLineTerminate() {
         return lexer.predictLineTerminate();
@@ -358,7 +370,8 @@ export function createParser(code: string) {
      * @returns {Error}
      */
     function createUnreachError(startTokens: Array<SyntaxKinds> = []): Error {
-        let message = `[Unreach Zone]: this piece of code should not be reach, have a unexpect token ${getToken()} (${getValue()}).`;
+        let start = getStartPosition();
+        let message = `[Unreach Zone]: this piece of code should not be reach (${start.row}, ${start.col}), have a unexpect token ${getToken()} (${getValue()}).`;
         if(startTokens.length !== 0) {
                 message += " it should call with start token["
                 for(const token of startTokens) {
@@ -789,7 +802,11 @@ export function createParser(code: string) {
    function parseReturnStatement(): ReturnStatement {
        const { start, end } =  expectGuardAndEat([SyntaxKinds.ReturnKeyword]);
        // TODO: make it can predi expression
-       if(matchSet([SyntaxKinds.Identifier, SyntaxKinds.StringLiteral, SyntaxKinds.NumberLiteral])) {
+       if(matchSet([
+            SyntaxKinds.Identifier, SyntaxKinds.StringLiteral, SyntaxKinds.NumberLiteral, SyntaxKinds.FalseKeyword, SyntaxKinds.TrueKeyword,
+            SyntaxKinds.LogicalNOTOperator,
+            SyntaxKinds.TypeofKeyword, SyntaxKinds.NewKeyword, SyntaxKinds.ThisKeyword, SyntaxKinds.ParenthesesLeftPunctuator,
+        ])) {
             const expr = parseExpression();
             semi();
             return Factory.createReturnStatement(expr, start, cloneSourcePosition(expr.end));
@@ -1447,6 +1464,9 @@ export function createParser(code: string) {
     }
     function parsePrimaryExpression(): Expression {
         switch(getToken()) {
+            case SyntaxKinds.DivideOperator:
+            case SyntaxKinds.DivideAssignOperator:
+                return parseRegexLiteral();
             case SyntaxKinds.NullKeyword:
                 return parseNullLiteral();
             case SyntaxKinds.UndefinedKeyword:
@@ -1536,6 +1556,18 @@ export function createParser(code: string) {
             default:
                 throw createUnexpectError(null);
         }
+    }
+    function parseRegexLiteral(): RegexLiteral {
+        expectGuard([SyntaxKinds.DivideOperator, SyntaxKinds.DivideAssignOperator]);
+        let startWithAssignOperator = match(SyntaxKinds.DivideAssignOperator);
+        const start = getStartPosition();
+        let { pattern, flag } = readRegex();
+        nextToken();
+        if(startWithAssignOperator) {
+            pattern = "=" + pattern;
+        }
+        console.log(pattern, flag);
+        return Factory.createRegexLiteral(pattern, flag, start , getEndPosition());
     }
     function parseIdentifer(): Identifier {
         const { value, start, end } = expectGuardAndEat([SyntaxKinds.Identifier]);
@@ -1725,7 +1757,7 @@ export function createParser(code: string) {
             return Factory.createSpreadElement(expr, spreadElementStart, cloneSourcePosition(expr.end));
         }
         // if token match '*', 'async', 'set', 'get' or privateName, is must be MethodDefintion
-        if(getValue() === "set" || getValue() === "get" || getValue() === "async" || match(SyntaxKinds.MultiplyOperator)) {
+        if(((getValue() === "set" || getValue() === "get" || getValue() === "async") && lookahead() === SyntaxKinds.Identifier) || match(SyntaxKinds.MultiplyOperator)) {
             return parseMethodDefintion() as ObjectMethodDefinition;
         }
         // otherwise, it would be Property start with PropertyName or MethodDeinftion start with PropertyName 

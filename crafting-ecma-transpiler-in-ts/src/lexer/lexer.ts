@@ -30,8 +30,11 @@ interface Lexer {
     getToken: () => SyntaxKinds;
     nextToken: () => SyntaxKinds;
     lookahead: () => SyntaxKinds;
+    // API for semi or line terminator
     predictLinTerminateOREOF: () => boolean,
     predictLineTerminate: () => boolean,
+    // API for read regexliteral
+    readRegex: () => { pattern: string, flag: string };
 }
 
 export function createLexer(code: string): Lexer {
@@ -92,6 +95,7 @@ export function createLexer(code: string): Lexer {
         lookahead,
         predictLinTerminateOREOF,
         predictLineTerminate,
+        readRegex,
     }
 /**
  *  Private utils function 
@@ -734,7 +738,6 @@ export function createLexer(code: string): Lexer {
         }
         eatChar();
         let word = "";
-        const position = getStartPosition();
         while(!startWith(mode) && !eof()) {
             word += eatChar()
         }
@@ -748,7 +751,8 @@ export function createLexer(code: string): Lexer {
         let word = "";
         const start = eatChar();
         while(!startWithSet(
-            [ ...LexicalLiteral.punctuators,
+            [ 
+                ...LexicalLiteral.punctuators,
                 ...LexicalLiteral.operator, 
                 ...LexicalLiteral.newLineChars, 
                 ...LexicalLiteral.whiteSpaceChars
@@ -781,5 +785,26 @@ export function createLexer(code: string): Lexer {
             return finishToken(SyntaxKinds.UndefinedKeyword, w);
         }
         return finishToken(SyntaxKinds.Identifier, w);
+    }
+    function readRegex(): { pattern: string, flag: string } {
+        let pattern = "";
+        while(!startWith("/") && !eof()) {
+            pattern += eatChar();
+        }
+        eatChar();
+        let flag = "";
+        while(
+            !startWithSet([
+                ...LexicalLiteral.newLineChars,
+                ...LexicalLiteral.whiteSpaceChars, 
+                ...LexicalLiteral.punctuators,
+                ...LexicalLiteral.operator,
+            ])
+            && !eof()
+        ) {
+            flag += eatChar();
+        }
+        finishToken(SyntaxKinds.RegexLiteral, pattern + flag);
+        return { pattern, flag };
     }
 }

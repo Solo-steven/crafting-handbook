@@ -114,6 +114,7 @@ export enum SyntaxKinds {
     UndefinedKeyword,
     StringLiteral,
     NumberLiteral,
+    RegexLiteral,
     // =========== Comment =============
     Comment,
     BlockComment,
@@ -419,6 +420,7 @@ export const SytaxKindsMapLexicalLiteral = {
     [SyntaxKinds.UndefinedKeyword]: "UndefinedKeyword",
     [SyntaxKinds.StringLiteral]: "StringLiteral",
     [SyntaxKinds.NumberLiteral]: "NumberLiteral",
+    [SyntaxKinds.RegexLiteral]: "RegexLiteral",
     // =========== Comment =============
     [SyntaxKinds.Comment]: "Comment",
     [SyntaxKinds.BlockComment]: "BlockComment",
@@ -578,6 +580,8 @@ export type BinaryOperatorKinds =
     SyntaxKinds.BitwiseLeftShiftOperator |      // <<
     SyntaxKinds.BitwiseRightShiftOperator |     // >>
     SyntaxKinds.BitwiseRightShiftFillOperator |  // >>>
+    SyntaxKinds.LogicalANDOperator | // &&
+    SyntaxKinds.LogicalOROperator | // ||
     SyntaxKinds.CommaToken  |    // ,
     SyntaxKinds.InKeyword |
     SyntaxKinds.InstanceofKeyword
@@ -605,6 +609,8 @@ export const BinaryOperators = [
     SyntaxKinds.BitwiseLeftShiftOperator,      // <<
     SyntaxKinds.BitwiseRightShiftOperator,     // >>
     SyntaxKinds.BitwiseRightShiftFillOperator,  // >>>
+    SyntaxKinds.LogicalANDOperator, // &&
+    SyntaxKinds.LogicalOROperator, // ||
     SyntaxKinds.CommaToken,    // ,
     SyntaxKinds.InKeyword,
     SyntaxKinds.InstanceofKeyword,

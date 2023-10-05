@@ -84,6 +84,11 @@ export interface NullLiteral extends ModuleItem {
 export interface UndefinbedLiteral extends ModuleItem {
     kind: SyntaxKinds.UndefinedLiteral;
 }
+export interface RegexLiteral extends ModuleItem {
+    kind: SyntaxKinds.RegexLiteral;
+    pattern: string;
+    flag: string;
+}
 export interface TemplateLiteral extends ModuleItem {
     kind: SyntaxKinds.TemplateLiteral,
     quasis: Array<TemplateElement>;
@@ -215,7 +220,7 @@ export type Expression =
     // identifer and super and ThisExpression
     Identifier  | PrivateName | Super | ThisExpression | Import |
     // literals 
-    NumberLiteral | StringLiteral | BoolLiteral | TemplateLiteral | UndefinbedLiteral | NullLiteral |
+    NumberLiteral | StringLiteral | BoolLiteral | TemplateLiteral | UndefinbedLiteral | NullLiteral | RegexLiteral |
     // structal literal
     ObjectExpression | ArrayExpression | ArrorFunctionExpression | FunctionExpression | ClassExpression |
     // meta property and spread element

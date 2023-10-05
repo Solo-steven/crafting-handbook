@@ -16,6 +16,17 @@ export function createPrivateName(name: string, start: SourcePosition, end: Sour
         name, start, end
     }
 }
+export function createRegexLiteral(
+    pattern: AST.RegexLiteral['pattern'],
+    flag: AST.RegexLiteral['flag'],
+    start: SourcePosition,
+    end: SourcePosition
+): AST.RegexLiteral {
+    return {
+        kind: SyntaxKinds.RegexLiteral,
+        pattern, flag, start, end
+    }
+}
 export function createNumberLiteral(value: string | number, start: SourcePosition, end: SourcePosition): AST.NumberLiteral {
     return {
         kind: SyntaxKinds.NumberLiteral,
