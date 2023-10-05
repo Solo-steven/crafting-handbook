@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/crafing-interpreter-in-c",
+      "program": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/crafing-interpreter-in-c/build/Debug/outDebug"
+    }
+  ]
+}
