@@ -60,7 +60,7 @@
                 }
             },
             "alternative": {
-                "kind": 10135,
+                "kind": "EmptyStatement",
                 "start": {
                     "row": 2,
                     "col": 6,

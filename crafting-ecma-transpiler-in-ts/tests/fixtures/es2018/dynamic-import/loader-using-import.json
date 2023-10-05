@@ -24,25 +24,11 @@
                 "body": [
                     {
                         "kind": "ReturnStatement",
-                        "argu": null,
-                        "start": {
-                            "row": 1,
-                            "col": 20,
-                            "index": 19
-                        },
-                        "end": {
-                            "row": 1,
-                            "col": 26,
-                            "index": 25
-                        }
-                    },
-                    {
-                        "kind": "ExpressionStatement",
-                        "expr": {
+                        "argu": {
                             "kind": "CallExpression",
                             "optional": false,
                             "callee": {
-                                "kind": 10152,
+                                "kind": 10153,
                                 "name": "import",
                                 "start": {
                                     "row": 1,
@@ -112,8 +98,8 @@
                         },
                         "start": {
                             "row": 1,
-                            "col": 27,
-                            "index": 26
+                            "col": 20,
+                            "index": 19
                         },
                         "end": {
                             "row": 1,

@@ -104,7 +104,7 @@
             "test": null,
             "update": null,
             "body": {
-                "kind": 10135,
+                "kind": "EmptyStatement",
                 "start": {
                     "row": 1,
                     "col": 24,

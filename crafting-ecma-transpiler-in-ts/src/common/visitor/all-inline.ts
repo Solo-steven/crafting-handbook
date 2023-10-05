@@ -507,9 +507,15 @@ const VisitorTable: { [key: number ]: (node: any, visior: Visitor) => void } = {
         visitNode(node.body, visitor);
     },
     [SyntaxKinds.DebuggerStatement]: function bindDebuggerStatement(node: DebuggerStatement, visitor: Visitor) {
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
         return;
     },
-    [SyntaxKinds.EmptyStatement]: function visitEmptyStatement(node: EmptyStatement, visior: Visitor) {
+    [SyntaxKinds.EmptyStatement]: function visitEmptyStatement(node: EmptyStatement, visitor: Visitor) {
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
         return;
     },
     [SyntaxKinds.ForStatement]: function bindForStatement(node: ForStatement, visitor: Visitor) {

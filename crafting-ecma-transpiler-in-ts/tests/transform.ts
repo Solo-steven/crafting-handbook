@@ -221,6 +221,9 @@ const VisitorTable: Visitor = {
     [SyntaxKinds.BlockStatement]: function BlockStatement(node: BlockStatement) {
         node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.BlockStatement];
     },
+    [SyntaxKinds.DebuggerStatement]: function (node: DebuggerStatement) {
+        node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.DebuggerStatement];
+    },
     [SyntaxKinds.EmptyStatement]: function(node: EmptyStatement) {
         node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.EmptyStatement];
     },

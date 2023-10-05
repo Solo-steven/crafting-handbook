@@ -2,7 +2,7 @@
     "kind": "Program",
     "body": [
         {
-            "kind": 10134,
+            "kind": "DebuggerStatement",
             "start": {
                 "row": 1,
                 "col": 1,

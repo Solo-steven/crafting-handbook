@@ -62,19 +62,6 @@
                                 "col": 45,
                                 "index": 44
                             }
-                        },
-                        {
-                            "kind": 10135,
-                            "start": {
-                                "row": 1,
-                                "col": 45,
-                                "index": 44
-                            },
-                            "end": {
-                                "row": 1,
-                                "col": 46,
-                                "index": 45
-                            }
                         }
                     ],
                     "start": {

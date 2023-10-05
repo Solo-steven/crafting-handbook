@@ -325,16 +325,16 @@ export function createParser(code: string) {
     function semi(canIgnore: boolean = false) {
         if(match(SyntaxKinds.SemiPunctuator)) {
             nextToken();
-            return;
+            return true;
         }
         if(match(SyntaxKinds.BracesRightPunctuator)) {
-            return;
+            return true;
         }
         if(lexer.predictLinTerminateOREOF()) {
-            return;
+            return true;
         }
         if(canIgnore) {
-            return;
+            return false;
         }
         // TODO: add semi error
         throw new Error(`Test, ${getToken()}, ${getStartPosition().row}, ${getStartPosition().col}`);
@@ -771,6 +771,7 @@ export function createParser(code: string) {
         const { start: keywordStart, end: keywordEnd} =  expectGuardAndEat([SyntaxKinds.ContinueKeyword]);
         if(match(SyntaxKinds.Identifier)) {
             const id = parseIdentifer();
+            semi();
             return Factory.createContinueStatement(id, keywordStart, cloneSourcePosition(id.end));
         }
         semi();
@@ -780,6 +781,7 @@ export function createParser(code: string) {
         const { start, end } = expectGuardAndEat([SyntaxKinds.BreakKeyword]);
         if(match(SyntaxKinds.Identifier)) {
             const label = parseIdentifer();
+            semi();
             return Factory.createBreakStatement(label, start, end);
         }
         semi();
@@ -802,17 +804,12 @@ export function createParser(code: string) {
    function parseReturnStatement(): ReturnStatement {
        const { start, end } =  expectGuardAndEat([SyntaxKinds.ReturnKeyword]);
        // TODO: make it can predi expression
-       if(matchSet([
-            SyntaxKinds.Identifier, SyntaxKinds.StringLiteral, SyntaxKinds.NumberLiteral, SyntaxKinds.FalseKeyword, SyntaxKinds.TrueKeyword,
-            SyntaxKinds.LogicalNOTOperator,
-            SyntaxKinds.TypeofKeyword, SyntaxKinds.NewKeyword, SyntaxKinds.ThisKeyword, SyntaxKinds.ParenthesesLeftPunctuator,
-        ])) {
-            const expr = parseExpression();
-            semi();
-            return Factory.createReturnStatement(expr, start, cloneSourcePosition(expr.end));
+       if(semi(true)) {
+          return Factory.createReturnStatement(null, start, end);
        }
+       const expr = parseExpression();
        semi();
-       return Factory.createReturnStatement(null, start, end);
+       return Factory.createReturnStatement(expr, start, cloneSourcePosition(expr.end));
    }
    function parseTryStatement(): TryStatement {
         const { start: tryKeywordStart } = expectGuardAndEat([SyntaxKinds.TryKeyword]);

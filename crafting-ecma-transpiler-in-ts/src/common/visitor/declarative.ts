@@ -340,9 +340,11 @@ const VisitorTable: { [key: number ]: (node: any, visior: Visitor) => void } = {
         visitNode(node.body, visitor);
     },
     [SyntaxKinds.DebuggerStatement]: function bindDebuggerStatement(node: DebuggerStatement, visitor: Visitor) {
+        visitIfNeed(node, visitor);
         return;
     },
-    [SyntaxKinds.EmptyStatement]: function visitEmptyStatement(node: EmptyStatement, visior: Visitor) {
+    [SyntaxKinds.EmptyStatement]: function visitEmptyStatement(node: EmptyStatement, visitor: Visitor) {
+        visitIfNeed(node, visitor);
         return;
     },
     [SyntaxKinds.ForStatement]: function bindForStatement(node: ForStatement, visitor: Visitor) {

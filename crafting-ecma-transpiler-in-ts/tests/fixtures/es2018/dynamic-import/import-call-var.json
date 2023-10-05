@@ -71,7 +71,7 @@
                         "kind": "CallExpression",
                         "optional": false,
                         "callee": {
-                            "kind": 10152,
+                            "kind": 10153,
                             "name": "import",
                             "start": {
                                 "row": 2,
