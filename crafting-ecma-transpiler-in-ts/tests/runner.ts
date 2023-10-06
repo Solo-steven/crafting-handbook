@@ -245,7 +245,7 @@ async function updateTestCase(testCase: TestCase) {
         const code = await readFile(testCase.jsPath);
         const astString = toASTString(code.toString());
         if(testCase.jsonPath) {
-            const existedASTString = await readFile(testCase.jsPath);
+            const existedASTString = await readFile(testCase.jsonPath);
             if(existedASTString.toString() === astString) {
                 passTestCases.push({
                     fileName: testCase.fileName,

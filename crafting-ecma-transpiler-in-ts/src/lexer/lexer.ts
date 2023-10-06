@@ -599,6 +599,13 @@ export function createLexer(code: string): Lexer {
         }
         if(startWith(".")) {
             eatChar();
+            if(startWithSet([...LexicalLiteral.numberChars])) {
+                let floatWord = "";
+                while(startWithSet(LexicalLiteral.numberChars) && !eof()) {
+                    floatWord += eatChar();
+                }
+                return finishToken(SyntaxKinds.NumberLiteral, `.${floatWord}`);
+            }
             return finishToken(SyntaxKinds.DotOperator, ".");
         }
         // TODO not . , ...

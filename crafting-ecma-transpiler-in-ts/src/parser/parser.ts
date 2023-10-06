@@ -98,12 +98,12 @@ interface Context {
     maybeArrow: boolean;
     inAsync: boolean;
     inClass: boolean,
-    maybeForIn: boolean,
     inFor: boolean,
     inArgumentOrParameter: boolean,
     assignDestructingStack: Array<number> ;
     coverInitMark: { [key: number]: Array<SourcePosition>}
     topLevelArgumentIndex: number,
+    inOperatorStack: Array<boolean>,
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -120,59 +120,15 @@ function createContext(): Context {
         maybeArrow: false,
         inAsync: false,
         inClass: false,
-        maybeForIn: false,
         inFor: false,
         // for resolve check object property init is in pattern or not
         inArgumentOrParameter: false,
         assignDestructingStack: [],
         coverInitMark: {},
         topLevelArgumentIndex: -1,
+        // for resolve for in statement problem
+        inOperatorStack: [],
     }
-}
-function getBinaryPrecedence(kind: SyntaxKinds) {
-    switch(kind) {
-        case SyntaxKinds.LogicalOROperator:
-            return 4;
-        case SyntaxKinds.LogicalANDOperator:
-            return 5;
-        case SyntaxKinds.BitwiseOROperator:
-            return 6;
-        case SyntaxKinds.BitwiseXOROperator:
-            return 7;
-        case SyntaxKinds.BitwiseANDOperator:
-            return 8;
-        case SyntaxKinds.StrictEqOperator:
-        case SyntaxKinds.StrictNotEqOperator:
-        case SyntaxKinds.EqOperator:
-        case SyntaxKinds.NotEqOperator:
-            return 9;
-        case SyntaxKinds.InKeyword:
-        case SyntaxKinds.InstanceofKeyword:
-        case SyntaxKinds.GtOperator:
-        case SyntaxKinds.GeqtOperator:
-        case SyntaxKinds.LeqtOperator:
-        case SyntaxKinds.LtOperator:
-            return 10;
-        case SyntaxKinds.BitwiseLeftShiftOperator:
-        case SyntaxKinds.BitwiseRightShiftOperator:
-        case SyntaxKinds.BitwiseRightShiftFillOperator:
-            return 11;
-        case SyntaxKinds.PlusOperator:
-        case SyntaxKinds.MinusOperator:
-            return 12;
-        case SyntaxKinds.ModOperator:
-        case SyntaxKinds.DivideOperator:
-        case SyntaxKinds.MultiplyOperator:
-            return 13;
-        case SyntaxKinds.ExponOperator:
-            return 14;
-        default:
-            return -1;
-    }
-}
-
-function isBinaryOps(kind: SyntaxKinds) {
-    return getBinaryPrecedence(kind) > 0;
 }
 
 /**
@@ -598,7 +554,6 @@ export function createParser(code: string) {
                 );
             }
             default:
-                console.log(node);
                 throw createMessageError(ErrorMessageMap.invalid_left_value + ` get kind ${node.kind}.`);
         }
     }
@@ -618,18 +573,7 @@ export function createParser(code: string) {
         }else if (match(SyntaxKinds.SemiPunctuator)) {
             leftOrInit = null;
         }else {
-            leftOrInit = parseExpression();
-        }
-        /* dirty solution when there is a expression left in for-in statement, example like `for(i in array) {}` */
-        if(leftOrInit && isBinaryExpression(leftOrInit)) {
-            if(leftOrInit.operator === SyntaxKinds.InKeyword) {
-                expect(SyntaxKinds.ParenthesesRightPunctuator);
-                const body = parseStatement();
-                if(isArrayExpression(leftOrInit.left) || isObjectExpression(leftOrInit.left)) {
-                    leftOrInit.left = toAssignmentPattern(leftOrInit.left) as Expression;
-                }
-                return Factory.createForInStatement(leftOrInit.left, leftOrInit.right,body, keywordStart, cloneSourcePosition(body.end));
-            }
+            leftOrInit = parseExpression(false);
         }
         // branch
         if(match(SyntaxKinds.SemiPunctuator)) {
@@ -645,7 +589,7 @@ export function createParser(code: string) {
             }
             expect(SyntaxKinds.ParenthesesRightPunctuator)
             const body = parseStatement();
-            return Factory.createForStatement(body,leftOrInit, test, update, keywordStart, cloneSourcePosition(body.end));
+            return Factory.createForStatement(body, leftOrInit, test, update, keywordStart, cloneSourcePosition(body.end));
         }
         // when 
         if(!leftOrInit) {
@@ -655,9 +599,11 @@ export function createParser(code: string) {
             // ForInStatement when left is variableDeclaration.
             if(leftOrInit.kind === SyntaxKinds.VariableDeclaration) {
                 helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit);
+            }else {
+                leftOrInit = toAssignmentPattern(leftOrInit as Expression) as Expression;
             }
             nextToken();
-            const right = parseAssigmentExpression();
+            const right = parseExpression();
             expect(SyntaxKinds.ParenthesesRightPunctuator);
             const body = parseStatement();
             return Factory.createForInStatement(leftOrInit, right, body, keywordStart, cloneSourcePosition(body.end));
@@ -1124,16 +1070,22 @@ export function createParser(code: string) {
         semi();
         return Factory.createExpressionStatement(expr, cloneSourcePosition(expr.start), cloneSourcePosition(expr.end));
     }
-    function parseExpression(): Expression {
-        const exprs = [parseAssigmentExpression()];
+    function parseExpressionBase() {
+        const exprs = [parseAssigmentExpressionBase()];
         while(match(SyntaxKinds.CommaToken)) {
             nextToken();
-            exprs.push(parseAssigmentExpression());
+            exprs.push(parseAssigmentExpressionBase());
         }
         if(exprs.length === 1) {
             return exprs[0];
         }
         return Factory.createSequenceExpression(exprs, cloneSourcePosition(exprs[0].start), cloneSourcePosition(exprs[exprs.length -1].end));
+    }
+    function parseExpression(allowIn = true): Expression {
+        context.inOperatorStack.push(allowIn);
+        const expr = parseExpressionBase();
+        context.inOperatorStack.pop();
+        return expr;
     }
     function helperPushAssigmentPatternContext() {
         context.assignDestructingStack.push(context.assignDestructingStack.length + 1);
@@ -1193,7 +1145,7 @@ export function createParser(code: string) {
                 }
             }
     }
-    function parseAssigmentExpression(): Expression {
+    function parseAssigmentExpressionBase() {
         if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
             context.maybeArrow = true;
         }
@@ -1214,7 +1166,13 @@ export function createParser(code: string) {
         const operator = getToken();
         nextToken();
         const right = parseAssigmentExpression();
-        return Factory.createAssignmentExpression(left, right, operator as AssigmentOperatorKinds, cloneSourcePosition(left.start), cloneSourcePosition(right.end));
+        return Factory.createAssignmentExpression(left, right, operator as AssigmentOperatorKinds, cloneSourcePosition(left.start), cloneSourcePosition(right.end));  
+    }
+    function parseAssigmentExpression(allowIn = true): Expression {
+        context.inOperatorStack.push(allowIn);
+        const expr = parseAssigmentExpressionBase();
+        context.inOperatorStack.pop();
+        return expr;
     }
     function parseYieldExpression() {
         const { start } = expectGuardAndEat([SyntaxKinds.YieldKeyword]);
@@ -1250,6 +1208,59 @@ export function createParser(code: string) {
             return parseBinaryOps(atom);
         }
         return atom;
+    }
+    function getCurrentInOperatorStack() {
+        if(context.inOperatorStack.length === 0) {
+            return false;
+        }
+        return context.inOperatorStack[context.inOperatorStack.length-1];
+    }
+    function getBinaryPrecedence(kind: SyntaxKinds) {
+        switch(kind) {
+            case SyntaxKinds.LogicalOROperator:
+                return 4;
+            case SyntaxKinds.LogicalANDOperator:
+                return 5;
+            case SyntaxKinds.BitwiseOROperator:
+                return 6;
+            case SyntaxKinds.BitwiseXOROperator:
+                return 7;
+            case SyntaxKinds.BitwiseANDOperator:
+                return 8;
+            case SyntaxKinds.StrictEqOperator:
+            case SyntaxKinds.StrictNotEqOperator:
+            case SyntaxKinds.EqOperator:
+            case SyntaxKinds.NotEqOperator:
+                return 9;
+            case SyntaxKinds.InKeyword:
+            case SyntaxKinds.InstanceofKeyword:
+            case SyntaxKinds.GtOperator:
+            case SyntaxKinds.GeqtOperator:
+            case SyntaxKinds.LeqtOperator:
+            case SyntaxKinds.LtOperator:
+                if(kind === SyntaxKinds.InKeyword && !getCurrentInOperatorStack()) {
+                    return -1;
+                }
+                return 10;
+            case SyntaxKinds.BitwiseLeftShiftOperator:
+            case SyntaxKinds.BitwiseRightShiftOperator:
+            case SyntaxKinds.BitwiseRightShiftFillOperator:
+                return 11;
+            case SyntaxKinds.PlusOperator:
+            case SyntaxKinds.MinusOperator:
+                return 12;
+            case SyntaxKinds.ModOperator:
+            case SyntaxKinds.DivideOperator:
+            case SyntaxKinds.MultiplyOperator:
+                return 13;
+            case SyntaxKinds.ExponOperator:
+                return 14;
+            default:
+                return -1;
+        }
+    }
+    function isBinaryOps(kind: SyntaxKinds) {
+        return getBinaryPrecedence(kind) > 0;
     }
     function parseBinaryOps(left: Expression , lastPre = 0): Expression {
         // eslint-disable-next-line no-constant-condition
