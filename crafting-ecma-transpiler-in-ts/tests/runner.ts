@@ -102,8 +102,6 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/ES6/template-literals/invalid_octal-literal.js",
     "fixtures/ES6/template-literals/invalid_strict-octal-literal.js",
     "fixtures/es2020/importmeta/invalid-unicode-escape-import.module.js",
-    // ==== line terminator problem
-    "fixtures/ES6/export-declaration/invalid-export-named-default.module.js",
     // === yield as identifier problem
     "fixtures/es2017/async/arrows/async-arrow-parenthesized-yield.js",
     "fixtures/es2017/async/arrows/async-arrow-yield.js",
@@ -122,14 +120,9 @@ const TempIgnoreCases: Array<String> = [
     /** Main Issues */
     "fixtures/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
     "fixtures/ES6/class/invalid-setter-method-rest.js",
-    /* Return Predict Problem */
-    "fixtures/statement/return/multiline-template.js",
-    "fixtures/es2018/dynamic-import/loader-using-import.js",
     /** TO BE Verify */
     "fixtures/ES6/for-of/invalid-decl-cls.js",
     "fixtures/ES6/class/invalid-labelled-class-declaration.js",
-    "fixtures/ES6/export-declaration/invalid-export-default.module.js",
-    "fixtures/ES6/export-declaration/invalid-export-named-default.module.js",
 ];
 /**
  * Helper function that parse code string and
@@ -179,11 +172,7 @@ async function runTestCase(testCase: TestCase) {
         const index = TempIgnoreCases.find((ignoreTestCase) => testCase.fileName === ignoreTestCase);
         console.log(index);
         if(typeof(index) === "number" && index !== -1 ) {
-            expectFailedTestCase.push({
-                fileName: testCase.fileName,
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-                result: `{ Compiler Error }: ${e?.toString()} `
-            })
+            expectFaildButPassCase.push(testCase.fileName)
             return;
         }
         failedTestCases.push({
@@ -321,7 +310,7 @@ function report() {
         console.log((`|Failed|: ${testCase.fileName}`));
         console.log((`  |----> ${testCase.result}`));
     }
-    const allTestCaseCount = failedTestCases.length + skipTestCases.length + passTestCases.length + updateTestCases.length + expectFailedTestCase.length;
+    const allTestCaseCount = failedTestCases.length + skipTestCases.length + passTestCases.length + updateTestCases.length + expectFailedTestCase.length + expectFaildButPassCase.length;
     const passRate = passTestCases.length / allTestCaseCount;
     const failedRate = failedTestCases.length / allTestCaseCount;
     const updateRate = updateTestCases.length / allTestCaseCount;
@@ -329,7 +318,9 @@ function report() {
     console.log(`Pass rate: ${passTestCases.length} / ${allTestCaseCount}(${passRate})`);
     console.log(`Update rate: ${updateTestCases.length} / ${allTestCaseCount}(${updateRate})`);
     console.log(`Failed rate : ${failedTestCases.length} / ${allTestCaseCount}(${failedRate})`);
-    console.log(`Expect Failed rate: ${expectFailedTestCase.length} /${allTestCaseCount} `)
+    console.log(`Skip rate: ${skipTestCases.length} / ${allTestCaseCount}`);
+    console.log(`Expect Failed rate: ${expectFailedTestCase.length} /${allTestCaseCount} `);
+    console.log(`Expect Failed But Passed rate: ${expectFaildButPassCase.length} /${allTestCaseCount}`)
     if(passRate < gate - updateRate) {
         process.exit(1);
     }else {

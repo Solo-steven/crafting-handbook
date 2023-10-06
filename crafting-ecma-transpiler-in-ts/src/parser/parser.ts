@@ -750,7 +750,6 @@ export function createParser(code: string) {
    } 
    function parseReturnStatement(): ReturnStatement {
        const { start, end } =  expectGuardAndEat([SyntaxKinds.ReturnKeyword]);
-       // TODO: make it can predi expression
        if(semi(true)) {
           return Factory.createReturnStatement(null, start, end);
        }

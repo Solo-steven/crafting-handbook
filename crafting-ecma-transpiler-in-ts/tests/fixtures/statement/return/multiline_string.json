@@ -26,7 +26,7 @@
                         "kind": "ReturnStatement",
                         "argu": {
                             "kind": "StringLiteral",
-                            "value": "hello \\\n  \tworld",
+                            "value": "hello   \tworld",
                             "start": {
                                 "row": 2,
                                 "col": 9,

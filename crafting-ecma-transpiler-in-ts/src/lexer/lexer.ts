@@ -748,6 +748,15 @@ export function createLexer(code: string): Lexer {
         let word = "";
         let isEscape = false;
         while(!(startWith(mode) && !isEscape ) && !eof()) {
+            if(startWith("\n")) {
+                if(!isEscape) {
+                    throw lexicalError(`string literal start with ${mode} can not have changeline without \\ .`);
+                }
+                isEscape = false;
+                eatChar();
+                word = word.slice(0, word.length-1);
+                continue;
+            }
             if(startWith('\\')) {
                 if(isEscape) {
                     isEscape = false;
