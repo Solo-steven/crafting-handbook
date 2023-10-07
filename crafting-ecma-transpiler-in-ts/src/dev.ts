@@ -8,6 +8,7 @@ import { performance } from "node:perf_hooks";
 const code = fs.readFileSync(path.join(__dirname, "test.js"), "utf-8").toString();
 console.log("=================================");
 console.log("Test JavaScript Code:");
+console.log(code);
 console.log("=================================");
 console.log("=================================");
 console.log("============ lexer ==============");

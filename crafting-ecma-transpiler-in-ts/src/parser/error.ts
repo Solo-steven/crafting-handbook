@@ -20,6 +20,6 @@ export const ErrorMessageMap = {
     function_argument_can_not_have_empty_trailing_comma: "function argument list can not have trailing comma when is empty",
     restelement_can_not_use_in_cover: "rest element can not use in cover expression",
     no_line_break_is_allowed_before_arrow: "No line break is allowed before '=>'",
-    missing_semicolon: "Missing semicolon",
+    missing_semicolon: "Missing semicolon or line terminator",
     keyword_can_not_use_in_imported_when_just_a_specifier: "keyword can not use in imported_when just a specifier",
 }

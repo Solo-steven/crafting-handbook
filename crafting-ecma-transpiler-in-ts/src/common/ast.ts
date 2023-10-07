@@ -547,3 +547,6 @@ export function isAssignmentPattern(node: ModuleItem): node is AssignmentPattern
 export function isVarDeclaration(node: ModuleItem): node is VariableDeclaration {
     return node.kind === SyntaxKinds.VariableDeclaration;
 }
+export function isArrowFunctionExpression(node: ModuleItem): node is ArrorFunctionExpression {
+    return node.kind === SyntaxKinds.ArrowFunctionExpression;
+}

@@ -85,6 +85,7 @@ import {
     isAssignmentPattern,
     isVarDeclaration,
     RegexLiteral,
+    isArrowFunctionExpression,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -292,8 +293,7 @@ export function createParser(code: string) {
         if(canIgnore) {
             return false;
         }
-        // TODO: add semi error
-        throw new Error(`Test, ${getToken()}, ${getStartPosition().row}, ${getStartPosition().col}`);
+        throw createMessageError(ErrorMessageMap.missing_semicolon);
     }
     function predictLineTerminate() {
         return lexer.predictLineTerminate();
@@ -1056,6 +1056,7 @@ export function createParser(code: string) {
             semi();
             return Factory.createClassProperty(key, value , isComputedRef.isComputed, isStatic, false, cloneSourcePosition(key.start), cloneSourcePosition(value.end));
         }
+        semi();
         return Factory.createClassProperty(key, undefined, isComputedRef.isComputed, isStatic, true, cloneSourcePosition(key.start), cloneSourcePosition(key.end));
 
     }
@@ -1147,6 +1148,8 @@ export function createParser(code: string) {
     function parseAssigmentExpressionBase() {
         if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
             context.maybeArrow = true;
+        }else {
+            context.maybeArrow = false;
         }
         if(match(SyntaxKinds.YieldKeyword)) {
             return parseYieldExpression();
@@ -1203,6 +1206,10 @@ export function createParser(code: string) {
     }
     function parseBinaryExpression(): Expression {
         const atom = parseUnaryExpression();
+        // early return for arrow function;
+        if(isArrowFunctionExpression(atom)) {
+            return atom;
+        }
         if(matchSet(BinaryOperators)) {
             return parseBinaryOps(atom);
         }
