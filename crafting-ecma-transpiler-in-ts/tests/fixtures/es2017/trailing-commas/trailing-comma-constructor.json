@@ -22,11 +22,7 @@
                 "kind": "ClassBody",
                 "body": [
                     {
-                        "kind": "ClassMethodDefinition",
-                        "async": false,
-                        "generator": false,
-                        "computed": false,
-                        "static": false,
+                        "kind": "ClassConstructor",
                         "key": {
                             "kind": "Identifer",
                             "name": "constructor",
@@ -39,6 +35,20 @@
                                 "row": 1,
                                 "col": 22,
                                 "index": 21
+                            }
+                        },
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 1,
+                                "col": 27,
+                                "index": 26
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 29,
+                                "index": 28
                             }
                         },
                         "params": [
@@ -57,20 +67,6 @@
                                 }
                             }
                         ],
-                        "body": {
-                            "kind": "FunctionBody",
-                            "body": [],
-                            "start": {
-                                "row": 1,
-                                "col": 27,
-                                "index": 26
-                            },
-                            "end": {
-                                "row": 1,
-                                "col": 29,
-                                "index": 28
-                            }
-                        },
                         "start": {
                             "row": 1,
                             "col": 11,

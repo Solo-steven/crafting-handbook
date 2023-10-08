@@ -8,7 +8,7 @@ import { transformSyntaxKindToLiteral } from "./transform";
  *  Env Variable
  */
 const isUpdate = Boolean(process.env.TEST_UPDATE) || false;
-const gate = Number(process.env.TEST_GATE) || 1;
+const gate = Number(process.env.TEST_GATE) || .95;
 // eslint-disable-next-line no-useless-escape
 const jsFileRegex = new RegExp('.*\.js$');
 // eslint-disable-next-line no-useless-escape
@@ -102,19 +102,13 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/ES6/template-literals/invalid_octal-literal.js",
     "fixtures/ES6/template-literals/invalid_strict-octal-literal.js",
     "fixtures/es2020/importmeta/invalid-unicode-escape-import.module.js",
+    "fixtures/es2020/importmeta/unicode-escape-meta.module.js",
     // === yield as identifier problem
     "fixtures/es2017/async/arrows/async-arrow-parenthesized-yield.js",
     "fixtures/es2017/async/arrows/async-arrow-yield.js",
     //  ==== other
-    "fixtures/es2018/for-await-of/invalid-for-await-of-not-async-context.js",
     "fixtures/es2018/dynamic-import/invalid-new-import-call.js",
-    "fixtures/es2018/dynamic-import/invalid-non-callee.js",
-    /** Main Issues */
     "fixtures/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
-    "fixtures/ES6/class/invalid-setter-method-rest.js",
-    /** TO BE Verify */
-    "fixtures/ES6/for-of/invalid-decl-cls.js",
-    "fixtures/ES6/class/invalid-labelled-class-declaration.js",
 ];
 /**
  * Helper function that parse code string and

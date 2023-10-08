@@ -27,7 +27,7 @@
                         "init": {
                             "kind": "ArrowFunctionExpression",
                             "expressionBody": true,
-                            "async": false,
+                            "async": true,
                             "arguments": [
                                 {
                                     "kind": "Identifer",

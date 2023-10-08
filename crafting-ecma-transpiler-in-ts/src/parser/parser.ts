@@ -105,14 +105,17 @@ import { createLexer } from "../lexer/index";
  */
 interface Context {
     maybeArrow: boolean;
-    inAsync: boolean;
-    inClass: boolean,
+    inAsyncCount: number
+    inClassCount: number;
     inFor: boolean,
+    // for resolve check object property init is in pattern or not
     inArgumentOrParameter: boolean,
     assignDestructingStack: Array<number> ;
     coverInitMark: { [key: number]: Array<SourcePosition>}
     topLevelArgumentIndex: number,
+    // for resolve mark as init property when transform object expression to object pattern
     propertiesInitSet: Set<any>;
+    // for resolve for in statement problem
     inOperatorStack: Array<boolean>,
 }
 
@@ -128,14 +131,15 @@ interface ASTArrayWithMetaData<T> {
 function createContext(): Context {
     return {
         maybeArrow: false,
-        inAsync: false,
-        inClass: false,
+        inAsyncCount: 0,
+        inClassCount: 0,
         inFor: false,
         // for resolve check object property init is in pattern or not
         inArgumentOrParameter: false,
         assignDestructingStack: [],
         coverInitMark: {},
         topLevelArgumentIndex: -1,
+        // for resolve mark as init property when transform object expression to object pattern
         propertiesInitSet: new Set(),
         // for resolve for in statement problem
         inOperatorStack: [],
@@ -425,9 +429,9 @@ export function createParser(code: string) {
                     if(predictLineTerminate()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
-                    context.inAsync = true;
+                    context.inAsyncCount ++;
                     const funDeclar = parseFunctionDeclaration();
-                    context.inAsync = false;
+                    context.inAsyncCount --;
                     return funDeclar;
                 } else {
                    throw createUnreachError();
@@ -586,6 +590,9 @@ export function createParser(code: string) {
         let isAwait = false, leftOrInit: VariableDeclaration | Expression | null = null;
         if(match(SyntaxKinds.AwaitKeyword)) {
             nextToken();
+            if(context.inAsyncCount === 0) {
+                throw createMessageError(ErrorMessageMap.await_can_not_call_if_not_in_async);
+            }
             isAwait = true;
         }
         expect(SyntaxKinds.ParenthesesLeftPunctuator);
@@ -907,7 +914,7 @@ export function createParser(code: string) {
         }
         const params = parseFunctionParam();
         const body = parseFunctionBody();
-        return Factory.createFunction(name, body, params, generator, context.inAsync, start, cloneSourcePosition(body.end));
+        return Factory.createFunction(name, body, params, generator, context.inAsyncCount !== 0, start, cloneSourcePosition(body.end));
     }
     /**
      * Parse Function Body
@@ -1039,6 +1046,7 @@ export function createParser(code: string) {
      * @returns {Class}
      */
     function parseClass(): Class {
+        context.inClassCount ++;
         const { start } = expectGuardAndEat([SyntaxKinds.ClassKeyword]);
         let name: Identifier | null = null;
         if(match(SyntaxKinds.Identifier)) {
@@ -1051,6 +1059,7 @@ export function createParser(code: string) {
             
         }
         const body = parseClassBody();
+        context.inClassCount --;
         return Factory.createClass(name, superClass, body, start, cloneSourcePosition(body.end));
     }
     /** 
@@ -1358,6 +1367,9 @@ export function createParser(code: string) {
             return Factory.createUnaryExpression(argument, operator, start, cloneSourcePosition(argument.end));
         }
         if(match(SyntaxKinds.AwaitKeyword)) {
+            if(context.inAsyncCount===0) {
+                throw createMessageError(ErrorMessageMap.await_can_not_call_if_not_in_async);
+            }
             const start = getStartPosition();
             nextToken();
             const argu = parseUnaryExpression();
@@ -1597,27 +1609,33 @@ export function createParser(code: string) {
                     lookaheadToken === SyntaxKinds.ArrowOperator || 
                     (getValue() === "async"  && lookaheadToken === SyntaxKinds.Identifier)
                 ) {
+                    let deferWork: CallableFunction = () => {};
                     if(getValue() === "async") {
+                        context.inAsyncCount ++;
                         nextToken();
                         if(predictLineTerminate()) {
                             throw createMessageError(ErrorMessageMap.missing_semicolon);
                         }
+                        deferWork = () => context.inAsyncCount--;
                     }
                     const argus = [parseIdentifer()];
-                    return parseArrowFunctionExpression({
+                    const arrowExpr = parseArrowFunctionExpression({
                         nodes: argus,
                         start: argus[0].start,
                         end: argus[0].end
                     });
+                    deferWork();
+                    return arrowExpr;
                 }
                 if(getValue() === "async"  && lookaheadToken === SyntaxKinds.ParenthesesLeftPunctuator) {
                     nextToken();
                     if(predictLineTerminate()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
-                    context.inAsync = true;
+                    context.inAsyncCount ++;
+                    console.log(context.inAsyncCount);
                     const arrowFunExpr = parseArrowFunctionExpression(parseArguments());
-                    context.inAsync = false;
+                    context.inAsyncCount --;
                     return arrowFunExpr;
                 }
                 if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
@@ -1625,9 +1643,9 @@ export function createParser(code: string) {
                     if(predictLineTerminate()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
-                    context.inAsync = true;
+                    context.inAsyncCount ++;
                     const functionExpr = parseFunctionExpression();
-                    context.inAsync = false;
+                    context.inAsyncCount --;
                     return functionExpr;
                 }
                 return parseIdentifer();
@@ -1715,6 +1733,9 @@ export function createParser(code: string) {
         const { start, end } =  expectGuardAndEat([SyntaxKinds.ImportKeyword]);
         expect(SyntaxKinds.DotOperator);
         const property = parseIdentifer();
+        if(property.name !== "meta") {
+            throw createMessageError(ErrorMessageMap.import_meta_invalid_property);
+        }
         return Factory.createMetaProperty(Factory.createIdentifier("import", start, end), property, start, cloneSourcePosition(property.end));
     }
     function parseImportCall() {
@@ -1769,6 +1790,9 @@ export function createParser(code: string) {
 
     }
     function parseSuper() {
+        if(context.inClassCount === 0) {
+            throw createMessageError(ErrorMessageMap.super_can_not_call_if_not_in_class);
+        }
         const { start: keywordStart, end: keywordEnd } = expectGuardAndEat([SyntaxKinds.SuperKeyword]);
         const { nodes, end: argusEnd } = parseArguments();
         return Factory.createCallExpression(Factory.createSuper(keywordStart, keywordEnd), nodes, false, cloneSourcePosition(keywordStart) , argusEnd);
@@ -1997,6 +2021,8 @@ export function createParser(code: string) {
                 withPropertyName = parsePropertyName(isComputedRef);
                 computed = isComputedRef.isComputed
             }
+        }else {
+            start = cloneSourcePosition(withPropertyName.start);
         }
         const parmas = parseFunctionParam();
         const body = parseFunctionBody();
@@ -2007,8 +2033,15 @@ export function createParser(code: string) {
         if(type === "get" && parmas.length > 0) {
             throw createMessageError(ErrorMessageMap.getter_should_never_has_params);
         }
-        if(type === "set" && parmas.length === 0) {
-            throw createMessageError(ErrorMessageMap.setter_should_has_at_last_one_params);
+        if(type === "set" ) {
+            if(parmas.length === 0) {
+                throw createMessageError(ErrorMessageMap.setter_should_has_at_last_one_params);
+            }
+            for(const param of parmas) {
+                if(isRestElement(param)) {
+                    throw createMessageError(ErrorMessageMap.setter_can_not_have_rest_element_as_argument);
+                }
+            }
         }
         if(type === "get" && (isAsync || generator)) {
             throw createMessageError(ErrorMessageMap.getter_can_not_be_async_or_generator);
@@ -2017,7 +2050,7 @@ export function createParser(code: string) {
             throw createMessageError(ErrorMessageMap.setter_can_not_be_async_or_generator);
         }
         if(withPropertyName.kind === SyntaxKinds.Identifier) {
-            if(withPropertyName.name === "constructor" && context.inClass) {
+            if(withPropertyName.name === "constructor" && context.inClassCount > 0) {
                 if(isAsync || generator || isStatic) {
                     throw createMessageError(ErrorMessageMap.constructor_can_not_be_async_or_generator);
                 }
@@ -2124,7 +2157,7 @@ export function createParser(code: string) {
         }
         const functionArguments = metaData.nodes.map(node => toAssignmentPattern(node, true)) as Array<Pattern>;
         checkFunctionParams(functionArguments);
-        return Factory.createArrowExpression(isExpression, body,  functionArguments, context.inAsync, cloneSourcePosition(metaData.start), cloneSourcePosition(body.end));
+        return Factory.createArrowExpression(isExpression, body,  functionArguments, context.inAsyncCount !== 0, cloneSourcePosition(metaData.start), cloneSourcePosition(body.end));
     }
 /** ================================================================================
  *  Parse Pattern
@@ -2474,9 +2507,9 @@ export function createParser(code: string) {
         }   
         if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
             nextToken();
-            context.inAsync = true;
+            context.inAsyncCount ++;
             const funDeclar = parseFunctionExpression();
-            context.inAsync = false;
+            context.inAsyncCount --;
             semi();
             return Factory.createExportDefaultDeclaration(funDeclar, start, cloneSourcePosition(funDeclar.end));
         }

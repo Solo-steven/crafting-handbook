@@ -23,4 +23,8 @@ export const ErrorMessageMap = {
     missing_semicolon: "Missing semicolon or line terminator",
     keyword_can_not_use_in_imported_when_just_a_specifier: "keyword can not use in imported_when just a specifier",
     duplicate_param: "duplicate params",
+    super_can_not_call_if_not_in_class: "super can not be called if not in class block",
+    await_can_not_call_if_not_in_async: "await expression can not be call if not in async block",
+    import_meta_invalid_property: "The only valid meta property for import is import.meta",
+    setter_can_not_have_rest_element_as_argument: "setter method can not ahve rest element as argument",
 }

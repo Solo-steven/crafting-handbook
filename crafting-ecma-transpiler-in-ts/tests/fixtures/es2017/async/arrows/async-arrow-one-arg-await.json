@@ -6,7 +6,7 @@
             "expr": {
                 "kind": "ArrowFunctionExpression",
                 "expressionBody": false,
-                "async": false,
+                "async": true,
                 "arguments": [
                     {
                         "kind": "Identifer",
