@@ -27,4 +27,5 @@ export const ErrorMessageMap = {
     await_can_not_call_if_not_in_async: "await expression can not be call if not in async block",
     import_meta_invalid_property: "The only valid meta property for import is import.meta",
     setter_can_not_have_rest_element_as_argument: "setter method can not ahve rest element as argument",
+    assigment_pattern_only_can_use_assigment_operator: "assigment pattern can only using assignment operator",
 }
