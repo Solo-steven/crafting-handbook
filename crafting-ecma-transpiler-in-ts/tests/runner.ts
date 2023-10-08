@@ -66,12 +66,14 @@ async function recursivelyAddTestCase(dirPath: string, prefixFileName: string, c
 async function findAllTestCase(): Promise<Array<TestCase>> {
     const casesRoot = path.join(__dirname, "cases");
     const fixtureRoot = path.join(__dirname, "fixtures");
+    const babelRoot = path.join(__dirname, "babel");
     const testCasesPaths: Array<TestCase> = []
     const shouldNotExistedFilePath: Array<string> = [];
     await Promise.all(
         [
             recursivelyAddTestCase(casesRoot, "cases", testCasesPaths, shouldNotExistedFilePath),
             recursivelyAddTestCase(fixtureRoot, "fixtures", testCasesPaths, shouldNotExistedFilePath),
+            recursivelyAddTestCase(babelRoot, "babel", testCasesPaths, shouldNotExistedFilePath),
         ]
     )
    return testCasesPaths;
@@ -219,7 +221,7 @@ async function updateTestCase(testCase: TestCase) {
     try {
         const code = await readFile(testCase.jsPath);
         const astString = toASTString(code.toString());
-        if(testCase.jsonPath) {
+        if(testCase.jsonPath && isExisted) {
             const existedASTString = await readFile(testCase.jsonPath);
             if(existedASTString.toString() === astString) {
                 passTestCases.push({
