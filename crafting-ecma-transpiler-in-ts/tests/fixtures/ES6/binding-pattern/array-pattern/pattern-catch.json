@@ -223,10 +223,8 @@
                                     }
                                 },
                                 {
-                                    "kind": "ObjectPatternProperty",
-                                    "computed": false,
-                                    "shorted": false,
-                                    "key": {
+                                    "kind": "AssigmentPattern",
+                                    "left": {
                                         "kind": "Identifer",
                                         "name": "h",
                                         "start": {
@@ -240,7 +238,7 @@
                                             "index": 41
                                         }
                                     },
-                                    "value": {
+                                    "right": {
                                         "kind": "Identifer",
                                         "name": "i",
                                         "start": {

@@ -105,14 +105,6 @@ const TempIgnoreCases: Array<String> = [
     // === yield as identifier problem
     "fixtures/es2017/async/arrows/async-arrow-parenthesized-yield.js",
     "fixtures/es2017/async/arrows/async-arrow-yield.js",
-    // === duplicate param problem
-    "fixtures/es2017/async/functions/invalid-async-function-declaration-duplicate-params.js",
-    "fixtures/es2017/async/functions/invalid-async-function-expression-duplicate-params.js",
-    "fixtures/ES6/binding-pattern/array-pattern/invalid-dupe-param.js",
-    "fixtures/ES6/arrow-function/array-bindling-pattern/invalid-dup-param.js",
-    "fixtures/ES6/arrow-function/invalid-duplicated-params.js",
-    "fixtures/ES6/arrow-function/invalid-duplicated-names-rest-parameter.js",
-    "fixtures/declaration/function/invalid-dupe-param.js",
     //  ==== other
     "fixtures/es2018/for-await-of/invalid-for-await-of-not-async-context.js",
     "fixtures/es2018/dynamic-import/invalid-new-import-call.js",

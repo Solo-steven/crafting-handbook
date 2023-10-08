@@ -40,10 +40,8 @@
                                 }
                             },
                             {
-                                "kind": "ObjectPatternProperty",
-                                "computed": false,
-                                "shorted": false,
-                                "key": {
+                                "kind": "AssigmentPattern",
+                                "left": {
                                     "kind": "Identifer",
                                     "name": "b",
                                     "start": {
@@ -57,7 +55,7 @@
                                         "index": 8
                                     }
                                 },
-                                "value": {
+                                "right": {
                                     "kind": "NumberLiteral",
                                     "value": "0",
                                     "start": {

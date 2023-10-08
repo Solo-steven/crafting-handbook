@@ -22,4 +22,5 @@ export const ErrorMessageMap = {
     no_line_break_is_allowed_before_arrow: "No line break is allowed before '=>'",
     missing_semicolon: "Missing semicolon or line terminator",
     keyword_can_not_use_in_imported_when_just_a_specifier: "keyword can not use in imported_when just a specifier",
+    duplicate_param: "duplicate params",
 }

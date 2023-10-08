@@ -136,7 +136,7 @@ export interface ArrorFunctionExpression extends ModuleItem {
     kind: SyntaxKinds.ArrowFunctionExpression;
     expressionBody: boolean;
     async: boolean;
-    arguments: Array<Expression>;
+    arguments: Array<Pattern>;
     body: Expression | FunctionBody;
 }
 export interface MetaProperty extends ModuleItem {
@@ -241,18 +241,18 @@ export interface ExpressionStatement extends ModuleItem {
  */
 export interface ObjectPattern extends ModuleItem {
     kind: SyntaxKinds.ObjectPattern;
-    properties: Array<ObjectPatternProperty | RestElement>;
+    properties: Array<ObjectPatternProperty | RestElement | AssignmentPattern>;
 }
 export interface ObjectPatternProperty extends ModuleItem {
     kind: SyntaxKinds.ObjectPatternProperty;
     key: PropertyName;
-    value: Pattern | Expression | undefined;
+    value: Pattern | undefined;
     computed: boolean;
     shorted: boolean;
 }
 export interface ArrayPattern extends ModuleItem {
     kind: SyntaxKinds.ArrayPattern;
-    elements: Array< null | Expression>;
+    elements: Array< null | Pattern>;
 }
 export interface AssignmentPattern extends ModuleItem {
     kind: SyntaxKinds.AssignmentPattern;
@@ -261,7 +261,7 @@ export interface AssignmentPattern extends ModuleItem {
 }
 export interface RestElement extends ModuleItem {
     kind: SyntaxKinds.RestElement;
-    argument: Expression | Pattern;
+    argument: Pattern;
 }
 
 export type Pattern = RestElement | AssignmentPattern | ObjectPattern | ArrayPattern | Identifier;
@@ -510,6 +510,9 @@ export function isTemplateLiteral(node: ModuleItem): node is TemplateElement {
 export function isTemplateElement(node: ModuleItem): node is TemplateElement {
     return node.kind === SyntaxKinds.TemplateElement;
 }
+export function isMemberExpression(node: ModuleItem): node is MemberExpression {
+    return node.kind === SyntaxKinds.MemberExpression;
+}
 export function isObjectExpression(node: ModuleItem): node is ObjectExpression {
     return node.kind === SyntaxKinds.ObjectExpression;
 }
@@ -543,10 +546,24 @@ export function isBinaryExpression(node: ModuleItem): node is BinaryExpression {
 export function isAssignmentPattern(node: ModuleItem): node is AssignmentPattern {
     return node.kind === SyntaxKinds.AssignmentPattern;
 }
-
 export function isVarDeclaration(node: ModuleItem): node is VariableDeclaration {
     return node.kind === SyntaxKinds.VariableDeclaration;
 }
 export function isArrowFunctionExpression(node: ModuleItem): node is ArrorFunctionExpression {
     return node.kind === SyntaxKinds.ArrowFunctionExpression;
+}
+export function isArrayPattern(node: ModuleItem): node is ArrayPattern {
+    return node.kind === SyntaxKinds.ArrayPattern;
+}
+export function isObjectPattern(node: ModuleItem): node is ObjectPattern {
+    return node.kind === SyntaxKinds.ObjectPattern;
+}
+export function isPattern(node: ModuleItem): node is Pattern {
+    return (
+        node.kind === SyntaxKinds.AssignmentPattern ||
+        node.kind === SyntaxKinds.ObjectPattern || 
+        node.kind === SyntaxKinds.ArrayPattern || 
+        node.kind === SyntaxKinds.RestElement ||
+        node.kind === SyntaxKinds.Identifier
+    )
 }

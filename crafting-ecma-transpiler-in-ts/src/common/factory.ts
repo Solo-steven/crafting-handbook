@@ -267,7 +267,7 @@ export function createUnaryExpression(
 export function createArrowExpression(
     isExpression: boolean, 
     body: AST.Expression | AST.FunctionBody, 
-    calleeArguments: Array<AST.Expression>,
+    calleeArguments: AST.ArrorFunctionExpression['arguments'],
     async: boolean,
     start: SourcePosition, end: SourcePosition,
 ): AST.ArrorFunctionExpression {

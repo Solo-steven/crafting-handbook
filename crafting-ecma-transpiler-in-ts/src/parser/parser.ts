@@ -86,6 +86,14 @@ import {
     isVarDeclaration,
     RegexLiteral,
     isArrowFunctionExpression,
+    isIdentifer,
+    isArrayPattern,
+    isObjectPattern,
+    isPattern,
+    AssignmentPattern,
+    isPrivateName,
+    ObjectProperty,
+    isMemberExpression,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -104,6 +112,7 @@ interface Context {
     assignDestructingStack: Array<number> ;
     coverInitMark: { [key: number]: Array<SourcePosition>}
     topLevelArgumentIndex: number,
+    propertiesInitSet: Set<any>;
     inOperatorStack: Array<boolean>,
 }
 
@@ -127,6 +136,7 @@ function createContext(): Context {
         assignDestructingStack: [],
         coverInitMark: {},
         topLevelArgumentIndex: -1,
+        propertiesInitSet: new Set(),
         // for resolve for in statement problem
         inOperatorStack: [],
     }
@@ -512,7 +522,7 @@ export function createParser(code: string) {
             }
             case SyntaxKinds.SpreadElement: {
                 const spreadElementNode = node as SpreadElement;
-                return Factory.createRestElement(spreadElementNode.argument, spreadElementNode.start, spreadElementNode.end);
+                return Factory.createRestElement(toAssignmentPattern(spreadElementNode.argument) as Pattern, spreadElementNode.start, spreadElementNode.end);
             }
             case SyntaxKinds.ArrayExpression: {
                 const arrayExpressionNode = node as ArrayExpression;
@@ -531,7 +541,7 @@ export function createParser(code: string) {
                         }
                     }
                 }
-                return Factory.createArrayPattern(elements as Array<Expression>, arrayExpressionNode.start, arrayExpressionNode.end);
+                return Factory.createArrayPattern(elements as Array<Pattern>, arrayExpressionNode.start, arrayExpressionNode.end);
             }
             case SyntaxKinds.ObjectExpression: {
                 const objecExpressionNode = node as ObjectExpression;
@@ -542,9 +552,20 @@ export function createParser(code: string) {
                 return Factory.createObjectPattern(properties as Array<ObjectPatternProperty>, objecExpressionNode.start, objecExpressionNode.end);
             }
             case SyntaxKinds.ObjectProperty: {
-                const objectPropertyNode = node as ObjectPatternProperty;
-                if( isBinding && objectPropertyNode.value?.kind === SyntaxKinds.MemberExpression) {
+                const objectPropertyNode = node as ObjectProperty
+                if( isBinding && objectPropertyNode.value && isMemberExpression(objectPropertyNode.value)) {
                     throw new Error("binding no member expression");
+                }
+                if(context.propertiesInitSet.has(objectPropertyNode) && !objectPropertyNode.shorted) {
+                    if(objectPropertyNode.computed || !isIdentifer(objectPropertyNode.key)) {
+                        throw createMessageError("");
+                    }
+                    return Factory.createAssignmentPattern(
+                        objectPropertyNode.key,
+                        toAssignmentPattern(objectPropertyNode.value as Expression) as Pattern,
+                        objectPropertyNode.start,
+                        objectPropertyNode.end,
+                    )
                 }
                 return Factory.createObjectPatternProperty(
                     objectPropertyNode.key, 
@@ -952,7 +973,52 @@ export function createParser(code: string) {
             throw createUnexpectError(SyntaxKinds.ParenthesesRightPunctuator, "params list must end up with ParenthesesRight");
         }   
         nextToken();
+        checkFunctionParams(params);
         return params;
+    }
+    function checkFunctionParams(params: Array<Pattern>) {
+        const paramsSet = new Set<string>();
+        for(const param of params) {
+            checkParam(param, paramsSet);
+        }
+    }
+    function checkParam(param: Pattern, paramSet: Set<string>) {
+        if(isIdentifer(param)) {
+            checkParamName(param.name, paramSet);
+            return;
+        }
+        if(isArrayPattern(param))  {
+            param.elements.forEach((element) => {
+                if(element) checkParam(element, paramSet);
+            });
+            return;
+        }
+        if(isObjectPattern(param)) {
+            for(const property of param.properties) {
+                if(isRestElement(property) || isAssignmentPattern(property)) {
+                    checkParam(property, paramSet);
+                    continue;
+                }
+                if(property.value){
+                    checkParam(property.value, paramSet);
+                }
+            }
+            return;
+        }
+        if(isAssignmentPattern(param)) {
+            checkParam(param.left, paramSet);
+            return;
+        }
+        if(isRestElement(param)) {
+            checkParam(param.argument, paramSet);
+            return;
+        }
+    }
+    function checkParamName(name: string, paramSet: Set<string>) {
+        if(paramSet.has(name)) {
+            throw createMessageError(ErrorMessageMap.duplicate_param);
+        }
+        paramSet.add(name);
     }
     /**
      * 
@@ -1148,8 +1214,6 @@ export function createParser(code: string) {
     function parseAssigmentExpressionBase() {
         if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
             context.maybeArrow = true;
-        }else {
-            context.maybeArrow = false;
         }
         if(match(SyntaxKinds.YieldKeyword)) {
             return parseYieldExpression();
@@ -1818,7 +1882,9 @@ export function createParser(code: string) {
                 context.assignDestructingStack.push(assignDestructureIndex);
             }
             const expr = parseAssigmentExpression();
-            return Factory.createObjectProperty(propertyName, expr , isComputedRef.isComputed, true, cloneSourcePosition(propertyName.start), cloneSourcePosition(expr.end));
+            const property = Factory.createObjectProperty(propertyName, expr , isComputedRef.isComputed, true, cloneSourcePosition(propertyName.start), cloneSourcePosition(expr.end));
+            context.propertiesInitSet.add(property);
+            return property;
 
         }
         return Factory.createObjectProperty(propertyName, undefined, isComputedRef.isComputed, true, cloneSourcePosition(propertyName.start), cloneSourcePosition(propertyName.end));
@@ -2056,7 +2122,8 @@ export function createParser(code: string) {
             body = parseExpression();
             isExpression = true;
         }
-        const functionArguments = metaData.nodes.map(node => toAssignmentPattern(node, true)) as Array<Expression>;
+        const functionArguments = metaData.nodes.map(node => toAssignmentPattern(node, true)) as Array<Pattern>;
+        checkFunctionParams(functionArguments);
         return Factory.createArrowExpression(isExpression, body,  functionArguments, context.inAsync, cloneSourcePosition(metaData.start), cloneSourcePosition(body.end));
     }
 /** ================================================================================
@@ -2123,7 +2190,7 @@ export function createParser(code: string) {
     function parseObjectPattern(): ObjectPattern {
         const { start } =  expectGuardAndEat([SyntaxKinds.BracesLeftPunctuator]);
         let isStart = false;
-        const properties: Array<ObjectPatternProperty | RestElement> = [];
+        const properties: Array<ObjectPatternProperty | RestElement | AssignmentPattern> = [];
         while(!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
             // eat comma.
             if(!isStart) {
@@ -2162,7 +2229,10 @@ export function createParser(code: string) {
             if(match(SyntaxKinds.AssginOperator)) {
                 nextToken();
                 const expr =  parseAssigmentExpression();
-                properties.push(Factory.createObjectPatternProperty(propertyName, expr, isComputedRef.isComputed, false, cloneSourcePosition(propertyName.start), cloneSourcePosition(expr.end)))
+                if(!isIdentifer(propertyName)) {
+                    throw createMessageError("");
+                }
+                properties.push(Factory.createAssignmentPattern(propertyName, expr, cloneSourcePosition(propertyName.start), cloneSourcePosition(expr.end)))
                 continue;
             }
             if(match(SyntaxKinds.ColonPunctuator)) {
@@ -2179,7 +2249,7 @@ export function createParser(code: string) {
     function parseArrayPattern(): ArrayPattern {
         const { start } = expectGuardAndEat([SyntaxKinds.BracketLeftPunctuator])
         let isStart = true;
-        const elements: Array<Expression| null> = [];
+        const elements: Array<Pattern| null> = [];
         while(!match(SyntaxKinds.BracketRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
             if(isStart) {
                 isStart = false;
