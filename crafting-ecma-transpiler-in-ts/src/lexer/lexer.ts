@@ -1,5 +1,6 @@
 import { SyntaxKinds, LexicalLiteral, KeywordLiteralMapSyntaxKind } from "@/src/common/kind";
 import { SourcePosition, cloneSourcePosition, createSourcePosition } from "@/src/common/position";
+import { ErrorMessageMap } from "./error";
 interface Context {
     code: string;
     sourcePosition: SourcePosition;
@@ -332,7 +333,7 @@ export function createLexer(code: string): Lexer {
      * @returns {Error} - a error object
      */
     function lexicalError(content: string): Error {
-        return new Error(`[Error]: Lexical Error, ${content},start position is (${context.startPosition.row}, ${context.startPosition.col}), end position is ${context.sourcePosition.row}, ${context.sourcePosition.col}`);
+        return new Error(`[Error]: Lexical Error, ${content}, start position is (${context.startPosition.row}, ${context.startPosition.col}), end position is ${context.sourcePosition.row}, ${context.sourcePosition.col}`);
     }
     /** ======================================
      *      Operators State Machine
@@ -725,8 +726,20 @@ export function createLexer(code: string): Lexer {
                 }
                 return finishToken(SyntaxKinds.NumberLiteral, `0.${floatWord}`);
             }
-            if(!startWithSet(["x", "b", "o"])) {
+            if(!startWithSet(LexicalLiteral.nonDigitalPrefix)) {
                 return finishToken(SyntaxKinds.NumberLiteral, `0`);
+            }
+            if(startWithSet(LexicalLiteral.binaryPrfix)) {
+                eatChar();
+                return readBinaryNumberLiteral();
+            }
+            if(startWithSet(LexicalLiteral.octalPrefix)) {
+                eatChar();
+                return readOctalNumberLiteral();
+            }
+            if(startWithSet(LexicalLiteral.hexPrefix)) {
+                eatChar();
+                return readHexNumberLiteral();
             }
             throw new Error(`[Error]: Not Support 0x 0b Number, (${getStartPosition().row}, ${getStartPosition().col})`)
         }
@@ -746,6 +759,57 @@ export function createLexer(code: string): Lexer {
             return finishToken(SyntaxKinds.NumberLiteral, `${intWord}.${floatWord}`);
         }
         return finishToken(SyntaxKinds.NumberLiteral, `${intWord}`);
+    }
+    function readBinaryNumberLiteral() {
+        const startIndex = context.sourcePosition.index;
+        let seprator = false;
+        while(startWithSet(LexicalLiteral.binaryChar)) {
+            if(startWith("_")) {
+                seprator = true;
+            }else {
+                seprator = false;
+            }
+            eatChar();
+        }
+        if(seprator) {
+            throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+        }
+        const word = context.code.slice(startIndex, context.sourcePosition.index);
+        return finishToken(SyntaxKinds.NumberLiteral, word);
+    }
+    function readOctalNumberLiteral() {
+        const startIndex = context.sourcePosition.index;
+        let seprator = false;
+        while(startWithSet(LexicalLiteral.octalChars)) {
+            if(startWith("_")) {
+                seprator = true;
+            }else {
+                seprator = false;
+            }
+            eatChar();
+        }
+        if(seprator) {
+            throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+        }
+        const word = context.code.slice(startIndex, context.sourcePosition.index);
+        return finishToken(SyntaxKinds.NumberLiteral, word);
+    }
+    function readHexNumberLiteral() {
+        const startIndex = context.sourcePosition.index;
+        let seprator = false;
+        while(startWithSet(LexicalLiteral.hexChars)) {
+            if(startWith("_")) {
+                seprator = true;
+            }else {
+                seprator = false;
+            }
+            eatChar();
+        }
+        if(seprator) {
+            throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+        }
+        const word = context.code.slice(startIndex, context.sourcePosition.index);
+        return finishToken(SyntaxKinds.NumberLiteral, word);   
     }
     function readStringLiteral() {
         let mode = "";

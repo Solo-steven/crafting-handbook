@@ -216,6 +216,13 @@ export enum SyntaxKinds {
 export const LexicalLiteral = {
     whiteSpaceChars: [" ", "\t"],
     newLineChars: ["\n"],
+    nonDigitalPrefix: ["x", "X", "o", "O", "b", "B"],
+    binaryPrfix: ["b", "B"],
+    binaryChar: ["0", "1", "_"],
+    octalPrefix: ["o", "O"],
+    octalChars: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "_"],
+    hexPrefix: ["x", "X"],
+    hexChars: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a","b", "c", "d", "e", "f", "A","B", "C", "D", "E", "F", "_"],
     numberChars: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
     punctuators: [
         "{", "}",
