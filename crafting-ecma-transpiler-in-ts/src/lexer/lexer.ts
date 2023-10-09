@@ -37,6 +37,21 @@ interface Lexer {
     readRegex: () => { pattern: string, flag: string };
 }
 
+const stopSet = [ 
+    ...LexicalLiteral.punctuators,
+    ...LexicalLiteral.operator, 
+    ...LexicalLiteral.newLineChars, 
+    ...LexicalLiteral.whiteSpaceChars
+]
+
+const changeLineRegex = /^ *\n/;
+const spaceRegex = /^ *$/
+
+const BoolLiteralSet = new Set(LexicalLiteral.BooleanLiteral);
+const KeywordLiteralSet = new Set(LexicalLiteral.keywords);
+const NullLiteralSet = new Set(LexicalLiteral.NullLiteral);
+const UndefinbedLiteralSet = new Set(LexicalLiteral.UndefinbedLiteral);
+
 export function createLexer(code: string): Lexer {
 /**
  *  Public API
@@ -54,12 +69,12 @@ export function createLexer(code: string): Lexer {
     function predictLinTerminateOREOF() {
         const currentIndex = context.lastTokenPosition ? context.lastTokenPosition.index : 0;
         const sliceCode = context.code.slice(currentIndex);
-        return /^ *\n/.test(sliceCode) || /^ *$/.test(sliceCode);
+        return changeLineRegex.test(sliceCode) || spaceRegex.test(sliceCode);
     }
     function predictLineTerminate() {
         const currentIndex = context.lastTokenPosition ? context.lastTokenPosition.index : 0;
         const sliceCode = context.code.slice(currentIndex);
-        return /^ *\n/.test(sliceCode);
+        return changeLineRegex.test(sliceCode);
     }
     function getSourceValue() {
         return context.sourceValue;
@@ -599,7 +614,7 @@ export function createLexer(code: string): Lexer {
         }
         if(startWith(".")) {
             eatChar();
-            if(startWithSet([...LexicalLiteral.numberChars])) {
+            if(startWithSet(LexicalLiteral.numberChars)) {
                 let floatWord = "";
                 while(startWithSet(LexicalLiteral.numberChars) && !eof()) {
                     floatWord += eatChar();
@@ -688,13 +703,7 @@ export function createLexer(code: string): Lexer {
         }
         eatChar(1);
         let word = "";
-        while(!startWithSet(
-            [ ...LexicalLiteral.punctuators,
-                ...LexicalLiteral.operator, 
-                ...LexicalLiteral.newLineChars, 
-                ...LexicalLiteral.whiteSpaceChars
-            ]
-        ) && !eof()) {
+        while(!startWithSet(stopSet) && !eof()) {
             word += eatChar();
         }
         return finishToken(SyntaxKinds.PrivateName, word);
@@ -722,15 +731,18 @@ export function createLexer(code: string): Lexer {
             throw new Error(`[Error]: Not Support 0x 0b Number, (${getStartPosition().row}, ${getStartPosition().col})`)
         }
         // Start With Non 0
-        let intWord = "";
-        let floatWord = "";
+        const intStartIndex = context.sourcePosition.index;
         while(startWithSet(LexicalLiteral.numberChars) && !eof()) {
-            intWord += eatChar();
+            eatChar();
         }
+        const intWord = context.code.slice(intStartIndex, context.sourcePosition.index);
         if(startWith(".")) {
+            eatChar();
+            const floatWordStartIndex = context.sourcePosition.index;
             while(startWithSet(LexicalLiteral.numberChars) && !eof()) {
-                floatWord += eatChar();
+                eatChar();
             }
+            const floatWord = context.code.slice(floatWordStartIndex, context.sourcePosition.index);
             return finishToken(SyntaxKinds.NumberLiteral, `${intWord}.${floatWord}`);
         }
         return finishToken(SyntaxKinds.NumberLiteral, `${intWord}`);
@@ -775,43 +787,36 @@ export function createLexer(code: string): Lexer {
         return finishToken(SyntaxKinds.StringLiteral, word);
     }
     function readString() {
-        let word = "";
-        const start = eatChar();
-        while(!startWithSet(
-            [ 
-                ...LexicalLiteral.punctuators,
-                ...LexicalLiteral.operator, 
-                ...LexicalLiteral.newLineChars, 
-                ...LexicalLiteral.whiteSpaceChars
-            ]
-        ) && !eof()) {
-            word += eatChar();
+        const startINdex = context.sourcePosition.index;
+        eatChar();
+        while(!startWithSet(stopSet) && !eof()) {
+            eatChar();
         }
-        const w = start + word;
-        if((new Set(LexicalLiteral.keywords)).has(w)) {
+        const word = context.code.slice(startINdex, context.sourcePosition.index);
+        if(KeywordLiteralSet.has(word)) {
             // @ts-ignore
-            const keywordkind = KeywordLiteralMapSyntaxKind[w] as unknown as any;
+            const keywordkind = KeywordLiteralMapSyntaxKind[word] as unknown as any;
             if(keywordkind == null) {
-                throw new Error(`[Error]: Keyword ${w} have no match method to create token`);
+                throw new Error(`[Error]: Keyword ${word} have no match method to create token`);
             }
-            return finishToken(keywordkind as SyntaxKinds, w);
+            return finishToken(keywordkind as SyntaxKinds, word);
         }
-        if((new Set(LexicalLiteral.BooleanLiteral)).has(w)) {
-            if(w === "true") {
-                return finishToken(SyntaxKinds.TrueKeyword, w);
+        if(BoolLiteralSet.has(word)) {
+            if(word === "true") {
+                return finishToken(SyntaxKinds.TrueKeyword, word);
             }
-            if(w === "false") {
-                return finishToken(SyntaxKinds.FalseKeyword, w);
+            if(word === "false") {
+                return finishToken(SyntaxKinds.FalseKeyword, word);
             }
-            throw new Error(`[Error]: Boolean Lieral ${w} have no match method to create token`);
+            throw new Error(`[Error]: Boolean Lieral ${word} have no match method to create token`);
         }
-        if((new Set(LexicalLiteral.NullLiteral)).has(w)) {
-            return finishToken(SyntaxKinds.NullKeyword, w);
+        if(NullLiteralSet.has(word)) {
+            return finishToken(SyntaxKinds.NullKeyword, word);
         }
-        if((new Set(LexicalLiteral.UndefinbedLiteral)).has(w)) {
-            return finishToken(SyntaxKinds.UndefinedKeyword, w);
+        if(UndefinbedLiteralSet.has(word)) {
+            return finishToken(SyntaxKinds.UndefinedKeyword, word);
         }
-        return finishToken(SyntaxKinds.Identifier, w);
+        return finishToken(SyntaxKinds.Identifier, word);
     }
     function readRegex(): { pattern: string, flag: string } {
         let pattern = "";
@@ -831,12 +836,7 @@ export function createLexer(code: string): Lexer {
         eatChar();
         let flag = "";
         while(
-            !startWithSet([
-                ...LexicalLiteral.newLineChars,
-                ...LexicalLiteral.whiteSpaceChars, 
-                ...LexicalLiteral.punctuators,
-                ...LexicalLiteral.operator,
-            ])
+            !startWithSet(stopSet)
             && !eof()
         ) {
             flag += eatChar();

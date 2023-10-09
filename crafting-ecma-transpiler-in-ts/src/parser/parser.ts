@@ -146,6 +146,7 @@ function createContext(): Context {
     }
 }
 
+const IdentiferWithKeyworArray = [SyntaxKinds.Identifier, ...Keywords];
 /**
  * 
  * @param code 
@@ -325,12 +326,12 @@ export function createParser(code: string) {
             for(const token of expectToken) {
                 message += `${token}, `;
             }
-            message += `], got ${getToken()}(${getValue()})`
+            message += `]`
         }
         if(expectToken) {
-            message = `, expect token ${expectToken}, got ${getToken()}(${getValue()})`
+            message = `, expect token ${expectToken}`
         }
-        return new Error(`[Syntax Error]: Unexpect token${message}. ${getStartPosition().row},${getStartPosition().col}.${messsage}`);
+        return new Error(`[Syntax Error]: Unexpect token${message}, got ${getToken()}(${getValue()}). ${getStartPosition().row},${getStartPosition().col}.${messsage}`);
     }
     /**
      * Given that this parser is recurive decent parser, some
@@ -589,7 +590,7 @@ export function createParser(code: string) {
      * 
      */
    function parseForStatement(): ForStatement | ForInStatement | ForOfStatement {
-        const { start: keywordStart }  = expect([SyntaxKinds.ForKeyword]);
+        const { start: keywordStart }  = expect(SyntaxKinds.ForKeyword);
         let isAwait = false, leftOrInit: VariableDeclaration | Expression | null = null;
         if(match(SyntaxKinds.AwaitKeyword)) {
             nextToken();
@@ -662,7 +663,7 @@ export function createParser(code: string) {
         throw createUnreachError();
    }
    function parseIfStatement(): IfStatement {
-      const {start: keywordStart} = expect([SyntaxKinds.IfKeyword]);
+      const {start: keywordStart} = expect(SyntaxKinds.IfKeyword);
       expect(SyntaxKinds.ParenthesesLeftPunctuator);
       const test = parseExpression();
       expect(SyntaxKinds.ParenthesesRightPunctuator);
@@ -675,7 +676,7 @@ export function createParser(code: string) {
       return Factory.createIfStatement(test, consequnce, null, keywordStart, cloneSourcePosition(consequnce.end));
    }
    function parseWhileStatement(): WhileStatement {
-        const { start: keywordStart } = expect([SyntaxKinds.WhileKeyword]);
+        const { start: keywordStart } = expect(SyntaxKinds.WhileKeyword);
         expect(SyntaxKinds.ParenthesesLeftPunctuator);
         const test = parseExpression();
         expect(SyntaxKinds.ParenthesesRightPunctuator);
@@ -683,7 +684,7 @@ export function createParser(code: string) {
         return Factory.createWhileStatement(test, body, keywordStart, cloneSourcePosition(body.end));
     }
     function parseDoWhileStatement(): DoWhileStatement {
-        const { start: keywordStart } =  expect([SyntaxKinds.DoKeyword]);
+        const { start: keywordStart } =  expect(SyntaxKinds.DoKeyword);
         const body = parseStatement();
         expect(SyntaxKinds.WhileKeyword, "do while statement should has while condition");
         expect(SyntaxKinds.ParenthesesLeftPunctuator);
@@ -693,7 +694,7 @@ export function createParser(code: string) {
         return Factory.createDoWhileStatement(test, body, keywordStart, punctEnd);
     }
    function parseBlockStatement() {
-        const { start: puncStart } =  expect([SyntaxKinds.BracesLeftPunctuator]);
+        const { start: puncStart } =  expect(SyntaxKinds.BracesLeftPunctuator);
         const body: Array<StatementListItem> = [];
         while(!match(SyntaxKinds.BracesRightPunctuator) &&  !match(SyntaxKinds.EOFToken) ) {
             body.push(parseStatementListItem());
@@ -702,7 +703,7 @@ export function createParser(code: string) {
         return Factory.createBlockStatement(body, puncStart, puncEnd);
    }
    function parseSwitchStatement() {
-        const { start: keywordStart } =  expect([SyntaxKinds.SwitchKeyword]);
+        const { start: keywordStart } =  expect(SyntaxKinds.SwitchKeyword);
         expect(SyntaxKinds.ParenthesesLeftPunctuator);
         const discriminant = parseExpression();
         expect(SyntaxKinds.ParenthesesRightPunctuator);
@@ -714,7 +715,7 @@ export function createParser(code: string) {
     
    }
    function parseSwitchCases(): ASTArrayWithMetaData<SwitchCase> {
-        const { start } = expect([SyntaxKinds.BracesLeftPunctuator]);
+        const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
         const cases: Array<SwitchCase> = [];
         while(!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
             let test: Expression | null = null;
@@ -746,7 +747,7 @@ export function createParser(code: string) {
         }
    }
    function parseContinueStatement(): ContinueStatement {
-        const { start: keywordStart, end: keywordEnd} =  expect([SyntaxKinds.ContinueKeyword]);
+        const { start: keywordStart, end: keywordEnd} =  expect(SyntaxKinds.ContinueKeyword);
         if(match(SyntaxKinds.Identifier)) {
             const id = parseIdentifer();
             semi();
@@ -756,7 +757,7 @@ export function createParser(code: string) {
         return Factory.createContinueStatement(null, keywordStart,  keywordEnd);
    }
    function parseBreakStatement(): BreakStatement {
-        const { start, end } = expect([SyntaxKinds.BreakKeyword]);
+        const { start, end } = expect(SyntaxKinds.BreakKeyword);
         if(match(SyntaxKinds.Identifier)) {
             const label = parseIdentifer();
             semi();
@@ -780,7 +781,7 @@ export function createParser(code: string) {
         }
    } 
    function parseReturnStatement(): ReturnStatement {
-       const { start, end } =  expect([SyntaxKinds.ReturnKeyword]);
+       const { start, end } =  expect(SyntaxKinds.ReturnKeyword);
        if(semi(true)) {
           return Factory.createReturnStatement(null, start, end);
        }
@@ -789,7 +790,7 @@ export function createParser(code: string) {
        return Factory.createReturnStatement(expr, start, cloneSourcePosition(expr.end));
    }
    function parseTryStatement(): TryStatement {
-        const { start: tryKeywordStart } = expect([SyntaxKinds.TryKeyword]);
+        const { start: tryKeywordStart } = expect(SyntaxKinds.TryKeyword);
         const body = parseBlockStatement();
         let handler: CatchClause | null = null, finalizer: BlockStatement | null = null;
         if(match(SyntaxKinds.CatchKeyword)) {
@@ -817,13 +818,13 @@ export function createParser(code: string) {
         );
    }
    function parseThrowStatement() {
-      const { start, } =  expect([SyntaxKinds.ThrowKeyword]);
+      const { start, } =  expect(SyntaxKinds.ThrowKeyword);
       const expr = parseExpression();
       semi();
       return Factory.createThrowStatement(expr, start, cloneSourcePosition(expr.end));
    }
    function parseWithStatement(): WithStatement {
-        const {start }= expect([SyntaxKinds.WithKeyword]);
+        const {start }= expect(SyntaxKinds.WithKeyword);
         expect(SyntaxKinds.ParenthesesLeftPunctuator);
         const object = parseExpression();
         expect(SyntaxKinds.ParenthesesRightPunctuator);
@@ -831,7 +832,7 @@ export function createParser(code: string) {
         return Factory.createWithStatement(object, body, start, cloneSourcePosition(body.end));
    }
    function parseDebuggerStatement(): DebuggerStatement {
-       const {start, end } =  expect([SyntaxKinds.DebuggerKeyword]);
+       const {start, end } =  expect(SyntaxKinds.DebuggerKeyword);
        semi();
        return Factory.createDebuggerStatement(start, end);
    }
@@ -904,7 +905,7 @@ export function createParser(code: string) {
      * @returns 
      */
     function parseFunction() {
-        const { start } = expect([SyntaxKinds.FunctionKeyword]);
+        const { start } = expect(SyntaxKinds.FunctionKeyword);
         let generator = false;
         if(match(SyntaxKinds.MultiplyOperator)) {
             generator = true;
@@ -929,7 +930,7 @@ export function createParser(code: string) {
      * @return {FunctionBody}
      */
     function parseFunctionBody(): FunctionBody {
-        const { start } = expect([SyntaxKinds.BracesLeftPunctuator]);
+        const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
         const body : Array<StatementListItem>= [];
         while(!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
             body.push(parseStatementListItem());
@@ -950,7 +951,7 @@ export function createParser(code: string) {
      * ```
      */
     function parseFunctionParam(): Array<Pattern> {
-        expect([SyntaxKinds.ParenthesesLeftPunctuator]);
+        expect(SyntaxKinds.ParenthesesLeftPunctuator);
         let isStart = true;
         let isEndWithRest = false;
         const params: Array<Pattern> = [];
@@ -1034,7 +1035,7 @@ export function createParser(code: string) {
      * 
      */
     function parseClassDeclaration(): ClassDeclaration {
-        expectButNotEat([SyntaxKinds.ClassKeyword]);
+        expectButNotEat(SyntaxKinds.ClassKeyword);
         const classDelcar = parseClass();
         if(classDelcar.id === null) {
             throw createMessageError("class declaration must have class id");
@@ -1050,7 +1051,7 @@ export function createParser(code: string) {
      */
     function parseClass(): Class {
         context.inClassCount ++;
-        const { start } = expect([SyntaxKinds.ClassKeyword]);
+        const { start } = expect(SyntaxKinds.ClassKeyword);
         let name: Identifier | null = null;
         if(match(SyntaxKinds.Identifier)) {
             name = parseIdentifer();
@@ -1073,7 +1074,7 @@ export function createParser(code: string) {
      * @return {ClassBody}
      */
     function parseClassBody(): ClassBody {
-        const { start } =  expect([SyntaxKinds.BracesLeftPunctuator]);
+        const { start } =  expect(SyntaxKinds.BracesLeftPunctuator);
         const classbody: ClassBody['body'] = []
         while(!match(SyntaxKinds.BracesRightPunctuator) && ! match(SyntaxKinds.EOFToken)) {
             if(match(SyntaxKinds.SemiPunctuator)) {
@@ -1236,8 +1237,8 @@ export function createParser(code: string) {
         // pop assigment destrcuture context
         const meta = helperPopAssigmentPatternContext();
         if (!matchSet(AssigmentOperators)) {
-            checkAssgimentPattern(meta);
-            return left;
+           checkAssgimentPattern(meta);
+           return left;
         }
         helperClearAssigmentPatternContext(meta);
         left = toAssignmentPattern(left) as Expression;
@@ -1253,7 +1254,7 @@ export function createParser(code: string) {
         return expr;
     }
     function parseYieldExpression() {
-        const { start } = expect([SyntaxKinds.YieldKeyword]);
+        const { start } = expect(SyntaxKinds.YieldKeyword);
         let delegate = false;
         if(match(SyntaxKinds.MultiplyOperator)) {
             nextToken();
@@ -1473,7 +1474,7 @@ export function createParser(code: string) {
      * @returns {Array<Expression>}
      */
     function parseArguments(): ASTArrayWithMetaData<Expression> & { trailingComma: boolean }  {
-        const { start } = expect([SyntaxKinds.ParenthesesLeftPunctuator]);
+        const { start } = expect(SyntaxKinds.ParenthesesLeftPunctuator);
         let isStart = true;
         let shouldStop = false;
         // TODO: refactor logic to remove shoulStop
@@ -1669,31 +1670,31 @@ export function createParser(code: string) {
         return Factory.createRegexLiteral(pattern, flag, start , getEndPosition());
     }
     function parseIdentifer(): Identifier {
-        const { value, start, end } = expect([SyntaxKinds.Identifier]);
+        const { value, start, end } = expect(SyntaxKinds.Identifier);
         return Factory.createIdentifier(value, start, end);
     }
     function parseIdentiferWithKeyword() {
-        const { value, start, end } = expect([SyntaxKinds.Identifier, ...Keywords]);
+        const { value, start, end } = expect(IdentiferWithKeyworArray);
         return Factory.createIdentifier(value, start, end);
     }
     function parsePrivateName() {
-        const { value, start, end } = expect([SyntaxKinds.PrivateName]);
+        const { value, start, end } = expect(SyntaxKinds.PrivateName);
         return Factory.createPrivateName(value, start, end);
     }
     function parseNullLiteral() {
-        const { start, end } =  expect([SyntaxKinds.NullKeyword]);
+        const { start, end } =  expect(SyntaxKinds.NullKeyword);
         return Factory.createNullLiteral(start, end);
     }
     function parseUndefinedLiteral() {
-        const { start, end } = expect([SyntaxKinds.UndefinedKeyword]);
+        const { start, end } = expect(SyntaxKinds.UndefinedKeyword);
         return Factory.createUndefinedLiteral(start, end);
     }
     function parseNumberLiteral() {
-        const { start, end, value } = expect([SyntaxKinds.NumberLiteral]);
+        const { start, end, value } = expect(SyntaxKinds.NumberLiteral);
         return Factory.createNumberLiteral(value, start, end);
     }
     function parseStringLiteral() {
-        const { start, end, value } = expect([SyntaxKinds.StringLiteral]);
+        const { start, end, value } = expect(SyntaxKinds.StringLiteral);
         return Factory.createStringLiteral(value, start, end);
     }
     function parseBoolLiteral() {
@@ -1733,7 +1734,7 @@ export function createParser(code: string) {
 
     }
     function parseImportMeta() {
-        const { start, end } =  expect([SyntaxKinds.ImportKeyword]);
+        const { start, end } =  expect(SyntaxKinds.ImportKeyword);
         expect(SyntaxKinds.DotOperator);
         const property = parseIdentifer();
         if(property.name !== "meta") {
@@ -1742,14 +1743,14 @@ export function createParser(code: string) {
         return Factory.createMetaProperty(Factory.createIdentifier("import", start, end), property, start, cloneSourcePosition(property.end));
     }
     function parseImportCall() {
-        const { start, end } =  expect([SyntaxKinds.ImportKeyword]);
+        const { start, end } =  expect(SyntaxKinds.ImportKeyword);
         expect(SyntaxKinds.ParenthesesLeftPunctuator);
         const argument = parseAssigmentExpression();
         const { end: finalEnd } = expect(SyntaxKinds.ParenthesesRightPunctuator);
         return Factory.createCallExpression(Factory.createImport(start, end), [argument], false,  cloneSourcePosition(start), cloneSourcePosition(finalEnd));
     }
     function parseNewTarget() {
-        const { start, end } = expect([SyntaxKinds.NewKeyword]);
+        const { start, end } = expect(SyntaxKinds.NewKeyword);
         expect(SyntaxKinds.DotOperator);
         if(getValue() !== "target") {
             throw createUnexpectError(SyntaxKinds.Identifier, "new concat with dot should only be used in meta property");
@@ -1772,7 +1773,7 @@ export function createParser(code: string) {
      * @returns {Expression}
      */
     function parseNewExpression():Expression {
-        const { start } = expect([SyntaxKinds.NewKeyword])
+        const { start } = expect(SyntaxKinds.NewKeyword)
         if(match(SyntaxKinds.NewKeyword)) {
             return parseNewExpression();
         }
@@ -1814,7 +1815,7 @@ export function createParser(code: string) {
      * @returns {Expression} actually is `ObjectExpression`
      */
     function parseObjectExpression(): Expression {
-        const { start } =  expect([SyntaxKinds.BracesLeftPunctuator]);
+        const { start } =  expect(SyntaxKinds.BracesLeftPunctuator);
         let isStart = true;
         const propertyDefinitionList: Array<PropertyDefinition> = [];
         while(!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
@@ -2081,7 +2082,7 @@ export function createParser(code: string) {
         );
     }
     function parseArrayExpression() {
-        const { start } = expect([SyntaxKinds.BracketLeftPunctuator]);
+        const { start } = expect(SyntaxKinds.BracketLeftPunctuator);
         const elements: Array<Expression | null> = [];
         let tralingComma = false;
         let isStart = true;
@@ -2218,7 +2219,7 @@ export function createParser(code: string) {
      * @return {ObjectPattern}
      */
     function parseObjectPattern(): ObjectPattern {
-        const { start } =  expect([SyntaxKinds.BracesLeftPunctuator]);
+        const { start } =  expect(SyntaxKinds.BracesLeftPunctuator);
         let isStart = false;
         const properties: Array<ObjectPatternProperty | RestElement | AssignmentPattern> = [];
         while(!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
@@ -2277,7 +2278,7 @@ export function createParser(code: string) {
         return Factory.createObjectPattern(properties, start, end);
     }
     function parseArrayPattern(): ArrayPattern {
-        const { start } = expect([SyntaxKinds.BracketLeftPunctuator])
+        const { start } = expect(SyntaxKinds.BracketLeftPunctuator)
         let isStart = true;
         const elements: Array<Pattern| null> = [];
         while(!match(SyntaxKinds.BracketRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
@@ -2340,7 +2341,7 @@ export function createParser(code: string) {
      * @returns {ImportDeclaration}
      */
     function parseImportDeclaration(): ImportDeclaration {
-        const { start } =  expect([SyntaxKinds.ImportKeyword])
+        const { start } =  expect(SyntaxKinds.ImportKeyword)
         const specifiers: Array<ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier> = [];
         if(match(SyntaxKinds.StringLiteral)) {
             const source = parseStringLiteral();
@@ -2396,7 +2397,7 @@ export function createParser(code: string) {
      * @returns {ImportNamespaceSpecifier}
      */
     function parseImportNamespaceSpecifier(): ImportNamespaceSpecifier {
-        const { start } =  expect([SyntaxKinds.MultiplyOperator]);
+        const { start } =  expect(SyntaxKinds.MultiplyOperator);
         if(getValue()!== "as") {
             throw createMessageError("import namespace specifier must has 'as'");
         }
@@ -2416,7 +2417,7 @@ export function createParser(code: string) {
      * @return {void}
      */
     function parseImportSpecifiers(specifiers: Array<ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier>): void {
-        expect([SyntaxKinds.BracesLeftPunctuator]);
+        expect(SyntaxKinds.BracesLeftPunctuator);
         let isStart = true;
         while(!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
             if(isStart) {
@@ -2475,7 +2476,7 @@ export function createParser(code: string) {
      * @returns {ExportDeclaration}
      */
     function parseExportDeclaration(): ExportDeclaration {
-        const {start} = expect([SyntaxKinds.ExportKeyword]);
+        const {start} = expect(SyntaxKinds.ExportKeyword);
         if(match(SyntaxKinds.DefaultKeyword)) {
             return parseExportDefaultDeclaration(start);
         }
@@ -2489,7 +2490,7 @@ export function createParser(code: string) {
         return Factory.createExportNamedDeclaration([], declaration, null, start, cloneSourcePosition(declaration.end));
     }
     function parseExportDefaultDeclaration(start: SourcePosition): ExportDefaultDeclaration{
-        expect([SyntaxKinds.DefaultKeyword]);
+        expect(SyntaxKinds.DefaultKeyword);
         if(match(SyntaxKinds.ClassKeyword)) {
             let classDeclar = parseClass();
             classDeclar = Factory.transFormClassToClassExpression(classDeclar);
@@ -2515,7 +2516,7 @@ export function createParser(code: string) {
         return Factory.createExportDefaultDeclaration(expr, start, cloneSourcePosition(expr.end));
     }
     function parseExportNamedDeclaration(start: SourcePosition): ExportNamedDeclarations {
-        expect([SyntaxKinds.BracesLeftPunctuator]);
+        expect(SyntaxKinds.BracesLeftPunctuator);
         const specifier: Array<ExportSpecifier> = []; 
         let isStart = true;
         while(!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
@@ -2548,7 +2549,7 @@ export function createParser(code: string) {
         return Factory.createExportNamedDeclaration(specifier, null, source, start, cloneSourcePosition(end));
     }
     function parseExportAllDeclaration(start: SourcePosition): ExportAllDeclaration {
-        expect([SyntaxKinds.MultiplyOperator]);
+        expect(SyntaxKinds.MultiplyOperator);
         let exported: Identifier | null = null;
         if(getValue() === "as") {
             nextToken();
