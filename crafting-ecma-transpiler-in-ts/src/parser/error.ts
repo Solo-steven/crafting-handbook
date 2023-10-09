@@ -29,5 +29,7 @@ export const ErrorMessageMap = {
     setter_can_not_have_rest_element_as_argument: "setter method can not ahve rest element as argument",
     assigment_pattern_only_can_use_assigment_operator: "assigment pattern can only using assignment operator",
     invalid_property_name: "invalid property name",
-    super_must_be_followed_by_an_argument_list_or_member_access: "'super' must be followed by an argument list or member access."
+    super_must_be_followed_by_an_argument_list_or_member_access: "'super' must be followed by an argument list or member access.",
+    when_in_async_context_await_keyword_will_treat_as_keyword: "when in async context await_keyword will treat as keyword not identifier",
+    when_in_yield_context_yield_will_be_treated_as_keyword: "when in yield context yield will be treated as keyword not identifier",
 }

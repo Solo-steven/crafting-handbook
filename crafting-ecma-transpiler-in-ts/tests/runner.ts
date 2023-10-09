@@ -105,9 +105,6 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/ES6/template-literals/invalid_strict-octal-literal.js",
     "fixtures/es2020/importmeta/invalid-unicode-escape-import.module.js",
     "fixtures/es2020/importmeta/unicode-escape-meta.module.js",
-    // === yield as identifier problem
-    "fixtures/es2017/async/arrows/async-arrow-parenthesized-yield.js",
-    "fixtures/es2017/async/arrows/async-arrow-yield.js",
     //  ==== other
     "fixtures/es2018/dynamic-import/invalid-new-import-call.js",
     "fixtures/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",

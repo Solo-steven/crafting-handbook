@@ -1,0 +1,73 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": true,
+                "async": true,
+                "arguments": [
+                    {
+                        "kind": "Identifer",
+                        "name": "yield",
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 13,
+                            "index": 12
+                        }
+                    }
+                ],
+                "body": {
+                    "kind": "NumberLiteral",
+                    "value": "1",
+                    "start": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 19,
+                        "index": 18
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 19,
+                    "index": 18
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 7,
+                "index": 6
+            },
+            "end": {
+                "row": 1,
+                "col": 19,
+                "index": 18
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 7,
+        "index": 6
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 20
+    }
+}

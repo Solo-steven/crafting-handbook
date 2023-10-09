@@ -122,6 +122,10 @@ interface Context {
     // *** when class `parseClass` must wrap helper function before and after parse class body
     classContext: Array<[boolean]>,
     // ====================================================================================
+    // when parse for-in statement, we need to ignore `in` operator to seperate left and right
+    // expression of for-in statement, so we need to know is current expression level is call by 
+    // for-in statement, and expression level is determinate by `parseExpression` and 
+    // `parseAssignmentExpression` function.
     inOperatorStack: Array<boolean>,
 
     inFor: boolean,
@@ -132,7 +136,6 @@ interface Context {
     topLevelArgumentIndex: number,
     // for resolve mark as init property when transform object expression to object pattern
     propertiesInitSet: Set<any>;
-    // for resolve for in statement problem
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -975,6 +978,7 @@ export function createParser(code: string) {
         let generator = false;
         if(match(SyntaxKinds.MultiplyOperator)) {
             generator = true;
+            mutateCurrentFunctionScope(true);
             nextToken();
         }
         let name: Identifier | null = null;
@@ -1294,7 +1298,7 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
             context.maybeArrow = true;
         }
-        if(match(SyntaxKinds.YieldKeyword)) {
+        if(match(SyntaxKinds.YieldKeyword) && isCurrentFunctionGenerator()) {
             return parseYieldExpression();
         }
         // push assigment destrcuture context
@@ -1436,11 +1440,7 @@ export function createParser(code: string) {
             const argument = parseUnaryExpression();
             return Factory.createUnaryExpression(argument, operator, start, cloneSourcePosition(argument.end));
         }
-        if(match(SyntaxKinds.AwaitKeyword)) {
-            if(!isCurrentFunctionAsync()) {
-                console.log(context.functionContext);
-                throw createMessageError(ErrorMessageMap.await_can_not_call_if_not_in_async);
-            }
+        if(match(SyntaxKinds.AwaitKeyword) && isCurrentFunctionAsync()) {
             const start = getStartPosition();
             nextToken();
             const argu = parseUnaryExpression();
@@ -1677,11 +1677,19 @@ export function createParser(code: string) {
             // TODO: consider wrap as function or default case ?
             case SyntaxKinds.PrivateName:
                 return parsePrivateName();
-            case SyntaxKinds.Identifier: {
+            case SyntaxKinds.Identifier: 
+            case SyntaxKinds.AwaitKeyword:
+            case SyntaxKinds.YieldKeyword: {
                 const lookaheadToken = lookahead();
+                // case 1: async <Identifer> ==> must be async <id> => {};
                 if(
                     lookaheadToken === SyntaxKinds.ArrowOperator || 
-                    (getValue() === "async"  && lookaheadToken === SyntaxKinds.Identifier)
+                    (
+                        getValue() === "async"  && (
+                            lookaheadToken === SyntaxKinds.Identifier ||
+                            lookaheadToken === SyntaxKinds.YieldKeyword ||
+                            lookaheadToken === SyntaxKinds.AwaitKeyword
+                        ))
                 ) {
                     if(getValue() === "async") {
                         enterFunctionScope(true);
@@ -1701,6 +1709,7 @@ export function createParser(code: string) {
                     exitFunctionScope();
                     return arrowExpr;
                 }
+                // case 2 async ( ===> must be `async (<Argument>) => {}`;
                 if(getValue() === "async"  && lookaheadToken === SyntaxKinds.ParenthesesLeftPunctuator) {
                     nextToken();
                     if(predictLineTerminate()) {
@@ -1711,6 +1720,7 @@ export function createParser(code: string) {
                     exitFunctionScope();
                     return arrowFunExpr;
                 }
+                // case 3 async function ==> must be async function <id> () {}
                 if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
                     nextToken();
                     if(predictLineTerminate()) {
@@ -1739,6 +1749,21 @@ export function createParser(code: string) {
         return Factory.createRegexLiteral(pattern, flag, start , getEndPosition());
     }
     function parseIdentifer(): Identifier {
+        expectButNotEat([SyntaxKinds.Identifier, SyntaxKinds.AwaitKeyword, SyntaxKinds.YieldKeyword]);
+        if(match(SyntaxKinds.YieldKeyword)) {
+            if (!isCurrentFunctionGenerator()) {
+                const { value, start, end } = expect(SyntaxKinds.YieldKeyword);
+                return Factory.createIdentifier(value, start, end);
+            }
+            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+        }
+        if(match(SyntaxKinds.AwaitKeyword)) {
+            if(!isCurrentFunctionAsync()) {
+                const { value, start, end } = expect(SyntaxKinds.AwaitKeyword);
+                return Factory.createIdentifier(value, start, end);
+            }
+            throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+        }
         const { value, start, end } = expect(SyntaxKinds.Identifier);
         return Factory.createIdentifier(value, start, end);
     }
