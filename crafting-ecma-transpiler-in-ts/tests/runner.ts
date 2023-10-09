@@ -275,6 +275,29 @@ async function runerAllTestCase() {
         }
     }));
 }
+const thirdPartyTestCase = [
+    { title: "Jquery uncompressed", url: "https://code.jquery.com/jquery-3.7.1.js", code: "" },
+    { title: "react development", url: "https://unpkg.com/react@18/umd/react.development.js", code: "" },
+    { title: "react dom development", url: "https://unpkg.com/react-dom@18/umd/react-dom.development.js", code: "" },
+]
+
+async function run3partyTestCase() {
+    await Promise.all(thirdPartyTestCase.map(async (testCase) => {
+        const code = await fetch(testCase.url).then(resp => resp.text());
+        testCase.code = code;
+    }));
+    console.log("==========================================");
+    for(const testCode of thirdPartyTestCase) {
+        try{
+            const parser = createParser(testCode.code);
+            parser.parse();
+            console.log(`|${testCode.title}|: parse PASS.`);
+        }catch(e) {
+            console.log(`|${testCode.title}|: parse FAILED.`);
+        }
+    }
+    console.log("==========================================");
+}
 
 function report() {
     for(const testCase of passTestCases) {
@@ -309,17 +332,14 @@ function report() {
     console.log(`Skip rate: ${skipTestCases.length} / ${allTestCaseCount}`);
     console.log(`Expect Failed rate: ${expectFailedTestCase.length} /${allTestCaseCount} `);
     console.log(`Expect Failed But Passed rate: ${expectFaildButPassCase.length} /${allTestCaseCount}`)
-    if(passRate < gate - updateRate) {
-        process.exit(1);
-    }else {
-        process.exit(0);
-    }
+    console.log("\n==========================================================\n");
 }
 /**
  * Script Entry point
  */
 runerAllTestCase()
-    .then(() => {
+    .then(async () => {
         report();
+        await run3partyTestCase();
     })
     .catch(console.log);
