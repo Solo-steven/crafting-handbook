@@ -106,8 +106,24 @@ import { createLexer } from "../lexer/index";
  */
 interface Context {
     maybeArrow: boolean;
-    inAsyncCount: number
-    inClassCount: number;
+    // ====================================================================================
+    // function context indicate current function state (async or generator).
+    // - used by checking if await expression validate (parent function block must be async).
+    // - used by checking yield expression  validare (parent function block must be generator).
+    // *** when call `parseFunctionDeclaration` `parseFunctionExpression` `parseArrowFunctionExpression` 
+    // *** must wrap by context helper function `enterFunctionScope`, `exitFunctionScope` 
+    functionContext: Array<[boolean, boolean]>; // tuple (isAsync, isGenerator)
+    // ====================================================================================
+    // class context indicate current class state (is in class ?, have extend class ?)
+    // - used by checking super call validate (must in class block and have extend class)
+    // - used by checking private name in expression is validate (must in class block).
+    // - NOTE: method and property can not use private name have already been check, because by which call
+    //   `parseMethodDefinition`, we can know is in class or object.
+    // *** when class `parseClass` must wrap helper function before and after parse class body
+    classContext: Array<[boolean]>,
+    // ====================================================================================
+    inOperatorStack: Array<boolean>,
+
     inFor: boolean,
     // for resolve check object property init is in pattern or not
     inArgumentOrParameter: boolean,
@@ -117,7 +133,6 @@ interface Context {
     // for resolve mark as init property when transform object expression to object pattern
     propertiesInitSet: Set<any>;
     // for resolve for in statement problem
-    inOperatorStack: Array<boolean>,
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -131,10 +146,12 @@ interface ASTArrayWithMetaData<T> {
  */
 function createContext(): Context {
     return {
+        functionContext: [],
+        classContext: [],
         maybeArrow: false,
-        inAsyncCount: 0,
-        inClassCount: 0,
-        inFor: false,
+
+        // for resolve binary expression with in operator when in for-in statement problem
+        inOperatorStack: [],
         // for resolve check object property init is in pattern or not
         inArgumentOrParameter: false,
         assignDestructingStack: [],
@@ -142,8 +159,8 @@ function createContext(): Context {
         topLevelArgumentIndex: -1,
         // for resolve mark as init property when transform object expression to object pattern
         propertiesInitSet: new Set(),
-        // for resolve for in statement problem
-        inOperatorStack: [],
+        /** === For-In Statement Problem === */
+        inFor: false,
     }
 }
 
@@ -355,6 +372,50 @@ export function createParser(code: string) {
         message += ", please report to developer.";
         return new Error(message);
     }
+/** =================================================
+ *    Context Helper
+ *  =================================================
+ */
+    function enterFunctionScope(isAsync: boolean = false, isGenerator: boolean = false) {
+        context.functionContext.push([isAsync, isGenerator]);
+    }
+    function exitFunctionScope() {
+        context.functionContext.pop();
+    }
+    function mutateCurrentFunctionScope(isGenerator: boolean) {
+        if(context.functionContext.length === 0) {
+            return;
+        }
+        context.functionContext[context.functionContext.length -1][1] = isGenerator;
+    }
+    function isCurrentFunctionAsync(): boolean {
+        if(context.functionContext.length === 0) {
+            return false;
+        }
+        return context.functionContext[context.functionContext.length -1][0];
+    }
+    function isCurrentFunctionGenerator() {
+        if(context.functionContext.length === 0) {
+            return false;
+        }
+        return context.functionContext[context.functionContext.length -1][1];
+    }
+    function enterClassScope(isExtend: boolean = false) {
+        context.classContext.push([isExtend]);
+    }
+    function existClassScope() {
+        context.classContext.pop();
+    }
+    function isInClassScope() {
+        return context.classContext.length > 0;
+    }
+    function isCurrentClassExtend() {
+        if(context.classContext.length === 0) {
+            return false;
+        }
+        return context.classContext[context.classContext.length -1][0];
+    }
+
 /** ==================================================
  *  Top level parse function 
  *  ==================================================
@@ -432,16 +493,19 @@ export function createParser(code: string) {
                     if(predictLineTerminate()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
-                    context.inAsyncCount ++;
+                    enterFunctionScope(true);
                     const funDeclar = parseFunctionDeclaration();
-                    context.inAsyncCount --;
+                    exitFunctionScope();
                     return funDeclar;
                 } else {
                    throw createUnreachError();
                 }
             // function delcaration
             case SyntaxKinds.FunctionKeyword: 
-                return parseFunctionDeclaration();
+                enterFunctionScope(false);
+                const functionExpr = parseFunctionDeclaration();
+                exitFunctionScope();
+                return functionExpr;
             case SyntaxKinds.ConstKeyword:
             case SyntaxKinds.LetKeyword:
                 return parseVariableDeclaration();
@@ -596,7 +660,7 @@ export function createParser(code: string) {
         let isAwait = false, leftOrInit: VariableDeclaration | Expression | null = null;
         if(match(SyntaxKinds.AwaitKeyword)) {
             nextToken();
-            if(context.inAsyncCount === 0) {
+            if(!isCurrentFunctionAsync()) {
                 throw createMessageError(ErrorMessageMap.await_can_not_call_if_not_in_async);
             }
             isAwait = true;
@@ -920,7 +984,7 @@ export function createParser(code: string) {
         }
         const params = parseFunctionParam();
         const body = parseFunctionBody();
-        return Factory.createFunction(name, body, params, generator, context.inAsyncCount !== 0, start, cloneSourcePosition(body.end));
+        return Factory.createFunction(name, body, params, generator, isCurrentFunctionAsync(), start, cloneSourcePosition(body.end));
     }
     /**
      * Parse Function Body
@@ -1052,7 +1116,6 @@ export function createParser(code: string) {
      * @returns {Class}
      */
     function parseClass(): Class {
-        context.inClassCount ++;
         const { start } = expect(SyntaxKinds.ClassKeyword);
         let name: Identifier | null = null;
         if(match(SyntaxKinds.Identifier)) {
@@ -1062,10 +1125,11 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.ExtendsKeyword)) {
             nextToken();
             superClass = parseLeftHandSideExpression();
-            
+        }else {
+            enterClassScope(true);
         }
         const body = parseClassBody();
-        context.inClassCount --;
+        existClassScope();
         return Factory.createClass(name, superClass, body, start, cloneSourcePosition(body.end));
     }
     /** 
@@ -1373,7 +1437,8 @@ export function createParser(code: string) {
             return Factory.createUnaryExpression(argument, operator, start, cloneSourcePosition(argument.end));
         }
         if(match(SyntaxKinds.AwaitKeyword)) {
-            if(context.inAsyncCount===0) {
+            if(!isCurrentFunctionAsync()) {
+                console.log(context.functionContext);
                 throw createMessageError(ErrorMessageMap.await_can_not_call_if_not_in_async);
             }
             const start = getStartPosition();
@@ -1601,7 +1666,10 @@ export function createParser(code: string) {
             case SyntaxKinds.BracketLeftPunctuator:
                 return parseArrayExpression();
             case SyntaxKinds.FunctionKeyword:
-                return parseFunctionExpression();
+                enterFunctionScope();
+                const expr = parseFunctionExpression();
+                exitFunctionScope();
+                return expr;
             case SyntaxKinds.ClassKeyword:
                 return parseClassExpression();
             case SyntaxKinds.ParenthesesLeftPunctuator:
@@ -1615,14 +1683,14 @@ export function createParser(code: string) {
                     lookaheadToken === SyntaxKinds.ArrowOperator || 
                     (getValue() === "async"  && lookaheadToken === SyntaxKinds.Identifier)
                 ) {
-                    let deferWork: CallableFunction = () => {};
                     if(getValue() === "async") {
-                        context.inAsyncCount ++;
+                        enterFunctionScope(true);
                         nextToken();
                         if(predictLineTerminate()) {
                             throw createMessageError(ErrorMessageMap.missing_semicolon);
                         }
-                        deferWork = () => context.inAsyncCount--;
+                    }else {
+                        enterFunctionScope();
                     }
                     const argus = [parseIdentifer()];
                     const arrowExpr = parseArrowFunctionExpression({
@@ -1630,7 +1698,7 @@ export function createParser(code: string) {
                         start: argus[0].start,
                         end: argus[0].end
                     });
-                    deferWork();
+                    exitFunctionScope();
                     return arrowExpr;
                 }
                 if(getValue() === "async"  && lookaheadToken === SyntaxKinds.ParenthesesLeftPunctuator) {
@@ -1638,10 +1706,9 @@ export function createParser(code: string) {
                     if(predictLineTerminate()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
-                    context.inAsyncCount ++;
-                    console.log(context.inAsyncCount);
+                    enterFunctionScope(true);
                     const arrowFunExpr = parseArrowFunctionExpression(parseArguments());
-                    context.inAsyncCount --;
+                    exitFunctionScope();
                     return arrowFunExpr;
                 }
                 if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
@@ -1649,9 +1716,9 @@ export function createParser(code: string) {
                     if(predictLineTerminate()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
-                    context.inAsyncCount ++;
+                    enterFunctionScope(true);
                     const functionExpr = parseFunctionExpression();
-                    context.inAsyncCount --;
+                    exitFunctionScope();
                     return functionExpr;
                 }
                 return parseIdentifer();
@@ -1796,12 +1863,18 @@ export function createParser(code: string) {
 
     }
     function parseSuper() {
-        if(context.inClassCount === 0) {
+        if(!isCurrentClassExtend()) {
             throw createMessageError(ErrorMessageMap.super_can_not_call_if_not_in_class);
         }
         const { start: keywordStart, end: keywordEnd } = expect([SyntaxKinds.SuperKeyword]);
-        const { nodes, end: argusEnd } = parseArguments();
-        return Factory.createCallExpression(Factory.createSuper(keywordStart, keywordEnd), nodes, false, cloneSourcePosition(keywordStart) , argusEnd);
+        if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
+            const { nodes, end: argusEnd } = parseArguments();
+            return Factory.createCallExpression(Factory.createSuper(keywordStart, keywordEnd), nodes, false, cloneSourcePosition(keywordStart) , argusEnd);
+        }
+        if(match(SyntaxKinds.DotOperator) || match(SyntaxKinds.BracketLeftPunctuator)) {
+            return Factory.createSuper(keywordStart, keywordEnd);
+        }
+        throw createMessageError(ErrorMessageMap.super_must_be_followed_by_an_argument_list_or_member_access);
     }
     function parseThisExpression() {
         const { start, end } = expect([SyntaxKinds.ThisKeyword]);
@@ -2058,7 +2131,8 @@ export function createParser(code: string) {
             throw createMessageError(ErrorMessageMap.setter_can_not_be_async_or_generator);
         }
         if(withPropertyName.kind === SyntaxKinds.Identifier) {
-            if(withPropertyName.name === "constructor" && context.inClassCount > 0) {
+            console.log(context.classContext);
+            if(withPropertyName.name === "constructor" && isInClassScope()) {
                 if(isAsync || generator || isStatic) {
                     throw createMessageError(ErrorMessageMap.constructor_can_not_be_async_or_generator);
                 }
@@ -2143,7 +2217,10 @@ export function createParser(code: string) {
             }
             return Factory.createSequenceExpression(nodes, start, end);
         }
-        return parseArrowFunctionExpression({start, end, nodes});
+        enterFunctionScope();
+        const arrowExpr = parseArrowFunctionExpression({start, end, nodes});
+        exitFunctionScope();
+        return arrowExpr;
     }
     function parseArrowFunctionExpression(metaData: ASTArrayWithMetaData<Expression>) {
         if(!match(SyntaxKinds.ArrowOperator)) {
@@ -2163,7 +2240,7 @@ export function createParser(code: string) {
         }
         const functionArguments = metaData.nodes.map(node => toAssignmentPattern(node, true)) as Array<Pattern>;
         checkFunctionParams(functionArguments);
-        return Factory.createArrowExpression(isExpression, body,  functionArguments, context.inAsyncCount !== 0, cloneSourcePosition(metaData.start), cloneSourcePosition(body.end));
+        return Factory.createArrowExpression(isExpression, body,  functionArguments, isCurrentFunctionAsync(), cloneSourcePosition(metaData.start), cloneSourcePosition(body.end));
     }
 /** ================================================================================
  *  Parse Pattern
@@ -2504,16 +2581,18 @@ export function createParser(code: string) {
             return Factory.createExportDefaultDeclaration(classDeclar as ClassDeclaration | ClassExpression, start, cloneSourcePosition(classDeclar.end));
         }
         if(match(SyntaxKinds.FunctionKeyword)) {
-            let funDeclar = parseFunction()
+            enterFunctionScope();
+            let funDeclar = parseFunction();
+            exitFunctionScope();
             funDeclar = Factory.transFormFunctionToFunctionExpression(funDeclar);
             semi();
             return Factory.createExportDefaultDeclaration(funDeclar as FunctionDeclaration | FunctionExpression, start, cloneSourcePosition(funDeclar.end));
         }   
         if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
             nextToken();
-            context.inAsyncCount ++;
+            enterFunctionScope(true);
             const funDeclar = parseFunctionExpression();
-            context.inAsyncCount --;
+            exitFunctionScope();
             semi();
             return Factory.createExportDefaultDeclaration(funDeclar, start, cloneSourcePosition(funDeclar.end));
         }

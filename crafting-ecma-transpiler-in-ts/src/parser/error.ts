@@ -29,4 +29,5 @@ export const ErrorMessageMap = {
     setter_can_not_have_rest_element_as_argument: "setter method can not ahve rest element as argument",
     assigment_pattern_only_can_use_assigment_operator: "assigment pattern can only using assignment operator",
     invalid_property_name: "invalid property name",
+    super_must_be_followed_by_an_argument_list_or_member_access: "'super' must be followed by an argument list or member access."
 }
