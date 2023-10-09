@@ -491,7 +491,6 @@ export function createLexer(code: string): Lexer {
         if(!startWith("<")) {
             throw subStateMachineError("readLTStart", "<");
         }
-        eatChar();
         if(startWith("<<=")) {
             eatChar(3);
             return finishToken(SyntaxKinds.BitwiseLeftShiftAssginOperator, "<<=");
