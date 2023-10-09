@@ -94,6 +94,7 @@ import {
     isPrivateName,
     ObjectProperty,
     isMemberExpression,
+    LexicalLiteral,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -147,6 +148,7 @@ function createContext(): Context {
 }
 
 const IdentiferWithKeyworArray = [SyntaxKinds.Identifier, ...Keywords];
+const LexicalKeywordSet = new Set(LexicalLiteral.keywords);
 /**
  * 
  * @param code 
@@ -1930,15 +1932,19 @@ export function createParser(code: string) {
      * @returns {PropertyName}
      */
     function parsePropertyName(isComputedRef: { isComputed: boolean }): PropertyName {
-        expectButNotEat([SyntaxKinds.Identifier, SyntaxKinds.BracketLeftPunctuator, SyntaxKinds.NumberLiteral, SyntaxKinds.StringLiteral]);
+        expectButNotEat([SyntaxKinds.BracketLeftPunctuator, SyntaxKinds.NumberLiteral, SyntaxKinds.StringLiteral, ...IdentiferWithKeyworArray]);
         if(match(SyntaxKinds.StringLiteral)) {
             return parseStringLiteral();
         }
         if(match(SyntaxKinds.NumberLiteral)) {
             return parseNumberLiteral();
         }
-        if(match(SyntaxKinds.Identifier)) {
-            return parseIdentifer();
+        if(matchSet(IdentiferWithKeyworArray)) {
+            const identifer = parseIdentiferWithKeyword();
+            if(LexicalKeywordSet.has(identifer.name) && !match(SyntaxKinds.ColonPunctuator)) {
+                throw createMessageError(ErrorMessageMap.invalid_property_name);
+            }
+            return identifer;
         }
         nextToken();
         const expr = parseAssigmentExpression();

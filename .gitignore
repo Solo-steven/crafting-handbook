@@ -4,4 +4,5 @@ jquery.js
 jquery.min.js
 jquery.min.format.js
 react.development.js
+react-dom.development.js
 test.js
