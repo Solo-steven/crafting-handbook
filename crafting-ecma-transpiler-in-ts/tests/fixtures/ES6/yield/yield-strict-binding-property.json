@@ -1,0 +1,143 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 13,
+                "index": 12
+            }
+        },
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "ObjectPattern",
+                        "properties": [
+                            {
+                                "kind": "ObjectPatternProperty",
+                                "computed": false,
+                                "shorted": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "yield",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 21,
+                                        "index": 20
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 26,
+                                        "index": 25
+                                    }
+                                },
+                                "value": {
+                                    "kind": "Identifer",
+                                    "name": "x",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 28,
+                                        "index": 27
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 29,
+                                        "index": 28
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 21,
+                                    "index": 20
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 29,
+                                    "index": 28
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 31,
+                            "index": 30
+                        }
+                    },
+                    "init": {
+                        "kind": "Identifer",
+                        "name": "foo",
+                        "start": {
+                            "row": 1,
+                            "col": 34,
+                            "index": 33
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 37,
+                            "index": 36
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 19,
+                        "index": 18
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 37,
+                        "index": 36
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 15,
+                "index": 14
+            },
+            "end": {
+                "row": 1,
+                "col": 37,
+                "index": 36
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 38
+    }
+}

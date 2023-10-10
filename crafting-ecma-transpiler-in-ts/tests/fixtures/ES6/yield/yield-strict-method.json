@@ -1,0 +1,115 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 13,
+                "index": 12
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ObjectExpression",
+                "properties": [
+                    {
+                        "kind": "ObjectMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "yield",
+                            "start": {
+                                "row": 1,
+                                "col": 18,
+                                "index": 17
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 23,
+                                "index": 22
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 1,
+                                "col": 26,
+                                "index": 25
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 28,
+                                "index": 27
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 28,
+                            "index": 27
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 16,
+                    "index": 15
+                },
+                "end": {
+                    "row": 1,
+                    "col": 30,
+                    "index": 29
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 16,
+                "index": 15
+            },
+            "end": {
+                "row": 1,
+                "col": 30,
+                "index": 29
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 31
+    }
+}

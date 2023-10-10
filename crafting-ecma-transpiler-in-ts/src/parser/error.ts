@@ -32,4 +32,7 @@ export const ErrorMessageMap = {
     super_must_be_followed_by_an_argument_list_or_member_access: "'super' must be followed by an argument list or member access.",
     when_in_async_context_await_keyword_will_treat_as_keyword: "when in async context await_keyword will treat as keyword not identifier",
     when_in_yield_context_yield_will_be_treated_as_keyword: "when in yield context yield will be treated as keyword not identifier",
+    yield_deletgate_can_must_be_followed_by_assignment_expression: "yield deletegate must be followed by assignment expression",
+    await_expression_can_not_used_in_parameter_list: "await expression can not used in parameter list",
+    yield_expression_can_not_used_in_parameter_list: "yield expression can not used in parameter list",
 }

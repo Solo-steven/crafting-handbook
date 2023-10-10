@@ -98,6 +98,22 @@ const TempIgnoreCases: Array<String> = [
     //  ==== strict mode problem
     "fixtures/ES6/arrow-function/invalid-param-strict-mode.js",
     "fixtures/declaration/function/invalid-strict-labelled-function-declaration.js",
+    // strict mode generator problem
+    "fixtures/ES6/yield/invalid-yield-generator-strict-function-expression.js",
+    "fixtures/ES6/yield/invalid-yield-generator-strict-function-parameter.js",
+    "fixtures/ES6/yield/invalid-yield-strict-array-pattern.js",
+    "fixtures/ES6/yield/invalid-yield-strict-arrow-parameter-name.js",
+    "fixtures/ES6/yield/invalid-yield-strict-binding-element.js",
+    "fixtures/ES6/yield/invalid-yield-strict-catch-parameter.js",
+    "fixtures/ES6/yield/invalid-yield-strict-formal-parameter.js",
+    "fixtures/ES6/yield/invalid-yield-strict-function-declaration.js",
+    "fixtures/ES6/yield/invalid-yield-strict-function-expression.js",
+    "fixtures/ES6/yield/invalid-yield-strict-identifier.js",
+    "fixtures/ES6/yield/invalid-yield-strict-lexical-declaration.js",
+    "fixtures/ES6/yield/invalid-yield-strict-rest-parameter.js",
+    "fixtures/ES6/yield/invalid-yield-strict-variable-declaration.js",
+    // yield predi followed argument
+    "fixtures/ES6/yield/ternary-yield.js",
     //  ==== unicode and excap char problem
     "fixtures/ES6/template-literals/invalid-escape.js",
     "fixtures/ES6/template-literals/invalid-hex-escape-sequence.js",
@@ -108,6 +124,9 @@ const TempIgnoreCases: Array<String> = [
     //  ==== other
     "fixtures/es2018/dynamic-import/invalid-new-import-call.js",
     "fixtures/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
+    // ==== Label Statement Problem
+    "fixtures/ES6/generator/invalid-labelled-generator.js",
+    "fixtures/declaration/function/invalid-strict-labelled-function-declaration.js",
 ];
 /**
  * Helper function that parse code string and

@@ -1,0 +1,203 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": {
+                "kind": "Identifer",
+                "name": "B",
+                "start": {
+                    "row": 1,
+                    "col": 17,
+                    "index": 16
+                },
+                "end": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                }
+            },
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": true,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "b",
+                            "start": {
+                                "row": 1,
+                                "col": 22,
+                                "index": 21
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 23,
+                                "index": 22
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [
+                                {
+                                    "kind": "ExpressionStatement",
+                                    "expr": {
+                                        "kind": "YieldExpression",
+                                        "argument": {
+                                            "kind": "CallExpression",
+                                            "optional": false,
+                                            "callee": {
+                                                "kind": "MemberExpression",
+                                                "computed": false,
+                                                "optional": false,
+                                                "object": {
+                                                    "kind": "Super",
+                                                    "name": "super",
+                                                    "start": {
+                                                        "row": 1,
+                                                        "col": 34,
+                                                        "index": 33
+                                                    },
+                                                    "end": {
+                                                        "row": 1,
+                                                        "col": 39,
+                                                        "index": 38
+                                                    }
+                                                },
+                                                "property": {
+                                                    "kind": "Identifer",
+                                                    "name": "c",
+                                                    "start": {
+                                                        "row": 1,
+                                                        "col": 40,
+                                                        "index": 39
+                                                    },
+                                                    "end": {
+                                                        "row": 1,
+                                                        "col": 41,
+                                                        "index": 40
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 1,
+                                                    "col": 34,
+                                                    "index": 33
+                                                },
+                                                "end": {
+                                                    "row": 1,
+                                                    "col": 41,
+                                                    "index": 40
+                                                }
+                                            },
+                                            "arguments": [],
+                                            "start": {
+                                                "row": 1,
+                                                "col": 34,
+                                                "index": 33
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 43,
+                                                "index": 42
+                                            }
+                                        },
+                                        "delegate": false,
+                                        "start": {
+                                            "row": 1,
+                                            "col": 28,
+                                            "index": 27
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 43,
+                                            "index": 42
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 28,
+                                        "index": 27
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 43,
+                                        "index": 42
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 26,
+                                "index": 25
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 46,
+                                "index": 45
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 46,
+                            "index": 45
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 19,
+                    "index": 18
+                },
+                "end": {
+                    "row": 1,
+                    "col": 48,
+                    "index": 47
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 48,
+                "index": 47
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 48
+    }
+}

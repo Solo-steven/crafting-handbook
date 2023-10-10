@@ -257,7 +257,7 @@ export interface ArrayPattern extends ModuleItem {
 export interface AssignmentPattern extends ModuleItem {
     kind: SyntaxKinds.AssignmentPattern;
     left: Pattern;
-    right: Expression | undefined;
+    right: Expression;
 }
 export interface RestElement extends ModuleItem {
     kind: SyntaxKinds.RestElement;
@@ -536,6 +536,12 @@ export function isClassExpression(node: ModuleItem): node is ClassExpression {
 }
 export function isArrayExpression(node: ModuleItem): node is ArrayExpression {
     return node.kind === SyntaxKinds.ArrayExpression;
+}
+export function isAwaitExpression(node: ModuleItem): node is AwaitExpression {
+    return node.kind === SyntaxKinds.AwaitExpression;
+}
+export function isYieldExpression(node: ModuleItem): node is YieldExpression {
+    return node.kind === SyntaxKinds.YieldExpression;
 }
 export function isFunctionExpression(node: ModuleItem): node is FunctionExpression {
     return node.kind === SyntaxKinds.FunctionExpression;

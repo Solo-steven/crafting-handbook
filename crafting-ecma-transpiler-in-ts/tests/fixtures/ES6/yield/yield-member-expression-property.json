@@ -1,0 +1,130 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "g",
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "generator": true,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "YieldExpression",
+                            "argument": {
+                                "kind": "MemberExpression",
+                                "computed": false,
+                                "optional": false,
+                                "object": {
+                                    "kind": "Identifer",
+                                    "name": "obj",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 23,
+                                        "index": 22
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 26,
+                                        "index": 25
+                                    }
+                                },
+                                "property": {
+                                    "kind": "Identifer",
+                                    "name": "yield",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 27,
+                                        "index": 26
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 32,
+                                        "index": 31
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 23,
+                                    "index": 22
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 32,
+                                    "index": 31
+                                }
+                            },
+                            "delegate": false,
+                            "start": {
+                                "row": 1,
+                                "col": 17,
+                                "index": 16
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 32,
+                                "index": 31
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 17,
+                            "index": 16
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 32,
+                            "index": 31
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 15,
+                    "index": 14
+                },
+                "end": {
+                    "row": 1,
+                    "col": 35,
+                    "index": 34
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 35,
+                "index": 34
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 35
+    }
+}

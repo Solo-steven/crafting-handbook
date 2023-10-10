@@ -1,0 +1,101 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "foo",
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 1,
+                    "col": 14,
+                    "index": 13
+                }
+            },
+            "generator": true,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "YieldExpression",
+                            "argument": {
+                                "kind": "NumberLiteral",
+                                "value": "3",
+                                "start": {
+                                    "row": 1,
+                                    "col": 26,
+                                    "index": 25
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 27,
+                                    "index": 26
+                                }
+                            },
+                            "delegate": true,
+                            "start": {
+                                "row": 1,
+                                "col": 19,
+                                "index": 18
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 27,
+                                "index": 26
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 27,
+                            "index": 26
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 17,
+                    "index": 16
+                },
+                "end": {
+                    "row": 1,
+                    "col": 30,
+                    "index": 29
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 30,
+                "index": 29
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 30
+    }
+}

@@ -1,0 +1,118 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "g",
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "generator": true,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [],
+                "start": {
+                    "row": 1,
+                    "col": 24,
+                    "index": 23
+                },
+                "end": {
+                    "row": 1,
+                    "col": 26,
+                    "index": 25
+                }
+            },
+            "params": [
+                {
+                    "kind": "ObjectPattern",
+                    "properties": [
+                        {
+                            "kind": "ObjectPatternProperty",
+                            "computed": false,
+                            "shorted": false,
+                            "key": {
+                                "kind": "Identifer",
+                                "name": "yield",
+                                "start": {
+                                    "row": 1,
+                                    "col": 14,
+                                    "index": 13
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 19,
+                                    "index": 18
+                                }
+                            },
+                            "value": {
+                                "kind": "Identifer",
+                                "name": "y",
+                                "start": {
+                                    "row": 1,
+                                    "col": 21,
+                                    "index": 20
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 22,
+                                    "index": 21
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 14,
+                                "index": 13
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 22,
+                                "index": 21
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 23,
+                        "index": 22
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 26,
+                "index": 25
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 26
+    }
+}

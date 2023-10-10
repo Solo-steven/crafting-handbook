@@ -1,0 +1,174 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": {
+                "kind": "Identifer",
+                "name": "B",
+                "start": {
+                    "row": 1,
+                    "col": 17,
+                    "index": 16
+                },
+                "end": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                }
+            },
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "X",
+                            "start": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 22,
+                                "index": 21
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [
+                                {
+                                    "kind": "ExpressionStatement",
+                                    "expr": {
+                                        "kind": "MemberExpression",
+                                        "computed": false,
+                                        "optional": false,
+                                        "object": {
+                                            "kind": "Super",
+                                            "name": "super",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 27,
+                                                "index": 26
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 32,
+                                                "index": 31
+                                            }
+                                        },
+                                        "property": {
+                                            "kind": "Identifer",
+                                            "name": "yield",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 33,
+                                                "index": 32
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 38,
+                                                "index": 37
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 1,
+                                            "col": 27,
+                                            "index": 26
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 38,
+                                            "index": 37
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 27,
+                                        "index": 26
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 38,
+                                        "index": 37
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 25,
+                                "index": 24
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 40,
+                                "index": 39
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 40,
+                            "index": 39
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 19,
+                    "index": 18
+                },
+                "end": {
+                    "row": 1,
+                    "col": 42,
+                    "index": 41
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 42,
+                "index": 41
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 0,
+        "index": 42
+    }
+}
