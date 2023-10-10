@@ -72,10 +72,8 @@
                                                                                                                                                                                         "kind": "ObjectPattern",
                                                                                                                                                                                         "properties": [
                                                                                                                                                                                             {
-                                                                                                                                                                                                "kind": "ObjectPatternProperty",
-                                                                                                                                                                                                "computed": false,
-                                                                                                                                                                                                "shorted": true,
-                                                                                                                                                                                                "key": {
+                                                                                                                                                                                                "kind": "AssigmentPattern",
+                                                                                                                                                                                                "left": {
                                                                                                                                                                                                     "kind": "Identifer",
                                                                                                                                                                                                     "name": "a",
                                                                                                                                                                                                     "start": {
@@ -89,7 +87,7 @@
                                                                                                                                                                                                         "index": 23
                                                                                                                                                                                                     }
                                                                                                                                                                                                 },
-                                                                                                                                                                                                "value": {
+                                                                                                                                                                                                "right": {
                                                                                                                                                                                                     "kind": "Identifer",
                                                                                                                                                                                                     "name": "b",
                                                                                                                                                                                                     "start": {

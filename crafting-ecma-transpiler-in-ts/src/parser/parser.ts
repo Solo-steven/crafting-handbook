@@ -127,14 +127,11 @@ interface Context {
     // for-in statement, and expression level is determinate by `parseExpression` and 
     // `parseAssignmentExpression` function.
     inOperatorStack: Array<boolean>,
-
-    inFor: boolean,
-    // for resolve check object property init is in pattern or not
-    inArgumentOrParameter: boolean,
-    assignDestructingStack: Array<number> ;
-    coverInitMark: { [key: number]: Array<SourcePosition>}
-    topLevelArgumentIndex: number,
-    // for resolve mark as init property when transform object expression to object pattern
+    // ====================================================================================
+    // when parse ObjectExpression, we may accept coverInit for transform to ObjectPattern,
+    // because coverInit is not a illegal syntax of ObjectExpression, so it must be transform.
+    // so when program finish parse, but there are still some coverInitProperty not transformed
+    // yet, those would be error syntax.
     propertiesInitSet: Set<any>;
 }
 
@@ -152,18 +149,8 @@ function createContext(): Context {
         functionContext: [],
         classContext: [],
         maybeArrow: false,
-
-        // for resolve binary expression with in operator when in for-in statement problem
         inOperatorStack: [],
-        // for resolve check object property init is in pattern or not
-        inArgumentOrParameter: false,
-        assignDestructingStack: [],
-        coverInitMark: {},
-        topLevelArgumentIndex: -1,
-        // for resolve mark as init property when transform object expression to object pattern
         propertiesInitSet: new Set(),
-        /** === For-In Statement Problem === */
-        inFor: false,
     }
 }
 
@@ -427,7 +414,9 @@ export function createParser(code: string) {
         const body: Array<ModuleItem> = [];
         while(!match(SyntaxKinds.EOFToken)) {
             body.push(parseModuleItem());
-            
+        }
+        if(context.propertiesInitSet.size > 0) {
+            throw new Error();
         }
         return Factory.createProgram(body, body.length === 0 ? getStartPosition() : cloneSourcePosition(body[0].start), getEndPosition());
     }
@@ -547,10 +536,7 @@ export function createParser(code: string) {
             case SyntaxKinds.IfKeyword:
                 return parseIfStatement();
             case SyntaxKinds.ForKeyword:
-                context.inFor = true;
-                const forStatement =  parseForStatement();
-                context.inFor = false;
-                return forStatement;
+                return  parseForStatement();
             case SyntaxKinds.WhileKeyword:
                 return parseWhileStatement();
             case SyntaxKinds.DoKeyword:
@@ -634,6 +620,7 @@ export function createParser(code: string) {
                     throw new Error("binding no member expression");
                 }
                 if(context.propertiesInitSet.has(objectPropertyNode) && !objectPropertyNode.shorted) {
+                    context.propertiesInitSet.delete(objectPropertyNode);
                     if(objectPropertyNode.computed || !isIdentifer(objectPropertyNode.key)) {
                         throw createMessageError("");
                     }
@@ -670,7 +657,7 @@ export function createParser(code: string) {
         }
         expect(SyntaxKinds.ParenthesesLeftPunctuator);
         if(matchSet([SyntaxKinds.LetKeyword, SyntaxKinds.ConstKeyword, SyntaxKinds.VarKeyword])) {
-            leftOrInit = parseVariableDeclaration(false);
+            leftOrInit = parseVariableDeclaration(false, true);
         }else if (match(SyntaxKinds.SemiPunctuator)) {
             leftOrInit = null;
         }else {
@@ -918,7 +905,7 @@ export function createParser(code: string) {
      * 
      * @returns {VariableDeclaration}
      */
-    function parseVariableDeclaration(shouldEatSemi = true):VariableDeclaration {
+    function parseVariableDeclaration(shouldEatSemi = true, ignoreInit = false):VariableDeclaration {
         const { start: keywordStart, value: variant } = expect([SyntaxKinds.VarKeyword, SyntaxKinds.ConstKeyword,SyntaxKinds.LetKeyword])
         let shouldStop = false, isStart = true;
         const declarations: Array<VariableDeclarator> = [];
@@ -945,7 +932,7 @@ export function createParser(code: string) {
                 // variable declarations binding pattern but but have init.
                 (isBindingPattern && !match(SyntaxKinds.AssginOperator)) &&
                 // variable declaration in for statement can existed with `of`, `in` operator 
-                !(context.inFor && (match(SyntaxKinds.InKeyword) ||  getValue() === "of" ))
+                !ignoreInit
             ) {
                 throw createMessageError("lexical binding must have init");
             }
@@ -1025,7 +1012,6 @@ export function createParser(code: string) {
         let isStart = true;
         let isEndWithRest = false;
         const params: Array<Pattern> = [];
-        context.inArgumentOrParameter = true;
         while(!match(SyntaxKinds.ParenthesesRightPunctuator)) {
             if(isStart) {
                 if(match(SyntaxKinds.CommaToken)) {
@@ -1046,7 +1032,6 @@ export function createParser(code: string) {
             }
             params.push(parseBindingElement());
         }
-        context.inArgumentOrParameter = false;
         if(!match(SyntaxKinds.ParenthesesRightPunctuator)) {
             if(isEndWithRest && match(SyntaxKinds.CommaToken)) {
                 throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
@@ -1236,64 +1221,6 @@ export function createParser(code: string) {
         context.inOperatorStack.pop();
         return expr;
     }
-    function helperPushAssigmentPatternContext() {
-        context.assignDestructingStack.push(context.assignDestructingStack.length + 1);
-        if(context.topLevelArgumentIndex === -1 && context.inArgumentOrParameter) {
-            context.topLevelArgumentIndex = context.assignDestructingStack.length;
-        }
-    }
-    function helperPopAssigmentPatternContext() {
-        const assignDestructureIndex = context.assignDestructingStack.pop();
-        const isTopLevelArgumentIndex = context.topLevelArgumentIndex === assignDestructureIndex && context.inArgumentOrParameter;
-        if(isTopLevelArgumentIndex) {
-            context.topLevelArgumentIndex = -1;
-        }
-        return {
-            assignDestructureIndex,
-            isTopLevelArgumentIndex,
-        }
-    }
-    function checkAssgimentPattern({
-        assignDestructureIndex,
-        isTopLevelArgumentIndex
-    }:{
-        assignDestructureIndex: number | undefined,
-        isTopLevelArgumentIndex: boolean
-    }) {
-        if(assignDestructureIndex && (
-            (assignDestructureIndex ===  1 || context.inFor || context.inArgumentOrParameter) ||
-            (isTopLevelArgumentIndex) ||
-            (context.inFor)
-        )) {
-            let haveCoverInit = false;
-            for(const [key] of Object.entries(context.coverInitMark)) {
-                const numbericIndex = Number(key);
-                if(numbericIndex >= assignDestructureIndex) {
-                    const level = context.coverInitMark[numbericIndex].length > 0;
-                    context.coverInitMark[numbericIndex] = [];
-                    haveCoverInit ||= level;
-                }
-            }
-            if(haveCoverInit && !context.inFor && !context.inArgumentOrParameter) {
-                throw createMessageError(ErrorMessageMap.object_property_can_not_have_initializer);
-            }
-        }
-    }
-    function helperClearAssigmentPatternContext({
-            assignDestructureIndex,
-        }:{
-            assignDestructureIndex: number | undefined,
-            isTopLevelArgumentIndex: boolean
-        }) {
-            if(assignDestructureIndex) {
-                for(const [key] of Object.entries(context.coverInitMark)) {
-                    const numbericIndex = Number(key);
-                    if(numbericIndex >= assignDestructureIndex) {
-                        context.coverInitMark[numbericIndex] = [];
-                    }
-                }
-            }
-    }
     function parseAssigmentExpressionBase() {
         if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
             context.maybeArrow = true;
@@ -1301,16 +1228,10 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.YieldKeyword) && isCurrentFunctionGenerator()) {
             return parseYieldExpression();
         }
-        // push assigment destrcuture context
-        helperPushAssigmentPatternContext();
         let left = parseConditionalExpression();
-        // pop assigment destrcuture context
-        const meta = helperPopAssigmentPatternContext();
         if (!matchSet(AssigmentOperators)) {
-           checkAssgimentPattern(meta);
            return left;
         }
-        helperClearAssigmentPatternContext(meta);
         left = toAssignmentPattern(left) as Expression;
         const operator = getToken();
         nextToken();
@@ -1547,7 +1468,6 @@ export function createParser(code: string) {
         // TODO: refactor logic to remove shoulStop
         const callerArguments: Array<Expression> = [];
         let trailingComma = false
-        context.inArgumentOrParameter = true;
         while(!shouldStop && !match(SyntaxKinds.ParenthesesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
             if(isStart) {
                 isStart = false
@@ -1580,7 +1500,6 @@ export function createParser(code: string) {
             // case 3 : ',' AssigmentExpression
             callerArguments.push(parseAssigmentExpression());
         }
-        context.inArgumentOrParameter = false;
         const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
         return { 
             end, start,
@@ -2000,17 +1919,17 @@ export function createParser(code: string) {
         }
         if(match(SyntaxKinds.AssginOperator)) {
             nextToken();
-            const assignDestructureIndex = context.assignDestructingStack.pop();
-            if(assignDestructureIndex) {
-                if(context.coverInitMark[assignDestructureIndex]) {
-                    context.coverInitMark[assignDestructureIndex].push(getStartPosition());
-                }else {
-                    context.coverInitMark[assignDestructureIndex] = [getStartPosition()];
-                }
-                context.assignDestructingStack.push(assignDestructureIndex);
-            }
+            //const assignDestructureIndex = context.assignDestructingStack.pop();
+            // if(assignDestructureIndex) {
+            //     if(context.coverInitMark[assignDestructureIndex]) {
+            //         context.coverInitMark[assignDestructureIndex].push(getStartPosition());
+            //     }else {
+            //         context.coverInitMark[assignDestructureIndex] = [getStartPosition()];
+            //     }
+            //     context.assignDestructingStack.push(assignDestructureIndex);
+            // }
             const expr = parseAssigmentExpression();
-            const property = Factory.createObjectProperty(propertyName, expr , isComputedRef.isComputed, true, cloneSourcePosition(propertyName.start), cloneSourcePosition(expr.end));
+            const property = Factory.createObjectProperty(propertyName, expr , isComputedRef.isComputed, false, cloneSourcePosition(propertyName.start), cloneSourcePosition(expr.end));
             context.propertiesInitSet.add(property);
             return property;
 

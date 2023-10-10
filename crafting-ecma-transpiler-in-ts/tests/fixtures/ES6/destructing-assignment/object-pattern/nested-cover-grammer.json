@@ -70,10 +70,8 @@
                                                                                                                                                                                     "kind": "ObjectPattern",
                                                                                                                                                                                     "properties": [
                                                                                                                                                                                         {
-                                                                                                                                                                                            "kind": "ObjectPatternProperty",
-                                                                                                                                                                                            "computed": false,
-                                                                                                                                                                                            "shorted": true,
-                                                                                                                                                                                            "key": {
+                                                                                                                                                                                            "kind": "AssigmentPattern",
+                                                                                                                                                                                            "left": {
                                                                                                                                                                                                 "kind": "Identifer",
                                                                                                                                                                                                 "name": "a",
                                                                                                                                                                                                 "start": {
@@ -87,7 +85,7 @@
                                                                                                                                                                                                     "index": 22
                                                                                                                                                                                                 }
                                                                                                                                                                                             },
-                                                                                                                                                                                            "value": {
+                                                                                                                                                                                            "right": {
                                                                                                                                                                                                 "kind": "MemberExpression",
                                                                                                                                                                                                 "computed": true,
                                                                                                                                                                                                 "optional": false,

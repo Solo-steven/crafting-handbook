@@ -37,10 +37,8 @@
                     "kind": "ObjectPattern",
                     "properties": [
                         {
-                            "kind": "ObjectPatternProperty",
-                            "computed": false,
-                            "shorted": true,
-                            "key": {
+                            "kind": "AssigmentPattern",
+                            "left": {
                                 "kind": "Identifer",
                                 "name": "eval",
                                 "start": {
@@ -54,7 +52,7 @@
                                     "index": 20
                                 }
                             },
-                            "value": {
+                            "right": {
                                 "kind": "Identifer",
                                 "name": "defValue",
                                 "start": {
