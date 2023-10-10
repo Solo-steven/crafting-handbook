@@ -1114,8 +1114,9 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.ExtendsKeyword)) {
             nextToken();
             superClass = parseLeftHandSideExpression();
-        }else {
             enterClassScope(true);
+        }else {
+            enterClassScope(false);
         }
         const body = parseClassBody();
         existClassScope();
@@ -1919,15 +1920,6 @@ export function createParser(code: string) {
         }
         if(match(SyntaxKinds.AssginOperator)) {
             nextToken();
-            //const assignDestructureIndex = context.assignDestructingStack.pop();
-            // if(assignDestructureIndex) {
-            //     if(context.coverInitMark[assignDestructureIndex]) {
-            //         context.coverInitMark[assignDestructureIndex].push(getStartPosition());
-            //     }else {
-            //         context.coverInitMark[assignDestructureIndex] = [getStartPosition()];
-            //     }
-            //     context.assignDestructingStack.push(assignDestructureIndex);
-            // }
             const expr = parseAssigmentExpression();
             const property = Factory.createObjectProperty(propertyName, expr , isComputedRef.isComputed, false, cloneSourcePosition(propertyName.start), cloneSourcePosition(expr.end));
             context.propertiesInitSet.add(property);
@@ -2049,8 +2041,10 @@ export function createParser(code: string) {
         }else {
             start = cloneSourcePosition(withPropertyName.start);
         }
+        enterFunctionScope(isAsync, generator);
         const parmas = parseFunctionParam();
         const body = parseFunctionBody();
+        exitFunctionScope();
         /**
          * Step 2: semantic and more concise syntax check instead just throw a unexpect
          * token error.
