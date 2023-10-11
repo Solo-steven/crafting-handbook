@@ -1,0 +1,104 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "parent",
+                "start": {
+                    "row": 8,
+                    "col": 9,
+                    "index": 572
+                },
+                "end": {
+                    "row": 8,
+                    "col": 15,
+                    "index": 578
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "FunctionDeclaration",
+                        "name": {
+                            "kind": "Identifer",
+                            "name": "await",
+                            "start": {
+                                "row": 9,
+                                "col": 19,
+                                "index": 602
+                            },
+                            "end": {
+                                "row": 9,
+                                "col": 24,
+                                "index": 607
+                            }
+                        },
+                        "generator": false,
+                        "async": true,
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 9,
+                                "col": 27,
+                                "index": 610
+                            },
+                            "end": {
+                                "row": 11,
+                                "col": 5,
+                                "index": 622
+                            }
+                        },
+                        "params": [],
+                        "start": {
+                            "row": 9,
+                            "col": 10,
+                            "index": 593
+                        },
+                        "end": {
+                            "row": 11,
+                            "col": 5,
+                            "index": 622
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 8,
+                    "col": 18,
+                    "index": 581
+                },
+                "end": {
+                    "row": 12,
+                    "col": 1,
+                    "index": 624
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 8,
+                "col": 0,
+                "index": 563
+            },
+            "end": {
+                "row": 12,
+                "col": 1,
+                "index": 624
+            }
+        }
+    ],
+    "start": {
+        "row": 8,
+        "col": 0,
+        "index": 563
+    },
+    "end": {
+        "row": 12,
+        "col": 1,
+        "index": 624
+    }
+}
