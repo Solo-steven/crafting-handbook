@@ -35,4 +35,5 @@ export const ErrorMessageMap = {
     yield_deletgate_can_must_be_followed_by_assignment_expression: "yield deletegate must be followed by assignment expression",
     await_expression_can_not_used_in_parameter_list: "await expression can not used in parameter list",
     yield_expression_can_not_used_in_parameter_list: "yield expression can not used in parameter list",
+    rest_element_must_be_either_binding_identifier_or_binding_pattern: "rest element must be either binding identifier to binding pattern.",
 }

@@ -2306,7 +2306,16 @@ export function createParser(code: string) {
     }
     function parseRestElement(): RestElement {
         const { start } =  expect([SyntaxKinds.SpreadOperator]);
-        const id = parseIdentifer()
+        let id: Pattern | null = null;
+        if(matchSet(BindingIdentifierSyntaxKindArray)) {
+            id = parseIdentifer()
+        }
+        if(matchSet([SyntaxKinds.BracesLeftPunctuator, SyntaxKinds.BracketLeftPunctuator]))  {
+            id = parseBindingPattern();
+        }
+        if(!id) {
+            throw createMessageError(ErrorMessageMap.rest_element_must_be_either_binding_identifier_or_binding_pattern);
+        }
         return Factory.createRestElement(id, start, cloneSourcePosition(id.end));
     }
     /**
