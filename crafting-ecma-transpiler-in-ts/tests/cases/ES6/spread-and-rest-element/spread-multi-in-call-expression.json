@@ -1,0 +1,139 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "Identifer",
+                    "name": "someFunction",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "SpreadElement",
+                        "argument": {
+                            "kind": "Identifer",
+                            "name": "a",
+                            "start": {
+                                "row": 1,
+                                "col": 17,
+                                "index": 16
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 18,
+                                "index": 17
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        }
+                    },
+                    {
+                        "kind": "SpreadElement",
+                        "argument": {
+                            "kind": "Identifer",
+                            "name": "b",
+                            "start": {
+                                "row": 1,
+                                "col": 23,
+                                "index": 22
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 24,
+                                "index": 23
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 20,
+                            "index": 19
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        }
+                    },
+                    {
+                        "kind": "SpreadElement",
+                        "argument": {
+                            "kind": "Identifer",
+                            "name": "c",
+                            "start": {
+                                "row": 1,
+                                "col": 29,
+                                "index": 28
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 30,
+                                "index": 29
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 26,
+                            "index": 25
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 30,
+                            "index": 29
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 31,
+                    "index": 30
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 31,
+                "index": 30
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 32,
+        "index": 31
+    }
+}

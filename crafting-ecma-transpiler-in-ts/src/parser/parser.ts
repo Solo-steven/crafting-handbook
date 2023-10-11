@@ -647,6 +647,10 @@ export function createParser(code: string) {
                 const objecExpressionNode = node as ObjectExpression;
                 const properties: Array<ModuleItem> = []
                 for(const property of objecExpressionNode.properties) {
+                    // object pattern with restelement can not be pattern
+                    if(isSpreadElement(property) && (isObjectExpression(property.argument) || isArrayExpression(property.argument))) {
+                        throw createMessageError(ErrorMessageMap.invalid_rest_element_with_pattern_in_object_pattern);
+                    }
                     properties.push(toAssignmentPattern(property, isBinding));
                 }
                 return Factory.createObjectPattern(properties as Array<ObjectPatternProperty>, objecExpressionNode.start, objecExpressionNode.end);
@@ -1082,7 +1086,7 @@ export function createParser(code: string) {
             // parse SpreadElement (identifer, Object, Array)
             if(match(SyntaxKinds.SpreadOperator)) {
                 isEndWithRest = true;
-                params.push(parseRestElement());
+                params.push(parseRestElement(true));
                 break;
             }
             params.push(parseBindingElement());
@@ -1555,11 +1559,6 @@ export function createParser(code: string) {
                 nextToken();
                 const argu = parseAssigmentExpression();
                 callerArguments.push(Factory.createSpreadElement(argu, spreadElementStart, cloneSourcePosition(argu.end)));
-                if(match(SyntaxKinds.CommaToken)) {
-                    nextToken();
-                    trailingComma = true;
-                }
-                shouldStop = true;
                 continue;
             }
             // case 3 : ',' AssigmentExpression
@@ -1688,7 +1687,8 @@ export function createParser(code: string) {
                     const arrowExpr = parseArrowFunctionExpression({
                         nodes: argus,
                         start: argus[0].start,
-                        end: argus[0].end
+                        end: argus[0].end,
+                        trailingComma: false
                     });
                     exitFunctionScope();
                     return arrowExpr;
@@ -2235,11 +2235,11 @@ export function createParser(code: string) {
             return Factory.createSequenceExpression(nodes, start, end);
         }
         enterFunctionScope();
-        const arrowExpr = parseArrowFunctionExpression({start, end, nodes});
+        const arrowExpr = parseArrowFunctionExpression({start, end, nodes, trailingComma});
         exitFunctionScope();
         return arrowExpr;
     }
-    function parseArrowFunctionExpression(metaData: ASTArrayWithMetaData<Expression>) {
+    function parseArrowFunctionExpression(metaData: ASTArrayWithMetaData<Expression> & { trailingComma: boolean }) {
         if(!match(SyntaxKinds.ArrowOperator)) {
             throw createUnexpectError(SyntaxKinds.ArrowOperator);
         }
@@ -2258,6 +2258,9 @@ export function createParser(code: string) {
         const functionArguments = metaData.nodes.map(node => toAssignmentPattern(node, true)) as Array<Pattern>;
         checkFunctionParams(functionArguments);
         checkAwaitAndYieldUsageOfArrowParams(functionArguments);
+        if(checkArrowParamemterHaveMultiSpreadElement(functionArguments) && metaData.trailingComma) {
+            throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
+        };
         return Factory.createArrowExpression(isExpression, body,  functionArguments, isCurrentFunctionAsync(), cloneSourcePosition(metaData.start), cloneSourcePosition(body.end));
     }
     function checkAwaitAndYieldUsageOfArrowParams(params: Array<Pattern>) {
@@ -2275,6 +2278,21 @@ export function createParser(code: string) {
                 }
             }
         }
+    }
+    function checkArrowParamemterHaveMultiSpreadElement(params: Array<Pattern>) {
+        let flag = false;
+        params.forEach((param) => {
+            if(flag && isRestElement(param)) {
+                throw createMessageError(ErrorMessageMap.rest_element_should_be_last_property);
+            }
+            if(flag) {
+                throw createMessageError(ErrorMessageMap.rest_element_should_be_last_property);
+            }
+            if(!flag && isRestElement(param)) {
+                flag = true;
+            }
+        });
+        return flag;
     }
 /** ================================================================================
  *  Parse Pattern
@@ -2304,14 +2322,19 @@ export function createParser(code: string) {
         }
         return left;
     }
-    function parseRestElement(): RestElement {
+    function parseRestElement(allowPattern: boolean): RestElement {
         const { start } =  expect([SyntaxKinds.SpreadOperator]);
         let id: Pattern | null = null;
         if(matchSet(BindingIdentifierSyntaxKindArray)) {
             id = parseIdentifer()
         }
         if(matchSet([SyntaxKinds.BracesLeftPunctuator, SyntaxKinds.BracketLeftPunctuator]))  {
-            id = parseBindingPattern();
+            if(allowPattern) {
+                id = parseBindingPattern();
+            }
+            if(!allowPattern) {
+                throw createUnexpectError(SyntaxKinds.Identifier);
+            }
         }
         if(!id) {
             throw createMessageError(ErrorMessageMap.rest_element_must_be_either_binding_identifier_or_binding_pattern);
@@ -2360,15 +2383,7 @@ export function createParser(code: string) {
             }
             // parse Rest property
             if(match(SyntaxKinds.SpreadOperator)) {
-                const start = getStartPosition();
-                nextToken();
-                if(matchSet(BindingIdentifierSyntaxKindArray)) {
-                    const id = parseIdentifer();
-                    properties.push(Factory.createRestElement(id, start, cloneSourcePosition(id.end)));
-                }else {
-                    const pattern = parseBindingPattern();
-                    properties.push(Factory.createRestElement(pattern, start, cloneSourcePosition(pattern.end)));
-                }
+                properties.push(parseRestElement(false));
                 // sematic check, Rest Property Must be last,
                 if(
                     !(
@@ -2421,10 +2436,7 @@ export function createParser(code: string) {
                 continue;
             }
             if(match(SyntaxKinds.SpreadOperator)) {
-                const start = getStartPosition();
-                nextToken();
-                const bindingElement = parseBindingElement();
-                elements.push(Factory.createRestElement(bindingElement, start, cloneSourcePosition(bindingElement.end)));
+                elements.push(parseRestElement(true));
                 if(!match(SyntaxKinds.BracketRightPunctuator)) {
                     throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
                 }

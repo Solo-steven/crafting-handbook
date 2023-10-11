@@ -1,0 +1,1 @@
+someFunction(...a, ...b, ...c);
