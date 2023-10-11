@@ -125,8 +125,6 @@ const TempIgnoreCases: Array<String> = [
     "fixtures/es2018/dynamic-import/invalid-new-import-call.js",
     "fixtures/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
     // ==== Label Statement Problem
-    "fixtures/ES6/generator/invalid-labelled-generator.js",
-    "fixtures/declaration/function/invalid-strict-labelled-function-declaration.js",
 ];
 /**
  * Helper function that parse code string and

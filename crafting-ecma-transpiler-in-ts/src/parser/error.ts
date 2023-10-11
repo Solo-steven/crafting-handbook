@@ -38,4 +38,5 @@ export const ErrorMessageMap = {
     rest_element_must_be_either_binding_identifier_or_binding_pattern: "rest element must be either binding identifier to binding pattern.",
     invalid_rest_element_with_pattern_in_object_pattern: "invalid rest element with pattern in object pattern",
     new_target_can_only_be_used_in_class_or_function_scope: "new target meta property can only be used in class or function scope",
+    lable_statement_can_not_have_function_declaration_is_generator: "labled statement can not have function declaration is generator",
 }

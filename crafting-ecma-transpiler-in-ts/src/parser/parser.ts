@@ -880,6 +880,9 @@ export function createParser(code: string) {
         expect(SyntaxKinds.ColonPunctuator);
         if(match(SyntaxKinds.FunctionKeyword)) {
             const delcar = parseFunctionDeclaration();
+            if(delcar.generator) {
+                throw createMessageError(ErrorMessageMap.lable_statement_can_not_have_function_declaration_is_generator);
+            }
             return Factory.createLabeledStatement(label, delcar, cloneSourcePosition(label.start), cloneSourcePosition(delcar.end));
         }else {
             const statement = parseStatement();
@@ -1843,7 +1846,6 @@ export function createParser(code: string) {
             throw createUnexpectError(SyntaxKinds.Identifier, "new concat with dot should only be used in meta property");
         }
         if(isTopLevel() && !isInClassScope()) {
-            console.log(context.functionContext);
             throw createMessageError(ErrorMessageMap.new_target_can_only_be_used_in_class_or_function_scope);
         }
         const targetStart = getStartPosition();
@@ -2163,7 +2165,6 @@ export function createParser(code: string) {
             throw createMessageError(ErrorMessageMap.setter_can_not_be_async_or_generator);
         }
         if(withPropertyName.kind === SyntaxKinds.Identifier) {
-            console.log(context.classContext);
             if(withPropertyName.name === "constructor" && isInClassScope()) {
                 if(isAsync || generator || isStatic) {
                     throw createMessageError(ErrorMessageMap.constructor_can_not_be_async_or_generator);
