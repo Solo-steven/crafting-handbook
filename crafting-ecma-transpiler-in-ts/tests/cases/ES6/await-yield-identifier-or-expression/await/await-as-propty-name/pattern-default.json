@@ -154,6 +154,7 @@
                                                         }
                                                     }
                                                 ],
+                                                "trailingComma": false,
                                                 "start": {
                                                     "row": 2,
                                                     "col": 32,

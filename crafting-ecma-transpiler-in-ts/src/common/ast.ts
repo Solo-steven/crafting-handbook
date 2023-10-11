@@ -102,6 +102,7 @@ export interface TemplateElement extends ModuleItem {
 export interface ObjectExpression extends ModuleItem {
     kind: SyntaxKinds.ObjectExpression;
     properties: Array<PropertyDefinition>;
+    trailingComma: boolean,
 }
 export type PropertyDefinition = ObjectProperty |  ObjectMethodDefinition | SpreadElement | ObjectAccessor;
 export interface ObjectProperty extends Omit<Property, "static"> {

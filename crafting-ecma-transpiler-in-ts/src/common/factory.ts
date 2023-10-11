@@ -75,10 +75,14 @@ export function createArrayExpression(elements: Array<AST.Expression | null>, st
         elements, trailingComma, start, end
     };
 }
-export function createObjectExpression(properties: Array<AST.PropertyDefinition>, start: SourcePosition, end: SourcePosition): AST.ObjectExpression {
+export function createObjectExpression(
+    properties: AST.ObjectExpression['properties'],
+    trailingComma: AST.ObjectExpression['trailingComma'], 
+    start: SourcePosition, end: SourcePosition
+): AST.ObjectExpression {
     return { 
         kind: SyntaxKinds.ObjectExpression, 
-        properties, start, end
+        properties, trailingComma, start, end
     };
 }
 export function createObjectProperty(

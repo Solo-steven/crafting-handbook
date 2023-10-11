@@ -634,24 +634,30 @@ export function createParser(code: string) {
                         continue;
                     }
                     const transformElement = toAssignmentPattern(element, isBinding);
-                    elements.push(transformElement);
-                    if(transformElement.kind === SyntaxKinds.RestElement) {
+                    if(isRestElement(transformElement)) {
                         if(index !== arrayExpressionNode.elements.length -1 || arrayExpressionNode.trailingComma) {
                             throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
                         }
                     }
+                    elements.push(transformElement);
                 }
                 return Factory.createArrayPattern(elements as Array<Pattern>, arrayExpressionNode.start, arrayExpressionNode.end);
             }
             case SyntaxKinds.ObjectExpression: {
                 const objecExpressionNode = node as ObjectExpression;
-                const properties: Array<ModuleItem> = []
-                for(const property of objecExpressionNode.properties) {
-                    // object pattern with restelement can not be pattern
-                    if(isSpreadElement(property) && (isObjectExpression(property.argument) || isArrayExpression(property.argument))) {
+                const properties: Array<ModuleItem> = [];
+                for(let index = 0 ; index < objecExpressionNode.properties.length; ++index) {
+                    const property = objecExpressionNode.properties[index];
+                    const transformElement = toAssignmentPattern(property, isBinding);
+                    if(isRestElement(transformElement) && (isObjectPattern(transformElement.argument) || isArrayPattern(transformElement.argument))) {
                         throw createMessageError(ErrorMessageMap.invalid_rest_element_with_pattern_in_object_pattern);
                     }
-                    properties.push(toAssignmentPattern(property, isBinding));
+                    if(isRestElement(transformElement)) {
+                        if(index !== objecExpressionNode.properties.length - 1 || objecExpressionNode.trailingComma) {
+                            throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
+                        }
+                    }
+                    properties.push(transformElement);
                 }
                 return Factory.createObjectPattern(properties as Array<ObjectPatternProperty>, objecExpressionNode.start, objecExpressionNode.end);
             }
@@ -1902,6 +1908,7 @@ export function createParser(code: string) {
         const { start } =  expect(SyntaxKinds.BracesLeftPunctuator);
         let isStart = true;
         const propertyDefinitionList: Array<PropertyDefinition> = [];
+        let trailingComma = false;
         while(!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
             if(isStart) {
                 propertyDefinitionList.push(parsePropertyDefinition());
@@ -1910,12 +1917,13 @@ export function createParser(code: string) {
             }
             expect(SyntaxKinds.CommaToken);
             if(match(SyntaxKinds.BracesRightPunctuator) || match(SyntaxKinds.EOFToken)) {
+                trailingComma = true;
                 break;
             }
             propertyDefinitionList.push(parsePropertyDefinition());
         }
         const { end } = expect(SyntaxKinds.BracesRightPunctuator);
-        return Factory.createObjectExpression(propertyDefinitionList, start, end);
+        return Factory.createObjectExpression(propertyDefinitionList, trailingComma, start, end);
     }
     /**
      * Parse PropertyDefinition

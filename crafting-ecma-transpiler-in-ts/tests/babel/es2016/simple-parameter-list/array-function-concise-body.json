@@ -45,6 +45,7 @@
                                 "right": {
                                     "kind": "ObjectExpression",
                                     "properties": [],
+                                    "trailingComma": false,
                                     "start": {
                                         "row": 1,
                                         "col": 20,

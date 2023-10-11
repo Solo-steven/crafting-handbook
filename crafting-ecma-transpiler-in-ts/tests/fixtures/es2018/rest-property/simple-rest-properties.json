@@ -283,6 +283,7 @@
                                 }
                             }
                         ],
+                        "trailingComma": false,
                         "start": {
                             "row": 1,
                             "col": 22,

@@ -312,6 +312,7 @@
                                                         }
                                                     }
                                                 ],
+                                                "trailingComma": false,
                                                 "start": {
                                                     "row": 3,
                                                     "col": 20,

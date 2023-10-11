@@ -166,6 +166,7 @@
                             }
                         }
                     ],
+                    "trailingComma": true,
                     "start": {
                         "row": 1,
                         "col": 12,

@@ -89,6 +89,7 @@
                                             }
                                         }
                                     ],
+                                    "trailingComma": true,
                                     "start": {
                                         "row": 2,
                                         "col": 16,
