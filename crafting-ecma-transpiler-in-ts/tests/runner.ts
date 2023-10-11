@@ -18,7 +18,7 @@ const invalidFileReg = new RegExp('invalid');
  * Test structure for test case.
  * @property {string} jsPath  absolute path for js file in current os file system
  * @property {string} jsonPath absolute path for json file in current os file system
- * @property {string} fileName part of file path start with /cases/ and /fixtures/ dir
+ * @property {string} fileName part of file path start with /cases/ and /esprima/ dir
  */
 interface TestCase {
     jsPath: string;
@@ -59,20 +59,20 @@ async function recursivelyAddTestCase(dirPath: string, prefixFileName: string, c
 }
 /**
  * Main function for find all test case under `cases` and 
- * `fixtures` folder, using `recursivelyAddTestCase ` as 
+ * `esprima` folder, using `recursivelyAddTestCase ` as 
  * helper function
  * @returns 
  */
 async function findAllTestCase(): Promise<Array<TestCase>> {
     const casesRoot = path.join(__dirname, "cases");
-    const fixtureRoot = path.join(__dirname, "fixtures");
+    const fixtureRoot = path.join(__dirname, "esprima");
     const babelRoot = path.join(__dirname, "babel");
     const testCasesPaths: Array<TestCase> = []
     const shouldNotExistedFilePath: Array<string> = [];
     await Promise.all(
         [
             recursivelyAddTestCase(casesRoot, "cases", testCasesPaths, shouldNotExistedFilePath),
-            recursivelyAddTestCase(fixtureRoot, "fixtures", testCasesPaths, shouldNotExistedFilePath),
+            recursivelyAddTestCase(fixtureRoot, "esprima", testCasesPaths, shouldNotExistedFilePath),
             recursivelyAddTestCase(babelRoot, "babel", testCasesPaths, shouldNotExistedFilePath),
         ]
     )
@@ -96,34 +96,34 @@ const updateTestCases: Array<Result> = [];
 const TempIgnoreCases: Array<String> = [
     /** Pending Problems */
     //  ==== strict mode problem
-    "fixtures/ES6/arrow-function/invalid-param-strict-mode.js",
-    "fixtures/declaration/function/invalid-strict-labelled-function-declaration.js",
+    "esprima/ES6/arrow-function/invalid-param-strict-mode.js",
+    "esprima/declaration/function/invalid-strict-labelled-function-declaration.js",
     // strict mode generator problem
-    "fixtures/ES6/yield/invalid-yield-generator-strict-function-expression.js",
-    "fixtures/ES6/yield/invalid-yield-generator-strict-function-parameter.js",
-    "fixtures/ES6/yield/invalid-yield-strict-array-pattern.js",
-    "fixtures/ES6/yield/invalid-yield-strict-arrow-parameter-name.js",
-    "fixtures/ES6/yield/invalid-yield-strict-binding-element.js",
-    "fixtures/ES6/yield/invalid-yield-strict-catch-parameter.js",
-    "fixtures/ES6/yield/invalid-yield-strict-formal-parameter.js",
-    "fixtures/ES6/yield/invalid-yield-strict-function-declaration.js",
-    "fixtures/ES6/yield/invalid-yield-strict-function-expression.js",
-    "fixtures/ES6/yield/invalid-yield-strict-identifier.js",
-    "fixtures/ES6/yield/invalid-yield-strict-lexical-declaration.js",
-    "fixtures/ES6/yield/invalid-yield-strict-rest-parameter.js",
-    "fixtures/ES6/yield/invalid-yield-strict-variable-declaration.js",
+    "esprima/ES6/yield/invalid-yield-generator-strict-function-expression.js",
+    "esprima/ES6/yield/invalid-yield-generator-strict-function-parameter.js",
+    "esprima/ES6/yield/invalid-yield-strict-array-pattern.js",
+    "esprima/ES6/yield/invalid-yield-strict-arrow-parameter-name.js",
+    "esprima/ES6/yield/invalid-yield-strict-binding-element.js",
+    "esprima/ES6/yield/invalid-yield-strict-catch-parameter.js",
+    "esprima/ES6/yield/invalid-yield-strict-formal-parameter.js",
+    "esprima/ES6/yield/invalid-yield-strict-function-declaration.js",
+    "esprima/ES6/yield/invalid-yield-strict-function-expression.js",
+    "esprima/ES6/yield/invalid-yield-strict-identifier.js",
+    "esprima/ES6/yield/invalid-yield-strict-lexical-declaration.js",
+    "esprima/ES6/yield/invalid-yield-strict-rest-parameter.js",
+    "esprima/ES6/yield/invalid-yield-strict-variable-declaration.js",
     // yield predi followed argument
-    "fixtures/ES6/yield/ternary-yield.js",
+    "esprima/ES6/yield/ternary-yield.js",
     //  ==== unicode and excap char problem
-    "fixtures/ES6/template-literals/invalid-escape.js",
-    "fixtures/ES6/template-literals/invalid-hex-escape-sequence.js",
-    "fixtures/ES6/template-literals/invalid_octal-literal.js",
-    "fixtures/ES6/template-literals/invalid_strict-octal-literal.js",
-    "fixtures/es2020/importmeta/invalid-unicode-escape-import.module.js",
-    "fixtures/es2020/importmeta/unicode-escape-meta.module.js",
+    "esprima/ES6/template-literals/invalid-escape.js",
+    "esprima/ES6/template-literals/invalid-hex-escape-sequence.js",
+    "esprima/ES6/template-literals/invalid_octal-literal.js",
+    "esprima/ES6/template-literals/invalid_strict-octal-literal.js",
+    "esprima/es2020/importmeta/invalid-unicode-escape-import.module.js",
+    "esprima/es2020/importmeta/unicode-escape-meta.module.js",
     //  ==== other
-    "fixtures/es2018/dynamic-import/invalid-new-import-call.js",
-    "fixtures/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
+    "esprima/es2018/dynamic-import/invalid-new-import-call.js",
+    "esprima/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
     // ==== Label Statement Problem
 ];
 /**
