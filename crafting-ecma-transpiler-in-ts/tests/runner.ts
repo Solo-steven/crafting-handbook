@@ -314,27 +314,27 @@ async function run3partyTestCase() {
 }
 
 function report() {
-    for(const testCase of passTestCases) {
-        console.log((`|PASS|: ${testCase.fileName}`));
-    }
-    for(const testCase of skipTestCases) {
-        console.log((`|Skip|: ${testCase.fileName}`));
-        console.log((`  |----> ${testCase.result}`));
-    }
-    for(const testCase of updateTestCases) {
-        console.log((`|Update|: ${testCase.fileName}`));
-    }
-    for(const testCase of expectFailedTestCase) {
-        console.log((`|Expect Failed|: ${testCase.fileName}`));
-        console.log((`  |----> ${testCase.result}`));
-    }
-    for(const testCase of expectFaildButPassCase) {
-        console.log((`|Expect Failed But Pass|: ${testCase}`));
-    }
-    for(const testCase of failedTestCases) {
-        console.log((`|Failed|: ${testCase.fileName}`));
-        console.log((`  |----> ${testCase.result}`));
-    }
+    // for(const testCase of passTestCases) {
+    //     console.log((`|PASS|: ${testCase.fileName}`));
+    // }
+    // for(const testCase of skipTestCases) {
+    //     console.log((`|Skip|: ${testCase.fileName}`));
+    //     console.log((`  |----> ${testCase.result}`));
+    // }
+    // for(const testCase of updateTestCases) {
+    //     console.log((`|Update|: ${testCase.fileName}`));
+    // }
+    // for(const testCase of expectFailedTestCase) {
+    //     console.log((`|Expect Failed|: ${testCase.fileName}`));
+    //     console.log((`  |----> ${testCase.result}`));
+    // }
+    // for(const testCase of expectFaildButPassCase) {
+    //     console.log((`|Expect Failed But Pass|: ${testCase}`));
+    // }
+    // for(const testCase of failedTestCases) {
+    //     console.log((`|Failed|: ${testCase.fileName}`));
+    //     console.log((`  |----> ${testCase.result}`));
+    // }
     const allTestCaseCount = failedTestCases.length + skipTestCases.length + passTestCases.length + updateTestCases.length + expectFailedTestCase.length + expectFaildButPassCase.length;
     const passRate = passTestCases.length / allTestCaseCount;
     const failedRate = failedTestCases.length / allTestCaseCount;

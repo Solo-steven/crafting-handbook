@@ -824,8 +824,9 @@ export function createLexer(code: string): Lexer {
         let isEscape = false;
         while(!(startWith(mode) && !isEscape ) && !eof()) {
             if(startWith("\n")) {
+                console.log(isEscape);
                 if(!isEscape) {
-                    throw lexicalError(`string literal start with ${mode} can not have changeline without \\ .`);
+                    throw lexicalError(`string literal start with ${mode} ${isEscape} can not have changeline without \\ .`);
                 }
                 isEscape = false;
                 eatChar();
@@ -833,11 +834,7 @@ export function createLexer(code: string): Lexer {
                 continue;
             }
             if(startWith('\\')) {
-                if(isEscape) {
-                    isEscape = false;
-                }else {
-                    isEscape = true;
-                }
+                isEscape = !isEscape
             }else {
                 isEscape = false;
             }

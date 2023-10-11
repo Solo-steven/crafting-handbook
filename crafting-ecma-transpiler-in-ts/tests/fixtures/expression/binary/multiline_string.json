@@ -1,0 +1,70 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "BinaryExpression",
+                "operator": "+",
+                "left": {
+                    "kind": "StringLiteral",
+                    "value": "",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 1,
+                        "index": 4
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "bar",
+                    "start": {
+                        "row": 2,
+                        "col": 4,
+                        "index": 7
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 7,
+                        "index": 10
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 2,
+                    "col": 7,
+                    "index": 10
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 2,
+                "col": 7,
+                "index": 10
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 0,
+        "index": 11
+    }
+}

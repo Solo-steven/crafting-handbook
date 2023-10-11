@@ -2032,7 +2032,7 @@ export function createParser(code: string) {
         }
         // propty name is a spical test of binding identifier.
         // if `await` and `yield` is propty name with colon (means assign), it dose not affected by scope.
-        if(matchSet(BindingIdentifierSyntaxKindArray)) {
+        if(matchSet(IdentiferWithKeyworArray)) {
             const identifer = parseIdentiferWithKeyword();
             if(identifer.name === "await") {
                 if(isCurrentFunctionAsync() && !match(SyntaxKinds.ColonPunctuator)) {
