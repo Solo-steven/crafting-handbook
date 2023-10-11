@@ -395,6 +395,9 @@ export function createParser(code: string) {
         }
         context.functionContext[context.functionContext.length -1][1] = isGenerator;
     }
+    function isTopLevel() {
+        return context.functionContext.length === 1;
+    }
     function isCurrentFunctionAsync(): boolean {
         if(context.functionContext.length === 0) {
             return false;
@@ -1839,6 +1842,10 @@ export function createParser(code: string) {
         if(getValue() !== "target") {
             throw createUnexpectError(SyntaxKinds.Identifier, "new concat with dot should only be used in meta property");
         }
+        if(isTopLevel() && !isInClassScope()) {
+            console.log(context.functionContext);
+            throw createMessageError(ErrorMessageMap.new_target_can_only_be_used_in_class_or_function_scope);
+        }
         const targetStart = getStartPosition();
         const targetEnd = getEndPosition();
         nextToken();
@@ -1857,8 +1864,9 @@ export function createParser(code: string) {
      * @returns {Expression}
      */
     function parseNewExpression():Expression {
-        const { start } = expect(SyntaxKinds.NewKeyword)
-        if(match(SyntaxKinds.NewKeyword)) {
+        const { start } = expect(SyntaxKinds.NewKeyword);
+        // maybe is new.target
+        if(match(SyntaxKinds.NewKeyword) && lookahead() !== SyntaxKinds.DotOperator ) {
             return parseNewExpression();
         }
         let base = parsePrimaryExpression();
