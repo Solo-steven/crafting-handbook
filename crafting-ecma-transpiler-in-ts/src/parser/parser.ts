@@ -72,15 +72,11 @@ import {
     EmptyStatement,
     ObjectExpression,
     ArrayExpression,
-    isBinaryExpression,
-    isArrayExpression,
-    isObjectExpression,
     SpreadElement,
     SytaxKindsMapLexicalLiteral,
     AssigmentExpression,
     isRestElement,
     isSpreadElement,
-    ChainExpression,
     KeywordLiteralMapSyntaxKind,
     isAssignmentPattern,
     isVarDeclaration,
@@ -89,9 +85,7 @@ import {
     isIdentifer,
     isArrayPattern,
     isObjectPattern,
-    isPattern,
     AssignmentPattern,
-    isPrivateName,
     ObjectProperty,
     isMemberExpression,
     LexicalLiteral,
@@ -157,7 +151,7 @@ function createContext(): Context {
 }
 
 const IdentiferWithKeyworArray = [SyntaxKinds.Identifier, ...Keywords];
-const BindingIdentifierSyntaxKindArray = [SyntaxKinds.Identifier, SyntaxKinds.AwaitKeyword, SyntaxKinds.YieldKeyword];
+const BindingIdentifierSyntaxKindArray = [SyntaxKinds.Identifier, SyntaxKinds.AwaitKeyword, SyntaxKinds.YieldKeyword, SyntaxKinds.LetKeyword];
 const LexicalKeywordSet = new Set(LexicalLiteral.keywords);
 /**
  * 
@@ -482,7 +476,6 @@ export function createParser(code: string) {
             // 2. aync arrow function -> statement(expressionStatement)
             // 3. identifer -> statement (expressionStatement)
             case SyntaxKinds.ConstKeyword:
-            case SyntaxKinds.LetKeyword:
             case SyntaxKinds.FunctionKeyword: 
             case SyntaxKinds.ClassKeyword:
                 return parseDeclaration();
@@ -491,9 +484,27 @@ export function createParser(code: string) {
                     return parseDeclaration();
                 }
                 return parseStatement();
+            case SyntaxKinds.LetKeyword:
+                if(isLetPossibleIdentifier()) {
+                    return parseStatement();
+                }
+                return parseDeclaration();
             default:
                 return parseStatement();
         }
+    }
+    function isLetPossibleIdentifier() {
+        const lookaheadToken = lookahead();
+        if(
+            lookaheadToken === SyntaxKinds.BracesLeftPunctuator || // object pattern
+            lookaheadToken === SyntaxKinds.BracketLeftPunctuator || // array pattern
+            lookaheadToken === SyntaxKinds.Identifier   || // id
+            lookaheadToken === SyntaxKinds.AwaitKeyword ||
+            lookaheadToken === SyntaxKinds.YieldKeyword 
+        ) {
+            return false;
+        }
+        return true;
     }
     /**
      * Parse Declaration
@@ -707,7 +718,11 @@ export function createParser(code: string) {
         }
         expect(SyntaxKinds.ParenthesesLeftPunctuator);
         if(matchSet([SyntaxKinds.LetKeyword, SyntaxKinds.ConstKeyword, SyntaxKinds.VarKeyword])) {
-            leftOrInit = parseVariableDeclaration(false, true);
+            if(match(SyntaxKinds.LetKeyword) && isLetPossibleIdentifier()) {
+                leftOrInit = parseExpression(false);
+            }else {
+                leftOrInit = parseVariableDeclaration(true);
+            }
         }else if (match(SyntaxKinds.SemiPunctuator)) {
             leftOrInit = null;
         }else {
@@ -716,6 +731,16 @@ export function createParser(code: string) {
         // branch
         if(match(SyntaxKinds.SemiPunctuator)) {
             // ForStatement
+            if(leftOrInit && isVarDeclaration(leftOrInit)) {
+                for(const delcar of leftOrInit.declarations) {
+                    if(
+                        (isArrayPattern(delcar.id) || isObjectPattern(delcar.id)) &&
+                        !delcar.init
+                    ) {
+                        throw createMessageError(ErrorMessageMap.destructing_pattern_must_need_initializer);
+                    }
+                }
+            }
             nextToken();
             let test: Expression | null = null, update: Expression | null = null;
             if(!match(SyntaxKinds.SemiPunctuator)) {
@@ -958,7 +983,8 @@ export function createParser(code: string) {
      * 
      * @returns {VariableDeclaration}
      */
-    function parseVariableDeclaration(shouldEatSemi = true, ignoreInit = false):VariableDeclaration {
+    function parseVariableDeclaration(inForInit: boolean = false):VariableDeclaration {
+        let variableKind = match(SyntaxKinds.VarKeyword) ? "var" : "lexical";
         const { start: keywordStart, value: variant } = expect([SyntaxKinds.VarKeyword, SyntaxKinds.ConstKeyword,SyntaxKinds.LetKeyword])
         let shouldStop = false, isStart = true;
         const declarations: Array<VariableDeclarator> = [];
@@ -976,6 +1002,9 @@ export function createParser(code: string) {
             let id: Pattern ;
             let isBindingPattern = false;
             if(matchSet(BindingIdentifierSyntaxKindArray)) {
+                if(variableKind === "lexical" && match(SyntaxKinds.LetKeyword)) {
+                    throw createMessageError(ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding);
+                }
                 id = parseIdentifer();
             }else {
                 isBindingPattern = true;
@@ -985,7 +1014,7 @@ export function createParser(code: string) {
                 // variable declarations binding pattern but but have init.
                 (isBindingPattern && !match(SyntaxKinds.AssginOperator)) &&
                 // variable declaration in for statement can existed with `of`, `in` operator 
-                !ignoreInit
+                !inForInit
             ) {
                 throw createMessageError("lexical binding must have init");
             }
@@ -997,7 +1026,7 @@ export function createParser(code: string) {
             }
             declarations.push(Factory.createVariableDeclarator(id, null, cloneSourcePosition(id.start), cloneSourcePosition(id.end)));
         }
-        if(shouldEatSemi) {
+        if(!inForInit) {
              semi();
         }
         return Factory.createVariableDeclaration(declarations, variant as VariableDeclaration['variant'], keywordStart, declarations[declarations.length - 1].end);
@@ -1673,6 +1702,7 @@ export function createParser(code: string) {
             case SyntaxKinds.PrivateName:
                 return parsePrivateName();
             case SyntaxKinds.Identifier: 
+            case SyntaxKinds.LetKeyword:
             case SyntaxKinds.AwaitKeyword:
             case SyntaxKinds.YieldKeyword: {
                 const lookaheadToken = lookahead();
@@ -1745,7 +1775,7 @@ export function createParser(code: string) {
         return Factory.createRegexLiteral(pattern, flag, start , getEndPosition());
     }
     function parseIdentifer(): Identifier {
-        expectButNotEat([SyntaxKinds.Identifier, SyntaxKinds.AwaitKeyword, SyntaxKinds.YieldKeyword]);
+        expectButNotEat([SyntaxKinds.Identifier, SyntaxKinds.AwaitKeyword, SyntaxKinds.YieldKeyword, SyntaxKinds.LetKeyword]);
         if(match(SyntaxKinds.YieldKeyword)) {
             if (!isCurrentFunctionGenerator()) {
                 const { value, start, end } = expect(SyntaxKinds.YieldKeyword);
@@ -1759,6 +1789,10 @@ export function createParser(code: string) {
                 return Factory.createIdentifier(value, start, end);
             }
             throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+        }
+        if(match(SyntaxKinds.LetKeyword)) {
+            const { value, start, end } = expect(SyntaxKinds.LetKeyword);
+            return Factory.createIdentifier(value, start, end);
         }
         const { value, start, end } = expect(SyntaxKinds.Identifier);
         return Factory.createIdentifier(value, start, end);

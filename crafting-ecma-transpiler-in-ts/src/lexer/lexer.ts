@@ -15,12 +15,14 @@ interface Context {
     lastTokenPosition: null | SourcePosition;
 }
 
-function cloneContext(source: Context) {
+function cloneContext(source: Context): Context {
     return {
         ...source,
         sourcePosition: cloneSourcePosition(source.sourcePosition),
         startPosition: cloneSourcePosition(source.startPosition),
-        endPosition: cloneSourcePosition(source.endPosition)
+        endPosition: cloneSourcePosition(source.endPosition),
+        templateStringStackCounter: [...source.templateStringStackCounter],
+        lastTokenPosition: source.lastTokenPosition ? cloneSourcePosition(source.lastTokenPosition) : null,
     }
 }
 
@@ -194,6 +196,7 @@ export function createLexer(code: string): Lexer {
                 context.templateStringStackCounter.push(-1);
                 return finishToken(SyntaxKinds.BracesLeftPunctuator, "{");
             case "}":
+                // console.log(context.templateStringStackCounter);
                 const result = context.templateStringStackCounter.pop();
                 if(result && result > 0) {
                     return readTemplateMiddleORTail();
@@ -824,7 +827,6 @@ export function createLexer(code: string): Lexer {
         let isEscape = false;
         while(!(startWith(mode) && !isEscape ) && !eof()) {
             if(startWith("\n")) {
-                console.log(isEscape);
                 if(!isEscape) {
                     throw lexicalError(`string literal start with ${mode} ${isEscape} can not have changeline without \\ .`);
                 }
