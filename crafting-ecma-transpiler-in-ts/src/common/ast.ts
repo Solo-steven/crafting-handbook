@@ -565,6 +565,9 @@ export function isArrayPattern(node: ModuleItem): node is ArrayPattern {
 export function isObjectPattern(node: ModuleItem): node is ObjectPattern {
     return node.kind === SyntaxKinds.ObjectPattern;
 }
+export function isObjectPatternProperty(node: ModuleItem): node is ObjectPatternProperty {
+    return node.kind === SyntaxKinds.ObjectPatternProperty;
+}
 export function isPattern(node: ModuleItem): node is Pattern {
     return (
         node.kind === SyntaxKinds.AssignmentPattern ||

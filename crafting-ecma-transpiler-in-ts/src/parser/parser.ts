@@ -91,6 +91,7 @@ import {
     LexicalLiteral,
     isAwaitExpression,
     isYieldExpression,
+    isObjectPatternProperty,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -998,7 +999,7 @@ export function createParser(code: string) {
                 }
                 nextToken();
             }
-            // parseBindingElement is not equal to parseBindingPattern or identifier
+            // TODO: refactor using parseBindingElement
             let id: Pattern ;
             let isBindingPattern = false;
             if(matchSet(BindingIdentifierSyntaxKindArray)) {
@@ -1009,6 +1010,9 @@ export function createParser(code: string) {
             }else {
                 isBindingPattern = true;
                 id = parseBindingPattern();
+                if(variableKind === "lexical" && isPatternContainLetValue(id)) {
+                    throw createMessageError(ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding);
+                }
             }
             if(
                 // variable declarations binding pattern but but have init.
@@ -1030,6 +1034,49 @@ export function createParser(code: string) {
              semi();
         }
         return Factory.createVariableDeclaration(declarations, variant as VariableDeclaration['variant'], keywordStart, declarations[declarations.length - 1].end);
+    }
+    function isPatternContainLetValue(pattern: Pattern): boolean {
+        if(isArrayPattern(pattern)) {
+            for(const element of pattern.elements) {
+                if(element) {
+                    if(isPatternContainLetValue(element)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        if(isObjectPattern(pattern)) {
+            for(const property of pattern.properties) {
+                if(isObjectPatternProperty(property)) {
+                    if(property.value && isPatternContainLetValue(property.value)) {
+                        return true
+                    }
+                    if(!property.value && isIdentifer(property.key) && isPatternContainLetValue(property.key)) {
+                        return true;
+                    }
+                }else {
+                    if(isPatternContainLetValue(property)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        if(isRestElement(pattern)) {
+            if(isPatternContainLetValue(pattern.argument)) {
+                return true;
+            }
+        }
+        if(isAssignmentPattern(pattern)) {
+            if(isPatternContainLetValue(pattern.left)) {
+                return true;
+            }
+        }
+        if(isIdentifer(pattern)) {
+            if(pattern.name === "let") {
+                return true;
+            }
+        }
+        return false;
     }
     function parseFunctionDeclaration() {
         const func = parseFunction(false);
@@ -2081,6 +2128,9 @@ export function createParser(code: string) {
                 if(isCurrentFunctionGenerator() && !match(SyntaxKinds.ColonPunctuator)) {
                     throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
                 }
+                return identifer;
+            }
+            if(identifer.name === "let") {
                 return identifer;
             }
             if(LexicalKeywordSet.has(identifer.name) && !match(SyntaxKinds.ColonPunctuator)) {
