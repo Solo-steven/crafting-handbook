@@ -1,6 +1,7 @@
 import { 
     Expression, 
     FunctionBody, 
+    Function as FunctionAST,
     Identifier, 
     ModuleItem, 
     Pattern, 
@@ -92,6 +93,8 @@ import {
     isAwaitExpression,
     isYieldExpression,
     isObjectPatternProperty,
+    ArrorFunctionExpression,
+    YieldExpression,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -981,7 +984,24 @@ export function createParser(code: string) {
  * ==================================================================
  */
     /**
+     * Parse VariableStatement and LexicalBindingDeclaration.
      * 
+     * when in for-in statement, variable declaration do not need semi for 
+     * ending, in binding pattern of for-in statement, variable declaration
+     * maybe do not need init.(for-in, for-of do not need, but for still need)
+     * 
+     * Anthoer side, let can be identifier in VariableStatement. and parsrIdentifier
+     * function would always parse let as identifier if not in strict mode. so we need 
+     * to implement custom function for check is identifier or value of pattern is let
+     * when in LexicalBindingDeclaration
+     * ```
+     * VariableStatement := 'var' VariableDeclarationList
+     * LexicalBidningDeclaration := '(let | const)' LexicalBinding
+     * VariableDeclarationList := BindingIdentidier initalizer
+     *                         := BindingPattern initalizer
+     * LexicalBinding  := BindingIdentidier initalizer
+     *                 := BindingPattern initalizer
+     * ```
      * @returns {VariableDeclaration}
      */
     function parseVariableDeclaration(inForInit: boolean = false):VariableDeclaration {
@@ -999,19 +1019,12 @@ export function createParser(code: string) {
                 }
                 nextToken();
             }
-            // TODO: refactor using parseBindingElement
-            let id: Pattern ;
-            let isBindingPattern = false;
-            if(matchSet(BindingIdentifierSyntaxKindArray)) {
-                if(variableKind === "lexical" && match(SyntaxKinds.LetKeyword)) {
-                    throw createMessageError(ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding);
-                }
-                id = parseIdentifer();
-            }else {
-                isBindingPattern = true;
-                id = parseBindingPattern();
-                if(variableKind === "lexical" && isPatternContainLetValue(id)) {
-                    throw createMessageError(ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding);
+            const id = parseBindingElement(false);
+            const isBindingPattern = !isIdentifer(id);
+            // custom logical for check is lexical binding have let identifier ?
+            if(variableKind === "lexical") {
+                if(isPatternContainLetValue(id)) {
+                    throw createMessageError(ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding)
                 }
             }
             if(
@@ -1035,6 +1048,13 @@ export function createParser(code: string) {
         }
         return Factory.createVariableDeclaration(declarations, variant as VariableDeclaration['variant'], keywordStart, declarations[declarations.length - 1].end);
     }
+    /**
+     * Take look at parseIdentifier, you can seems parseIdentifier allow let as identifier when is not
+     * strict mode, but parseVariableDeclaration maybe is LexicalBindingDeclaration, so parseVariableDeclaration
+     * needs to implement its own logical about check if there existed let identifier in LexicalBinding.
+     * @param {Pattern} pattern 
+     * @returns {boolean}
+     */
     function isPatternContainLetValue(pattern: Pattern): boolean {
         if(isArrayPattern(pattern)) {
             for(const element of pattern.elements) {
@@ -1083,10 +1103,18 @@ export function createParser(code: string) {
         return Factory.transFormFunctionToFunctionDeclaration(func);
     }
     /**
+     * Parse function maybe call by parseFunctionDeclaration and parseFunctionExpression,
+     * first different of those two function is that function-declaration can not have null
+     * name.
      * 
-     * @returns 
+     * When parse name of function, can not just call parseIdentifier, because function name
+     * maybe await or yield, and function name's context rule is different from identifier in
+     * scope (function body). so there we need to implement special logical for parse function 
+     * name. and you need to note that name of function expression and name of function delcaration
+     * have different context rule for parse function name
+     * @returns {FunctionAST} 
      */
-    function parseFunction(isExpression: boolean) {
+    function parseFunction(isExpression: boolean): FunctionAST {
         const { start } = expect(SyntaxKinds.FunctionKeyword);
         let generator = false;
         if(match(SyntaxKinds.MultiplyOperator)) {
@@ -1095,27 +1123,37 @@ export function createParser(code: string) {
             nextToken();
         }
         let name: Identifier | null = null;
+        // there we do not just using parseIdentifier function as the reason above
         if(match(SyntaxKinds.Identifier)) {
             name = parseIdentifer();
         }
         if(match(SyntaxKinds.AwaitKeyword)) {
+            // for function expression, can await treat as function name is 
+            // dep on current scope.
             if(isExpression && isCurrentFunctionAsync()) {
                 throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
             }
+            // for function declaration, can await treat as function name is 
+            // dep on parent scope.
             if(!isExpression && isParentFunctionAsync()) {
                 throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
             }
             name = parseIdentiferWithKeyword();
         }
         if(match(SyntaxKinds.YieldKeyword)) {
+            // for function expression, can yield treat as function name is 
+            // dep on current scope.
             if(isExpression && isCurrentFunctionGenerator()) {
                 throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
             }
+            // for function declaration, can yield treat as function name is 
+            // dep on parent scope.
             if(!isExpression && isParentFunctionGenerator()) {
                 throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
             }
             name = parseIdentiferWithKeyword();
         }
+        // let can be function name as other place
         if(match(SyntaxKinds.LetKeyword)) {
             name = parseIdentiferWithKeyword();
         }
@@ -1145,7 +1183,12 @@ export function createParser(code: string) {
         return Factory.createFunctionBody(body, start, end);
     }
     /**
-     * Parse Function Params
+     * Parse Function Params, parameter list is a spcial place for await and yield,
+     * function parameter list is in current function scope, so await and yield would 
+     * parse as expression, but parameter list can not call await and yield expression.
+     * 
+     * Anthoer thing is that trailing comma of restElement is error, multi restElement is
+     * error for function param list.
      * ```
      * FunctionParams := '(' FunctionParamsList ')'
      *                := '(' FunctionParamsList ',' ')' 
@@ -1193,15 +1236,30 @@ export function createParser(code: string) {
         existFunctionParameter();
         return params;
     }
+    /**
+     * this helper function is used for check duplicate param
+     * in function paramemter declaration list.
+     * @param {Array<Pattern>} params
+     */
     function checkFunctionParams(params: Array<Pattern>) {
         const paramsSet = new Set<string>();
         for(const param of params) {
             checkParam(param, paramsSet);
         }
     }
+    /**
+     * recursive checker for check is there are maybe duplicate param
+     * name of givn param and existed param list set
+     * @param {Pattern} param
+     * @param {Set<string>} paramSet 
+     * @returns 
+     */
     function checkParam(param: Pattern, paramSet: Set<string>) {
         if(isIdentifer(param)) {
-            checkParamName(param.name, paramSet);
+            if(paramSet.has(param.name)) {
+                throw createMessageError(ErrorMessageMap.duplicate_param);
+            }
+            paramSet.add(param.name);
             return;
         }
         if(isArrayPattern(param))  {
@@ -1230,12 +1288,6 @@ export function createParser(code: string) {
             checkParam(param.argument, paramSet);
             return;
         }
-    }
-    function checkParamName(name: string, paramSet: Set<string>) {
-        if(paramSet.has(name)) {
-            throw createMessageError(ErrorMessageMap.duplicate_param);
-        }
-        paramSet.add(name);
     }
     /**
      * 
@@ -1396,7 +1448,20 @@ export function createParser(code: string) {
         context.inOperatorStack.pop();
         return expr;
     }
-    function parseYieldExpression() {
+    /**
+     * Parse Yield Expression, when current function scope is generator, yield would 
+     * seems as keyword of yield expression, but even if in generator function scope,
+     * function parameter can call yield expression, so this function would check is
+     * current place is in function paramter or not. if yield expression shows in 
+     * parameter list, it would throw error.
+     * ```
+     * YieldExpression := 'yield' 
+     *                 := 'yield' AssignmentExpression
+     *                 := 'yield' '*' AssignmentExpression
+     * ```
+     * @returns {YieldExpression}
+     */
+    function parseYieldExpression(): YieldExpression {
         const { start } = expect(SyntaxKinds.YieldKeyword);
         let delegate = false;
         if(match(SyntaxKinds.MultiplyOperator)) {
@@ -1573,7 +1638,7 @@ export function createParser(code: string) {
                 // callexpression
                 base = parseCallExpression(base, optional);
             }
-            else if (match(SyntaxKinds.DotOperator) || match(SyntaxKinds.BracketLeftPunctuator) || optional) {
+            else if (matchSet([SyntaxKinds.DotOperator, SyntaxKinds.BracketLeftPunctuator]) || optional) {
                 // memberexpression 
                 base = parseMemberExpression(base, optional);
             }
@@ -1611,7 +1676,9 @@ export function createParser(code: string) {
         return Factory.createCallExpression(callee, nodes, optional, cloneSourcePosition(callee.start), end);
     }
     /**
-     * Parse Arguments
+     * // TODO: remove possble dep of arrow function paramemter need to call this function.
+     * 
+     * Parse Arguments, used by call expression, and arrow function paramemter.
      * ```
      * Arguments := '(' ArgumentList ')'
      * ArgumentList := ArgumentList AssigmentExpression
@@ -1663,7 +1730,8 @@ export function createParser(code: string) {
         };
     }
     /**
-     * Parse MemberExpression with base
+     * Parse MemberExpression with base, this different between parseLeftHandSideExpression is
+     * that parseMemberExpression would only eat a `atom` of chain of expression.
      * ```
      * MemberExpression := GivenBase(base ,optional) '.' IdentiferWithKeyword
      *                  := GivenBase(base, optional) '[' Expreession ']'
@@ -1678,17 +1746,22 @@ export function createParser(code: string) {
         if(!match(SyntaxKinds.DotOperator) && !match(SyntaxKinds.BracketLeftPunctuator) && !optional) {
             throw createUnreachError([SyntaxKinds.DotOperator, SyntaxKinds.BracketLeftPunctuator]);
         }
-        if(match(SyntaxKinds.DotOperator)) {
+        // if start with dot, must be a access property, can not with optional.
+        // because optional means that last token is `?.`
+        if(match(SyntaxKinds.DotOperator) && !optional) {
             expect(SyntaxKinds.DotOperator);
             const property = parseIdentiferWithKeyword();
             return Factory.createMemberExpression(false, base, property, optional, cloneSourcePosition(base.start), cloneSourcePosition(property.end));
         }
+        // if start with `[`, must be computed property access.
         else if(match(SyntaxKinds.BracketLeftPunctuator)){
             expect(SyntaxKinds.BracketLeftPunctuator);
             const property = parseExpression();
             const { end } = expect(SyntaxKinds.BracketRightPunctuator)
             return Factory.createMemberExpression(true, base, property, optional, cloneSourcePosition(base.start), end);
         }else {
+        // because parseLeftHandSideExpression would eat optional mark (QustionDotToken) frist, so maybe there
+        // is not dot or `[` for start a member expression, so we can check optional is 
             const property = parseIdentiferWithKeyword();
             return Factory.createMemberExpression(false, base, property, optional, cloneSourcePosition(base.start), cloneSourcePosition(property.end));
         }
@@ -1792,6 +1865,7 @@ export function createParser(code: string) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
                     enterFunctionScope(true);
+                    // TODO: should remove parseArgument, using parseFunctionParam instead.
                     const arrowFunExpr = parseArrowFunctionExpression(parseArguments());
                     exitFunctionScope();
                     return arrowFunExpr;
@@ -1824,9 +1898,25 @@ export function createParser(code: string) {
         }
         return Factory.createRegexLiteral(pattern, flag, start , getEndPosition());
     }
+    /**
+     * this function is actually parse binding identifier. it accept more than just identifier
+     * include await yield and let, if identifier is let, await or yield, this function would 
+     * auto check context for you. but if identifier is in VariableDeclaration, function name,
+     * property name, context check is not suit those place, so you maybe need to implement another
+     * context check logical with parseIdentifierWithKeyword function.
+     * ```
+     * BindingIdentifier := Identifier
+     *                   := await (deps in context)
+     *                   := yield (deps in context)
+     *                   (let (deps on context))
+     * ```
+     * @returns {Identifier}
+     */
     function parseIdentifer(): Identifier {
         expectButNotEat([SyntaxKinds.Identifier, SyntaxKinds.AwaitKeyword, SyntaxKinds.YieldKeyword, SyntaxKinds.LetKeyword]);
         if(match(SyntaxKinds.YieldKeyword)) {
+            // for most of yield keyword, if it should treat as identifier,
+            // it should not in generator function.
             if (!isCurrentFunctionGenerator()) {
                 const { value, start, end } = expect(SyntaxKinds.YieldKeyword);
                 return Factory.createIdentifier(value, start, end);
@@ -1834,6 +1924,8 @@ export function createParser(code: string) {
             throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
         }
         if(match(SyntaxKinds.AwaitKeyword)) {
+            // for most of await keyword, if it should treat as identifier,
+            // it should not in async function.
             if(!isCurrentFunctionAsync()) {
                 const { value, start, end } = expect(SyntaxKinds.AwaitKeyword);
                 return Factory.createIdentifier(value, start, end);
@@ -1841,13 +1933,21 @@ export function createParser(code: string) {
             throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
         }
         if(match(SyntaxKinds.LetKeyword)) {
+            // TODO: strict mode check
+            // let maybe treat as identifier in not strict mode, and not lexical binding declaration.
+            // so lexical binding declaration should implement it's own checker logical with parseIdentifierWithKeyword
             const { value, start, end } = expect(SyntaxKinds.LetKeyword);
             return Factory.createIdentifier(value, start, end);
         }
         const { value, start, end } = expect(SyntaxKinds.Identifier);
         return Factory.createIdentifier(value, start, end);
     }
-    function parseIdentiferWithKeyword() {
+    /**
+     * Relatedly loose function for parseIdentifier, it not only can parse identifier,
+     * it also can parse keyword as identifier.
+     * @returns {Identifier}
+     */
+    function parseIdentiferWithKeyword(): Identifier {
         const { value, start, end } = expect(IdentiferWithKeyworArray);
         return Factory.createIdentifier(value, start, end);
     }
@@ -2343,11 +2443,27 @@ export function createParser(code: string) {
         exitFunctionScope();
         return arrowExpr;
     }
-    function parseArrowFunctionExpression(metaData: ASTArrayWithMetaData<Expression> & { trailingComma: boolean }) {
+    /**
+     * Parse arrow function expression, by given argumentlist and meta data, include
+     * - start of `(`
+     * - end of `)`,
+     * - is trailing comma of argument list
+     * please notes that this function accept with arguments, not paramemter list, so we need to 
+     * transform arguments to parameter list, so we need to call `toAssignment` for each argument.
+     * and we also need to check is parameter duplicate.
+     * 
+     * last, because in pattern maybe there are await and yield expression, but paramemter list should
+     * forbiden, so we need a helper function for check if there are any await and yield expression in
+     * list.
+     * @param {ASTArrayWithMetaData<Expression> & { trailingComma: boolean }} metaData 
+     * @returns {ArrorFunctionExpression}
+     */
+    function parseArrowFunctionExpression(metaData: ASTArrayWithMetaData<Expression> & { trailingComma: boolean }): ArrorFunctionExpression {
         if(!match(SyntaxKinds.ArrowOperator)) {
             throw createUnexpectError(SyntaxKinds.ArrowOperator);
         }
         if(lexer.predictLineTerminate()) {
+            // TODO: error message
             throw new Error("Not Ok");
         }
         nextToken();
@@ -2359,6 +2475,14 @@ export function createParser(code: string) {
             body = parseExpression();
             isExpression = true;
         }
+        // transform argument list to function parameter list, there are some thing we need to check
+        // 1. multi spread element is ok to argument list, but parameter list can only have one spread list
+        // 2. if argument list last one is spread element, can have trailing comma, but paramemter last is restelement,
+        //   it can not have trailing comma.
+        // 3. argument list can have duplicate identifier name, but parameter list can not.
+        // 4. argument list can have await or yield expression as default value, but paramemter list can not.
+        // first and second thing toAssignment would check for us. 3 can be done by call `checkFunctionParams`, last
+        // one can be done by create custome helper function.
         const functionArguments = metaData.nodes.map(node => toAssignmentPattern(node, true)) as Array<Pattern>;
         checkFunctionParams(functionArguments);
         checkAwaitAndYieldUsageOfArrowParams(functionArguments);
@@ -2754,6 +2878,7 @@ export function createParser(code: string) {
             semi();
             return Factory.createExportDefaultDeclaration(funDeclar, start, cloneSourcePosition(funDeclar.end));
         }
+        // TODO: parse export default from ""; (experimental feature)
         const expr = parseAssigmentExpression();
         semi();
         return Factory.createExportDefaultDeclaration(expr, start, cloneSourcePosition(expr.end));
