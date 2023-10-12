@@ -124,7 +124,6 @@ const TempIgnoreCases: Array<String> = [
     "esprima/es2020/importmeta/invalid-unicode-escape-import.module.js",
     "esprima/es2020/importmeta/unicode-escape-meta.module.js",
     //  ==== other
-    "esprima/es2018/dynamic-import/invalid-new-import-call.js",
     "esprima/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
     // ==== dev pss, test failed ?
     "esprima/expression/binary/multiline_string_literal.js",

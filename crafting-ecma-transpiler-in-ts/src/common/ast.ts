@@ -577,3 +577,6 @@ export function isPattern(node: ModuleItem): node is Pattern {
         node.kind === SyntaxKinds.Identifier
     )
 }
+export function isCallExpression(node: ModuleItem): node is CallExpression{
+    return node.kind === SyntaxKinds.CallExpression;
+}

@@ -95,6 +95,7 @@ import {
     isObjectPatternProperty,
     ArrorFunctionExpression,
     YieldExpression,
+    isCallExpression,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -2056,6 +2057,9 @@ export function createParser(code: string) {
             return parseNewExpression();
         }
         let base = parsePrimaryExpression();
+        if(isCallExpression(base)) {
+            throw createMessageError(ErrorMessageMap.import_call_is_not_allow_as_new_expression_called);
+        }
         // TODO: refactor this loop to with function -> parseNewExpressionCallee ?
         while(match(SyntaxKinds.DotOperator) || match(SyntaxKinds.BracketLeftPunctuator) || match(SyntaxKinds.QustionDotOperator)) {
             if(match(SyntaxKinds.QustionDotOperator)) {
