@@ -2185,7 +2185,7 @@ export function createParser(code: string) {
         }
         if(match(SyntaxKinds.ColonPunctuator)) {
             nextToken();
-            const expr = parseAssigmentExpression()
+            const expr = parseAssigmentExpression();
             return Factory.createObjectProperty(propertyName, expr , isComputedRef.isComputed, false, cloneSourcePosition(propertyName.start), cloneSourcePosition(expr.end));
         }
         if(match(SyntaxKinds.AssginOperator)) {
@@ -2476,7 +2476,7 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.BracesLeftPunctuator)) {
             body = parseFunctionBody();
         }else {
-            body = parseExpression();
+            body = parseAssigmentExpression();
             isExpression = true;
         }
         // transform argument list to function parameter list, there are some thing we need to check

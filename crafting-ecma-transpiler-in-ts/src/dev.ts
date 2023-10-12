@@ -10,16 +10,16 @@ const code = fs.readFileSync(path.join(__dirname, "test.js"), "utf-8").toString(
 // console.log("Test JavaScript Code:");
 // console.log(code);
 // console.log("=================================");
-console.log("=================================");
-console.log("============ lexer ==============");
-console.log("=================================");
+// console.log("=================================");
+// console.log("============ lexer ==============");
+// console.log("=================================");
 
-const lexer = createLexer(code);
-while(lexer.getToken() != SyntaxKinds.EOFToken) {
-    console.log( lexer.getToken(), SytaxKindsMapLexicalLiteral[lexer.getToken()], lexer.getSourceValue(), lexer.getStartPosition(), lexer.getEndPosition());
-    lexer.nextToken();
-}
-console.log( SytaxKindsMapLexicalLiteral[lexer.getToken()], lexer.getSourceValue(), lexer.getStartPosition(), lexer.getEndPosition());
+// const lexer = createLexer(code);
+// while(lexer.getToken() != SyntaxKinds.EOFToken) {
+//     console.log( lexer.getToken(), SytaxKindsMapLexicalLiteral[lexer.getToken()], lexer.getSourceValue(), lexer.getStartPosition(), lexer.getEndPosition());
+//     lexer.nextToken();
+// }
+// console.log( SytaxKindsMapLexicalLiteral[lexer.getToken()], lexer.getSourceValue(), lexer.getStartPosition(), lexer.getEndPosition());
 
 console.log("=================================");
 console.log("============ Parser =============");

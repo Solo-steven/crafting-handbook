@@ -196,7 +196,6 @@ export function createLexer(code: string): Lexer {
                 context.templateStringStackCounter.push(-1);
                 return finishToken(SyntaxKinds.BracesLeftPunctuator, "{");
             case "}":
-                // console.log(context.templateStringStackCounter);
                 const result = context.templateStringStackCounter.pop();
                 if(result && result > 0) {
                     return readTemplateMiddleORTail();
@@ -665,7 +664,9 @@ export function createLexer(code: string): Lexer {
         }
         eatChar(1);
         let wordString = "";
-        while(!startWithSet(["${", "`"]) && !eof() ) {
+        let isEscape = false;
+        while(!(startWithSet(["${", "`"]) && !isEscape) && !eof() ) {
+            isEscape = startWith("\\");
             wordString += eatChar();
         }
         if(eof()) {
@@ -685,15 +686,17 @@ export function createLexer(code: string): Lexer {
         }
         eatChar(1);
         let wordString = "";
-        while(!startWithSet(["${", "`"])&& !eof() ) {
+        let isEscape = false;
+        while(!(startWithSet(["${", "`"]) && !isEscape) && !eof() ) {
+            isEscape = startWith("\\");
             wordString += eatChar();
         }
         if(eof()) {
             throw lexicalError("template string not closed with '`'");
         }
-        context.templateStringStackCounter.push(1);
         context.sourceValue = wordString;
         if(startWith("${")) {
+            context.templateStringStackCounter.push(1);
             eatChar(2);
             return  finishToken(SyntaxKinds.TemplateMiddle, wordString);
         }
@@ -750,7 +753,10 @@ export function createLexer(code: string): Lexer {
         while(startWithSet(LexicalLiteral.numberChars) && !eof()) {
             eatChar();
         }
-        const intWord = context.code.slice(intStartIndex, context.sourcePosition.index);
+        // default case, start with int part and followed by
+        // - float part
+        // - expon part
+        let numberWord = context.code.slice(intStartIndex, context.sourcePosition.index);
         if(startWith(".")) {
             eatChar();
             const floatWordStartIndex = context.sourcePosition.index;
@@ -758,9 +764,22 @@ export function createLexer(code: string): Lexer {
                 eatChar();
             }
             const floatWord = context.code.slice(floatWordStartIndex, context.sourcePosition.index);
-            return finishToken(SyntaxKinds.NumberLiteral, `${intWord}.${floatWord}`);
+            numberWord = `${numberWord}.${floatWord}`;
         }
-        return finishToken(SyntaxKinds.NumberLiteral, `${intWord}`);
+        if(startWithSet(["e", "E"])) {
+            let exponWord = eatChar();;
+            if(startWithSet(["+", "-"])) {
+                exponWord += eatChar();
+            }
+            while(startWithSet(LexicalLiteral.numberChars)) {
+                exponWord += eatChar();
+            }
+            if(exponWord.length === 1) {
+                throw lexicalError(ErrorMessageMap.expon_number_must_have_expon_part);
+            }
+            return finishToken(SyntaxKinds.NumberLiteral, `${numberWord}${exponWord}`)
+        }
+        return finishToken(SyntaxKinds.NumberLiteral, numberWord);
     }
     function readBinaryNumberLiteral() {
         const startIndex = context.sourcePosition.index;
@@ -828,7 +847,7 @@ export function createLexer(code: string): Lexer {
         while(!(startWith(mode) && !isEscape ) && !eof()) {
             if(startWith("\n")) {
                 if(!isEscape) {
-                    throw lexicalError(`string literal start with ${mode} ${isEscape} can not have changeline without \\ .`);
+                    throw lexicalError(`string literal start with ${mode} can not have changeline without \\ .`);
                 }
                 isEscape = false;
                 eatChar();
@@ -883,7 +902,14 @@ export function createLexer(code: string): Lexer {
     function readRegex(): { pattern: string, flag: string } {
         let pattern = "";
         let isEscape = false;
-        while(!(startWith("/") && !isEscape )&& !eof()) {
+        let isInSet = false;
+        while(!(startWith("/") && !isEscape && !isInSet )&& !eof()) {
+            if(startWith("[")) {
+                isInSet = true;
+            }
+            if(startWith("]")) {
+                isInSet = false;
+            }
             if(startWith("\\")) {
                 if(isEscape) {
                     isEscape = false;

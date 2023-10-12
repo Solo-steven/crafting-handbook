@@ -297,6 +297,7 @@ const thirdPartyTestCase = [
     { title: "Jquery uncompressed", url: "https://code.jquery.com/jquery-3.7.1.js", code: "", pass: false, },
     { title: "react development", url: "https://unpkg.com/react@18/umd/react.development.js", code: "", pass: false,  },
     { title: "react dom development", url: "https://unpkg.com/react-dom@18/umd/react-dom.development.js", code: "", pass: false,  },
+    { title: "vue esm brower prod min", url: "https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.esm-browser.prod.min.js", code: "", pass: false}
 ]
 
 async function run3partyTestCase() {

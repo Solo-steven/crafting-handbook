@@ -4,46 +4,46 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "AssigmentExpression",
-                "operator": "=",
-                "left": {
-                    "kind": "Identifer",
-                    "name": "id",
-                    "start": {
-                        "row": 1,
-                        "col": 1,
-                        "index": 0
-                    },
-                    "end": {
-                        "row": 1,
-                        "col": 3,
-                        "index": 2
-                    }
-                },
-                "right": {
-                    "kind": "ArrowFunctionExpression",
-                    "expressionBody": true,
-                    "async": true,
-                    "arguments": [
-                        {
+                "kind": "SequenceExpression",
+                "exprs": [
+                    {
+                        "kind": "AssigmentExpression",
+                        "operator": "=",
+                        "left": {
                             "kind": "Identifer",
-                            "name": "x",
+                            "name": "id",
                             "start": {
                                 "row": 1,
-                                "col": 12,
-                                "index": 11
+                                "col": 1,
+                                "index": 0
                             },
                             "end": {
                                 "row": 1,
-                                "col": 13,
-                                "index": 12
+                                "col": 3,
+                                "index": 2
                             }
-                        }
-                    ],
-                    "body": {
-                        "kind": "SequenceExpression",
-                        "exprs": [
-                            {
+                        },
+                        "right": {
+                            "kind": "ArrowFunctionExpression",
+                            "expressionBody": true,
+                            "async": true,
+                            "arguments": [
+                                {
+                                    "kind": "Identifer",
+                                    "name": "x",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 12,
+                                        "index": 11
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 13,
+                                        "index": 12
+                                    }
+                                }
+                            ],
+                            "body": {
                                 "kind": "Identifer",
                                 "name": "x",
                                 "start": {
@@ -57,90 +57,76 @@
                                     "index": 17
                                 }
                             },
-                            {
-                                "kind": "AssigmentExpression",
-                                "operator": "=",
-                                "left": {
+                            "start": {
+                                "row": 1,
+                                "col": 12,
+                                "index": 11
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 18,
+                                "index": 17
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 1,
+                            "index": 0
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        }
+                    },
+                    {
+                        "kind": "AssigmentExpression",
+                        "operator": "=",
+                        "left": {
+                            "kind": "Identifer",
+                            "name": "square",
+                            "start": {
+                                "row": 1,
+                                "col": 20,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 26,
+                                "index": 25
+                            }
+                        },
+                        "right": {
+                            "kind": "ArrowFunctionExpression",
+                            "expressionBody": false,
+                            "async": true,
+                            "arguments": [
+                                {
                                     "kind": "Identifer",
-                                    "name": "square",
+                                    "name": "y",
                                     "start": {
                                         "row": 1,
-                                        "col": 20,
-                                        "index": 19
+                                        "col": 36,
+                                        "index": 35
                                     },
                                     "end": {
                                         "row": 1,
-                                        "col": 26,
-                                        "index": 25
+                                        "col": 37,
+                                        "index": 36
                                     }
-                                },
-                                "right": {
-                                    "kind": "ArrowFunctionExpression",
-                                    "expressionBody": false,
-                                    "async": true,
-                                    "arguments": [
-                                        {
-                                            "kind": "Identifer",
-                                            "name": "y",
-                                            "start": {
-                                                "row": 1,
-                                                "col": 36,
-                                                "index": 35
-                                            },
-                                            "end": {
-                                                "row": 1,
-                                                "col": 37,
-                                                "index": 36
-                                            }
-                                        }
-                                    ],
-                                    "body": {
-                                        "kind": "FunctionBody",
-                                        "body": [
-                                            {
-                                                "kind": "ExpressionStatement",
-                                                "expr": {
-                                                    "kind": "BinaryExpression",
-                                                    "operator": "*",
-                                                    "left": {
-                                                        "kind": "Identifer",
-                                                        "name": "y",
-                                                        "start": {
-                                                            "row": 1,
-                                                            "col": 44,
-                                                            "index": 43
-                                                        },
-                                                        "end": {
-                                                            "row": 1,
-                                                            "col": 45,
-                                                            "index": 44
-                                                        }
-                                                    },
-                                                    "right": {
-                                                        "kind": "Identifer",
-                                                        "name": "y",
-                                                        "start": {
-                                                            "row": 1,
-                                                            "col": 48,
-                                                            "index": 47
-                                                        },
-                                                        "end": {
-                                                            "row": 1,
-                                                            "col": 49,
-                                                            "index": 48
-                                                        }
-                                                    },
-                                                    "start": {
-                                                        "row": 1,
-                                                        "col": 44,
-                                                        "index": 43
-                                                    },
-                                                    "end": {
-                                                        "row": 1,
-                                                        "col": 49,
-                                                        "index": 48
-                                                    }
-                                                },
+                                }
+                            ],
+                            "body": {
+                                "kind": "FunctionBody",
+                                "body": [
+                                    {
+                                        "kind": "ExpressionStatement",
+                                        "expr": {
+                                            "kind": "BinaryExpression",
+                                            "operator": "*",
+                                            "left": {
+                                                "kind": "Identifer",
+                                                "name": "y",
                                                 "start": {
                                                     "row": 1,
                                                     "col": 44,
@@ -148,67 +134,81 @@
                                                 },
                                                 "end": {
                                                     "row": 1,
+                                                    "col": 45,
+                                                    "index": 44
+                                                }
+                                            },
+                                            "right": {
+                                                "kind": "Identifer",
+                                                "name": "y",
+                                                "start": {
+                                                    "row": 1,
+                                                    "col": 48,
+                                                    "index": 47
+                                                },
+                                                "end": {
+                                                    "row": 1,
                                                     "col": 49,
                                                     "index": 48
                                                 }
+                                            },
+                                            "start": {
+                                                "row": 1,
+                                                "col": 44,
+                                                "index": 43
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 49,
+                                                "index": 48
                                             }
-                                        ],
+                                        },
                                         "start": {
                                             "row": 1,
-                                            "col": 42,
-                                            "index": 41
+                                            "col": 44,
+                                            "index": 43
                                         },
                                         "end": {
                                             "row": 1,
-                                            "col": 51,
-                                            "index": 50
+                                            "col": 49,
+                                            "index": 48
                                         }
-                                    },
-                                    "start": {
-                                        "row": 1,
-                                        "col": 35,
-                                        "index": 34
-                                    },
-                                    "end": {
-                                        "row": 1,
-                                        "col": 51,
-                                        "index": 50
                                     }
-                                },
+                                ],
                                 "start": {
                                     "row": 1,
-                                    "col": 20,
-                                    "index": 19
+                                    "col": 42,
+                                    "index": 41
                                 },
                                 "end": {
                                     "row": 1,
                                     "col": 51,
                                     "index": 50
                                 }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 35,
+                                "index": 34
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 51,
+                                "index": 50
                             }
-                        ],
+                        },
                         "start": {
                             "row": 1,
-                            "col": 17,
-                            "index": 16
+                            "col": 20,
+                            "index": 19
                         },
                         "end": {
                             "row": 1,
                             "col": 51,
                             "index": 50
                         }
-                    },
-                    "start": {
-                        "row": 1,
-                        "col": 12,
-                        "index": 11
-                    },
-                    "end": {
-                        "row": 1,
-                        "col": 51,
-                        "index": 50
                     }
-                },
+                ],
                 "start": {
                     "row": 1,
                     "col": 1,
