@@ -9,6 +9,8 @@ import { transformSyntaxKindToLiteral } from "./transform";
  */
 const isUpdate = Boolean(process.env.TEST_UPDATE) || false;
 const gate = Number(process.env.TEST_GATE) || .95;
+const isCI = Boolean(process.env.TEST_CI) || false;
+let CIPass = false;
 // eslint-disable-next-line no-useless-escape
 const jsFileRegex = new RegExp('.*\.js$');
 // eslint-disable-next-line no-useless-escape
@@ -292,9 +294,9 @@ async function runerAllTestCase() {
     }));
 }
 const thirdPartyTestCase = [
-    { title: "Jquery uncompressed", url: "https://code.jquery.com/jquery-3.7.1.js", code: "" },
-    { title: "react development", url: "https://unpkg.com/react@18/umd/react.development.js", code: "" },
-    { title: "react dom development", url: "https://unpkg.com/react-dom@18/umd/react-dom.development.js", code: "" },
+    { title: "Jquery uncompressed", url: "https://code.jquery.com/jquery-3.7.1.js", code: "", pass: false, },
+    { title: "react development", url: "https://unpkg.com/react@18/umd/react.development.js", code: "", pass: false,  },
+    { title: "react dom development", url: "https://unpkg.com/react-dom@18/umd/react-dom.development.js", code: "", pass: false,  },
 ]
 
 async function run3partyTestCase() {
@@ -307,8 +309,10 @@ async function run3partyTestCase() {
         try{
             const parser = createParser(testCode.code);
             parser.parse();
+            testCode.pass = true;
             console.log(`|${testCode.title}|: parse PASS.`);
         }catch(e) {
+            testCode.pass = false;
             console.log(`|${testCode.title}|: parse FAILED.`);
         }
     }
@@ -348,14 +352,36 @@ function report() {
     console.log(`Skip rate: ${skipTestCases.length} / ${allTestCaseCount}`);
     console.log(`Expect Failed rate: ${expectFailedTestCase.length} /${allTestCaseCount} `);
     console.log(`Expect Failed But Passed rate: ${expectFaildButPassCase.length} /${allTestCaseCount}`)
-    console.log("\n==========================================================\n");
+    console.log("\n==========================================================");
+    let passCount = 0;
+    for(const testCode of thirdPartyTestCase) {
+        if(testCode.pass) {
+            console.log(`|${testCode.title}|: parse PASS.`);
+            passCount ++;
+        }else {
+            console.log(`|${testCode.title}|: parse FAILED.`);
+        }
+    }
+    console.log("===========================================================");
+    if(isCI) {
+        CIPass = allTestCaseCount === (passTestCases.length + expectFailedTestCase.length + expectFaildButPassCase.length + skipTestCases.length);
+        CIPass &&= (passCount === thirdPartyTestCase.length)
+    }
 }
 /**
  * Script Entry point
  */
-runerAllTestCase()
-    .then(async () => {
-        report();
+async function main() {
+    try{
+        await runerAllTestCase();
         await run3partyTestCase();
-    })
-    .catch(console.log);
+        report();
+    } catch(e) {
+        throw new Error(`[Runtime Error]: ${e?.toString()}.`)
+    }
+    if(isCI && !CIPass) {
+        if(!CIPass)
+         throw new Error("[Some Test Case Failed]: please take look at test result.");
+    }
+}
+main();

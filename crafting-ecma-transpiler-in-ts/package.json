@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "nodemon ./src/dev.ts",
     "test": "ts-node ./tests/runner.ts",
-    "test:update": "TEST_UPDATE=1 ts-node ./tests/runner.ts"
+    "test:update": "TEST_UPDATE=1 ts-node ./tests/runner.ts",
+    "test:ci": "TEST_CI=1 ts-node ./tests/runner.ts"
   },
   "devDependencies": {
     "acorn": "^8.10.0",
