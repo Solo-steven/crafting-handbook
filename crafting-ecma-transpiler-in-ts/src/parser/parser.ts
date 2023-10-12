@@ -1069,6 +1069,9 @@ export function createParser(code: string) {
             }
             name = parseIdentiferWithKeyword();
         }
+        if(match(SyntaxKinds.LetKeyword)) {
+            name = parseIdentiferWithKeyword();
+        }
         if(name === null && !isExpression) {
             throw createMessageError("Function name of FunctionDeclaration can not be null");
         }
