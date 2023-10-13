@@ -96,43 +96,53 @@ import {
     ArrorFunctionExpression,
     YieldExpression,
     isCallExpression,
+    isAssignmentExpression,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
 
 
-/** ========================
- *  Context for parser
- * =========================
+/**
+ * Context for parser. composeed by several parts: 
+ * ## FunctionContext
+ * function context indicate current function state (async or generator).
+ * - used by checking if await expression validate (parent function block must be async).
+ * - used by checking yield expression  validare (parent function block must be generator).
+ * 
+ * when call `parseFunctionDeclaration` `parseFunctionExpression` `parseArrowFunctionExpression` 
+ * must wrap by context helper function `enterFunctionScope`, `exitFunctionScope` 
+ * 
+ * ## ClassContext
+ * class context indicate current class state (is in class ?, have extend class ?)
+ * - used by checking super call validate (must in class block and have extend class)
+ * - used by checking private name in expression is validate (must in class block).
+ * 
+ * please notes that method and property can not use private name have already been check, because 
+ * by which call `parseMethodDefinition`, we can know is in class or object.
+ * when class `parseClass` must wrap helper function before and after parse class body.
+ * 
+ * ## InOperatorStack
+ * when parse for-in statement, we need to ignore `in` operator to seperate left and right
+ * expression of for-in statement, so we need to know is current expression level is call by 
+ * for-in statement, and expression level is determinate by `parseExpression` and 
+ * `parseAssignmentExpression` function.
+ * 
+ * ## PropertiesInitStack
+ * when parse ObjectExpression, we may accept coverInit for transform to ObjectPattern,
+ * because coverInit is not a illegal syntax of ObjectExpression, so it must be transform.
+ * so when program finish parse, but there are still some coverInitProperty not transformed
+ * yet, those would be error syntax.
+ * 
+ * @member {boolean} maybeArrow
+ * @member {Array<[boolean, boolean, boolean]>}  functionContext tuple (isAsync, isGenerator, isInParameter)
+ * @member {Array<boolean>} inOperatorStack
+ * @member {Set<any>} propertiesInitSet
  */
 interface Context {
     maybeArrow: boolean;
-    // ====================================================================================
-    // function context indicate current function state (async or generator).
-    // - used by checking if await expression validate (parent function block must be async).
-    // - used by checking yield expression  validare (parent function block must be generator).
-    // *** when call `parseFunctionDeclaration` `parseFunctionExpression` `parseArrowFunctionExpression` 
-    // *** must wrap by context helper function `enterFunctionScope`, `exitFunctionScope` 
     functionContext: Array<[boolean, boolean, boolean]>; // tuple (isAsync, isGenerator)
-    // ====================================================================================
-    // class context indicate current class state (is in class ?, have extend class ?)
-    // - used by checking super call validate (must in class block and have extend class)
-    // - used by checking private name in expression is validate (must in class block).
-    // - NOTE: method and property can not use private name have already been check, because by which call
-    //   `parseMethodDefinition`, we can know is in class or object.
-    // *** when class `parseClass` must wrap helper function before and after parse class body
     classContext: Array<[boolean]>,
-    // ====================================================================================
-    // when parse for-in statement, we need to ignore `in` operator to seperate left and right
-    // expression of for-in statement, so we need to know is current expression level is call by 
-    // for-in statement, and expression level is determinate by `parseExpression` and 
-    // `parseAssignmentExpression` function.
     inOperatorStack: Array<boolean>,
-    // ====================================================================================
-    // when parse ObjectExpression, we may accept coverInit for transform to ObjectPattern,
-    // because coverInit is not a illegal syntax of ObjectExpression, so it must be transform.
-    // so when program finish parse, but there are still some coverInitProperty not transformed
-    // yet, those would be error syntax.
     propertiesInitSet: Set<any>;
 }
 
@@ -159,9 +169,9 @@ const IdentiferWithKeyworArray = [SyntaxKinds.Identifier, ...Keywords];
 const BindingIdentifierSyntaxKindArray = [SyntaxKinds.Identifier, SyntaxKinds.AwaitKeyword, SyntaxKinds.YieldKeyword, SyntaxKinds.LetKeyword];
 const LexicalKeywordSet = new Set(LexicalLiteral.keywords);
 /**
- * 
+ * create parser for input code.
  * @param code 
- * @returns 
+ * @returns
  */
 export function createParser(code: string) {
     const lexer = createLexer(code);
@@ -248,6 +258,9 @@ export function createParser(code: string) {
     function readRegex() {
         return lexer.readRegex();
     }
+    function getLineTerminatorFlag() {
+        return lexer.getLineTerminatorFlag();
+    }
     /**
      * expect a token kind, if it is, return token,
      * and move to next token
@@ -304,16 +317,16 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.BracesRightPunctuator)) {
             return true;
         }
-        if(lexer.predictLinTerminateOREOF()) {
+        if(lexer.getLineTerminatorFlag()) {
+            return true;
+        }
+        if(match(SyntaxKinds.EOFToken)) {
             return true;
         }
         if(canIgnore) {
             return false;
         }
         throw createMessageError(ErrorMessageMap.missing_semicolon);
-    }
-    function predictLineTerminate() {
-        return lexer.predictLineTerminate();
     }
     /**
      * Create a Message error from parser's error map.
@@ -538,7 +551,7 @@ export function createParser(code: string) {
             case SyntaxKinds.Identifier:
                 if(match(SyntaxKinds.Identifier) && getValue() === "async") {
                     nextToken();
-                    if(predictLineTerminate()) {
+                    if(getLineTerminatorFlag()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
                     enterFunctionScope(true);
@@ -611,16 +624,27 @@ export function createParser(code: string) {
  * entry point reference: https://tc39.es/ecma262/#prod-Statement
  * ==================================================================
  */
-    function helperCheckDeclarationmaybeForInOrForOfStatement(declaration: VariableDeclaration) {
-        if(declaration.declarations.length > 1) {
-            throw createMessageError(ErrorMessageMap.for_in_of_loop_can_not_have_one_more_binding);
-        }
-        if(declaration.declarations[0].init !== null) {
-            throw createMessageError(ErrorMessageMap.for_in_of_loop_can_not_using_initializer);
-        }
-    }
     /**
-     * this function is a helper function for 
+     * This is a critial helper function for transform expression (major is ObjectExpression
+     * and ArrayExpression) to Pattern (BindingObjectPattern, BindingArrayPattern, AssignmentObjectPattern
+     * AssignmentArrayPattern).
+     * 
+     * ### Use Case : ParseAssignmentExpression
+     * This function is used when `parseAssignmentExpression`, because parseAssignmentExpression 
+     * would parse left as expression first, when left is followed by assignment operator, we need
+     * to transform expression to AssignmentPattern.
+     * 
+     * ### Use Case : ParseArrowFunctionExpression 
+     * When `parseArrowFunctionExpression`, it would use this function too. Because `parseArrowFunctionExpresssion`
+     * might accept argument (array of `AssignmentExpression`) as param, so we need to transform arguments to function
+     * parameter, which is transform `AssignmenExpression` to `BiningElement`(`Identifier` or `BindingPattern`).
+     * 
+     * ### Paramemter: isBinding
+     * Most of BindingPattern and AssignmentPattern's production rule is alike, one key different is that BindingPattern 
+     * `PropertyName` can only have `BindingElement`, but `PropertyName` of AssignmentPattern can have LeftHandSideExpression
+     * so we add a param `isBinding` to determinate is transform to BindingPattern or not.
+     * @param {ModuleItem} node target for transform to Pattern
+     * @param {boolean} isBinding Is transform to BindingPattern
      */
     function toAssignmentPattern(node: ModuleItem, isBinding: boolean = false): ModuleItem {
         switch(node.kind) {
@@ -709,10 +733,23 @@ export function createParser(code: string) {
         }
     }
     /**
+     * Parse For-related Statement, include ForStatement, ForInStatement, ForOfStatement.
      * 
+     * This function is pretty complex and hard to understand, some function's flag is only
+     * used in this function. ex: allowIn flag of parseExpression, parseAssignmentExpression,
+     * ignoreInit of parseVariableDeclaration.
+     * @returns {ForStatement | ForInStatement | ForOfStatement}
      */
    function parseForStatement(): ForStatement | ForInStatement | ForOfStatement {
         const { start: keywordStart }  = expect(SyntaxKinds.ForKeyword);
+        // First, parse await modifier and lefthandside or init of for-related statement,
+        // init might start with let, const, var keyword, but if is let keyword need to 
+        // lookahead to determinate is identifier.delcaration in there should no eat semi, 
+        // becuase semi is seperator of ForStatement, and might not need init for pattern,
+        // because maybe used by ForIn or ForOf. 
+        // If not start with let, var or const keyword, it should be expression, but this
+        // expression can not take `in` operator as operator in toplevel, so we need pass
+        // false to disallow parseExpression to take in operator as operator
         let isAwait = false, leftOrInit: VariableDeclaration | Expression | null = null;
         if(match(SyntaxKinds.AwaitKeyword)) {
             nextToken();
@@ -729,13 +766,26 @@ export function createParser(code: string) {
                 leftOrInit = parseVariableDeclaration(true);
             }
         }else if (match(SyntaxKinds.SemiPunctuator)) {
+            // test case `for(;;)`
             leftOrInit = null;
         }else {
             leftOrInit = parseExpression(false);
         }
-        // branch
+        // Second is branching part, determinate the branch by following token
+        // - if start with semi it should be ForStatement, 
+        // - if is in operator, it should be ForInStatement, 
+        // - if is of contextual keyword, it should be ForOfStatement.
+        // then according to branch case, parse the following part and do the 
+        // sematic check.
+        // - ForStatement: if init is variable declaration pattern, it need init.
+        // - ForInStatement: if left is variable decalration, must not have init, and delcaration length must be 1.
+        //                   then if left is expression, must transform it to pattern.
+        // - ForOfStatement: same as ForInStatement.
+        // There is one case that even we disallow in operator in top level, there maybe
+        // wrong init of expression like `for(a = 0 in []);` or `for(a=0 of [])` which would
+        // make leftOrInit parse all token in () as a expression, so we need to check if those
+        // case happend.
         if(match(SyntaxKinds.SemiPunctuator)) {
-            // ForStatement
             if(leftOrInit && isVarDeclaration(leftOrInit)) {
                 for(const delcar of leftOrInit.declarations) {
                     if(
@@ -759,13 +809,15 @@ export function createParser(code: string) {
             const body = parseStatement();
             return Factory.createForStatement(body, leftOrInit, test, update, keywordStart, cloneSourcePosition(body.end));
         }
-        // when 
+        // unreach case, even if syntax error, when leftOrInit, it must match semi token.
+        // and because it match semi token, if would enter forStatement case, will not
+        // reach there. even syntax error, error would be throw at parseExpression or
+        // parseDeclaration.
         if(!leftOrInit) {
             throw createUnreachError();
         }
         if (match(SyntaxKinds.InKeyword)) {
-            // ForInStatement when left is variableDeclaration.
-            if(leftOrInit.kind === SyntaxKinds.VariableDeclaration) {
+            if(isVarDeclaration(leftOrInit)) {
                 helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit);
             }else {
                 leftOrInit = toAssignmentPattern(leftOrInit as Expression) as Expression;
@@ -777,15 +829,17 @@ export function createParser(code: string) {
             return Factory.createForInStatement(leftOrInit, right, body, keywordStart, cloneSourcePosition(body.end));
         }
         if(getValue() === "of") {
-            // ForOfStatement
-            if(leftOrInit.kind === SyntaxKinds.VariableDeclaration) {
+            if(isVarDeclaration(leftOrInit)) {
                 helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit);
-            }
-            if(!isVarDeclaration(leftOrInit)) {
+            }else {
                 leftOrInit = toAssignmentPattern(leftOrInit) as Expression;
-            }
-            if(isAssignmentPattern(leftOrInit)) {
-                throw createMessageError(ErrorMessageMap.invalid_left_value);
+                // for case `for(a = 0 of [])`; leftOrInit would parse all token before `of` as one expression
+                // in this case , leftOrInit would be a assignment expression, and when it pass to toAssignment
+                // function, it would transform to assignment pattern, so we need to checko if there is Assignment
+                // pattern, it is , means original is assignment expression, it should throw a error.
+                if(isAssignmentPattern(leftOrInit)) {
+                    throw createMessageError(ErrorMessageMap.invalid_left_value);
+                }
             }
             nextToken();
             const right = parseAssigmentExpression();
@@ -793,11 +847,30 @@ export function createParser(code: string) {
             const body = parseStatement();
             return Factory.createForOfStatement(isAwait, leftOrInit, right, body, keywordStart, cloneSourcePosition(body.end));
         }
-        if(match(SyntaxKinds.ParenthesesRightPunctuator)) {
+        // for case `for(a = 0 in [])`, even we disallow in operator at toplevel, parseExpression still would
+        // parse in operator as right hand side of a assignment expression, because equal token is shows up
+        // before in operator then in operator would be seems as next level of expression.
+        // so in this case , parseExpression would parse all token in `()` to leftOrInit as a AssignmentExpression
+        // and left a ParenthesesRight. as following if is looking for, as mention above, we throw a error for
+        // this case
+        if(match(SyntaxKinds.ParenthesesRightPunctuator) && isAssignmentExpression(leftOrInit)) {
             throw createMessageError(ErrorMessageMap.for_in_of_loop_can_not_using_initializer);
         }
-        throw createUnreachError();
+        throw createUnexpectError(null);
    }
+   /**
+    * Helper function for check sematic error of VariableDeclaration of ForInStatement and ForOfStatement,
+    * please reference to comment in parseForStatement.
+    * @param {VariableDeclaration} declaration 
+    */
+   function helperCheckDeclarationmaybeForInOrForOfStatement(declaration: VariableDeclaration) {
+        if(declaration.declarations.length > 1) {
+            throw createMessageError(ErrorMessageMap.for_in_of_loop_can_not_have_one_more_binding);
+        }
+        if(declaration.declarations[0].init !== null) {
+            throw createMessageError(ErrorMessageMap.for_in_of_loop_can_not_using_initializer);
+        }
+    }
    function parseIfStatement(): IfStatement {
       const {start: keywordStart} = expect(SyntaxKinds.IfKeyword);
       expect(SyntaxKinds.ParenthesesLeftPunctuator);
@@ -1843,7 +1916,7 @@ export function createParser(code: string) {
                     if(getValue() === "async") {
                         enterFunctionScope(true);
                         nextToken();
-                        if(predictLineTerminate()) {
+                        if(getLineTerminatorFlag()) {
                             throw createMessageError(ErrorMessageMap.missing_semicolon);
                         }
                     }else {
@@ -1862,7 +1935,7 @@ export function createParser(code: string) {
                 // case 2 async ( ===> must be `async (<Argument>) => {}`;
                 if(getValue() === "async"  && lookaheadToken === SyntaxKinds.ParenthesesLeftPunctuator) {
                     nextToken();
-                    if(predictLineTerminate()) {
+                    if(getLineTerminatorFlag()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
                     enterFunctionScope(true);
@@ -1874,7 +1947,7 @@ export function createParser(code: string) {
                 // case 3 async function ==> must be async function <id> () {}
                 if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
                     nextToken();
-                    if(predictLineTerminate()) {
+                    if(getLineTerminatorFlag()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
                     enterFunctionScope(true);
@@ -2095,7 +2168,7 @@ export function createParser(code: string) {
     }
     /**
      * Parse ObjectLiterial
-     * ```text
+     * ```
      *   ObjectLiteral := '{' PropertyDefinitionList ','? '}'
      *   PropertyDefinitionList := PropertyDefinitionList ',' PropertyDefinition
      *                          := PropertyDefinition
@@ -2123,23 +2196,6 @@ export function createParser(code: string) {
         const { end } = expect(SyntaxKinds.BracesRightPunctuator);
         return Factory.createObjectExpression(propertyDefinitionList, trailingComma, start, end);
     }
-    /**
-     * Parse PropertyDefinition
-     * ```
-     *  PropertyDefinition := MethodDefintion
-     *                     := Property
-     *                     := SpreadElement
-     * Property := PropertyName '=' AssignmentExpression
-     * SpreadElement := '...' AssigmentExpression
-     * ```
-     * ### How to parse
-     * - start with `...` operator, must be SpreadElment
-     * - start with some method modifier like `set`, `get`, `async`, `*` must be MethodDefintion
-     * then parse PropertyName frist
-     *   - start with `(`, must be MethodDefintion
-     *   - otherwise, is ObjectProperty with or without init. 
-     * #### ref: https://tc39.es/ecma262/#prod-PropertyDefinition
-     */
     function helperIsMethodStartWithModifier() {
         const currentValue = getValue();
         const lookaheadToken = lookahead();
@@ -2159,8 +2215,24 @@ export function createParser(code: string) {
             return true;
         }
         return false;
-
     }
+    /**
+     * Parse PropertyDefinition
+     * ```
+     *  PropertyDefinition := MethodDefintion
+     *                     := Property
+     *                     := SpreadElement
+     * Property := PropertyName '=' AssignmentExpression
+     * SpreadElement := '...' AssigmentExpression
+     * ```
+     * ### How to parse
+     * - start with `...` operator, must be SpreadElment
+     * - start with some method modifier like `set`, `get`, `async`, `*` must be MethodDefintion
+     * then parse PropertyName frist
+     *   - start with `(`, must be MethodDefintion
+     *   - otherwise, is ObjectProperty with or without init. 
+     * #### ref: https://tc39.es/ecma262/#prod-PropertyDefinition
+     */
     function parsePropertyDefinition(): PropertyDefinition {
         // semantics check for private 
         if(match(SyntaxKinds.PrivateName)) {
@@ -2466,7 +2538,7 @@ export function createParser(code: string) {
         if(!match(SyntaxKinds.ArrowOperator)) {
             throw createUnexpectError(SyntaxKinds.ArrowOperator);
         }
-        if(lexer.predictLineTerminate()) {
+        if(getLineTerminatorFlag()) {
             // TODO: error message
             throw new Error("Not Ok");
         }

@@ -12,7 +12,8 @@ interface Context {
 
     templateStringStackCounter: Array<number>;
 
-    lastTokenPosition: null | SourcePosition;
+    changeLineFlag: boolean;
+    spaceFlag: boolean;
 }
 
 function cloneContext(source: Context): Context {
@@ -22,7 +23,6 @@ function cloneContext(source: Context): Context {
         startPosition: cloneSourcePosition(source.startPosition),
         endPosition: cloneSourcePosition(source.endPosition),
         templateStringStackCounter: [...source.templateStringStackCounter],
-        lastTokenPosition: source.lastTokenPosition ? cloneSourcePosition(source.lastTokenPosition) : null,
     }
 }
 
@@ -33,9 +33,8 @@ interface Lexer {
     getToken: () => SyntaxKinds;
     nextToken: () => SyntaxKinds;
     lookahead: () => SyntaxKinds;
-    // API for semi or line terminator
-    predictLinTerminateOREOF: () => boolean,
-    predictLineTerminate: () => boolean,
+    // API for line terminator
+    getLineTerminatorFlag: () => boolean,
     // API for read regexliteral
     readRegex: () => { pattern: string, flag: string };
 }
@@ -47,8 +46,6 @@ const stopSet = [
     ...LexicalLiteral.whiteSpaceChars
 ]
 
-const changeLineRegex = /^ *\n/;
-const spaceRegex = /^ *$/
 
 const BoolLiteralSet = new Set(LexicalLiteral.BooleanLiteral);
 const KeywordLiteralSet = new Set(LexicalLiteral.keywords);
@@ -66,18 +63,12 @@ export function createLexer(code: string): Lexer {
         token: null,
         startPosition: createSourcePosition(),
         endPosition: createSourcePosition(),
-        lastTokenPosition: null,
         templateStringStackCounter: [],
+        changeLineFlag: false,
+        spaceFlag: false,
     };
-    function predictLinTerminateOREOF() {
-        const currentIndex = context.lastTokenPosition ? context.lastTokenPosition.index : 0;
-        const sliceCode = context.code.slice(currentIndex);
-        return changeLineRegex.test(sliceCode) || spaceRegex.test(sliceCode);
-    }
-    function predictLineTerminate() {
-        const currentIndex = context.lastTokenPosition ? context.lastTokenPosition.index : 0;
-        const sliceCode = context.code.slice(currentIndex);
-        return changeLineRegex.test(sliceCode);
+    function getLineTerminatorFlag() {
+        return context.changeLineFlag;
     }
     function getSourceValue() {
         return context.sourceValue;
@@ -109,10 +100,9 @@ export function createLexer(code: string): Lexer {
         getStartPosition,
         getEndPosition,
         getToken,
+        getLineTerminatorFlag,
         nextToken,
         lookahead,
-        predictLinTerminateOREOF,
-        predictLineTerminate,
         readRegex,
     }
 /**
@@ -122,7 +112,6 @@ export function createLexer(code: string): Lexer {
         context.startPosition = cloneSourcePosition(context.sourcePosition);
     }
     function finishToken(kind: SyntaxKinds, value: string): SyntaxKinds {
-        context.lastTokenPosition = context.endPosition;
         context.token = kind;
         context.sourceValue = value;
         context.endPosition = cloneSourcePosition(context.sourcePosition);
@@ -171,9 +160,20 @@ export function createLexer(code: string): Lexer {
         return getChar() === "";
     }
     function skipWhiteSpaceChangeLine() {
+        context.changeLineFlag = false;
         while(
             !eof() && ( startWith("\n") || startWith('\t') || startWith(" "))
         ) {
+            if(startWith("\n")) {
+                context.changeLineFlag = true;
+                eatChar();
+                continue;
+            }
+            if(startWith('\t') || startWith(" ")) {
+                context.spaceFlag = true;
+                eatChar();
+                continue;
+            }
             eatChar();
         }
     }

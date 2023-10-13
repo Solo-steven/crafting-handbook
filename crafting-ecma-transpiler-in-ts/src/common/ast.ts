@@ -550,6 +550,9 @@ export function isFunctionExpression(node: ModuleItem): node is FunctionExpressi
 export function isBinaryExpression(node: ModuleItem): node is BinaryExpression {
     return node.kind === SyntaxKinds.BinaryExpression;
 }
+export function isAssignmentExpression(node: ModuleItem): node is AssigmentExpression {
+    return node.kind === SyntaxKinds.AssigmentExpression;
+}
 export function isAssignmentPattern(node: ModuleItem): node is AssignmentPattern {
     return node.kind === SyntaxKinds.AssignmentPattern;
 }
