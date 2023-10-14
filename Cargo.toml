@@ -1,7 +1,7 @@
 [workspace]
 members = [
     ## For Toy Lang
-    "crafting-toy-lang-in-llvm-with-rust/backend",
-    "crafting-toy-lang-in-llvm-with-rust/compiler"
+    "toy-lang/backend",
+    "toy-lang/compiler"
     ## For OS 
 ]

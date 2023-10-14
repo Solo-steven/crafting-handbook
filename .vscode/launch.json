@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/crafing-interpreter-in-c",
-      "program": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/crafing-interpreter-in-c/build/Debug/outDebug"
+      "cwd": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/mlox",
+      "program": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/mlox/build/Debug/outDebug"
     }
   ]
 }
