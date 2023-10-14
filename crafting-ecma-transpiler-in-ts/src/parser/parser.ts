@@ -167,7 +167,7 @@ function createContext(): Context {
 
 const IdentiferWithKeyworArray = [SyntaxKinds.Identifier, ...Keywords];
 const BindingIdentifierSyntaxKindArray = [SyntaxKinds.Identifier, SyntaxKinds.AwaitKeyword, SyntaxKinds.YieldKeyword, SyntaxKinds.LetKeyword];
-const LexicalKeywordSet = new Set(LexicalLiteral.keywords);
+const LexicalKeywordSet = new Set([...LexicalLiteral.keywords, ...LexicalLiteral.BooleanLiteral, ...LexicalLiteral.NullLiteral, ...LexicalLiteral.UndefinbedLiteral]);
 /**
  * create parser for input code.
  * @param code 
@@ -766,7 +766,7 @@ export function createParser(code: string) {
                 leftOrInit = parseVariableDeclaration(true);
             }
         }else if (match(SyntaxKinds.SemiPunctuator)) {
-            // test case `for(;;)`
+            // for test case `for(;;)`
             leftOrInit = null;
         }else {
             leftOrInit = parseExpression(false);
@@ -1445,7 +1445,7 @@ export function createParser(code: string) {
             nextToken();
             isStatic = true;
         }    
-        if(helperIsMethodStartWithModifier()) {
+        if(isMethodStartWithModifier()) {
             return parseMethodDefintion(true, undefined, isStatic) as ClassMethodDefinition;
         }
         if(match(SyntaxKinds.BracesLeftPunctuator) && isStatic) {
@@ -1670,7 +1670,7 @@ export function createParser(code: string) {
     }
     function parseUpdateExpression(): Expression {
         if(matchSet(UpdateOperators)) {
-            const operator = getToken () as UpdateOperatorKinds;
+            const operator = getToken() as UpdateOperatorKinds;
             const start = getStartPosition();
             nextToken();
             const argument = parseLeftHandSideExpression();
@@ -1686,14 +1686,13 @@ export function createParser(code: string) {
         return argument;
     }
     /**
-     * Parse Left hand side Expression
+     * Parse Left hand side Expression. This syntax is reference babel function, which is simplify original syntax of TS39,
+     * 'this' and super 'super' would be meanful when apper at start of atoms, which can be handle by parseAtoms. NewExpression 
+     * is a spacial case , because it can not using optionalChain, so i handle it into a atom.
      * ```
      *  LeftHandSideExpression := Atoms '?.' CallExpression
      *                         := Atoms '?.' MemberExpression
      *                         := Atoms TagTemplateExpression
-     * // notes: this syntax is reference babel function, which is simplify original syntax of TS39
-     * // notes: 'this' and super 'super' would be meanful when apper at start of atoms, which can be handle by parseAtoms.
-     * // notes: NewExpression is a spacial case , because it can not using optionalChain, so i handle it into a atom.
      * ```
      * @returns {Expression}
      */
@@ -1742,9 +1741,6 @@ export function createParser(code: string) {
      * @returns {Expression}
      */
     function parseCallExpression(callee: Expression, optional: boolean): Expression {
-        if(!match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-            throw createUnreachError([SyntaxKinds.ParenthesesLeftPunctuator]);
-        }
         expectButNotEat([SyntaxKinds.ParenthesesLeftPunctuator]);
         const { nodes, end } = parseArguments();
         return Factory.createCallExpression(callee, nodes, optional, cloneSourcePosition(callee.start), end);
@@ -2167,7 +2163,11 @@ export function createParser(code: string) {
         return Factory.createThisExpression(start, end);
     }
     /**
-     * Parse ObjectLiterial
+     * Parse ObjectLiterial, object property just a list of PropertyDefinition.
+     * ### Trailing Comma problem
+     * object expression maybe transform into `ObjectPattern` in `AssignmentExpression`
+     * so i add a trailing comma field to object expression to AST struct for `toAssignment`
+     * function.
      * ```
      *   ObjectLiteral := '{' PropertyDefinitionList ','? '}'
      *   PropertyDefinitionList := PropertyDefinitionList ',' PropertyDefinition
@@ -2196,26 +2196,6 @@ export function createParser(code: string) {
         const { end } = expect(SyntaxKinds.BracesRightPunctuator);
         return Factory.createObjectExpression(propertyDefinitionList, trailingComma, start, end);
     }
-    function helperIsMethodStartWithModifier() {
-        const currentValue = getValue();
-        const lookaheadToken = lookahead();
-        if(currentValue === "set" && lookaheadToken === SyntaxKinds.Identifier) {
-            return true
-        }
-        if(currentValue === "get" && lookaheadToken === SyntaxKinds.Identifier) {
-            return true
-        }
-        if(
-            currentValue === "async" && 
-            (lookaheadToken === SyntaxKinds.Identifier || lookaheadToken === SyntaxKinds.MultiplyOperator)
-        ) {
-            return true
-        }
-        if(match(SyntaxKinds.MultiplyOperator)) {
-            return true;
-        }
-        return false;
-    }
     /**
      * Parse PropertyDefinition
      * ```
@@ -2226,11 +2206,14 @@ export function createParser(code: string) {
      * SpreadElement := '...' AssigmentExpression
      * ```
      * ### How to parse
-     * - start with `...` operator, must be SpreadElment
-     * - start with some method modifier like `set`, `get`, `async`, `*` must be MethodDefintion
-     * then parse PropertyName frist
-     *   - start with `(`, must be MethodDefintion
-     *   - otherwise, is ObjectProperty with or without init. 
+     * 1. start with `...` operator, must be SpreadElment
+     * 2. start with privatename is syntax error, but it is common, so we handle it as sematic problem.
+     * 3. check is start with method modifier prefix by helper function `isMethodStartWithModifier`.
+     * 4. default case, property name with colon operator.
+     * 5. this is speical case, we accept a coverinit in object expression, because object expression
+     *    might be transform into object pattern, so we mark accept it and mark it. it coverInit of 
+     *    object expression is not transform by `toAssignment` function, it would throw error in the
+     *    end of `parseProgram`
      * #### ref: https://tc39.es/ecma262/#prod-PropertyDefinition
      */
     function parsePropertyDefinition(): PropertyDefinition {
@@ -2245,8 +2228,8 @@ export function createParser(code: string) {
             const expr = parseAssigmentExpression();
             return Factory.createSpreadElement(expr, spreadElementStart, cloneSourcePosition(expr.end));
         }
-        // if token match '*', 'async' , 'set', 'get'  is must be MethodDefintion
-        if(helperIsMethodStartWithModifier()) {
+        // start with possible method modifier
+        if(isMethodStartWithModifier()) {
             return parseMethodDefintion() as ObjectMethodDefinition;
         }
         // otherwise, it would be Property start with PropertyName or MethodDeinftion start with PropertyName 
@@ -2271,9 +2254,48 @@ export function createParser(code: string) {
         return Factory.createObjectProperty(propertyName, undefined, isComputedRef.isComputed, true, cloneSourcePosition(propertyName.start), cloneSourcePosition(propertyName.end));
     }
     /**
-     * Parse PropertyName, using Context to record this property is computed or not.
+     * This is a helper function for object expression and class for determiate is property
+     * a method definition or not.
+     * 
+     * Please notes that this function only accept regualer syntax, but also accept something 
+     * like set and get generator, it will left sematic job for `parseMetodDefinition` method.
+     * @returns  {boolean}
+     */
+    function isMethodStartWithModifier(): boolean {
+        if(match(SyntaxKinds.MultiplyOperator)) {
+            return true;
+        }
+        const currentValue = getValue();
+        const lookaheadToken = lookahead();
+        const isLookAheadValidatePropertyNameStart = 
+            Keywords.find(keyword => keyword === lookaheadToken) ||
+            lookaheadToken === SyntaxKinds.Identifier ||
+            lookaheadToken === SyntaxKinds.StringLiteral ||
+            lookaheadToken === SyntaxKinds.NumberLiteral ||
+            lookaheadToken === SyntaxKinds.BracketLeftPunctuator || 
+            lookaheadToken === SyntaxKinds.MultiplyOperator;
+        if(currentValue === "set" && isLookAheadValidatePropertyNameStart) {
+            return true
+        }
+        if(currentValue === "get" && isLookAheadValidatePropertyNameStart) {
+            return true
+        }
+        if(currentValue === "async" && (isLookAheadValidatePropertyNameStart)) {
+            return true
+        }
+        return false;
+    }
+    /**
+     * Parse PropertyName, using context ref which passed in to record this property is computed or not.
+     * 
+     * ### Problem of Keyword as PropertyName
+     * PropertyName can not only be a identifier but alse can be a keyword in some place, for example, as method
+     * of object or class, and it is ok to use it as left value of property name. the syntax error happend when
+     * using keyword as shorted property. So when `parsePropertyName` parse a identifier with keyword, it would 
+     * check if next token is `(` or `:`, to make sure throw error when parse keyword as shorted property
+     * 
      * ```
-     * PropertyName := Identifer
+     * PropertyName := Identifer (IdentifierName, not BindingIdentifier)
      *              := NumberLiteral
      *              := StringLiteral
      *              := ComputedPropertyName
@@ -2309,7 +2331,7 @@ export function createParser(code: string) {
             if(identifer.name === "let") {
                 return identifer;
             }
-            if(LexicalKeywordSet.has(identifer.name) && !match(SyntaxKinds.ColonPunctuator)) {
+            if(!matchSet([SyntaxKinds.ColonPunctuator, SyntaxKinds.ParenthesesLeftPunctuator]) && LexicalKeywordSet.has(identifer.name)) {
                 throw createMessageError(ErrorMessageMap.invalid_property_name);
             }
             return identifer;
@@ -2323,7 +2345,14 @@ export function createParser(code: string) {
         }
         throw createUnexpectError(SyntaxKinds.BracketRightPunctuator);
     }
-    /** Parse MethodDefintion
+    /** Parse MethodDefintion, this method should allow using when in class or in object literal.
+     *  1. ClassElement can be PrivateName, when it used in object literal, it should throw a error.
+     *  2. It should parse modifier when `withPropertyName` is falsey.
+     * 
+     * ### Parse Modifier
+     * we parse modifier according to the pattern `('set' | 'get')? 'async' '*' ClassElement `, this
+     * is not a regulat syntax, it may accept wrong syntax, but by accept more case then spec, we cam
+     * provide more concies sematic message to developer.
      * ```
      * MethodDefintion := ClassElementName BindingList FunctionBody
      *                 := AyncMethod
@@ -2337,8 +2366,6 @@ export function createParser(code: string) {
      * ClassElementName := PropertyName
      *                   := PrivateName
      * ```
-     * this method should allow using when in class or in object literal, ClassElement can be PrivateName, when it 
-     * used in object literal, it should throw a error.
      * @param {boolean} inClass is used in class or not. 
      * @param {PropertyName | PrivateName | undefined } withPropertyName parse methodDeinfition with exited propertyName or not
      * @param {boolean} isStatic
@@ -2349,7 +2376,7 @@ export function createParser(code: string) {
         withPropertyName: PropertyName | PrivateName | undefined = undefined, 
         isStatic: boolean = false
     ): ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor  | ClassConstructor{
-        if(!helperIsMethodStartWithModifier() && !withPropertyName) {
+        if(!isMethodStartWithModifier() && !withPropertyName) {
             throw createUnreachError([SyntaxKinds.MultiplyAssignOperator, SyntaxKinds.Identifier]);
         }
         /**
@@ -2412,8 +2439,8 @@ export function createParser(code: string) {
             throw createMessageError(ErrorMessageMap.getter_should_never_has_params);
         }
         if(type === "set" ) {
-            if(parmas.length === 0) {
-                throw createMessageError(ErrorMessageMap.setter_should_has_at_last_one_params);
+            if(parmas.length !== 1) {
+                throw createMessageError(ErrorMessageMap.setter_should_has_only_one_params);
             }
             for(const param of parmas) {
                 if(isRestElement(param)) {
@@ -2427,7 +2454,7 @@ export function createParser(code: string) {
         if(type === "set" && (isAsync || generator)) {
             throw createMessageError(ErrorMessageMap.setter_can_not_be_async_or_generator);
         }
-        if(withPropertyName.kind === SyntaxKinds.Identifier) {
+        if(isIdentifer(withPropertyName)) {
             if(withPropertyName.name === "constructor" && isInClassScope()) {
                 if(isAsync || generator || isStatic) {
                     throw createMessageError(ErrorMessageMap.constructor_can_not_be_async_or_generator);
@@ -2503,7 +2530,7 @@ export function createParser(code: string) {
             // transfor to sequence or signal expression
             for(const element of nodes) {
                 if(isSpreadElement(element)) {
-                    throw createMessageError(ErrorMessageMap.restelement_can_not_use_in_cover);
+                    throw createMessageError(ErrorMessageMap.rest_element_can_not_use_in_cover);
                 }
             }
             if(nodes.length === 1) {

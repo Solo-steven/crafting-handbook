@@ -308,7 +308,10 @@ export const KeywordLiteralMapSyntaxKind = {
     ["void"]: SyntaxKinds.VoidKeyword,
     ["typeof"]: SyntaxKinds.TypeofKeyword,
     ["in"]: SyntaxKinds.InKeyword,
-    ["instanceof"]: SyntaxKinds.InstanceofKeyword,   
+    ["instanceof"]: SyntaxKinds.InstanceofKeyword,
+    ["true"]: SyntaxKinds.TrueKeyword,
+    ["false"]: SyntaxKinds.FalseKeyword,
+    ["undefined"]: SyntaxKinds.UndefinedKeyword,
 }
 
 export const SytaxKindsMapLexicalLiteral = {
@@ -688,4 +691,7 @@ export const Keywords = [
     SyntaxKinds.TypeofKeyword,
     SyntaxKinds.InKeyword,
     SyntaxKinds.InstanceofKeyword,
+    SyntaxKinds.TrueKeyword,
+    SyntaxKinds.FalseKeyword,
+    SyntaxKinds.UndefinedKeyword,
 ]
