@@ -14,6 +14,7 @@ interface Context {
 
     changeLineFlag: boolean;
     spaceFlag: boolean;
+    escFlag: boolean;
 }
 
 function cloneContext(source: Context): Context {
@@ -47,10 +48,12 @@ const stopSet = [
 ]
 
 
-const BoolLiteralSet = new Set(LexicalLiteral.BooleanLiteral);
-const KeywordLiteralSet = new Set(LexicalLiteral.keywords);
-const NullLiteralSet = new Set(LexicalLiteral.NullLiteral);
-const UndefinbedLiteralSet = new Set(LexicalLiteral.UndefinbedLiteral);
+const KeywordLiteralSet = new Set([
+    ...LexicalLiteral.keywords,
+    ...LexicalLiteral.BooleanLiteral,
+    ...LexicalLiteral.NullLiteral,
+    ...LexicalLiteral.UndefinbedLiteral
+]);
 
 export function createLexer(code: string): Lexer {
 /**
@@ -66,6 +69,7 @@ export function createLexer(code: string): Lexer {
         templateStringStackCounter: [],
         changeLineFlag: false,
         spaceFlag: false,
+        escFlag: false
     };
     function getLineTerminatorFlag() {
         return context.changeLineFlag;
@@ -708,10 +712,7 @@ export function createLexer(code: string): Lexer {
             throw subStateMachineError("readPrivateName", "#");
         }
         eatChar(1);
-        let word = "";
-        while(!startWithSet(stopSet) && !eof()) {
-            word += eatChar();
-        }
+        const word = readWord();
         return finishToken(SyntaxKinds.PrivateName, word);
     }
 
@@ -868,13 +869,12 @@ export function createLexer(code: string): Lexer {
         return finishToken(SyntaxKinds.StringLiteral, word);
     }
     function readString() {
-        const startINdex = context.sourcePosition.index;
-        eatChar();
-        while(!startWithSet(stopSet) && !eof()) {
-            eatChar();
-        }
-        const word = context.code.slice(startINdex, context.sourcePosition.index);
+        const word = readWord()
         if(KeywordLiteralSet.has(word)) {
+            if(context.escFlag) {
+                context.escFlag = false;
+                throw new Error("keyword can not have any escap unicode");
+            }
             // @ts-ignore
             const keywordkind = KeywordLiteralMapSyntaxKind[word] as unknown as any;
             if(keywordkind == null) {
@@ -882,22 +882,37 @@ export function createLexer(code: string): Lexer {
             }
             return finishToken(keywordkind as SyntaxKinds, word);
         }
-        if(BoolLiteralSet.has(word)) {
-            if(word === "true") {
-                return finishToken(SyntaxKinds.TrueKeyword, word);
-            }
-            if(word === "false") {
-                return finishToken(SyntaxKinds.FalseKeyword, word);
-            }
-            throw new Error(`[Error]: Boolean Lieral ${word} have no match method to create token`);
-        }
-        if(NullLiteralSet.has(word)) {
-            return finishToken(SyntaxKinds.NullKeyword, word);
-        }
-        if(UndefinbedLiteralSet.has(word)) {
-            return finishToken(SyntaxKinds.UndefinedKeyword, word);
-        }
         return finishToken(SyntaxKinds.Identifier, word);
+    }
+    function readWord() {
+        let isEscape = false;
+        let word = "";
+        while(!startWithSet(stopSet) && !eof()) {
+            if(startWith("\\u") || startWith("\\U")) {
+                word += readHexEscap();
+            }
+            if(startWith("\\")) {
+                isEscape = !isEscape;
+            }else {
+                isEscape = false;
+            }
+            word += eatChar();
+        }
+        return word;
+    }
+    function readHexEscap() {
+        if(startWith("\\u") || startWith("\\U")) {
+            eatChar(2);
+            context.escFlag = true;
+            const hexStart = context.sourcePosition.index;
+            while(startWithSet(LexicalLiteral.hexChars) && !eof()) {
+                eatChar();
+            }
+            const hexString = context.code.slice(hexStart, context.sourcePosition.index);
+            return String.fromCodePoint(Number(`0x${hexString}`));
+        }
+        // error;
+        throw new Error("");
     }
     function readRegex(): { pattern: string, flag: string } {
         let pattern = "";

@@ -2,6 +2,7 @@
 members = [
     ## For Toy Lang
     "toy-lang/backend",
-    "toy-lang/compiler"
-    ## For OS 
+    "toy-lang/compiler",
+    ## For script body
+    "script-boy"
 ]
