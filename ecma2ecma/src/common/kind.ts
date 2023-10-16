@@ -268,6 +268,9 @@ export const LexicalLiteral = {
         "delete", "void", "typeof",
         // Relation operators
         "in", "instanceof",
+    ],
+    preserveword: [
+         "static", "implements", "interface", "package", "private", "protected", "public"
     ]
 };
 

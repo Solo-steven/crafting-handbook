@@ -31,6 +31,9 @@ export const ErrorMessageMap = {
     function_parameter_can_not_have_empty_trailing_comma: "function parameter list can not have trailing comma when is empty",
     sequence_expression_can_not_have_trailing_comma: "sequence expression can not have trailing comma",
     function_argument_can_not_have_empty_trailing_comma: "function argument list can not have trailing comma when is empty",
+    // strict mode identifer problem
+    unexpect_keyword_in_stric_mode: "unexpect keyword in strict mode",
+
     // other
     new_expression_cant_using_optional_chain: "New expression can not using optional chain in callee",
     tag_template_expression_can_not_use_option_chain: "Tag template expression should not using optional chain",
