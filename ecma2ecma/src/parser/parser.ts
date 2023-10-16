@@ -97,20 +97,49 @@ import {
     YieldExpression,
     isCallExpression,
     isAssignmentExpression,
+    isStringLiteral,
+    ExpressionStatement,
+    Program,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
 
+/**
+ * Function Scope structure, Being used for determinate
+ * current structure context for async, generator, in-
+ * parameter and in strict mode.
+ * @member {"FunctionContext"} type - type enum string.
+ * @member {boolean} isAsync
+ * @member {boolean} isGenerator
+ * @member {boolean} inParameter
+ * @member {boolean} inStrict
+ */
+interface FunctionContext {
+    type: "FunctionContext";
+    isAsync: boolean;
+    isGenerator: boolean;
+    inParameter: boolean;
+    inStrict: boolean;
+}
+/**
+ * Simple scope structure for block statement.
+ * @member {"BlockStatement"} type - type enum string.
+ */
+interface BlockContext {
+    type: "BlockContext";
+}
+/**
+ * Scope structure for function body and block statement,
+ * just a conbinmation of function scope and block scope.
+ */
+type ScopeContext = FunctionContext | BlockContext;
 
 /**
  * Context for parser. composeed by several parts: 
- * ## FunctionContext
- * function context indicate current function state (async or generator).
- * - used by checking if await expression validate (parent function block must be async).
- * - used by checking yield expression  validare (parent function block must be generator).
- * 
- * when call `parseFunctionDeclaration` `parseFunctionExpression` `parseArrowFunctionExpression` 
- * must wrap by context helper function `enterFunctionScope`, `exitFunctionScope` 
+ * ## ScopeContext
+ * scope context contain context when enter the function or block statement,
+ * we need function scope to determinate parse rule of await and yield keyword.
+ * and only the direct child of function scope can using `use strict` directive.
  * 
  * ## ClassContext
  * class context indicate current class state (is in class ?, have extend class ?)
@@ -127,20 +156,20 @@ import { createLexer } from "../lexer/index";
  * for-in statement, and expression level is determinate by `parseExpression` and 
  * `parseAssignmentExpression` function.
  * 
- * ## PropertiesInitStack
+ * ## PropertiesInitSet
  * when parse ObjectExpression, we may accept coverInit for transform to ObjectPattern,
  * because coverInit is not a illegal syntax of ObjectExpression, so it must be transform.
  * so when program finish parse, but there are still some coverInitProperty not transformed
  * yet, those would be error syntax.
  * 
  * @member {boolean} maybeArrow
- * @member {Array<[boolean, boolean, boolean]>}  functionContext tuple (isAsync, isGenerator, isInParameter)
+ * @member {Array<ScopeContext>} scopeContext
  * @member {Array<boolean>} inOperatorStack
  * @member {Set<any>} propertiesInitSet
  */
 interface Context {
     maybeArrow: boolean;
-    functionContext: Array<[boolean, boolean, boolean]>; // tuple (isAsync, isGenerator)
+    scopeContext: Array<ScopeContext>;
     classContext: Array<[boolean]>,
     inOperatorStack: Array<boolean>,
     propertiesInitSet: Set<any>;
@@ -157,7 +186,7 @@ interface ASTArrayWithMetaData<T> {
  */
 function createContext(): Context {
     return {
-        functionContext: [],
+        scopeContext: [],
         classContext: [],
         maybeArrow: false,
         inOperatorStack: [],
@@ -167,10 +196,10 @@ function createContext(): Context {
 
 const IdentiferWithKeyworArray = [SyntaxKinds.Identifier, ...Keywords];
 const BindingIdentifierSyntaxKindArray = [SyntaxKinds.Identifier, SyntaxKinds.AwaitKeyword, SyntaxKinds.YieldKeyword, SyntaxKinds.LetKeyword];
-const LexicalKeywordSet = new Set([...LexicalLiteral.keywords, ...LexicalLiteral.BooleanLiteral, ...LexicalLiteral.NullLiteral, ...LexicalLiteral.UndefinbedLiteral]);
+const PreserveWordSet = new Set(LexicalLiteral.preserveword);
 /**
  * create parser for input code.
- * @param code 
+ * @param {string} code 
  * @returns
  */
 export function createParser(code: string) {
@@ -181,7 +210,12 @@ export function createParser(code: string) {
  * ==========================================================================
  */
     const context = createContext();
-    function parse() {
+    /**
+     * parse given string and return program if code is
+     * valid syntax.
+     * @returns {Program}
+     */
+    function parse(): Program {
         return parseProgram();
     }
     return { parse };
@@ -383,62 +417,148 @@ export function createParser(code: string) {
  *    Context Helper
  *  =================================================
  */
+    /**
+     * Helper function called when enter function scope. when parse
+     * - function delcaration or expression.
+     * - arrow function.
+     * - method of class or object.
+     * 
+     * need to call this function and give this flag of is this function
+     * a async or generator
+     * @param {boolean} isAsync 
+     * @param {boolean} isGenerator 
+     */
     function enterFunctionScope(isAsync: boolean = false, isGenerator: boolean = false) {
-        context.functionContext.push([isAsync, isGenerator, false]);
+        const lastScope = helperFindLastFunctionContext();
+        context.scopeContext.push({
+            type: "FunctionContext",
+            isAsync,
+            isGenerator,
+            inParameter: false,
+            inStrict: lastScope ? lastScope.inStrict : false,
+        })
     }
+    /**
+     * Helper function for exit the function scope;
+     */
     function exitFunctionScope() {
-        context.functionContext.pop();
+        context.scopeContext.pop();
     }
-    function enterFunctionParameter() {
-        if(context.functionContext.length === 0) {
-            return;
+    /**
+     * Helper function when enter this block scope.
+     * this function only called when `parseBlockStatement`.
+     */
+    function enterBlockScope() {
+        context.scopeContext.push({ type: "BlockContext" });
+    }
+    /**
+     * Helper function when exiting block scope
+     * this function only called when `parseBlokcStatement`
+     */
+    function exitBlockScope() {
+        context.scopeContext.pop();
+    }
+    /**
+     * Helper function for other context helper function to get this closest
+     * function scope structure in scopeContext.
+     * @returns {FunctionContext | undefined}
+     */
+    function helperFindLastFunctionContext(): FunctionContext| undefined {
+        for(let index = context.scopeContext.length - 1 ; index >= 0 ; --index) {
+            const scopeContext = context.scopeContext[index];
+            if(scopeContext.type === "FunctionContext") {
+                return scopeContext;
+            }
         }
-        context.functionContext[context.functionContext.length-1][2] = true;
+    }
+    /**
+     * Helper function for getting is parser in current function parameter.
+     * we need this because event in async or generator function, we can not 
+     * call await and yield expression in function parameter list. so we need
+     * this function to perform side effect to mark current function context 
+     * as we are parsing function parameter.
+     */
+    function enterFunctionParameter() {
+        const scope = helperFindLastFunctionContext();
+        if(scope) {
+            scope.inParameter = true;
+        }
     }
     function existFunctionParameter() {
-        if(context.functionContext.length === 0) {
-            return;
+        const scope = helperFindLastFunctionContext();
+        if(scope) {
+            scope.inParameter = false;
         }
-        context.functionContext[context.functionContext.length-1][2] = false;
     }
-    function mutateCurrentFunctionScope(isGenerator: boolean) {
-        if(context.functionContext.length === 0) {
-            return;
+    function setCurrentFunctionContextAsGenerator() {
+        const scope = helperFindLastFunctionContext();
+        if(scope) {
+            scope.isGenerator = true;
         }
-        context.functionContext[context.functionContext.length -1][1] = isGenerator;
+    }
+    function setCurrentFunctionContextAsStrictMode() {
+        const scope = helperFindLastFunctionContext();
+        if(scope) {
+            scope.inStrict = true;
+        }
+    }
+    function getCurrentInOperatorStack() {
+        if(context.inOperatorStack.length === 0) {
+            return false;
+        }
+        return context.inOperatorStack[context.inOperatorStack.length-1];
     }
     function isTopLevel() {
-        return context.functionContext.length === 1;
+        const scope = helperFindLastFunctionContext();
+        return scope === context.scopeContext[0];
     }
     function isCurrentFunctionAsync(): boolean {
-        if(context.functionContext.length === 0) {
-            return false;
+        const scope = helperFindLastFunctionContext();
+        if(scope) {
+            return scope.isAsync;
         }
-        return context.functionContext[context.functionContext.length -1][0];
+        return false;
     }
-    function isInParameter() {
-        if(context.functionContext.length === 0) {
-            return false;
+    function isInParameter(): boolean {
+        const scope = helperFindLastFunctionContext();
+        if(scope) {
+            return scope.inParameter
         }
-        return context.functionContext[context.functionContext.length -1][2];
+        return false;
+    }
+    function helperFindParentScope(): FunctionContext | undefined {
+        let flag = false;
+        for(let index = context.scopeContext.length - 1 ; index >= 0 ; --index) {
+            const scopeContext = context.scopeContext[index];
+            if(scopeContext.type === "FunctionContext") {
+                if(flag) {
+                    return scopeContext;
+                }else {
+                    flag = true
+                }
+            }
+        }
     }
     function isParentFunctionAsync(): boolean {
-        if(context.functionContext.length < 2) {
-            return false;
+        const parentScope = helperFindParentScope();
+        if(parentScope) {
+            return parentScope.isAsync;
         }
-        return context.functionContext[context.functionContext.length -2][0];
+        return false;
     }
     function isParentFunctionGenerator(): boolean {
-        if(context.functionContext.length < 2) {
-            return false;
+        const parentScope = helperFindParentScope();
+        if(parentScope) {
+            return parentScope.isGenerator
         }
-        return context.functionContext[context.functionContext.length -2][1];   
+        return false;
     }
     function isCurrentFunctionGenerator() {
-        if(context.functionContext.length === 0) {
-            return false;
+        const scope = helperFindLastFunctionContext();
+        if(scope) {
+            return scope.isGenerator;
         }
-        return context.functionContext[context.functionContext.length -1][1];
+        return false;
     }
     function enterClassScope(isExtend: boolean = false) {
         context.classContext.push([isExtend]);
@@ -454,6 +574,32 @@ export function createParser(code: string) {
             return false;
         }
         return context.classContext[context.classContext.length -1][0];
+    }
+    /**
+     * Helper function for getting is current function scope is in strict mode,
+     * according to ECMA spec, in class declaration and class expression, is
+     * always strict mode.
+     * @returns {boolean}
+     */
+    function isInStrictMode(): boolean {
+        if(isInClassScope()) {
+            return true;
+        }
+        const scope = helperFindLastFunctionContext();
+        if(scope) {
+            return scope.inStrict;
+        }
+        return false;
+    }
+    /**
+     * Helper function only used by `checkStrictMode`, because
+     * "use strict" directive only meansful when `ExpressionStatement`
+     * is directive to function context, so we need is current 
+     * `ExpressionStatement` is in functionContext or not.
+     * @returns {boolean}
+     */
+    function isDirectToFunctionContext(): boolean {
+        return context.scopeContext[context.scopeContext.length-1].type === "FunctionContext";
     }
 
 /** ==================================================
@@ -554,18 +700,13 @@ export function createParser(code: string) {
                     if(getLineTerminatorFlag()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
-                    enterFunctionScope(true);
-                    const funDeclar = parseFunctionDeclaration();
-                    exitFunctionScope();
-                    return funDeclar;
+                    return parseFunctionDeclaration(true);
                 } else {
                    throw createUnreachError();
                 }
             // function delcaration
             case SyntaxKinds.FunctionKeyword: 
-                enterFunctionScope(false);
-                const functionExpr = parseFunctionDeclaration();
-                exitFunctionScope();
+                const functionExpr = parseFunctionDeclaration(false);
                 return functionExpr;
             case SyntaxKinds.ConstKeyword:
             case SyntaxKinds.LetKeyword:
@@ -904,10 +1045,12 @@ export function createParser(code: string) {
     }
    function parseBlockStatement() {
         const { start: puncStart } =  expect(SyntaxKinds.BracesLeftPunctuator);
+        enterBlockScope();
         const body: Array<StatementListItem> = [];
         while(!match(SyntaxKinds.BracesRightPunctuator) &&  !match(SyntaxKinds.EOFToken) ) {
             body.push(parseStatementListItem());
         }
+        exitBlockScope();
         const { end: puncEnd } =  expect(SyntaxKinds.BracesRightPunctuator, "block statement must wrapped by bracket");
         return Factory.createBlockStatement(body, puncStart, puncEnd);
    }
@@ -982,7 +1125,7 @@ export function createParser(code: string) {
         const label = parseIdentifer();
         expect(SyntaxKinds.ColonPunctuator);
         if(match(SyntaxKinds.FunctionKeyword)) {
-            const delcar = parseFunctionDeclaration();
+            const delcar = parseFunctionDeclaration(false);
             if(delcar.generator) {
                 throw createMessageError(ErrorMessageMap.lable_statement_can_not_have_function_declaration_is_generator);
             }
@@ -1172,20 +1315,16 @@ export function createParser(code: string) {
         }
         return false;
     }
-    function parseFunctionDeclaration() {
+    function parseFunctionDeclaration(isAsync: boolean) {
+        enterFunctionScope(isAsync);
         const func = parseFunction(false);
+        exitFunctionScope();
         return Factory.transFormFunctionToFunctionDeclaration(func);
     }
     /**
      * Parse function maybe call by parseFunctionDeclaration and parseFunctionExpression,
      * first different of those two function is that function-declaration can not have null
      * name.
-     * 
-     * When parse name of function, can not just call parseIdentifier, because function name
-     * maybe await or yield, and function name's context rule is different from identifier in
-     * scope (function body). so there we need to implement special logical for parse function 
-     * name. and you need to note that name of function expression and name of function delcaration
-     * have different context rule for parse function name
      * @returns {FunctionAST} 
      */
     function parseFunction(isExpression: boolean): FunctionAST {
@@ -1193,50 +1332,83 @@ export function createParser(code: string) {
         let generator = false;
         if(match(SyntaxKinds.MultiplyOperator)) {
             generator = true;
-            mutateCurrentFunctionScope(true);
+            setCurrentFunctionContextAsGenerator();
             nextToken();
         }
+        const name = parseFunctionName(isExpression);
+        const params = parseFunctionParam();
+        const body = parseFunctionBody();
+        checkFunctionNameAndParamsInCurrentScope(name, params);
+        return Factory.createFunction(name, body, params, generator, isCurrentFunctionAsync(), start, cloneSourcePosition(body.end));
+    }
+    /**
+     * Because we "use strict" directive is in function body, some we will not sure
+     * if this function contain stric directive or not until we enter the function body.
+     * as the result, we need to check function name and function paramemter's name after
+     * parseFunctionBody.
+     * @param name 
+     * @param params 
+     */
+    function checkFunctionNameAndParamsInCurrentScope(name: Identifier | null, params: Array<Pattern>) {
+        if(isInStrictMode()) {
+            if(name) {
+                if(
+                    name.name === "yield" || 
+                    name.name === "let"   ||
+                    PreserveWordSet.has(name.name)
+                ) {
+                    throw createMessageError("unexepct keyword in parameter list in strict mode")
+                }
+            }
+            // TODO: parames
+        }
+    }
+    /**
+     * When parse name of function, can not just call parseIdentifier, because function name
+     * maybe await or yield, and function name's context rule is different from identifier in
+     * scope (function body). so there we need to implement special logical for parse function 
+     * name. and you need to note that name of function expression and name of function delcaration
+     * have different context rule for parse function name.
+     * @param {boolean} isExpression 
+     * @returns {Identifier | null}
+     */
+    function parseFunctionName(isExpression: boolean): Identifier | null {
         let name: Identifier | null = null;
         // there we do not just using parseIdentifier function as the reason above
-        if(match(SyntaxKinds.Identifier)) {
+        // let can be function name as other place
+        if(matchSet([SyntaxKinds.Identifier, SyntaxKinds.LetKeyword])) {
             name = parseIdentifer();
         }
         if(match(SyntaxKinds.AwaitKeyword)) {
-            // for function expression, can await treat as function name is 
-            // dep on current scope.
+            // for function expression, can await treat as function name is dep on current scope.
             if(isExpression && isCurrentFunctionAsync()) {
                 throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
             }
-            // for function declaration, can await treat as function name is 
-            // dep on parent scope.
+            // for function declaration, can await treat as function name is dep on parent scope.
             if(!isExpression && isParentFunctionAsync()) {
                 throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
             }
             name = parseIdentiferWithKeyword();
         }
         if(match(SyntaxKinds.YieldKeyword)) {
-            // for function expression, can yield treat as function name is 
-            // dep on current scope.
+            // for function expression, can yield treat as function name is dep on current scope.
             if(isExpression && isCurrentFunctionGenerator()) {
                 throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
             }
-            // for function declaration, can yield treat as function name is 
-            // dep on parent scope.
+            // for function declaration, can yield treat as function name is  dep on parent scope.
             if(!isExpression && isParentFunctionGenerator()) {
+                throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+            }
+            // if in strict mode, yield can not be function name.
+            if(isInStrictMode()) {
                 throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
             }
             name = parseIdentiferWithKeyword();
         }
-        // let can be function name as other place
-        if(match(SyntaxKinds.LetKeyword)) {
-            name = parseIdentiferWithKeyword();
-        }
         if(name === null && !isExpression) {
-            throw createMessageError("Function name of FunctionDeclaration can not be null");
+            throw createMessageError("function declaration must have name");
         }
-        const params = parseFunctionParam();
-        const body = parseFunctionBody();
-        return Factory.createFunction(name, body, params, generator, isCurrentFunctionAsync(), start, cloneSourcePosition(body.end));
+        return name;
     }
     /**
      * Parse Function Body
@@ -1476,11 +1648,37 @@ export function createParser(code: string) {
  *  Parse Expression 
  *  entry point reference : https://tc39.es/ecma262/#sec-comma-operator
  * =====================================================================
- */
-    function parseExpressionStatement() {
+ */ 
+
+    /**
+     * Entry function for parse a expression statement.
+     * @returns {ExpressionStatement}
+     */
+    function parseExpressionStatement(): ExpressionStatement {
         const expr = parseExpression();
+        checkStrictMode(expr);
         semi();
         return Factory.createExpressionStatement(expr, cloneSourcePosition(expr.start), cloneSourcePosition(expr.end));
+    }
+    /**
+     * Helper function for checking `use strict` directive, according to 
+     * ECMA spec, `use strict` directive is a `ExpressionStatement` in 
+     * which value is `use strict`, and this function is doing the same
+     * thing as spec required.
+     * 
+     * NOTE: this function would perform side effect to parse context
+     * 
+     * ref: https://tc39.es/ecma262/#use-strict-directive
+     * @param {Expression} expr 
+     */
+    function checkStrictMode(expr: Expression) {
+        if(isStringLiteral(expr)) {
+            if(expr.value === "use strict") {
+                if(isDirectToFunctionContext()) {
+                    setCurrentFunctionContextAsStrictMode();
+                }
+            }
+        }
     }
     function parseExpressionBase() {
         const exprs = [parseAssigmentExpressionBase()];
@@ -1568,6 +1766,11 @@ export function createParser(code: string) {
         const alter = parseAssigmentExpression();
         return Factory.createConditionalExpression(test, conseq, alter, cloneSourcePosition(test.start), cloneSourcePosition(alter.end));
     }
+    /**
+     * Using Operator-precedence parser algorithm is used for parse binary expressiom
+     * with precedence order. and this is entry function for parseBinaryExpression.
+     * @returns {Expression}
+     */
     function parseBinaryExpression(): Expression {
         const atom = parseUnaryExpression();
         // early return for arrow function;
@@ -1579,13 +1782,13 @@ export function createParser(code: string) {
         }
         return atom;
     }
-    function getCurrentInOperatorStack() {
-        if(context.inOperatorStack.length === 0) {
-            return false;
-        }
-        return context.inOperatorStack[context.inOperatorStack.length-1];
-    }
-    function getBinaryPrecedence(kind: SyntaxKinds) {
+    /**
+     * Return the precedence order by given binary operator.
+     * this function should only used by parseBinaryOps
+     * @param {SyntaxKinds} kind Binary Operator
+     * @returns {number}
+     */
+    function getBinaryPrecedence(kind: SyntaxKinds): number {
         switch(kind) {
             case SyntaxKinds.LogicalOROperator:
                 return 4;
@@ -1632,7 +1835,14 @@ export function createParser(code: string) {
     function isBinaryOps(kind: SyntaxKinds) {
         return getBinaryPrecedence(kind) > 0;
     }
-    function parseBinaryOps(left: Expression , lastPre = 0): Expression {
+    /**
+     * Bottom up recurive function for parse binary operator and next 
+     * expression.
+     * @param {Expression} left
+     * @param {number} lastPre 
+     * @returns {Expression}
+     */
+    function parseBinaryOps(left: Expression , lastPre : number = 0): Expression {
         // eslint-disable-next-line no-constant-condition
         while(1) {
             const currentOp = getToken();
@@ -1883,10 +2093,7 @@ export function createParser(code: string) {
             case SyntaxKinds.BracketLeftPunctuator:
                 return parseArrayExpression();
             case SyntaxKinds.FunctionKeyword:
-                enterFunctionScope();
-                const expr = parseFunctionExpression();
-                exitFunctionScope();
-                return expr;
+                return parseFunctionExpression(false);
             case SyntaxKinds.ClassKeyword:
                 return parseClassExpression();
             case SyntaxKinds.ParenthesesLeftPunctuator:
@@ -1946,9 +2153,7 @@ export function createParser(code: string) {
                     if(getLineTerminatorFlag()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
                     }
-                    enterFunctionScope(true);
-                    const functionExpr = parseFunctionExpression();
-                    exitFunctionScope();
+                    const functionExpr = parseFunctionExpression(true);
                     return functionExpr;
                 }
                 return parseIdentifer();
@@ -1976,9 +2181,9 @@ export function createParser(code: string) {
      * context check logical with parseIdentifierWithKeyword function.
      * ```
      * BindingIdentifier := Identifier
-     *                   := await (deps in context)
-     *                   := yield (deps in context)
-     *                   (let (deps on context))
+     *                   := 'await' (deps in context)
+     *                   := 'yield' (deps in context)
+     *                   ('let' (deps on context))
      * ```
      * @returns {Identifier}
      */
@@ -1987,7 +2192,7 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.YieldKeyword)) {
             // for most of yield keyword, if it should treat as identifier,
             // it should not in generator function.
-            if (!isCurrentFunctionGenerator()) {
+            if (!isCurrentFunctionGenerator() && !isInStrictMode()) {
                 const { value, start, end } = expect(SyntaxKinds.YieldKeyword);
                 return Factory.createIdentifier(value, start, end);
             }
@@ -2003,13 +2208,20 @@ export function createParser(code: string) {
             throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
         }
         if(match(SyntaxKinds.LetKeyword)) {
-            // TODO: strict mode check
             // let maybe treat as identifier in not strict mode, and not lexical binding declaration.
             // so lexical binding declaration should implement it's own checker logical with parseIdentifierWithKeyword
-            const { value, start, end } = expect(SyntaxKinds.LetKeyword);
-            return Factory.createIdentifier(value, start, end);
+            if(!isInStrictMode()) {
+                const { value, start, end } = expect(SyntaxKinds.LetKeyword);
+                return Factory.createIdentifier(value, start, end);
+            }
+            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
         }
         const { value, start, end } = expect(SyntaxKinds.Identifier);
+        if(isInStrictMode()) {
+            if(PreserveWordSet.has(value)) {
+                throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+            }
+        }
         return Factory.createIdentifier(value, start, end);
     }
     /**
@@ -2251,6 +2463,8 @@ export function createParser(code: string) {
             return property;
 
         }
+        // check if shorted property is keyword or not.
+        checkPropertyShortedIsKeyword(propertyName);
         return Factory.createObjectProperty(propertyName, undefined, isComputedRef.isComputed, true, cloneSourcePosition(propertyName.start), cloneSourcePosition(propertyName.end));
     }
     /**
@@ -2316,24 +2530,6 @@ export function createParser(code: string) {
         // if `await` and `yield` is propty name with colon (means assign), it dose not affected by scope.
         if(matchSet(IdentiferWithKeyworArray)) {
             const identifer = parseIdentiferWithKeyword();
-            if(identifer.name === "await") {
-                if(isCurrentFunctionAsync() && !match(SyntaxKinds.ColonPunctuator)) {
-                    throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
-                }
-                return identifer;
-            }
-            if(identifer.name === "yield") {
-                if(isCurrentFunctionGenerator() && !match(SyntaxKinds.ColonPunctuator)) {
-                    throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-                }
-                return identifer;
-            }
-            if(identifer.name === "let") {
-                return identifer;
-            }
-            if(!matchSet([SyntaxKinds.ColonPunctuator, SyntaxKinds.ParenthesesLeftPunctuator]) && LexicalKeywordSet.has(identifer.name)) {
-                throw createMessageError(ErrorMessageMap.invalid_property_name);
-            }
             return identifer;
         }
         nextToken();
@@ -2344,6 +2540,21 @@ export function createParser(code: string) {
             return expr;
         }
         throw createUnexpectError(SyntaxKinds.BracketRightPunctuator);
+    }
+    /**
+     *  propty name is a spical test of binding identifier.
+     *  if `await` and `yield` is propty name with colon (means assign), 
+     *  it dose not affected by scope.
+     * @param propertyName 
+     */
+    function checkPropertyShortedIsKeyword(propertyName: PropertyName) {
+        if(isIdentifer(propertyName)) {
+            // @ts-ignore
+            const possibleKind = KeywordLiteralMapSyntaxKind[propertyName.name];
+            if(possibleKind) {
+                throw createMessageError(ErrorMessageMap.invalid_property_name);
+            }
+        }
     }
     /** Parse MethodDefintion, this method should allow using when in class or in object literal.
      *  1. ClassElement can be PrivateName, when it used in object literal, it should throw a error.
@@ -2516,8 +2727,10 @@ export function createParser(code: string) {
         const { end } = expect(SyntaxKinds.BracketRightPunctuator);
         return Factory.createArrayExpression(elements, start, end, tralingComma);
     }
-    function parseFunctionExpression() {
+    function parseFunctionExpression(isAsync: boolean) {
+        enterFunctionScope(isAsync);
         const funcExpr = parseFunction(true);
+        exitFunctionScope();
         return Factory.transFormFunctionToFunctionExpression(funcExpr);
     }
     function parseClassExpression() {
@@ -2744,6 +2957,8 @@ export function createParser(code: string) {
                 properties.push(Factory.createObjectPatternProperty(propertyName, pattern, isComputedRef.isComputed, false, cloneSourcePosition(propertyName.start), cloneSourcePosition(pattern.end)));
                 continue;
             }
+            // check property name is keyword or not 
+            checkPropertyShortedIsKeyword(propertyName);
             properties.push(Factory.createObjectPatternProperty(propertyName, undefined, isComputedRef.isComputed, true, cloneSourcePosition(propertyName.start), cloneSourcePosition(propertyName.end)));
         }
         const { end } =  expect(SyntaxKinds.BracesRightPunctuator);
@@ -2967,17 +3182,13 @@ export function createParser(code: string) {
             return Factory.createExportDefaultDeclaration(classDeclar as ClassDeclaration | ClassExpression, start, cloneSourcePosition(classDeclar.end));
         }
         if(match(SyntaxKinds.FunctionKeyword)) {
-            enterFunctionScope();
-            let funDeclar = parseFunctionExpression();
-            exitFunctionScope();
+            let funDeclar = parseFunctionExpression(false);
             semi();
             return Factory.createExportDefaultDeclaration(funDeclar as FunctionDeclaration | FunctionExpression, start, cloneSourcePosition(funDeclar.end));
         }   
         if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
             nextToken();
-            enterFunctionScope(true);
-            const funDeclar = parseFunctionExpression();
-            exitFunctionScope();
+            const funDeclar = parseFunctionExpression(true);
             semi();
             return Factory.createExportDefaultDeclaration(funDeclar, start, cloneSourcePosition(funDeclar.end));
         }
