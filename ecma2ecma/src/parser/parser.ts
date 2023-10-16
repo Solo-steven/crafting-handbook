@@ -100,6 +100,7 @@ import {
     isStringLiteral,
     ExpressionStatement,
     Program,
+    ClassProperty,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -197,6 +198,7 @@ function createContext(): Context {
 const IdentiferWithKeyworArray = [SyntaxKinds.Identifier, ...Keywords];
 const BindingIdentifierSyntaxKindArray = [SyntaxKinds.Identifier, SyntaxKinds.AwaitKeyword, SyntaxKinds.YieldKeyword, SyntaxKinds.LetKeyword];
 const PreserveWordSet = new Set(LexicalLiteral.preserveword);
+const KeywordSet = new Set(LexicalLiteral.keywords);
 /**
  * create parser for input code.
  * @param {string} code 
@@ -284,9 +286,8 @@ export function createParser(code: string) {
     }
     /**
      * Get next token but do not move to next token
-     * @returns {SyntaxKinds}
      */
-    function lookahead(): SyntaxKinds {
+    function lookahead() {
         return lexer.lookahead();
     }
     function readRegex() {
@@ -622,7 +623,8 @@ export function createParser(code: string) {
         const token = getToken();
         switch(token) {
             case SyntaxKinds.ImportKeyword:
-                if(lookahead() === SyntaxKinds.DotOperator || lookahead () === SyntaxKinds.ParenthesesLeftPunctuator) {
+                const {kind} = lookahead();
+                if(kind === SyntaxKinds.DotOperator || kind === SyntaxKinds.ParenthesesLeftPunctuator) {
                     return parseStatementListItem();
                 }
                 return parseImportDeclaration();
@@ -644,7 +646,8 @@ export function createParser(code: string) {
             case SyntaxKinds.ClassKeyword:
                 return parseDeclaration();
             case SyntaxKinds.Identifier:
-                if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
+                const { kind, flag } = lookahead();
+                if(getValue() === "async" && kind === SyntaxKinds.FunctionKeyword && flag == false) {
                     return parseDeclaration();
                 }
                 return parseStatement();
@@ -658,13 +661,13 @@ export function createParser(code: string) {
         }
     }
     function isLetPossibleIdentifier() {
-        const lookaheadToken = lookahead();
+        const { kind:kind } = lookahead();
         if(
-            lookaheadToken === SyntaxKinds.BracesLeftPunctuator || // object pattern
-            lookaheadToken === SyntaxKinds.BracketLeftPunctuator || // array pattern
-            lookaheadToken === SyntaxKinds.Identifier   || // id
-            lookaheadToken === SyntaxKinds.AwaitKeyword ||
-            lookaheadToken === SyntaxKinds.YieldKeyword 
+            kind === SyntaxKinds.BracesLeftPunctuator || // object pattern
+            kind === SyntaxKinds.BracketLeftPunctuator || // array pattern
+            kind === SyntaxKinds.Identifier   || // id
+            kind === SyntaxKinds.AwaitKeyword ||
+            kind === SyntaxKinds.YieldKeyword 
         ) {
             return false;
         }
@@ -754,7 +757,7 @@ export function createParser(code: string) {
             case SyntaxKinds.VarKeyword:
                 return parseVariableDeclaration();
             default:
-                if(match(SyntaxKinds.Identifier)  && lookahead() === SyntaxKinds.ColonPunctuator ) {
+                if(match(SyntaxKinds.Identifier)  && lookahead().kind === SyntaxKinds.ColonPunctuator ) {
                     return parseLabeledStatement();
                 }
                 return parseExpressionStatement();
@@ -1119,7 +1122,7 @@ export function createParser(code: string) {
         return Factory.createBreakStatement(null, start, end);
    }
    function parseLabeledStatement(): LabeledStatement {
-        if(!match(SyntaxKinds.Identifier) || lookahead() !== SyntaxKinds.ColonPunctuator) {
+        if(!match(SyntaxKinds.Identifier) || lookahead().kind !== SyntaxKinds.ColonPunctuator) {
             // TODO: unreach
         }
         const label = parseIdentifer();
@@ -1613,11 +1616,11 @@ export function createParser(code: string) {
     function parseClassElement(): ClassElement {
         // parse static modifier
         let isStatic = false;
-        if(getValue() === "static" && lookahead() !== SyntaxKinds.ParenthesesLeftPunctuator) {
+        if(getValue() === "static" && lookahead().kind !== SyntaxKinds.ParenthesesLeftPunctuator) {
             nextToken();
             isStatic = true;
         }    
-        if(isMethodStartWithModifier()) {
+        if(checkIsMethodStartWithModifier()) {
             return parseMethodDefintion(true, undefined, isStatic) as ClassMethodDefinition;
         }
         if(match(SyntaxKinds.BracesLeftPunctuator) && isStatic) {
@@ -2071,15 +2074,16 @@ export function createParser(code: string) {
             case SyntaxKinds.TemplateNoSubstitution:
                 return parseTemplateLiteral();
             case SyntaxKinds.ImportKeyword:
-                const lookaheadToken = lookahead();
-                if(lookaheadToken === SyntaxKinds.DotOperator)
+                const { kind } = lookahead();
+                if(kind === SyntaxKinds.DotOperator)
                     return parseImportMeta();
-                if(lookaheadToken === SyntaxKinds.ParenthesesLeftPunctuator) {
+                if(kind === SyntaxKinds.ParenthesesLeftPunctuator) {
                     return parseImportCall();
                 }
+                throw createUnexpectError(null);
             case SyntaxKinds.NewKeyword: {
-                const lookaheadToken = lookahead();
-                if(lookaheadToken === SyntaxKinds.DotOperator) {
+                const { kind } = lookahead();
+                if(kind === SyntaxKinds.DotOperator) {
                     return parseNewTarget();
                 }
                 return parseNewExpression();
@@ -2105,27 +2109,14 @@ export function createParser(code: string) {
             case SyntaxKinds.LetKeyword:
             case SyntaxKinds.AwaitKeyword:
             case SyntaxKinds.YieldKeyword: {
-                const lookaheadToken = lookahead();
-                // case 1: async <Identifer> ==> must be async <id> => {};
-                if(
-                    lookaheadToken === SyntaxKinds.ArrowOperator || 
-                    (
-                        getValue() === "async"  && (
-                            lookaheadToken === SyntaxKinds.Identifier ||
-                            lookaheadToken === SyntaxKinds.YieldKeyword ||
-                            lookaheadToken === SyntaxKinds.AwaitKeyword
-                        ))
-                ) {
-                    if(getValue() === "async") {
-                        enterFunctionScope(true);
-                        nextToken();
-                        if(getLineTerminatorFlag()) {
-                            throw createMessageError(ErrorMessageMap.missing_semicolon);
-                        }
-                    }else {
-                        enterFunctionScope();
-                    }
+                const { kind, flag } = lookahead();
+                // case 0: identifier `=>` ...
+                if(kind === SyntaxKinds.ArrowOperator) {
+                    enterFunctionScope();
                     const argus = [parseIdentifer()];
+                    if(getLineTerminatorFlag()) {
+                        throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_arrow);
+                    }
                     const arrowExpr = parseArrowFunctionExpression({
                         nodes: argus,
                         start: argus[0].start,
@@ -2135,23 +2126,68 @@ export function createParser(code: string) {
                     exitFunctionScope();
                     return arrowExpr;
                 }
-                // case 2 async ( ===> must be `async (<Argument>) => {}`;
-                if(getValue() === "async"  && lookaheadToken === SyntaxKinds.ParenthesesLeftPunctuator) {
+                // case 1: `async` `Identifer` ... 
+                // There might be two case :
+                // 1.frist case is there are line change after async, which make this case into
+                //   async as identifier
+                // 2.second case is not change line after async, making it become async arrow 
+                //   function.
+                if((
+                    getValue() === "async"  && (
+                        kind === SyntaxKinds.Identifier ||
+                        kind === SyntaxKinds.YieldKeyword ||
+                        kind === SyntaxKinds.AwaitKeyword
+                    ))
+                ) {
+                    // async followed by flag
+                    if(flag) {
+                        return parseIdentifer();
+                    }
                     nextToken();
+                    enterFunctionScope(true);
+                    const argus = [parseIdentifer()];
                     if(getLineTerminatorFlag()) {
-                        throw createMessageError(ErrorMessageMap.missing_semicolon);
+                        throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_async);
+                    }
+                    // TODO: check arrow operator
+                    const arrowExpr = parseArrowFunctionExpression({
+                        nodes: argus,
+                        start: argus[0].start,
+                        end: argus[0].end,
+                        trailingComma: false
+                    });
+                    exitFunctionScope();
+                    return arrowExpr;
+                }
+                // case 2 `async` `?.`, in this case, must treat as call expression
+                if(getValue() === "async" &&  kind === SyntaxKinds.QustionDotOperator ) {
+                    const id = parseIdentifer();
+                    const {nodes, end} = parseArguments()
+                    return Factory.createCallExpression(id, nodes, true, cloneSourcePosition(id.start), end);
+                }
+                // case 2 `async` `(` 
+                // There might be two case :
+                // 1.frist case is there are line change after async, which make this case into
+                //   call expression
+                // 2.second case is not change line after async, making it become async arrow 
+                //   function.
+                if(getValue() === "async"  && kind === SyntaxKinds.ParenthesesLeftPunctuator) {
+                    const id =  parseIdentifer();
+                    const meta =  parseArguments();
+                    if(flag || !match(SyntaxKinds.ArrowOperator)) {
+                        return Factory.createCallExpression(id, meta.nodes, false, cloneSourcePosition(id.start), meta.end);
                     }
                     enterFunctionScope(true);
                     // TODO: should remove parseArgument, using parseFunctionParam instead.
-                    const arrowFunExpr = parseArrowFunctionExpression(parseArguments());
+                    const arrowFunExpr = parseArrowFunctionExpression(meta);
                     exitFunctionScope();
                     return arrowFunExpr;
                 }
                 // case 3 async function ==> must be async function <id> () {}
-                if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
-                    nextToken();
+                if(getValue() === "async" && kind === SyntaxKinds.FunctionKeyword) {
+                    const { value, start, end } = expect(SyntaxKinds.Identifier);
                     if(getLineTerminatorFlag()) {
-                        throw createMessageError(ErrorMessageMap.missing_semicolon);
+                        return Factory.createIdentifier(value, start, end);
                     }
                     const functionExpr = parseFunctionExpression(true);
                     return functionExpr;
@@ -2334,7 +2370,7 @@ export function createParser(code: string) {
     function parseNewExpression():Expression {
         const { start } = expect(SyntaxKinds.NewKeyword);
         // maybe is new.target
-        if(match(SyntaxKinds.NewKeyword) && lookahead() !== SyntaxKinds.DotOperator ) {
+        if(match(SyntaxKinds.NewKeyword) && lookahead().kind !== SyntaxKinds.DotOperator ) {
             return parseNewExpression();
         }
         let base = parsePrimaryExpression();
@@ -2420,7 +2456,7 @@ export function createParser(code: string) {
      * ### How to parse
      * 1. start with `...` operator, must be SpreadElment
      * 2. start with privatename is syntax error, but it is common, so we handle it as sematic problem.
-     * 3. check is start with method modifier prefix by helper function `isMethodStartWithModifier`.
+     * 3. check is start with method modifier prefix by helper function `checkIsMethodStartWithModifier`.
      * 4. default case, property name with colon operator.
      * 5. this is speical case, we accept a coverinit in object expression, because object expression
      *    might be transform into object pattern, so we mark accept it and mark it. it coverInit of 
@@ -2441,7 +2477,7 @@ export function createParser(code: string) {
             return Factory.createSpreadElement(expr, spreadElementStart, cloneSourcePosition(expr.end));
         }
         // start with possible method modifier
-        if(isMethodStartWithModifier()) {
+        if(checkIsMethodStartWithModifier()) {
             return parseMethodDefintion() as ObjectMethodDefinition;
         }
         // otherwise, it would be Property start with PropertyName or MethodDeinftion start with PropertyName 
@@ -2475,26 +2511,26 @@ export function createParser(code: string) {
      * like set and get generator, it will left sematic job for `parseMetodDefinition` method.
      * @returns  {boolean}
      */
-    function isMethodStartWithModifier(): boolean {
+    function checkIsMethodStartWithModifier(): boolean {
         if(match(SyntaxKinds.MultiplyOperator)) {
             return true;
         }
         const currentValue = getValue();
-        const lookaheadToken = lookahead();
+        const { kind, flag } = lookahead();
         const isLookAheadValidatePropertyNameStart = 
-            Keywords.find(keyword => keyword === lookaheadToken) ||
-            lookaheadToken === SyntaxKinds.Identifier ||
-            lookaheadToken === SyntaxKinds.StringLiteral ||
-            lookaheadToken === SyntaxKinds.NumberLiteral ||
-            lookaheadToken === SyntaxKinds.BracketLeftPunctuator || 
-            lookaheadToken === SyntaxKinds.MultiplyOperator;
+            Keywords.find(keyword => keyword === kind) ||
+            kind === SyntaxKinds.Identifier ||
+            kind === SyntaxKinds.StringLiteral ||
+            kind === SyntaxKinds.NumberLiteral ||
+            kind === SyntaxKinds.BracketLeftPunctuator || 
+            kind === SyntaxKinds.MultiplyOperator;
         if(currentValue === "set" && isLookAheadValidatePropertyNameStart) {
             return true
         }
         if(currentValue === "get" && isLookAheadValidatePropertyNameStart) {
             return true
         }
-        if(currentValue === "async" && (isLookAheadValidatePropertyNameStart)) {
+        if(currentValue === "async" && (isLookAheadValidatePropertyNameStart) && !flag) {
             return true
         }
         return false;
@@ -2550,8 +2586,10 @@ export function createParser(code: string) {
     function checkPropertyShortedIsKeyword(propertyName: PropertyName) {
         if(isIdentifer(propertyName)) {
             // @ts-ignore
-            const possibleKind = KeywordLiteralMapSyntaxKind[propertyName.name];
-            if(possibleKind) {
+            if(KeywordSet.has(propertyName.name)) {
+                throw createMessageError(ErrorMessageMap.invalid_property_name);
+            }
+            if(PreserveWordSet.has(propertyName.name) && isInStrictMode()) {
                 throw createMessageError(ErrorMessageMap.invalid_property_name);
             }
         }
@@ -2580,14 +2618,14 @@ export function createParser(code: string) {
      * @param {boolean} inClass is used in class or not. 
      * @param {PropertyName | PrivateName | undefined } withPropertyName parse methodDeinfition with exited propertyName or not
      * @param {boolean} isStatic
-     * @returns {ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor  | ClassConstructor}
+     * @returns {ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor  | ClassConstructor | ClassProperty}
      */
     function parseMethodDefintion(
         inClass: boolean = false, 
         withPropertyName: PropertyName | PrivateName | undefined = undefined, 
         isStatic: boolean = false
-    ): ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor  | ClassConstructor{
-        if(!isMethodStartWithModifier() && !withPropertyName) {
+    ): ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor  | ClassConstructor | ClassProperty{
+        if(!checkIsMethodStartWithModifier() && !withPropertyName) {
             throw createUnreachError([SyntaxKinds.MultiplyAssignOperator, SyntaxKinds.Identifier]);
         }
         /**
@@ -2613,8 +2651,9 @@ export function createParser(code: string) {
                 start = getStartPosition();
                 nextToken();
             }
-            // second, parser async and is generator
-            if(getValue() === "async" && lookahead() !== SyntaxKinds.ParenthesesLeftPunctuator) {
+            // second, parser async and generator
+            const { kind } = lookahead();
+            if(getValue() === "async" && kind !== SyntaxKinds.ParenthesesLeftPunctuator) {
                 start = getStartPosition();
                 isAsync = true;
                 nextToken();
@@ -2768,9 +2807,6 @@ export function createParser(code: string) {
      * transform arguments to parameter list, so we need to call `toAssignment` for each argument.
      * and we also need to check is parameter duplicate.
      * 
-     * last, because in pattern maybe there are await and yield expression, but paramemter list should
-     * forbiden, so we need a helper function for check if there are any await and yield expression in
-     * list.
      * @param {ASTArrayWithMetaData<Expression> & { trailingComma: boolean }} metaData 
      * @returns {ArrorFunctionExpression}
      */
@@ -2779,8 +2815,7 @@ export function createParser(code: string) {
             throw createUnexpectError(SyntaxKinds.ArrowOperator);
         }
         if(getLineTerminatorFlag()) {
-            // TODO: error message
-            throw new Error("Not Ok");
+            throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_arrow);
         }
         nextToken();
         let body: Expression | FunctionBody | undefined; 
@@ -2791,17 +2826,20 @@ export function createParser(code: string) {
             body = parseAssigmentExpression();
             isExpression = true;
         }
-        // transform argument list to function parameter list, there are some thing we need to check
+        // Transform argument list to function parameter list, there are some thing we need to check
         // 1. multi spread element is ok to argument list, but parameter list can only have one spread list
         // 2. if argument list last one is spread element, can have trailing comma, but paramemter last is restelement,
         //   it can not have trailing comma.
         // 3. argument list can have duplicate identifier name, but parameter list can not.
         // 4. argument list can have await or yield expression as default value, but paramemter list can not.
-        // first and second thing toAssignment would check for us. 3 can be done by call `checkFunctionParams`, last
+        // 5. there are some case dose not enter function scope when parse argument, so we need to check is there any await
+        //    and yield usage in parameter list
+        // First and second thing toAssignment would check for us. 3 can be done by call `checkFunctionParams`, 4 and 5
         // one can be done by create custome helper function.
         const functionArguments = metaData.nodes.map(node => toAssignmentPattern(node, true)) as Array<Pattern>;
         checkFunctionParams(functionArguments);
         checkAwaitAndYieldUsageOfArrowParams(functionArguments);
+        functionArguments.forEach(param => checkPatternContainInValidAwaitAndYieldValue(param));
         if(checkArrowParamemterHaveMultiSpreadElement(functionArguments) && metaData.trailingComma) {
             throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
         };
@@ -2809,6 +2847,7 @@ export function createParser(code: string) {
     }
     function checkAwaitAndYieldUsageOfArrowParams(params: Array<Pattern>) {
         for(const param of params) {
+            
             if(isAssignmentPattern(param)) {
                 // parent scope is async, no matter current scope is async or not
                 // await expression can not call
@@ -2837,6 +2876,45 @@ export function createParser(code: string) {
             }
         });
         return flag;
+    }
+    function checkPatternContainInValidAwaitAndYieldValue(pattern: Pattern) {
+        if(isArrayPattern(pattern)) {
+            for(const element of pattern.elements) {
+                if(element) {
+                    checkPatternContainInValidAwaitAndYieldValue(element)
+                }
+            }
+            return;
+        }
+        if(isObjectPattern(pattern)) {
+            for(const property of pattern.properties) {
+                if(isObjectPatternProperty(property)) {
+                    if(property.value) {
+                        checkPatternContainInValidAwaitAndYieldValue(property.value)
+                    }
+                    if(!property.value && isIdentifer(property.key)) {
+                        checkPatternContainInValidAwaitAndYieldValue(property.key);
+                    }
+                }else {
+                    checkPatternContainInValidAwaitAndYieldValue(property)
+                }
+            }
+            return;
+        }
+        if(isRestElement(pattern)) {
+            checkPatternContainInValidAwaitAndYieldValue(pattern.argument);
+            return;
+        }
+        if(isAssignmentPattern(pattern)) {
+            checkPatternContainInValidAwaitAndYieldValue(pattern.left);
+            return;
+        }
+        if(pattern.name === "await" && isCurrentFunctionAsync()) {
+            throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+        }
+        if(pattern.name === "yield" && isCurrentFunctionGenerator()) {
+            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+        }
     }
 /** ================================================================================
  *  Parse Pattern
@@ -2932,7 +3010,7 @@ export function createParser(code: string) {
                 if(
                     !(
                         match(SyntaxKinds.BracesRightPunctuator) ||
-                        match(SyntaxKinds.CommaToken) && lookahead() === SyntaxKinds.BracesRightPunctuator
+                        match(SyntaxKinds.CommaToken) && lookahead().kind === SyntaxKinds.BracesRightPunctuator
                     )
                 ) {
                     throw createMessageError(ErrorMessageMap.rest_element_should_be_last_property);
@@ -3186,7 +3264,7 @@ export function createParser(code: string) {
             semi();
             return Factory.createExportDefaultDeclaration(funDeclar as FunctionDeclaration | FunctionExpression, start, cloneSourcePosition(funDeclar.end));
         }   
-        if(getValue() === "async" && lookahead() === SyntaxKinds.FunctionKeyword) {
+        if(getValue() === "async" && lookahead().kind === SyntaxKinds.FunctionKeyword) {
             nextToken();
             const funDeclar = parseFunctionExpression(true);
             semi();

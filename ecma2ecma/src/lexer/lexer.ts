@@ -33,7 +33,13 @@ interface Lexer {
     getEndPosition: () => SourcePosition;
     getToken: () => SyntaxKinds;
     nextToken: () => SyntaxKinds;
-    lookahead: () => SyntaxKinds;
+    lookahead: () => {
+        kind: SyntaxKinds,
+        start: SourcePosition,
+        end: SourcePosition,
+        flag: boolean,
+        value: string,
+    };
     // API for line terminator
     getLineTerminatorFlag: () => boolean,
     // API for read regexliteral
@@ -95,9 +101,15 @@ export function createLexer(code: string): Lexer {
     }
     function lookahead() {
         const lastContext = cloneContext(context);
-        const next = nextToken();
+        const meta = {
+            kind: nextToken(),
+            start: getStartPosition(),
+            end: getEndPosition(),
+            flag: getLineTerminatorFlag(),
+            value: getSourceValue(),
+        };
         context = lastContext;
-        return next;
+        return meta;
     }
     return {
         getSourceValue,

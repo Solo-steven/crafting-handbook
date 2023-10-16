@@ -7,10 +7,12 @@ export const ErrorMessageMap = {
     setter_should_has_only_one_params: "setter must only one param",
     setter_can_not_be_async_or_generator: "setter can not be async or generator",
     setter_can_not_have_rest_element_as_argument: "setter method can not ahve rest element as argument",
+    setter_and_getter_can_not_used_in_field_definition: "setter and getter can not used in field definition",
     constructor_can_not_be_async_or_generator: "constructor in class can not be a async or generator",
     object_property_can_not_have_initializer: "object property can not have initializer",
     private_field_can_not_use_in_object: "Private field '#test' must be declared in an enclosing class",
     invalid_property_name: "invalid property name",
+    no_changle_line_after_async: "",
     super_can_not_call_if_not_in_class: "super can not be called if not in class block",
     super_must_be_followed_by_an_argument_list_or_member_access: "'super' must be followed by an argument list or member access.",
     // spread, rest element
@@ -23,7 +25,7 @@ export const ErrorMessageMap = {
     destructing_pattern_must_need_initializer: "destucturing pattern must have a initializer",
     invalid_left_value: "invalid left value",
     assigment_pattern_only_can_use_assigment_operator: "assigment pattern can only using assignment operator",
-    // for related loop
+    // for-related statement
     for_in_of_loop_can_not_using_initializer: "for in and for of loop can not usng initializer",
     for_in_of_loop_can_not_have_one_more_binding: "variable declaration in for-in or for-of statement can't not have more than one binding",
     await_can_just_in_for_of_loop: "await can only be in for of loop",
@@ -33,11 +35,12 @@ export const ErrorMessageMap = {
     function_argument_can_not_have_empty_trailing_comma: "function argument list can not have trailing comma when is empty",
     // strict mode identifer problem
     unexpect_keyword_in_stric_mode: "unexpect keyword in strict mode",
-
+    // invalid change line char
+    no_line_break_is_allowed_before_arrow: "No line break is allowed before '=>'",
+    no_line_break_is_allowed_before_async: "No line break is allowed before `async`",
     // other
     new_expression_cant_using_optional_chain: "New expression can not using optional chain in callee",
     tag_template_expression_can_not_use_option_chain: "Tag template expression should not using optional chain",
-    no_line_break_is_allowed_before_arrow: "No line break is allowed before '=>'",
     keyword_can_not_use_in_imported_when_just_a_specifier: "keyword can not use in imported_when just a specifier",
     duplicate_param: "duplicate params",
     await_can_not_call_if_not_in_async: "await expression can not be call if not in async block",
