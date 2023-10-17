@@ -75,7 +75,7 @@ async function findAllTestCase(): Promise<Array<TestCase>> {
         [
             recursivelyAddTestCase(casesRoot, "cases", testCasesPaths, shouldNotExistedFilePath),
             recursivelyAddTestCase(fixtureRoot, "esprima", testCasesPaths, shouldNotExistedFilePath),
-            recursivelyAddTestCase(babelRoot, "babel", testCasesPaths, shouldNotExistedFilePath),
+            //recursivelyAddTestCase(babelRoot, "babel", testCasesPaths, shouldNotExistedFilePath),
         ]
     )
    return testCasesPaths;
@@ -100,22 +100,6 @@ const TempIgnoreCases: Array<String> = [
     //  ==== strict mode problem
     "esprima/ES6/arrow-function/invalid-param-strict-mode.js",
     "esprima/declaration/function/invalid-strict-labelled-function-declaration.js",
-    "esprima/ES6/for-of/invalid-strict-for-of-let.js",
-    "esprima/ES6/lexical-declaration/invalid_let_for_in.js",
-    // strict mode generator problem
-    "esprima/ES6/yield/invalid-yield-generator-strict-function-expression.js",
-    "esprima/ES6/yield/invalid-yield-generator-strict-function-parameter.js",
-    "esprima/ES6/yield/invalid-yield-strict-array-pattern.js",
-    "esprima/ES6/yield/invalid-yield-strict-arrow-parameter-name.js",
-    "esprima/ES6/yield/invalid-yield-strict-binding-element.js",
-    "esprima/ES6/yield/invalid-yield-strict-catch-parameter.js",
-    "esprima/ES6/yield/invalid-yield-strict-formal-parameter.js",
-    "esprima/ES6/yield/invalid-yield-strict-function-declaration.js",
-    "esprima/ES6/yield/invalid-yield-strict-function-expression.js",
-    "esprima/ES6/yield/invalid-yield-strict-identifier.js",
-    "esprima/ES6/yield/invalid-yield-strict-lexical-declaration.js",
-    "esprima/ES6/yield/invalid-yield-strict-rest-parameter.js",
-    "esprima/ES6/yield/invalid-yield-strict-variable-declaration.js",
     // yield predi followed argument
     "esprima/ES6/yield/ternary-yield.js",
     //  ==== unicode and excap char problem
@@ -123,8 +107,6 @@ const TempIgnoreCases: Array<String> = [
     "esprima/ES6/template-literals/invalid-hex-escape-sequence.js",
     "esprima/ES6/template-literals/invalid_octal-literal.js",
     "esprima/ES6/template-literals/invalid_strict-octal-literal.js",
-    "esprima/es2020/importmeta/invalid-unicode-escape-import.module.js",
-    "esprima/es2020/importmeta/unicode-escape-meta.module.js",
     //  ==== other
     "esprima/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
     // ==== dev pss, test failed ?

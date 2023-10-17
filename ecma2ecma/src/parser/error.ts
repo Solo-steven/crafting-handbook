@@ -25,6 +25,7 @@ export const ErrorMessageMap = {
     destructing_pattern_must_need_initializer: "destucturing pattern must have a initializer",
     invalid_left_value: "invalid left value",
     assigment_pattern_only_can_use_assigment_operator: "assigment pattern can only using assignment operator",
+    assignment_pattern_left_value_can_only_be_idenifier_or_pattern: "assignment pattern",
     // for-related statement
     for_in_of_loop_can_not_using_initializer: "for in and for of loop can not usng initializer",
     for_in_of_loop_can_not_have_one_more_binding: "variable declaration in for-in or for-of statement can't not have more than one binding",
@@ -33,8 +34,9 @@ export const ErrorMessageMap = {
     function_parameter_can_not_have_empty_trailing_comma: "function parameter list can not have trailing comma when is empty",
     sequence_expression_can_not_have_trailing_comma: "sequence expression can not have trailing comma",
     function_argument_can_not_have_empty_trailing_comma: "function argument list can not have trailing comma when is empty",
-    // strict mode identifer problem
+    // strict mode problem
     unexpect_keyword_in_stric_mode: "unexpect keyword in strict mode",
+    illegal_use_strict_in_non_simple_parameter_list: "illegal use strict in non simple parameter list",
     // invalid change line char
     no_line_break_is_allowed_before_arrow: "No line break is allowed before '=>'",
     no_line_break_is_allowed_before_async: "No line break is allowed before `async`",

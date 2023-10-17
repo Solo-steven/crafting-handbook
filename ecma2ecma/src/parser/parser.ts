@@ -101,6 +101,7 @@ import {
     ExpressionStatement,
     Program,
     ClassProperty,
+    isPattern,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -120,6 +121,7 @@ interface FunctionContext {
     isAsync: boolean;
     isGenerator: boolean;
     inParameter: boolean;
+    isSimpleParameter: boolean;
     inStrict: boolean;
 }
 /**
@@ -437,6 +439,7 @@ export function createParser(code: string) {
             isGenerator,
             inParameter: false,
             inStrict: lastScope ? lastScope.inStrict : false,
+            isSimpleParameter: true,
         })
     }
     /**
@@ -601,6 +604,19 @@ export function createParser(code: string) {
      */
     function isDirectToFunctionContext(): boolean {
         return context.scopeContext[context.scopeContext.length-1].type === "FunctionContext";
+    }
+    function setCurrentFunctionParameterListAsNonSimple() {
+        const scope = helperFindLastFunctionContext();
+        if(scope) {
+            scope.isSimpleParameter = false;
+        }
+    }
+    function isCurrentFunctionParameterListSimple() {
+        const scope = helperFindLastFunctionContext();
+        if(scope) {
+            return scope.isSimpleParameter;
+        }
+        return false;
     }
 
 /** ==================================================
@@ -1243,7 +1259,7 @@ export function createParser(code: string) {
             const isBindingPattern = !isIdentifer(id);
             // custom logical for check is lexical binding have let identifier ?
             if(variableKind === "lexical") {
-                if(isPatternContainLetValue(id)) {
+                if(checkPatternContainCertinValue(id, (value) => value === "let")) {
                     throw createMessageError(ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding)
                 }
             }
@@ -1269,17 +1285,25 @@ export function createParser(code: string) {
         return Factory.createVariableDeclaration(declarations, variant as VariableDeclaration['variant'], keywordStart, declarations[declarations.length - 1].end);
     }
     /**
+     * Helper function for check is pattern contain certin identifier value.
+     * 
+     * ## VariableDeclaration
      * Take look at parseIdentifier, you can seems parseIdentifier allow let as identifier when is not
      * strict mode, but parseVariableDeclaration maybe is LexicalBindingDeclaration, so parseVariableDeclaration
      * needs to implement its own logical about check if there existed let identifier in LexicalBinding.
+     * 
+     * ## FunctionParam
+     * when parse function param, we do not know is function body contain use strict directive, so we
+     * need to check if function parameter list and function name is illegal in current function scope
+     * or not.
      * @param {Pattern} pattern 
      * @returns {boolean}
      */
-    function isPatternContainLetValue(pattern: Pattern): boolean {
+    function checkPatternContainCertinValue(pattern: Pattern, callback: (value: string) => boolean): boolean {
         if(isArrayPattern(pattern)) {
             for(const element of pattern.elements) {
                 if(element) {
-                    if(isPatternContainLetValue(element)) {
+                    if(checkPatternContainCertinValue(element, callback)) {
                         return true;
                     }
                 }
@@ -1288,31 +1312,31 @@ export function createParser(code: string) {
         if(isObjectPattern(pattern)) {
             for(const property of pattern.properties) {
                 if(isObjectPatternProperty(property)) {
-                    if(property.value && isPatternContainLetValue(property.value)) {
+                    if(property.value && checkPatternContainCertinValue(property.value, callback)) {
                         return true
                     }
-                    if(!property.value && isIdentifer(property.key) && isPatternContainLetValue(property.key)) {
+                    if(!property.value && isIdentifer(property.key) && checkPatternContainCertinValue(property.key, callback)) {
                         return true;
                     }
                 }else {
-                    if(isPatternContainLetValue(property)) {
+                    if(checkPatternContainCertinValue(property, callback)) {
                         return true;
                     }
                 }
             }
         }
         if(isRestElement(pattern)) {
-            if(isPatternContainLetValue(pattern.argument)) {
+            if(checkPatternContainCertinValue(pattern.argument, callback)) {
                 return true;
             }
         }
         if(isAssignmentPattern(pattern)) {
-            if(isPatternContainLetValue(pattern.left)) {
+            if(checkPatternContainCertinValue(pattern.left, callback)) {
                 return true;
             }
         }
         if(isIdentifer(pattern)) {
-            if(pattern.name === "let") {
+            if(callback(pattern.name)) {
                 return true;
             }
         }
@@ -1341,7 +1365,7 @@ export function createParser(code: string) {
         const name = parseFunctionName(isExpression);
         const params = parseFunctionParam();
         const body = parseFunctionBody();
-        checkFunctionNameAndParamsInCurrentScope(name, params);
+        checkFunctionNameAndParamsInCurrentFunctionStrictMode(name, params);
         return Factory.createFunction(name, body, params, generator, isCurrentFunctionAsync(), start, cloneSourcePosition(body.end));
     }
     /**
@@ -1352,7 +1376,7 @@ export function createParser(code: string) {
      * @param name 
      * @param params 
      */
-    function checkFunctionNameAndParamsInCurrentScope(name: Identifier | null, params: Array<Pattern>) {
+    function checkFunctionNameAndParamsInCurrentFunctionStrictMode(name: Identifier | null, params: Array<Pattern>) {
         if(isInStrictMode()) {
             if(name) {
                 if(
@@ -1363,7 +1387,11 @@ export function createParser(code: string) {
                     throw createMessageError("unexepct keyword in parameter list in strict mode")
                 }
             }
-            // TODO: parames
+            for(const param of params) {
+                if(checkPatternContainCertinValue(param, (value) =>  value === "yield" || value === "let" || PreserveWordSet.has(value))) {
+                    throw createMessageError("unexepct keyword in parameter list in strict mode")
+                }
+            }
         }
     }
     /**
@@ -1482,8 +1510,24 @@ export function createParser(code: string) {
         }   
         nextToken();
         checkFunctionParams(params);
+        checkIsSimpleParameterList(params);
         existFunctionParameter();
         return params;
+    }
+    /**
+     * Helper function for check if parameter list is simple 
+     * parameter list or not, if is simple parameter, set 
+     * the context.
+     * @param {Array<Pattern>} params 
+     * @returns 
+     */
+    function checkIsSimpleParameterList(params: Array<Pattern>) {
+        for(const param of params) {
+            if(!isIdentifer(param)) {
+                setCurrentFunctionParameterListAsNonSimple();
+                return;
+            }
+        }
     }
     /**
      * this helper function is used for check duplicate param
@@ -1678,6 +1722,9 @@ export function createParser(code: string) {
         if(isStringLiteral(expr)) {
             if(expr.value === "use strict") {
                 if(isDirectToFunctionContext()) {
+                    if(!isCurrentFunctionParameterListSimple()) {
+                        throw createMessageError(ErrorMessageMap.illegal_use_strict_in_non_simple_parameter_list);
+                    }
                     setCurrentFunctionContextAsStrictMode();
                 }
             }
@@ -2681,6 +2728,9 @@ export function createParser(code: string) {
         const parmas = parseFunctionParam();
         const body = parseFunctionBody();
         exitFunctionScope();
+        // there we do not need to check parameter list and function name in body strcit mode
+        // by the function `checkFunctionNameAndParamsInCurrentFunctionStrictMode`, because 
+        // class scope is auto strict mode.
         /**
          * Step 2: semantic and more concise syntax check instead just throw a unexpect
          * token error.
@@ -2818,6 +2868,7 @@ export function createParser(code: string) {
             throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_arrow);
         }
         nextToken();
+        const functionArguments = argumentToFunctionParams(metaData.nodes, metaData.trailingComma);
         let body: Expression | FunctionBody | undefined; 
         let isExpression = false;
         if(match(SyntaxKinds.BracesLeftPunctuator)) {
@@ -2826,28 +2877,38 @@ export function createParser(code: string) {
             body = parseAssigmentExpression();
             isExpression = true;
         }
-        // Transform argument list to function parameter list, there are some thing we need to check
-        // 1. multi spread element is ok to argument list, but parameter list can only have one spread list
-        // 2. if argument list last one is spread element, can have trailing comma, but paramemter last is restelement,
-        //   it can not have trailing comma.
-        // 3. argument list can have duplicate identifier name, but parameter list can not.
-        // 4. argument list can have await or yield expression as default value, but paramemter list can not.
-        // 5. there are some case dose not enter function scope when parse argument, so we need to check is there any await
-        //    and yield usage in parameter list
-        // First and second thing toAssignment would check for us. 3 can be done by call `checkFunctionParams`, 4 and 5
-        // one can be done by create custome helper function.
-        const functionArguments = metaData.nodes.map(node => toAssignmentPattern(node, true)) as Array<Pattern>;
-        checkFunctionParams(functionArguments);
-        checkAwaitAndYieldUsageOfArrowParams(functionArguments);
-        functionArguments.forEach(param => checkPatternContainInValidAwaitAndYieldValue(param));
-        if(checkArrowParamemterHaveMultiSpreadElement(functionArguments) && metaData.trailingComma) {
+        checkFunctionNameAndParamsInCurrentFunctionStrictMode(null, functionArguments);
+        return Factory.createArrowExpression(isExpression, body,  functionArguments, isCurrentFunctionAsync(), cloneSourcePosition(metaData.start), cloneSourcePosition(body.end));
+    }
+    // Transform argument list to function parameter list, there are some thing we need to check
+    // 1. multi spread element is ok to argument list, but parameter list can only have one spread list
+    // 2. if argument list last one is spread element, can have trailing comma, but paramemter last is restelement,
+    //   it can not have trailing comma.
+    // 3. argument list can have duplicate identifier name, but parameter list can not.
+    // 4. argument list can have await or yield expression as default value, but paramemter list can not.
+    // 5. there are some case dose not enter function scope when parse argument, so we need to check is there any await
+    //    and yield usage in parameter list
+    // First and second thing toAssignment would check for us. 3 can be done by call `checkFunctionParams`, 4 and 5
+    // one can be done by create custome helper function.
+    function argumentToFunctionParams(functionArguments: Array<Expression>, trailingComma: boolean): Array<Pattern> {
+        const paramaList = functionArguments.map(node => toAssignmentPattern(node, true)) as Array<Pattern>;
+        // check as function params
+        checkFunctionParams(paramaList);
+        checkIsSimpleParameterList(paramaList);
+        // extra check
+        checkAwaitAndYieldUsageOfArrowParams(paramaList);
+        if( isCurrentFunctionAsync() || isCurrentFunctionGenerator()){
+            // when parse as argument, it already follow the parent scope rule, now only if 
+            // current scope is async or generator we need to check
+            paramaList.forEach(param => checkPatternContainInValidAwaitAndYieldValue(param));
+        }
+        if(checkArrowParamemterHaveMultiSpreadElement(paramaList) && trailingComma) {
             throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
         };
-        return Factory.createArrowExpression(isExpression, body,  functionArguments, isCurrentFunctionAsync(), cloneSourcePosition(metaData.start), cloneSourcePosition(body.end));
+        return paramaList;
     }
     function checkAwaitAndYieldUsageOfArrowParams(params: Array<Pattern>) {
         for(const param of params) {
-            
             if(isAssignmentPattern(param)) {
                 // parent scope is async, no matter current scope is async or not
                 // await expression can not call
@@ -3023,8 +3084,8 @@ export function createParser(code: string) {
             if(match(SyntaxKinds.AssginOperator)) {
                 nextToken();
                 const expr =  parseAssigmentExpression();
-                if(!isIdentifer(propertyName)) {
-                    throw createMessageError("");
+                if(!isPattern(propertyName)) {
+                    throw createMessageError("assignment pattern left value can only allow identifier or pattern");
                 }
                 properties.push(Factory.createAssignmentPattern(propertyName, expr, cloneSourcePosition(propertyName.start), cloneSourcePosition(expr.end)))
                 continue;
