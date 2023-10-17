@@ -71,6 +71,7 @@ export enum SyntaxKinds {
     SpreadOperator,         // ...
     QustionOperator,        // ?
     QustionDotOperator,     // ?.
+    NullishOperator,        // ??
     DotOperator,            // .
     AssginOperator,         // =
     PlusAssignOperator,     // +=
@@ -246,7 +247,7 @@ export const LexicalLiteral = {
         // 
         "...",
         // Optional Chaining, Chaining
-        "?.", ".","?",
+        "?.", ".","?", "??",
         // Template Literal
         "`",
         // Assignment operator,
@@ -390,6 +391,7 @@ export const SytaxKindsMapLexicalLiteral = {
     [SyntaxKinds.SpreadOperator]: "...",         // ...
     [SyntaxKinds.QustionOperator]: "?",        // ?
     [SyntaxKinds.QustionDotOperator]: "?.",     // ?.
+    [SyntaxKinds.NullishOperator]: "??",
     [SyntaxKinds.DotOperator]: ".",            // .
     [SyntaxKinds.AssginOperator]: "=",         // =
     [SyntaxKinds.PlusAssignOperator]: "+=",     // +=
@@ -597,7 +599,8 @@ export type BinaryOperatorKinds =
     SyntaxKinds.LogicalOROperator | // ||
     SyntaxKinds.CommaToken  |    // ,
     SyntaxKinds.InKeyword |
-    SyntaxKinds.InstanceofKeyword
+    SyntaxKinds.InstanceofKeyword | 
+    SyntaxKinds.NullishOperator   // ??
 ;
 export const BinaryOperators = [
     SyntaxKinds.PlusOperator,       // +
@@ -627,6 +630,7 @@ export const BinaryOperators = [
     SyntaxKinds.CommaToken,    // ,
     SyntaxKinds.InKeyword,
     SyntaxKinds.InstanceofKeyword,
+    SyntaxKinds.NullishOperator // ??
 ]
 export type UpdateOperatorKinds = 
     SyntaxKinds.IncreOperator |

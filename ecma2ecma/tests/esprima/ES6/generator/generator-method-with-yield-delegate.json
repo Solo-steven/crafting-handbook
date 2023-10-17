@@ -104,7 +104,8 @@
                     "row": 1,
                     "col": 26,
                     "index": 25
-                }
+                },
+                "parentheses": true
             },
             "start": {
                 "row": 1,

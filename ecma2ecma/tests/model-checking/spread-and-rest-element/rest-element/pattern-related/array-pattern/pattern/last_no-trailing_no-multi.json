@@ -7,26 +7,11 @@
                 "kind": "AssigmentExpression",
                 "operator": "=",
                 "left": {
-                    "kind": "ObjectPattern",
-                    "properties": [
+                    "kind": "ArrayPattern",
+                    "elements": [
                         {
-                            "kind": "ObjectPatternProperty",
-                            "computed": false,
-                            "shorted": true,
-                            "key": {
-                                "kind": "Identifer",
-                                "name": "a",
-                                "start": {
-                                    "row": 1,
-                                    "col": 3,
-                                    "index": 2
-                                },
-                                "end": {
-                                    "row": 1,
-                                    "col": 4,
-                                    "index": 3
-                                }
-                            },
+                            "kind": "Identifer",
+                            "name": "a",
                             "start": {
                                 "row": 1,
                                 "col": 3,
@@ -41,8 +26,38 @@
                         {
                             "kind": "RestElement",
                             "argument": {
-                                "kind": "Identifer",
-                                "name": "blur",
+                                "kind": "ObjectPattern",
+                                "properties": [
+                                    {
+                                        "kind": "ObjectPatternProperty",
+                                        "computed": false,
+                                        "shorted": true,
+                                        "key": {
+                                            "kind": "Identifer",
+                                            "name": "blur",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 10,
+                                                "index": 9
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 14,
+                                                "index": 13
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 1,
+                                            "col": 10,
+                                            "index": 9
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 14,
+                                            "index": 13
+                                        }
+                                    }
+                                ],
                                 "start": {
                                     "row": 1,
                                     "col": 9,
@@ -50,8 +65,8 @@
                                 },
                                 "end": {
                                     "row": 1,
-                                    "col": 13,
-                                    "index": 12
+                                    "col": 15,
+                                    "index": 14
                                 }
                             },
                             "start": {
@@ -61,8 +76,8 @@
                             },
                             "end": {
                                 "row": 1,
-                                "col": 13,
-                                "index": 12
+                                "col": 15,
+                                "index": 14
                             }
                         }
                     ],
@@ -73,8 +88,8 @@
                     },
                     "end": {
                         "row": 1,
-                        "col": 14,
-                        "index": 13
+                        "col": 16,
+                        "index": 15
                     }
                 },
                 "right": {
@@ -82,13 +97,13 @@
                     "value": "0",
                     "start": {
                         "row": 1,
-                        "col": 15,
-                        "index": 14
+                        "col": 17,
+                        "index": 16
                     },
                     "end": {
                         "row": 1,
-                        "col": 16,
-                        "index": 15
+                        "col": 18,
+                        "index": 17
                     }
                 },
                 "start": {
@@ -98,9 +113,10 @@
                 },
                 "end": {
                     "row": 1,
-                    "col": 16,
-                    "index": 15
-                }
+                    "col": 18,
+                    "index": 17
+                },
+                "parentheses": true
             },
             "start": {
                 "row": 1,
@@ -109,8 +125,8 @@
             },
             "end": {
                 "row": 1,
-                "col": 16,
-                "index": 15
+                "col": 18,
+                "index": 17
             }
         }
     ],
@@ -121,7 +137,7 @@
     },
     "end": {
         "row": 1,
-        "col": 17,
-        "index": 16
+        "col": 19,
+        "index": 18
     }
 }

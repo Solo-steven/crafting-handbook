@@ -58,7 +58,8 @@
                     "row": 1,
                     "col": 13,
                     "index": 12
-                }
+                },
+                "parentheses": true
             },
             "start": {
                 "row": 1,

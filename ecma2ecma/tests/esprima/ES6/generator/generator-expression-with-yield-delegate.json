@@ -117,7 +117,8 @@
                     "row": 1,
                     "col": 34,
                     "index": 33
-                }
+                },
+                "parentheses": true
             },
             "start": {
                 "row": 1,

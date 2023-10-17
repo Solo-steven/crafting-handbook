@@ -30,7 +30,8 @@
                     "row": 1,
                     "col": 10,
                     "index": 9
-                }
+                },
+                "parentheses": true
             },
             "start": {
                 "row": 1,

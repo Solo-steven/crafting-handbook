@@ -158,7 +158,8 @@
                     "row": 1,
                     "col": 23,
                     "index": 22
-                }
+                },
+                "parentheses": true
             },
             "start": {
                 "row": 1,

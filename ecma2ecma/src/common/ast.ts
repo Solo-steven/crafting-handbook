@@ -46,60 +46,63 @@ export interface MethodDefinition extends ModuleItem {
  *      Expression
  * ======================================
  */
-export interface Super extends ModuleItem {
-    kind: SyntaxKinds.Super;
-    name: "super"
+export interface ExpressionModuleItem extends ModuleItem {
+    parentheses?: boolean;
 }
-export interface Import extends ModuleItem {
+export interface Super extends ExpressionModuleItem {
+    kind: SyntaxKinds.Super;
+    name: "super";
+}
+export interface Import extends ExpressionModuleItem {
     kind: SyntaxKinds.Import;
     name: "import";
 }
-export interface ThisExpression extends ModuleItem {
+export interface ThisExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.ThisExpression;
     name: "this",
 }
-export interface Identifier extends ModuleItem  {
+export interface Identifier extends ExpressionModuleItem  {
     kind: SyntaxKinds.Identifier;
     name: string;
 }
-export interface PrivateName extends ModuleItem {
+export interface PrivateName extends ExpressionModuleItem {
     kind: SyntaxKinds.PrivateName;
     name: string;
 }
-export interface NumberLiteral extends ModuleItem {
+export interface NumberLiteral extends ExpressionModuleItem {
     kind: SyntaxKinds.NumberLiteral;
     value: string | number;
 }
-export interface StringLiteral extends ModuleItem {
+export interface StringLiteral extends ExpressionModuleItem {
     kind: SyntaxKinds.StringLiteral;
     value: string;
 }
-export interface BoolLiteral extends ModuleItem {
+export interface BoolLiteral extends ExpressionModuleItem {
     kind: SyntaxKinds.BooleanLiteral;
     value: boolean;
 }
-export interface NullLiteral extends ModuleItem {
+export interface NullLiteral extends ExpressionModuleItem {
     kind: SyntaxKinds.NullLiteral;
 }
-export interface UndefinbedLiteral extends ModuleItem {
+export interface UndefinbedLiteral extends ExpressionModuleItem {
     kind: SyntaxKinds.UndefinedLiteral;
 }
-export interface RegexLiteral extends ModuleItem {
+export interface RegexLiteral extends ExpressionModuleItem {
     kind: SyntaxKinds.RegexLiteral;
     pattern: string;
     flag: string;
 }
-export interface TemplateLiteral extends ModuleItem {
+export interface TemplateLiteral extends ExpressionModuleItem {
     kind: SyntaxKinds.TemplateLiteral,
     quasis: Array<TemplateElement>;
     expressions: Array<Expression>;
 }
-export interface TemplateElement extends ModuleItem {
+export interface TemplateElement extends ExpressionModuleItem {
     kind: SyntaxKinds.TemplateElement;
     value: string;
     tail: boolean;
 }
-export interface ObjectExpression extends ModuleItem {
+export interface ObjectExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.ObjectExpression;
     properties: Array<PropertyDefinition>;
     trailingComma: boolean,
@@ -117,107 +120,106 @@ export interface ObjectAccessor extends Omit<MethodDefinition, "static" | "gener
     kind: SyntaxKinds.ObjectAccessor;
     type: "get" | "set"
 }
-export interface SpreadElement extends ModuleItem {
+export interface SpreadElement extends ExpressionModuleItem {
     kind: SyntaxKinds.SpreadElement,
     argument: Expression,
 }
-export interface ClassExpression extends Class {
+export interface ClassExpression extends Class, ExpressionModuleItem {
     kind: SyntaxKinds.ClassExpression
 }
-export interface ArrayExpression extends ModuleItem {
+export interface ArrayExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.ArrayExpression;
     elements: Array<Expression | null>; // actually need to be assigment expression;
     trailingComma: boolean;
 }
-export interface FunctionExpression extends ModuleItem, Function {
+export interface FunctionExpression extends ExpressionModuleItem, Function {
     kind: SyntaxKinds.FunctionExpression
 }
 // TODO: make arrowfunctionExpression extends form function
-export interface ArrorFunctionExpression extends ModuleItem {
+export interface ArrorFunctionExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.ArrowFunctionExpression;
     expressionBody: boolean;
     async: boolean;
     arguments: Array<Pattern>;
     body: Expression | FunctionBody;
 }
-export interface MetaProperty extends ModuleItem {
+export interface MetaProperty extends ExpressionModuleItem {
     kind: SyntaxKinds.MetaProperty;
     meta: Identifier | Import;
     property: Identifier;
 }
-export interface AwaitExpression extends ModuleItem {
+export interface AwaitExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.AwaitExpression;
     argument: Expression; // actually is unary expression
 }
-export interface NewExpression extends ModuleItem {
+export interface NewExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.NewExpression,
     callee: Expression;
     arguments:Array<Expression>;
 }
-export interface MemberExpression extends ModuleItem {
+export interface MemberExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.MemberExpression;
     object: Expression;
     property: Expression;
     computed: boolean;
     optional: boolean;
 }
-export interface CallExpression extends ModuleItem {
+export interface CallExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.CallExpression;
     callee: Expression;
     arguments: Array<Expression>;
     optional: boolean;
 }
-export interface TaggedTemplateExpression extends ModuleItem {
+export interface TaggedTemplateExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.TaggedTemplateExpression;
     quasi: TemplateLiteral;
     tag: Expression;
 }
-export interface ChainExpression extends ModuleItem {
+export interface ChainExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.ChainExpression;
     expression: Expression;
   }
-export interface UpdateExpression extends ModuleItem {
+export interface UpdateExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.UpdateExpression;
     argument: Expression;
     prefix: boolean;
     operator: UpdateOperatorKinds;
 }
-export interface UnaryExpression extends ModuleItem  {
+export interface UnaryExpression extends ExpressionModuleItem  {
     kind: SyntaxKinds.UnaryExpression;
     argument: Expression;
     operator: UnaryOperatorKinds;
 }
-export interface BinaryExpression extends ModuleItem {
+export interface BinaryExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.BinaryExpression;
     left: Expression;
     right: Expression;
     operator: BinaryOperatorKinds;
 }
-export interface ConditionalExpression extends ModuleItem {
+export interface ConditionalExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.ConditionalExpression;
     test: Expression;
     consequnce: Expression;
     alter: Expression;
 }
-export interface YieldExpression extends ModuleItem {
+export interface YieldExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.YieldExpression;
     argument: Expression | null;
     delegate: boolean;
 
 }
-export interface AssigmentExpression extends ModuleItem {
+export interface AssigmentExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.AssigmentExpression;
     left: Expression;
     right: Expression;
     operator: AssigmentOperatorKinds;
 }
-export interface SequenceExpression extends ModuleItem {
+export interface SequenceExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.SequenceExpression;
     exprs: Array<Expression>
 }
 
 export type Expression =
-    Pattern |
     // identifer and super and ThisExpression
     Identifier  | PrivateName | Super | ThisExpression | Import |
     // literals 
@@ -276,7 +278,6 @@ export interface IfStatement extends ModuleItem {
     test: Expression;
     conseqence: Statement;
     alternative: Statement | null;
-
 }
 export interface BlockStatement extends ModuleItem  {
     kind: SyntaxKinds.BlockStatement;
@@ -537,6 +538,9 @@ export function isClassExpression(node: ModuleItem): node is ClassExpression {
 }
 export function isArrayExpression(node: ModuleItem): node is ArrayExpression {
     return node.kind === SyntaxKinds.ArrayExpression;
+}
+export function isUnaryExpression(node: ModuleItem): node is UnaryExpression {
+    return node.kind === SyntaxKinds.UnaryExpression;
 }
 export function isAwaitExpression(node: ModuleItem): node is AwaitExpression {
     return node.kind === SyntaxKinds.AwaitExpression;

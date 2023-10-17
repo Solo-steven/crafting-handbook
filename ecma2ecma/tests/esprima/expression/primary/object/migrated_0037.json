@@ -60,7 +60,8 @@
                     "row": 1,
                     "col": 11,
                     "index": 10
-                }
+                },
+                "parentheses": true
             },
             "start": {
                 "row": 1,

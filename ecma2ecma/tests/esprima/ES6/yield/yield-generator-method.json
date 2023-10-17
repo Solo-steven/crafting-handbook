@@ -62,7 +62,8 @@
                     "row": 1,
                     "col": 17,
                     "index": 16
-                }
+                },
+                "parentheses": true
             },
             "start": {
                 "row": 1,

@@ -615,7 +615,8 @@ export function createLexer(code: string): Lexer {
             return finishToken(SyntaxKinds.QustionDotOperator,"?.");
         }
         if(startWith("??")) {
-            // TODO
+            eatChar(2);
+            return finishToken(SyntaxKinds.NullishOperator, "??");
         }
         eatChar();
         return finishToken(SyntaxKinds.QustionOperator, "?");

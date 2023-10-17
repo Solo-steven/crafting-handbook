@@ -40,6 +40,9 @@ export const ErrorMessageMap = {
     // invalid change line char
     no_line_break_is_allowed_before_arrow: "No line break is allowed before '=>'",
     no_line_break_is_allowed_before_async: "No line break is allowed before `async`",
+    // nullish and expont operator
+    nullish_require_parans: "Nullish coalescing operator(??) requires parens when mixing with logical operators",
+    expont_operator_need_parans: "Illegal expression. Wrap left hand side or entire exponentiation in parentheses",
     // other
     new_expression_cant_using_optional_chain: "New expression can not using optional chain in callee",
     tag_template_expression_can_not_use_option_chain: "Tag template expression should not using optional chain",

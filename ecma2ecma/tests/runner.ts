@@ -66,16 +66,16 @@ async function recursivelyAddTestCase(dirPath: string, prefixFileName: string, c
  * @returns 
  */
 async function findAllTestCase(): Promise<Array<TestCase>> {
-    const casesRoot = path.join(__dirname, "cases");
+    const casesRoot = path.join(__dirname, "model-checking");
     const fixtureRoot = path.join(__dirname, "esprima");
-    const babelRoot = path.join(__dirname, "babel");
+    const babelRoot = path.join(__dirname, "uncategory");
     const testCasesPaths: Array<TestCase> = []
     const shouldNotExistedFilePath: Array<string> = [];
     await Promise.all(
         [
-            recursivelyAddTestCase(casesRoot, "cases", testCasesPaths, shouldNotExistedFilePath),
+            recursivelyAddTestCase(casesRoot, "model-checking", testCasesPaths, shouldNotExistedFilePath),
             recursivelyAddTestCase(fixtureRoot, "esprima", testCasesPaths, shouldNotExistedFilePath),
-            //recursivelyAddTestCase(babelRoot, "babel", testCasesPaths, shouldNotExistedFilePath),
+            recursivelyAddTestCase(babelRoot, "uncategory", testCasesPaths, shouldNotExistedFilePath),
         ]
     )
    return testCasesPaths;

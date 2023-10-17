@@ -11,6 +11,7 @@ import {
     PrivateName,
     Program,
     Super,
+    Import,
     TemplateElement,
     TemplateLiteral,
     ThisExpression,
@@ -111,6 +112,9 @@ const VisitorTable: Visitor = {
     },
     [SyntaxKinds.Super]: function Super(node: Super) {
         node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.Super];
+    },
+    [SyntaxKinds.Import]: function importVisitor(node:Import) {
+        node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.Import];
     },
     [SyntaxKinds.ThisExpression]: function ThisExpression(node: ThisExpression) {
         node.kind = SytaxKindsMapLexicalLiteral[SyntaxKinds.ThisExpression];

@@ -245,7 +245,8 @@
                                                     "row": 1,
                                                     "col": 35,
                                                     "index": 34
-                                                }
+                                                },
+                                                "parentheses": true
                                             },
                                             "property": {
                                                 "kind": "Identifer",

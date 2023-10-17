@@ -80,7 +80,8 @@
                                 "row": 1,
                                 "col": 16,
                                 "index": 15
-                            }
+                            },
+                            "parentheses": true
                         },
                         "start": {
                             "row": 1,
@@ -91,7 +92,8 @@
                             "row": 1,
                             "col": 16,
                             "index": 15
-                        }
+                        },
+                        "parentheses": true
                     },
                     "start": {
                         "row": 1,

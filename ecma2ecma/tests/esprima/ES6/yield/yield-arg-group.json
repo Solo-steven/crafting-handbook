@@ -38,7 +38,8 @@
                                     "row": 1,
                                     "col": 25,
                                     "index": 24
-                                }
+                                },
+                                "parentheses": true
                             },
                             "delegate": false,
                             "start": {

@@ -7,11 +7,26 @@
                 "kind": "AssigmentExpression",
                 "operator": "=",
                 "left": {
-                    "kind": "ArrayPattern",
-                    "elements": [
+                    "kind": "ObjectPattern",
+                    "properties": [
                         {
-                            "kind": "Identifer",
-                            "name": "a",
+                            "kind": "ObjectPatternProperty",
+                            "computed": false,
+                            "shorted": true,
+                            "key": {
+                                "kind": "Identifer",
+                                "name": "a",
+                                "start": {
+                                    "row": 1,
+                                    "col": 3,
+                                    "index": 2
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 4,
+                                    "index": 3
+                                }
+                            },
                             "start": {
                                 "row": 1,
                                 "col": 3,
@@ -85,7 +100,8 @@
                     "row": 1,
                     "col": 16,
                     "index": 15
-                }
+                },
+                "parentheses": true
             },
             "start": {
                 "row": 1,

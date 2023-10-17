@@ -102,6 +102,8 @@ import {
     Program,
     ClassProperty,
     isPattern,
+    isUnaryExpression,
+    isBinaryExpression,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -872,11 +874,12 @@ export function createParser(code: string) {
                 if(context.propertiesInitSet.has(objectPropertyNode) && !objectPropertyNode.shorted) {
                     context.propertiesInitSet.delete(objectPropertyNode);
                     if(objectPropertyNode.computed || !isIdentifer(objectPropertyNode.key)) {
+                        // property name of assignment pattern can not use computed propertyname or literal
                         throw createMessageError("");
                     }
                     return Factory.createAssignmentPattern(
                         objectPropertyNode.key,
-                        toAssignmentPattern(objectPropertyNode.value as Expression) as Pattern,
+                        objectPropertyNode.value as Expression,
                         objectPropertyNode.start,
                         objectPropertyNode.end,
                     )
@@ -1840,6 +1843,7 @@ export function createParser(code: string) {
      */
     function getBinaryPrecedence(kind: SyntaxKinds): number {
         switch(kind) {
+            case SyntaxKinds.NullishOperator:
             case SyntaxKinds.LogicalOROperator:
                 return 4;
             case SyntaxKinds.LogicalANDOperator:
@@ -1902,12 +1906,41 @@ export function createParser(code: string) {
             nextToken();
             let right = parseUnaryExpression();
             const nextOp = getToken();
+            checkNullishAndExpontOperation(currentOp, left, nextOp);
             if(isBinaryOps(nextOp) && (getBinaryPrecedence(nextOp) > getBinaryPrecedence(currentOp))) {
                 right =  parseBinaryOps(right, getBinaryPrecedence(nextOp));
             }
             left = Factory.createBinaryExpression(left, right, currentOp as BinaryOperatorKinds, cloneSourcePosition(left.start), cloneSourcePosition(right.end));
         }
         return left;
+    }
+    function checkNullishAndExpontOperation(currentOps: SyntaxKinds, left: Expression, nextOps: SyntaxKinds) {
+        if(left.parentheses) {
+            return;
+        }
+        if(currentOps === SyntaxKinds.ExponOperator) {
+            if(isUnaryExpression(left)) {
+                throw createMessageError(ErrorMessageMap.expont_operator_need_parans);
+            }
+        }
+        // if currentOp is nullish, next is logical or not
+        // if current Ops is logical, check next is nullish or not
+        if(
+            currentOps === SyntaxKinds.NullishOperator && (
+                nextOps === SyntaxKinds.LogicalANDOperator || 
+                nextOps === SyntaxKinds.LogicalOROperator
+            )
+        ) {
+            throw createMessageError(ErrorMessageMap.nullish_require_parans);
+        }
+        if(
+            nextOps === SyntaxKinds.NullishOperator && (
+               currentOps === SyntaxKinds.LogicalANDOperator || 
+               currentOps === SyntaxKinds.LogicalOROperator
+            )
+        ) {
+            throw createMessageError(ErrorMessageMap.nullish_require_parans);
+        }
     }
     function parseUnaryExpression(): Expression {
         if(matchSet(UnaryOperators)) {
@@ -2836,12 +2869,15 @@ export function createParser(code: string) {
                 }
             }
             if(nodes.length === 1) {
+                nodes[0].parentheses = true;
                 return nodes[0];
             }
             if(trailingComma) {
                 throw createMessageError(ErrorMessageMap.sequence_expression_can_not_have_trailing_comma);
             }
-            return Factory.createSequenceExpression(nodes, start, end);
+            const seq = Factory.createSequenceExpression(nodes, start, end);
+            seq.parentheses = true;
+            return seq;
         }
         enterFunctionScope();
         const arrowExpr = parseArrowFunctionExpression({start, end, nodes, trailingComma});

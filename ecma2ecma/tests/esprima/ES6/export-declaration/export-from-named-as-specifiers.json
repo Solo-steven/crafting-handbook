@@ -76,7 +76,7 @@
             ],
             "declaration": null,
             "source": {
-                "kind": 10113,
+                "kind": 10114,
                 "value": "foo",
                 "start": {
                     "row": 1,

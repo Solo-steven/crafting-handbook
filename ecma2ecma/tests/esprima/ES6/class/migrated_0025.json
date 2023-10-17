@@ -56,7 +56,8 @@
                     "row": 1,
                     "col": 21,
                     "index": 20
-                }
+                },
+                "parentheses": true
             },
             "start": {
                 "row": 1,

@@ -34,7 +34,8 @@
                             "row": 1,
                             "col": 7,
                             "index": 6
-                        }
+                        },
+                        "parentheses": true
                     },
                     "consequnce": {
                         "kind": "NumberLiteral",
