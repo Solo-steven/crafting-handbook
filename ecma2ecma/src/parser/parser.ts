@@ -869,13 +869,13 @@ export function createParser(code: string) {
             case SyntaxKinds.ObjectProperty: {
                 const objectPropertyNode = node as ObjectProperty
                 if( isBinding && objectPropertyNode.value && isMemberExpression(objectPropertyNode.value)) {
-                    throw new Error("binding no member expression");
+                    throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
                 }
                 if(context.propertiesInitSet.has(objectPropertyNode) && !objectPropertyNode.shorted) {
                     context.propertiesInitSet.delete(objectPropertyNode);
                     if(objectPropertyNode.computed || !isIdentifer(objectPropertyNode.key)) {
                         // property name of assignment pattern can not use computed propertyname or literal
-                        throw createMessageError("");
+                        throw createMessageError(ErrorMessageMap.assignment_pattern_left_value_can_only_be_idenifier_or_pattern);
                     }
                     return Factory.createAssignmentPattern(
                         objectPropertyNode.key,

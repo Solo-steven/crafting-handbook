@@ -26,6 +26,7 @@ export const ErrorMessageMap = {
     invalid_left_value: "invalid left value",
     assigment_pattern_only_can_use_assigment_operator: "assigment pattern can only using assignment operator",
     assignment_pattern_left_value_can_only_be_idenifier_or_pattern: "assignment pattern",
+    binding_pattern_can_not_have_member_expression: "binding pattern can not have member expression",
     // for-related statement
     for_in_of_loop_can_not_using_initializer: "for in and for of loop can not usng initializer",
     for_in_of_loop_can_not_have_one_more_binding: "variable declaration in for-in or for-of statement can't not have more than one binding",

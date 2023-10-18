@@ -4,5 +4,9 @@ members = [
     "toy-lang/backend",
     "toy-lang/compiler",
     ## For script body
-    "script-boy"
+    "script-boy",
+    ## For JSBridge
+    "JSbridge",
+    #### For JSBridge examples
+    "JSbridge/examples/string_passing",
 ]
