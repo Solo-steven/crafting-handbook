@@ -64,8 +64,11 @@ fs.readFile(path.join(__dirname, "string_arguments.wasm")).then(buffer => {
             wasmExports = wasm.instance.exports;
             // wrap for call wasm wrap function need string arugments
             const ptr = passStringToWasm("string-value-from-js");
-            wasm.instance.exports.function_take_string_reference(ptr, getEncodedString("string-value-from-js").length);
-            dropString(ptr);
+            try {
+                wasm.instance.exports.function_take_string_reference(ptr, getEncodedString("string-value-from-js").length);
+            } finally {
+                dropString(ptr);
+            }
             wasm.instance.exports.function_call_js_with_string();
         });
 });
