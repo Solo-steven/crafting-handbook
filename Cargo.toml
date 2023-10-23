@@ -1,12 +1,7 @@
 [workspace]
 members = [
-    ## For llvm based Toy Lang
-    "toy-lang-llvm-based/backend",
-    "toy-lang-llvm-based/compiler",
-    ## For script body
-    "script-boy",
-    ## For JSBridge
-    "JSbridge",
-    #### For JSBridge examples
-    "JSbridge/examples/string_passing",
+    # For jsbridge
+    "js-bridge",
+    "js-bridge/examples/string-passing",
+    # For souring rs
 ]
