@@ -84,7 +84,7 @@ import {
     EmptyStatement,
     RegexLiteral,
     ModuleItem,
-} from "@/src/common";
+} from "emcakit-jscommon";
 
 const VisitorTable: Visitor = {
     [SyntaxKinds.Program]: transformKind,

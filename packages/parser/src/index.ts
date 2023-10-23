@@ -1,6 +1,6 @@
 import { createParser } from "@/src/parser";
 import { createLexer } from "@/src/lexer";
-import { SyntaxKinds } from "./common";
+import { SyntaxKinds } from "emcakit-jscommon";
 
 export function parse(code: string) {
     const parser = createParser(code);
@@ -18,5 +18,3 @@ export function tokenize(code: string) {
     }
     return tokens;
 }
-
-export * from "@/src/common";

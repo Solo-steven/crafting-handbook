@@ -1,5 +1,5 @@
-import { SyntaxKinds, LexicalLiteral, KeywordLiteralMapSyntaxKind } from "@/src/common/kind";
-import { SourcePosition, cloneSourcePosition, createSourcePosition } from "@/src/common/position";
+import { SyntaxKinds, LexicalLiteral, KeywordLiteralMapSyntaxKind } from "emcakit-jscommon";
+import { SourcePosition, cloneSourcePosition, createSourcePosition } from "emcakit-jscommon";
 import { ErrorMessageMap } from "./error";
 interface Context {
     code: string;

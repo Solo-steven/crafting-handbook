@@ -1,4 +1,4 @@
-import { SourcePosition } from "./position";
+import { SourcePosition } from "@/src/position";
 import { 
     SyntaxKinds,
     UpdateOperatorKinds, 
