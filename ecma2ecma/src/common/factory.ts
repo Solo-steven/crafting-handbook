@@ -842,3 +842,158 @@ export function createExportDefaultDeclaration(
         declaration, start, end
     }
 }
+
+export function createJSXElement(
+    openingElement: AST.JSXElement['openingElement'],
+    closingElement: AST.JSXElement['closingElement'],
+    children: AST.JSXElement['children'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXElement {
+    return {
+        kind: SyntaxKinds.JSXElement,
+        openingElement,
+        closingElement,
+        children,
+        start, end
+    }
+}
+
+export function createJSXOpeningElement(
+    name: AST.JSXOpeningElement['name'],
+    attributes: AST.JSXOpeningElement['attributes'],
+    selfClosing: AST.JSXOpeningElement['selfClosing'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXOpeningElement {
+    return {
+        kind: SyntaxKinds.JSXOpeningElement,
+        name, selfClosing, attributes,
+        start, end
+    }
+}
+
+export function createJSXClosingElement(
+    name: AST.JSXClosingElement['name'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXClosingElement {
+    return {
+        kind: SyntaxKinds.JSXClosingElement,
+        name, start, end
+    }
+}
+export function createJSXIdentifier(
+    name: AST.JSXIdentifier['name'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXIdentifier {
+    return {
+        kind: SyntaxKinds.JSXIdentifier,
+        name,
+        start, end
+    }
+}
+export function createJSXMemberExpression(
+    object: AST.JSXMemberExpression['object'],
+    property: AST.JSXMemberExpression['property'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXMemberExpression {
+    return {
+        kind: SyntaxKinds.JSXMemberExpression,
+        object, property,
+        start, end,
+    }
+}
+export function createJSXNamespacedName(
+    namespace: AST.JSXNamespacedName['namespace'],
+    name: AST.JSXNamespacedName['name'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXNamespacedName {
+    return {
+        kind: SyntaxKinds.JSXNamespaceName,
+        namespace,
+        name, start, end
+    }
+}
+
+export function createJSXAttribute(
+    name: AST.JSXAttribute['name'],
+    value: AST.JSXAttribute['value'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXAttribute {
+    return {
+        kind: SyntaxKinds.JSXAttribute,
+        name, value, start, end,
+    }
+}
+
+export function createJSXSpreadAttribute(
+    argument: AST.JSXSpreadAttribute['argument'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXSpreadAttribute {
+    return {
+        kind: SyntaxKinds.JSXSpreadAttribute,
+        argument,
+        start, end
+    }
+}
+
+export function createJSXSpreadChild(
+    argument: AST.JSXSpreadChild['argument'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXSpreadChild {
+    return {
+        kind: SyntaxKinds.JSXSpreadChild,
+        argument,
+        start, end
+    }
+}
+
+export function createJSXText(
+    value: AST.JSXText['value'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXText {
+    return {
+        kind: SyntaxKinds.JSXText,
+        value,
+        start, end
+    }
+}
+
+export function createsJSXExpressionContainer(
+    expression: AST.JSXExpressionContainer['expression'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXExpressionContainer {
+    return {
+        kind: SyntaxKinds.JSXExpressionContainer,
+        expression, start, end
+    }
+}
+
+export function createJSXFragment(
+    openingFragment: AST.JSXFragment['openingFragment'],
+    closingFragment: AST.JSXFragment['closingFragment'],
+    children: AST.JSXFragment['children'],
+    start: SourcePosition, end: SourcePosition
+): AST.JSXFragment {
+    return {
+        kind: SyntaxKinds.JSXFragment,
+        openingFragment, closingFragment,
+        children, start, end
+    }
+}
+
+export function createJSXOpeningFragment(
+    start: SourcePosition, end: SourcePosition
+): AST.JSXOpeningFragment {
+    return {
+        kind: SyntaxKinds.JSXOpeningFragment,
+        start, end
+    }
+}
+
+export function createJSXClosingFragment(
+    start: SourcePosition, end: SourcePosition
+): AST.JSXClosingFragment {
+    return {
+        kind: SyntaxKinds.JSXClosingFragment,
+        start, end
+    }
+}

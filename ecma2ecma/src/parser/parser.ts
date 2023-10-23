@@ -104,6 +104,18 @@ import {
     isPattern,
     isUnaryExpression,
     isBinaryExpression,
+    JSXElement,
+    JSXOpeningElement,
+    JSXAttribute,
+    JSXSpreadAttribute,
+    JSXIdentifier,
+    JSXNamespacedName,
+    JSXFragment,
+    JSXMemberExpression,
+    JSXText,
+    JSXExpressionContainer,
+    JSXSpreadChild,
+    JSXClosingElement,
 } from "@/src/common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -907,12 +919,12 @@ export function createParser(code: string) {
         const { start: keywordStart }  = expect(SyntaxKinds.ForKeyword);
         // First, parse await modifier and lefthandside or init of for-related statement,
         // init might start with let, const, var keyword, but if is let keyword need to 
-        // lookahead to determinate is identifier.delcaration in there should no eat semi, 
-        // becuase semi is seperator of ForStatement, and might not need init for pattern,
-        // because maybe used by ForIn or ForOf. 
+        // lookahead to determinate is identifier.
+        // delcaration in there should not eat semi, becuase semi is seperator of ForStatement, 
+        // and might not need init for pattern, because maybe used by ForIn or ForOf. 
         // If not start with let, var or const keyword, it should be expression, but this
         // expression can not take `in` operator as operator in toplevel, so we need pass
-        // false to disallow parseExpression to take in operator as operator
+        // false to disallow parseExpression to take in  as operator
         let isAwait = false, leftOrInit: VariableDeclaration | Expression | null = null;
         if(match(SyntaxKinds.AwaitKeyword)) {
             nextToken();
@@ -979,12 +991,19 @@ export function createParser(code: string) {
         if(!leftOrInit) {
             throw createUnreachError();
         }
-        if (match(SyntaxKinds.InKeyword)) {
-            if(isVarDeclaration(leftOrInit)) {
-                helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit);
-            }else {
-                leftOrInit = toAssignmentPattern(leftOrInit as Expression) as Expression;
+        // for case `for(a = 0 of [])`; leftOrInit would parse all token before `of` as one expression
+        // in this case , leftOrInit would be a assignment expression, and when it pass to toAssignment
+        // function, it would transform to assignment pattern, so we need to checko if there is Assignment
+        // pattern, it is , means original is assignment expression, it should throw a error.
+        if(isVarDeclaration(leftOrInit)) {
+            helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit);
+        }else {
+            leftOrInit = toAssignmentPattern(leftOrInit) as Expression;
+            if(isAssignmentPattern(leftOrInit)) {
+                throw createMessageError(ErrorMessageMap.invalid_left_value);
             }
+        }
+        if (match(SyntaxKinds.InKeyword)) {
             nextToken();
             const right = parseExpression();
             expect(SyntaxKinds.ParenthesesRightPunctuator);
@@ -992,32 +1011,11 @@ export function createParser(code: string) {
             return Factory.createForInStatement(leftOrInit, right, body, keywordStart, cloneSourcePosition(body.end));
         }
         if(getValue() === "of") {
-            if(isVarDeclaration(leftOrInit)) {
-                helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit);
-            }else {
-                leftOrInit = toAssignmentPattern(leftOrInit) as Expression;
-                // for case `for(a = 0 of [])`; leftOrInit would parse all token before `of` as one expression
-                // in this case , leftOrInit would be a assignment expression, and when it pass to toAssignment
-                // function, it would transform to assignment pattern, so we need to checko if there is Assignment
-                // pattern, it is , means original is assignment expression, it should throw a error.
-                if(isAssignmentPattern(leftOrInit)) {
-                    throw createMessageError(ErrorMessageMap.invalid_left_value);
-                }
-            }
             nextToken();
             const right = parseAssigmentExpression();
             expect(SyntaxKinds.ParenthesesRightPunctuator);
             const body = parseStatement();
             return Factory.createForOfStatement(isAwait, leftOrInit, right, body, keywordStart, cloneSourcePosition(body.end));
-        }
-        // for case `for(a = 0 in [])`, even we disallow in operator at toplevel, parseExpression still would
-        // parse in operator as right hand side of a assignment expression, because equal token is shows up
-        // before in operator then in operator would be seems as next level of expression.
-        // so in this case , parseExpression would parse all token in `()` to leftOrInit as a AssignmentExpression
-        // and left a ParenthesesRight. as following if is looking for, as mention above, we throw a error for
-        // this case
-        if(match(SyntaxKinds.ParenthesesRightPunctuator) && isAssignmentExpression(leftOrInit)) {
-            throw createMessageError(ErrorMessageMap.for_in_of_loop_can_not_using_initializer);
         }
         throw createUnexpectError(null);
    }
@@ -1750,7 +1748,7 @@ export function createParser(code: string) {
         context.inOperatorStack.pop();
         return expr;
     }
-    function parseAssigmentExpressionBase() {
+    function parseAssigmentExpressionBase(): Expression {
         if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
             context.maybeArrow = true;
         }
@@ -1764,7 +1762,7 @@ export function createParser(code: string) {
         left = toAssignmentPattern(left) as Expression;
         const operator = getToken();
         nextToken();
-        const right = parseAssigmentExpression();
+        const right = parseAssigmentExpressionBase();
         return Factory.createAssignmentExpression(left, right, operator as AssigmentOperatorKinds, cloneSourcePosition(left.start), cloneSourcePosition(right.end));  
     }
     function parseAssigmentExpression(allowIn = true): Expression {
@@ -2136,6 +2134,8 @@ export function createParser(code: string) {
     }
     function parsePrimaryExpression(): Expression {
         switch(getToken()) {
+            case SyntaxKinds.LtOperator:
+                return parseJSXElementOrJSXFragment();
             case SyntaxKinds.DivideOperator:
             case SyntaxKinds.DivideAssignOperator:
                 return parseRegexLiteral();
@@ -3013,6 +3013,259 @@ export function createParser(code: string) {
             throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
         }
     }
+/** ================================================================================
+ *  Parse JSX
+ *  entry point: https://facebook.github.io/jsx/
+ * ==================================================================================
+ */
+    /**
+     * Parse JSX Element or JSX Fragment
+     * ```
+     * PrimaryExpression := JSXElement
+     *                   := JSXFragment
+     * ```
+     */
+    function parseJSXElementOrJSXFragment(): JSXElement | JSXFragment {
+        const lookaheadToken = lookahead();
+        if(lookaheadToken.kind !== SyntaxKinds.GtOperator) {
+            return parseJSXElement();
+        }else {
+            return parseJSXFragment();
+        }
+    }
+    /**
+     * Parse JSX Element
+     * ```
+     * JSXElement := JSXOpeningElement JSXChildren JSXClosingElement
+     *            := JSXOpeningElement
+     * ```
+     * @returns {JSXElement}
+     */
+    function parseJSXElement(): JSXElement {
+        const opeingElement = parseJSXOpeingElement();
+        if(opeingElement.selfClosing) {
+            return Factory.createJSXElement(opeingElement, null, [], cloneSourcePosition(opeingElement.start), cloneSourcePosition(opeingElement.end));
+        }
+        const children = parseJSXChildren();
+        const closingElement = parseJSXClosingElement();
+        return Factory.createJSXElement(opeingElement, closingElement, children, cloneSourcePosition(opeingElement.start), cloneSourcePosition(opeingElement.end));
+    }
+    /**
+     * Parse JSXOpeingElement
+     * ```
+     * JSXOpeningElement := `<` JSXElementName JSXAtrributes `>`
+     *                   := `<` JSXElementName JSXAtrributes `/>`
+     * ```
+     * @returns {JSXOpeningElement}
+     */
+    function parseJSXOpeingElement(): JSXOpeningElement {
+        const { start } = expect(SyntaxKinds.LtOperator);
+        const name = parseJSXElementName();
+        const attributes = parseJSXAttributes();
+        if(match(SyntaxKinds.GtOperator)) {
+            const { end } = expect(SyntaxKinds.GtOperator);
+            return Factory.createJSXOpeningElement(name, attributes, false, start, end);
+        }
+        if(match(SyntaxKinds.JSXSelfClosedToken)) {
+            const { end } = expect(SyntaxKinds.JSXSelfClosedToken);
+            return Factory.createJSXOpeningElement(name, attributes, true, start, end);
+        }
+        throw createUnexpectError(null);
+    }
+    /**
+     * Parse name of jsx element or jsx fragment
+     * ```
+     * JSXElementName := JSXIdentifier
+     *                := JSXMemberExpression
+     *                := JSXNamespaceName
+     * ```
+     * @returns {JSXIdentifier | JSXMemberExpression | JSXNamespacedName}
+     */
+    function parseJSXElementName(): JSXIdentifier | JSXMemberExpression | JSXNamespacedName {
+        let name: JSXIdentifier | JSXMemberExpression | JSXNamespacedName = parseJSXIdentifier();
+        if(match(SyntaxKinds.ColonPunctuator)) {
+            nextToken();
+            const subName = parseJSXIdentifier();
+            name = Factory.createJSXNamespacedName(name, subName, cloneSourcePosition(name.start), cloneSourcePosition(subName.end))
+        }else if (match(SyntaxKinds.DotOperator)) {
+            while(match(SyntaxKinds.DotOperator) && !match(SyntaxKinds.EOFToken)) {
+                nextToken();
+                const property = parseJSXIdentifier();
+                name = Factory.createJSXMemberExpression(name, property, cloneSourcePosition(name.start), cloneSourcePosition(property.end));
+            }
+        }
+        return name;
+    }
+    /**
+     * Parse JSX Attributes.
+     * ```
+     * JSXAttributes := JSXAttributes JSXAttribute
+     *               := JSXAttributes JSXSpreadAttribute
+     *               := JSXAttribute
+     *               := JSXSpreadAttribute
+     * JSXAttribute  := JSXAttributeName '=' StringLiteral
+     *               := JSXAttributeName '=' JSXExpressionContainer (expression can not be null)
+     *               := JSXAttributeName '=' JSXElement
+     *               := JSxAttributeName '=' JSXFragment
+     *               := JSXAttrbuteName
+     * JSXSpreadAttribute := '{''...' AssignmentExpression '}' 
+     * JSXAttributeName := JSXIdentifier
+     *                  := JSXNamespaceName
+     * ```
+     * @returns {Array<JSXAttribute | JSXSpreadAttribute>}
+     */
+    function parseJSXAttributes(): Array<JSXAttribute | JSXSpreadAttribute> {
+        const attribute: Array<JSXAttribute | JSXSpreadAttribute> = [];
+        while(!match(SyntaxKinds.EOFToken) && !match(SyntaxKinds.GtOperator) && !match(SyntaxKinds.JSXSelfClosedToken)) {
+            // parse spread 
+            if(match(SyntaxKinds.BracesLeftPunctuator)) {
+                nextToken();
+                expect(SyntaxKinds.SpreadOperator);
+                const expression = parseAssigmentExpression();
+                expect(SyntaxKinds.BracesRightPunctuator);
+                attribute.push(Factory.createJSXSpreadAttribute(expression,cloneSourcePosition(expression.start), cloneSourcePosition(expression.end) ));
+                continue;
+            }
+            // parse name
+            let name: JSXIdentifier | JSXNamespacedName = parseJSXIdentifier();
+            if(match(SyntaxKinds.ColonPunctuator)) {
+                nextToken;
+                const subName = parseJSXIdentifier();
+                name = Factory.createJSXNamespacedName(name, subName, cloneSourcePosition(name.start), cloneSourcePosition(subName.end))
+            }
+            // parse value
+            if(match(SyntaxKinds.AssginOperator)) {
+                nextToken();
+                if(match(SyntaxKinds.StringLiteral)) {
+                    const value = parseStringLiteral();
+                    attribute.push(Factory.createJSXAttribute(name, value, cloneSourcePosition(name.start),cloneSourcePosition(value.end)));
+                    continue;
+                }
+                if(match(SyntaxKinds.BracesLeftPunctuator)) {
+                    const expression = parseJSXExpressionContainer();
+                    if(!expression.expression) {
+                        throw new Error("right hand side of jsx attribute must have expression if start with `{`");
+                    }
+                    attribute.push(Factory.createJSXAttribute(name, expression,cloneSourcePosition(name.start), cloneSourcePosition(expression.end) ));
+                    continue;
+                }
+                const element = parseJSXElementOrJSXFragment();
+                attribute.push(Factory.createJSXAttribute(name, element, cloneSourcePosition(name.start), cloneSourcePosition(element.end),
+                ));
+            }else {
+                attribute.push(Factory.createJSXAttribute(name, null, cloneSourcePosition(name.start),cloneSourcePosition(name.end)))
+            }
+        }
+        return attribute;
+    }
+    /**
+     * Parse JSX Children
+     * ```
+     * JSXChildren := JSXChildren JSXChild
+     *             := JSXChild
+     * JSXChild    := JSXText
+     *             := JSXExpressionContainer
+     *             := JSXElement
+     *             := JSXFragment
+     *             := JSXSpreadChild
+     * JSXSpreadChild := {'...AssignmentExpression '}'
+     * ```
+     * @returns {Array<JSXText | JSXExpressionContainer | JSXElement | JSXFragment | JSXSpreadChild>}
+     */
+    function parseJSXChildren(): JSXElement['children'] {
+        const children: JSXElement['children'] = [];
+        while(
+            !match(SyntaxKinds.JSXCloseTagStart) && 
+            !match(SyntaxKinds.EOFToken)
+        ) {
+            if(match(SyntaxKinds.LtOperator)) {
+                children.push(parseJSXElementOrJSXFragment());
+                continue;
+            }
+            if(match(SyntaxKinds.BracesLeftPunctuator)) {
+                if(lookahead().kind == SyntaxKinds.SpreadOperator) {
+                    expect(SyntaxKinds.BracesLeftPunctuator);
+                    expect(SyntaxKinds.SpreadOperator);
+                    const expression = parseAssigmentExpression();
+                    expect(SyntaxKinds.BracesRightPunctuator);
+                    children.push(Factory.createJSXSpreadChild(expression, cloneSourcePosition(expression.start), cloneSourcePosition(expression.end)));
+                }
+                children.push(parseJSXExpressionContainer());
+                continue;
+            }
+            children.push(parseJSXText());
+        }
+        return children;
+    }
+    /**
+     * Parse JSX expression container
+     * ```
+     * JSXExpressionContainer = '{' AssignmentExpression '}'
+     * ```
+     * @returns {JSXExpressionContainer}
+     */
+    function parseJSXExpressionContainer(): JSXExpressionContainer {
+        const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
+        const expression = match(SyntaxKinds.BracesRightPunctuator) ? null : parseAssigmentExpression();
+        const { end } = expect(SyntaxKinds.BracesRightPunctuator);
+        return Factory.createsJSXExpressionContainer(expression, start, end);
+    }
+    /**
+     * Parse Closing Element of JSXElement
+     * ```
+     * JSXClosingElement := '</' JSXElementName '>'
+     * ```
+     * @returns {JSXClosingElement}
+     */
+    function parseJSXClosingElement(): JSXClosingElement {
+        const { start } = expect(SyntaxKinds.JSXCloseTagStart);
+        const name = parseJSXElementName();
+        const { end } = expect(SyntaxKinds.GtOperator);
+        return Factory.createJSXClosingElement(name, start, end);
+    }
+    /**
+     * Same as `parseIdentifierWithKeyword` function.
+     * @returns {JSXIdentifier}
+     */
+    function parseJSXIdentifier(): JSXIdentifier {
+        const { start, end, value } =  expect(IdentiferWithKeyworArray);
+        return Factory.createJSXIdentifier(value, start, end);
+    }
+    function parseJSXText(): JSXText {
+        let value = "";
+        const start = getStartPosition();
+        let end = getEndPosition();
+        while(!matchSet([SyntaxKinds.EOFToken, SyntaxKinds.JSXCloseTagStart, SyntaxKinds.BracesLeftPunctuator])) {
+            value += lexer.getBeforeValue();
+            value += getValue();
+            end = getEndPosition();
+            nextToken();
+        }
+        value += lexer.getBeforeValue();
+        return Factory.createJSXText(value, start, end);
+    }
+    /**
+     * Parse JSXFragment
+     * ```
+     * JSXFragment := `<``/>` JSXChildern `</``>`
+     * ```
+     * @returns {JSXFragment}
+     */
+    function parseJSXFragment(): JSXFragment {
+        const { start: openingStart } = expect(SyntaxKinds.LtOperator);
+        const { end: openingEnd } = expect(SyntaxKinds.GtOperator);
+        const children = parseJSXChildren();
+        const { start: closingStart } =  expect(SyntaxKinds.JSXCloseTagStart);
+        const { end: closingEnd } = expect(SyntaxKinds.GtOperator);
+        return Factory.createJSXFragment(
+            Factory.createJSXOpeningFragment(openingStart, openingEnd),
+            Factory.createJSXClosingFragment(closingStart, closingEnd),
+            children,
+            cloneSourcePosition(openingStart),
+            cloneSourcePosition(closingEnd),
+        );
+    }
+
 /** ================================================================================
  *  Parse Pattern
  *  entry point: https://tc39.es/ecma262/#sec-destructuring-binding-patterns

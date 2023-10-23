@@ -80,6 +80,19 @@ import {
     UndefinbedLiteral,
     RegexLiteral,
     Import,
+    JSXElement,
+    JSXOpeningElement,
+    JSXClosingElement,
+    JSXIdentifier,
+    JSXMemberExpression,
+    JSXNamespacedName,
+    JSXAttribute,
+    JSXSpreadAttribute,
+    JSXSpreadChild,
+    JSXExpressionContainer,
+    JSXFragment,
+    JSXOpeningFragment,
+    JSXClosingFragment,
 } from "../ast";
 import { SyntaxKinds } from "../kind";
 import type { Visitor } from "./type";
@@ -688,6 +701,102 @@ const VisitorTable: { [key: number ]: (node: any, visior: Visitor) => void } = {
         }
         visitNode(node.exported, visitor);
         visitNode(node.source, visitor);
+    },
+    [SyntaxKinds.JSXElement]: function bindJSXElement(node: JSXElement, visitor: Visitor){
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+        visitNode(node.openingElement, visitor);
+        visitNodes(node.children, visitor);
+        visitNode(node.closingElement, visitor);
+    },
+    [SyntaxKinds.JSXOpeningElement]: function bindJSXOpeningElement(node: JSXOpeningElement, visitor: Visitor) {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+        visitNode(node.name, visitor);
+        visitNodes(node.attributes, visitor);
+    },
+    [SyntaxKinds.JSXClosingElement]: function visitJSXClosingElement(node: JSXClosingElement, visitor: Visitor) {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+        visitNode(node.name, visitor);
+    },
+    [SyntaxKinds.JSXIdentifier]: function visitJSXIdentifier(node: JSXIdentifier, visitor: Visitor) {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+    },
+    [SyntaxKinds.JSXMemberExpression]: function visitJSXMemberExpression(node: JSXMemberExpression, visitor: Visitor) {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+        visitNode(node.object, visitor);
+        visitNode(node.property, visitor);
+    },
+    [SyntaxKinds.JSXNamespaceName]: function visitJSXNamespaceName(node: JSXNamespacedName, visitor: Visitor) {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+        visitNode(node.namespace, visitor);
+        visitNode(node.name, visitor);
+    },
+    [SyntaxKinds.JSXAttribute]: function visitorJSXAttribute(node: JSXAttribute, visitor: Visitor) {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+        visitNode(node.name, visitor);
+        visitNode(node.value, visitor);
+    },
+    [SyntaxKinds.JSXSpreadAttribute]: function visitJSXSpreadAttribute(node: JSXSpreadAttribute, visitor: Visitor) {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+        visitNode(node.argument, visitor);
+    },
+    [SyntaxKinds.JSXSpreadChild]: function visitJSXSpreadChild(node: JSXSpreadChild, visitor: Visitor)  {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+        visitNode(node.argument, visitor);
+    },
+    [SyntaxKinds.JSXExpressionContainer]: function visitJSXExpressionContainer(node: JSXExpressionContainer, visitor: Visitor) {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+        visitNode(node.expression, visitor);
+    },
+    [SyntaxKinds.JSXFragment]: function visitJSXFragment(node: JSXFragment, visitor: Visitor) {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+        visitNode(node.openingFragment, visitor);
+        visitNodes(node.children, visitor);
+        visitNode(node.closingFragment, visitor);
+    },
+    [SyntaxKinds.JSXOpeningFragment]: function visitOpeningFragment(node: JSXOpeningFragment, visitor: Visitor) {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
+    },
+    [SyntaxKinds.JSXClosingFragment]: function visitClosingFragment(node: JSXClosingFragment, visitor: Visitor) {
+        if(!node) return 
+        if(visitor[node.kind]) {
+            visitor[node.kind](node);
+        }
     }
 };
 

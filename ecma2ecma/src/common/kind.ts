@@ -212,6 +212,23 @@ export enum SyntaxKinds {
     ExportSpecifier,
     ExportDefaultDeclaration,
     ExportAllDeclaration,
+    // ======= JSX Element and JSX Fragment
+    JSXElement,
+    JSXOpeningElement,
+    JSXClosingElement,
+    JSXFragment,
+    JSXOpeningFragment,
+    JSXClosingFragment,
+    JSXAttribute,
+    JSXSpreadAttribute,
+    JSXIdentifier,
+    JSXMemberExpression,
+    JSXNamespaceName,
+    JSXSpreadChild,
+    JSXText,
+    JSXExpressionContainer,
+    JSXSelfClosedToken, // token for `/>`
+    JSXCloseTagStart,   // token for `</`
 
 }
 export const LexicalLiteral = {
@@ -532,6 +549,23 @@ export const SytaxKindsMapLexicalLiteral = {
     [SyntaxKinds.ExportSpecifier]: "ExportSpecifier",
     [SyntaxKinds.ExportDefaultDeclaration]: "ExportDefaultDeclaration",
     [SyntaxKinds.ExportAllDeclaration]: "ExportAllDeclaration",
+    // ========= JSXElement and JSXFragment ========
+    [SyntaxKinds.JSXElement]: "JSXElement",
+    [SyntaxKinds.JSXOpeningElement]: "JSXOpeningElement",
+    [SyntaxKinds.JSXClosingElement]: "JSXClosingElement",
+    [SyntaxKinds.JSXFragment]: "JSXFragment",
+    [SyntaxKinds.JSXOpeningFragment]: "JSXOpeningFragment",
+    [SyntaxKinds.JSXClosingFragment]: "JSXClosingFragment",
+    [SyntaxKinds.JSXAttribute]: "JSXAttribute",
+    [SyntaxKinds.JSXSpreadAttribute]: "JSXSpreadAttribute",
+    [SyntaxKinds.JSXIdentifier]: "JSXIdentifier",
+    [SyntaxKinds.JSXMemberExpression]: "JSXMemberExpression",
+    [SyntaxKinds.JSXNamespaceName]: "JSXNamespaceName",
+    [SyntaxKinds.JSXSpreadChild]: "JSXSpreadChild",
+    [SyntaxKinds.JSXText]: "JSXText",
+    [SyntaxKinds.JSXExpressionContainer]: "JSXExpressionContainer",
+    [SyntaxKinds.JSXCloseTagStart]: "JSXClosedTagStart",
+    [SyntaxKinds.JSXSelfClosedToken]: "JSXSelfClosedToken",
 };
 /** ===================================
 *          Union SytaxKinds

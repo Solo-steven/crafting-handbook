@@ -41,7 +41,76 @@ export interface MethodDefinition extends ModuleItem {
     async: boolean;
     static: boolean;
 }
+/** ====================================
+ *  JSX Element or JSX fragment
+ * =====================================
+ */
 
+export interface JSXElement extends ExpressionModuleItem {
+    kind: SyntaxKinds.JSXElement;
+    openingElement: JSXOpeningElement;
+    children: Array<JSXText | JSXExpressionContainer | JSXSpreadChild | JSXElement | JSXFragment>;
+    closingElement: JSXClosingElement | null;   
+}
+export interface JSXIdentifier extends ModuleItem{
+    kind: SyntaxKinds.JSXIdentifier;
+    name: string;
+}
+export interface JSXMemberExpression extends ModuleItem {
+    kind: SyntaxKinds.JSXMemberExpression;
+    object: JSXMemberExpression | JSXIdentifier;
+    property: JSXIdentifier;
+}
+export interface JSXNamespacedName extends ModuleItem {
+    kind: SyntaxKinds.JSXNamespaceName;
+    namespace: JSXIdentifier;
+    name: JSXIdentifier;
+}
+export interface JSXAttribute extends ModuleItem {
+    kind: SyntaxKinds.JSXAttribute;
+    name: JSXIdentifier | JSXNamespacedName;
+    value: 
+        NumberLiteral | StringLiteral | BoolLiteral | TemplateLiteral | UndefinbedLiteral | NullLiteral | RegexLiteral  
+        | JSXExpressionContainer | JSXElement | JSXFragment | null;
+}
+export interface JSXSpreadAttribute extends ModuleItem  {
+    kind: SyntaxKinds.JSXSpreadAttribute;
+    argument: Expression;
+}
+export interface JSXOpeningElement extends  ModuleItem {
+    kind: SyntaxKinds.JSXOpeningElement;
+    name: JSXIdentifier | JSXMemberExpression | JSXNamespacedName;
+    attributes: Array<JSXAttribute | JSXSpreadAttribute>;
+    selfClosing: boolean;
+}
+export interface JSXClosingElement extends ModuleItem {
+    kind: SyntaxKinds.JSXClosingElement;
+    name: JSXIdentifier | JSXMemberExpression | JSXNamespacedName;
+}
+export interface JSXSpreadChild extends ModuleItem {
+    kind: SyntaxKinds.JSXSpreadChild;
+    argument: Expression;
+}
+export interface JSXText extends ModuleItem {
+    kind: SyntaxKinds.JSXText;
+    value: string;
+}
+export interface JSXExpressionContainer extends ModuleItem  {
+    kind: SyntaxKinds.JSXExpressionContainer;
+    expression: Expression | null;
+}
+export interface JSXFragment extends ExpressionModuleItem {
+    kind: SyntaxKinds.JSXFragment;
+    openingFragment: JSXOpeningFragment;
+    children: Array<JSXText | JSXExpressionContainer | JSXSpreadChild | JSXElement | JSXFragment>;
+    closingFragment: JSXClosingFragment;
+}
+export interface JSXOpeningFragment extends ModuleItem {
+    kind: SyntaxKinds.JSXOpeningFragment;
+}
+export interface JSXClosingFragment extends ModuleItem {
+    kind: SyntaxKinds.JSXClosingFragment;
+}
 /** =====================================
  *      Expression
  * ======================================
@@ -220,6 +289,8 @@ export interface SequenceExpression extends ExpressionModuleItem {
 }
 
 export type Expression =
+    // jsx element
+    JSXElement | JSXFragment |
     // identifer and super and ThisExpression
     Identifier  | PrivateName | Super | ThisExpression | Import |
     // literals 

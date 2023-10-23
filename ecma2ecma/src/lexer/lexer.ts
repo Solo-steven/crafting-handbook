@@ -5,6 +5,7 @@ interface Context {
     code: string;
     sourcePosition: SourcePosition;
     sourceValue: string;
+    beforeValue: string;
     token: SyntaxKinds | null;
 
     startPosition: SourcePosition;
@@ -29,6 +30,7 @@ function cloneContext(source: Context): Context {
 
 interface Lexer {
     getSourceValue: () => string;
+    getBeforeValue: () => string;
     getStartPosition: () => SourcePosition;
     getEndPosition: () => SourcePosition;
     getToken: () => SyntaxKinds;
@@ -69,6 +71,7 @@ export function createLexer(code: string): Lexer {
         code,
         sourcePosition: createSourcePosition(),
         sourceValue: "",
+        beforeValue: "",
         token: null,
         startPosition: createSourcePosition(),
         endPosition: createSourcePosition(),
@@ -79,6 +82,9 @@ export function createLexer(code: string): Lexer {
     };
     function getLineTerminatorFlag() {
         return context.changeLineFlag;
+    }
+    function getBeforeValue() {
+        return context.beforeValue;
     }
     function getSourceValue() {
         return context.sourceValue;
@@ -113,6 +119,7 @@ export function createLexer(code: string): Lexer {
     }
     return {
         getSourceValue,
+        getBeforeValue,
         getStartPosition,
         getEndPosition,
         getToken,
@@ -177,20 +184,21 @@ export function createLexer(code: string): Lexer {
     }
     function skipWhiteSpaceChangeLine() {
         context.changeLineFlag = false;
+        context.beforeValue = "";
         while(
             !eof() && ( startWith("\n") || startWith('\t') || startWith(" "))
         ) {
             if(startWith("\n")) {
                 context.changeLineFlag = true;
-                eatChar();
+                context.beforeValue += eatChar();
                 continue;
             }
             if(startWith('\t') || startWith(" ")) {
                 context.spaceFlag = true;
-                eatChar();
+                context.beforeValue += eatChar();
                 continue;
             }
-            eatChar();
+            context.beforeValue +=  eatChar();
         }
     }
 /**
@@ -428,6 +436,10 @@ export function createLexer(code: string): Lexer {
             eatChar(2);
             return finishToken(SyntaxKinds.DivideAssignOperator, "//");
         }
+        if(startWith("/>")) {
+            eatChar(2);
+            return finishToken(SyntaxKinds.JSXSelfClosedToken, "/>");
+        }
         eatChar();
         return finishToken(SyntaxKinds.DivideOperator, "/");
     }
@@ -520,6 +532,10 @@ export function createLexer(code: string): Lexer {
         if(startWith("<=")) {
             eatChar(2);
             return finishToken(SyntaxKinds.LeqtOperator, "<=");
+        }
+        if(startWith("</")) {
+            eatChar(2);
+            return finishToken(SyntaxKinds.JSXCloseTagStart, "</");
         }
         eatChar();
         return finishToken(SyntaxKinds.LtOperator, "<");
