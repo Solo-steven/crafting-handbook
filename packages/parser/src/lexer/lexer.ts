@@ -898,8 +898,9 @@ export function createLexer(code: string): Lexer {
         return finishToken(SyntaxKinds.StringLiteral, word);
     }
     function readString() {
-        const word = readWord()
-        if(KeywordLiteralSet.has(word)) {
+        const word = readWord();
+        // @ts-ignore
+        if(KeywordLiteralMapSyntaxKind[word]) {
             if(context.escFlag) {
                 context.escFlag = false;
                 throw new Error("keyword can not have any escap unicode");
