@@ -45,12 +45,12 @@
                             "name": "foo",
                             "start": {
                                 "row": 2,
-                                "col": 4,
+                                "col": 5,
                                 "index": 24
                             },
                             "end": {
                                 "row": 2,
-                                "col": 7,
+                                "col": 8,
                                 "index": 27
                             }
                         },
@@ -71,12 +71,12 @@
                                                 "name": "super",
                                                 "start": {
                                                     "row": 3,
-                                                    "col": 12,
+                                                    "col": 13,
                                                     "index": 44
                                                 },
                                                 "end": {
                                                     "row": 3,
-                                                    "col": 17,
+                                                    "col": 18,
                                                     "index": 49
                                                 }
                                             },
@@ -85,69 +85,69 @@
                                                 "name": "bar",
                                                 "start": {
                                                     "row": 3,
-                                                    "col": 18,
+                                                    "col": 19,
                                                     "index": 50
                                                 },
                                                 "end": {
                                                     "row": 3,
-                                                    "col": 21,
+                                                    "col": 22,
                                                     "index": 53
                                                 }
                                             },
                                             "start": {
                                                 "row": 3,
-                                                "col": 12,
+                                                "col": 13,
                                                 "index": 44
                                             },
                                             "end": {
                                                 "row": 3,
-                                                "col": 21,
+                                                "col": 22,
                                                 "index": 53
                                             }
                                         },
                                         "arguments": [],
                                         "start": {
                                             "row": 3,
-                                            "col": 8,
+                                            "col": 9,
                                             "index": 40
                                         },
                                         "end": {
                                             "row": 3,
-                                            "col": 23,
+                                            "col": 24,
                                             "index": 55
                                         }
                                     },
                                     "start": {
                                         "row": 3,
-                                        "col": 8,
+                                        "col": 9,
                                         "index": 40
                                     },
                                     "end": {
                                         "row": 3,
-                                        "col": 23,
+                                        "col": 24,
                                         "index": 55
                                     }
                                 }
                             ],
                             "start": {
                                 "row": 2,
-                                "col": 10,
+                                "col": 11,
                                 "index": 30
                             },
                             "end": {
                                 "row": 4,
-                                "col": 5,
+                                "col": 6,
                                 "index": 61
                             }
                         },
                         "start": {
                             "row": 2,
-                            "col": 4,
+                            "col": 5,
                             "index": 24
                         },
                         "end": {
                             "row": 4,
-                            "col": 5,
+                            "col": 6,
                             "index": 61
                         }
                     }
@@ -159,7 +159,7 @@
                 },
                 "end": {
                     "row": 5,
-                    "col": 1,
+                    "col": 2,
                     "index": 63
                 }
             },
@@ -170,7 +170,7 @@
             },
             "end": {
                 "row": 5,
-                "col": 1,
+                "col": 2,
                 "index": 63
             }
         }
@@ -182,7 +182,7 @@
     },
     "end": {
         "row": 6,
-        "col": 0,
+        "col": 1,
         "index": 64
     }
 }

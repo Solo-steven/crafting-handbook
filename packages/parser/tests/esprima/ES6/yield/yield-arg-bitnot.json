@@ -28,7 +28,7 @@
                             "kind": "YieldExpression",
                             "argument": {
                                 "kind": "UnaryExpression",
-                                "operator": "^",
+                                "operator": "~",
                                 "argument": {
                                     "kind": "Identifer",
                                     "name": "x",
@@ -109,7 +109,7 @@
     },
     "end": {
         "row": 2,
-        "col": 0,
+        "col": 1,
         "index": 27
     }
 }

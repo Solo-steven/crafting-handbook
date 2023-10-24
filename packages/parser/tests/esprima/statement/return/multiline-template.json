@@ -33,12 +33,12 @@
                                     "tail": true,
                                     "start": {
                                         "row": 2,
-                                        "col": 11,
+                                        "col": 12,
                                         "index": 26
                                     },
                                     "end": {
                                         "row": 4,
-                                        "col": 5,
+                                        "col": 6,
                                         "index": 46
                                     }
                                 }
@@ -46,23 +46,23 @@
                             "expressions": [],
                             "start": {
                                 "row": 2,
-                                "col": 11,
+                                "col": 12,
                                 "index": 26
                             },
                             "end": {
                                 "row": 4,
-                                "col": 5,
+                                "col": 6,
                                 "index": 46
                             }
                         },
                         "start": {
                             "row": 2,
-                            "col": 4,
+                            "col": 5,
                             "index": 19
                         },
                         "end": {
                             "row": 4,
-                            "col": 5,
+                            "col": 6,
                             "index": 46
                         }
                     }
@@ -74,7 +74,7 @@
                 },
                 "end": {
                     "row": 5,
-                    "col": 3,
+                    "col": 4,
                     "index": 51
                 }
             },
@@ -86,7 +86,7 @@
             },
             "end": {
                 "row": 5,
-                "col": 3,
+                "col": 4,
                 "index": 51
             }
         }
@@ -98,7 +98,7 @@
     },
     "end": {
         "row": 5,
-        "col": 3,
+        "col": 4,
         "index": 51
     }
 }

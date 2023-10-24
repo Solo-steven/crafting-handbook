@@ -8,12 +8,12 @@
                 "name": "parent",
                 "start": {
                     "row": 8,
-                    "col": 9,
+                    "col": 10,
                     "index": 571
                 },
                 "end": {
                     "row": 8,
-                    "col": 15,
+                    "col": 16,
                     "index": 577
                 }
             },
@@ -29,12 +29,12 @@
                             "name": "await",
                             "start": {
                                 "row": 9,
-                                "col": 13,
+                                "col": 14,
                                 "index": 595
                             },
                             "end": {
                                 "row": 9,
-                                "col": 18,
+                                "col": 19,
                                 "index": 600
                             }
                         },
@@ -45,60 +45,60 @@
                             "body": [],
                             "start": {
                                 "row": 9,
-                                "col": 21,
+                                "col": 22,
                                 "index": 603
                             },
                             "end": {
                                 "row": 11,
-                                "col": 5,
+                                "col": 6,
                                 "index": 615
                             }
                         },
                         "params": [],
                         "start": {
                             "row": 9,
-                            "col": 4,
+                            "col": 5,
                             "index": 586
                         },
                         "end": {
                             "row": 11,
-                            "col": 5,
+                            "col": 6,
                             "index": 615
                         }
                     }
                 ],
                 "start": {
                     "row": 8,
-                    "col": 18,
+                    "col": 19,
                     "index": 580
                 },
                 "end": {
                     "row": 12,
-                    "col": 1,
+                    "col": 2,
                     "index": 617
                 }
             },
             "params": [],
             "start": {
                 "row": 8,
-                "col": 0,
+                "col": 1,
                 "index": 562
             },
             "end": {
                 "row": 12,
-                "col": 1,
+                "col": 2,
                 "index": 617
             }
         }
     ],
     "start": {
         "row": 8,
-        "col": 0,
+        "col": 1,
         "index": 562
     },
     "end": {
         "row": 12,
-        "col": 1,
+        "col": 2,
         "index": 617
     }
 }

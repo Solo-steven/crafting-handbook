@@ -34,12 +34,12 @@
                                     "name": "await",
                                     "start": {
                                         "row": 2,
-                                        "col": 5,
+                                        "col": 6,
                                         "index": 25
                                     },
                                     "end": {
                                         "row": 2,
-                                        "col": 10,
+                                        "col": 11,
                                         "index": 30
                                     }
                                 }
@@ -49,34 +49,34 @@
                                 "body": [],
                                 "start": {
                                     "row": 2,
-                                    "col": 15,
+                                    "col": 16,
                                     "index": 35
                                 },
                                 "end": {
                                     "row": 4,
-                                    "col": 5,
+                                    "col": 6,
                                     "index": 51
                                 }
                             },
                             "start": {
                                 "row": 2,
-                                "col": 4,
+                                "col": 5,
                                 "index": 24
                             },
                             "end": {
                                 "row": 4,
-                                "col": 5,
+                                "col": 6,
                                 "index": 51
                             }
                         },
                         "start": {
                             "row": 2,
-                            "col": 4,
+                            "col": 5,
                             "index": 24
                         },
                         "end": {
                             "row": 4,
-                            "col": 5,
+                            "col": 6,
                             "index": 51
                         }
                     }
@@ -88,7 +88,7 @@
                 },
                 "end": {
                     "row": 5,
-                    "col": 1,
+                    "col": 2,
                     "index": 53
                 }
             },
@@ -100,7 +100,7 @@
             },
             "end": {
                 "row": 5,
-                "col": 1,
+                "col": 2,
                 "index": 53
             }
         }
@@ -112,7 +112,7 @@
     },
     "end": {
         "row": 5,
-        "col": 1,
+        "col": 2,
         "index": 53
     }
 }

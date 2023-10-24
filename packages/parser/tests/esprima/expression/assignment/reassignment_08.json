@@ -4,8 +4,8 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "BinaryExpression",
-                "operator": ">",
+                "kind": "AssigmentExpression",
+                "operator": ">>>=",
                 "left": {
                     "kind": "Identifer",
                     "name": "x",

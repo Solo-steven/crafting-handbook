@@ -32,12 +32,12 @@
                                 "name": "numberProperty",
                                 "start": {
                                     "row": 2,
-                                    "col": 4,
+                                    "col": 5,
                                     "index": 17
                                 },
                                 "end": {
                                     "row": 2,
-                                    "col": 18,
+                                    "col": 19,
                                     "index": 31
                                 }
                             },
@@ -46,23 +46,23 @@
                                 "value": "10",
                                 "start": {
                                     "row": 2,
-                                    "col": 20,
+                                    "col": 21,
                                     "index": 33
                                 },
                                 "end": {
                                     "row": 2,
-                                    "col": 22,
+                                    "col": 23,
                                     "index": 35
                                 }
                             },
                             "start": {
                                 "row": 2,
-                                "col": 4,
+                                "col": 5,
                                 "index": 17
                             },
                             "end": {
                                 "row": 2,
-                                "col": 22,
+                                "col": 23,
                                 "index": 35
                             }
                         },
@@ -78,12 +78,12 @@
                                     "value": "9",
                                     "start": {
                                         "row": 3,
-                                        "col": 5,
+                                        "col": 6,
                                         "index": 42
                                     },
                                     "end": {
                                         "row": 3,
-                                        "col": 6,
+                                        "col": 7,
                                         "index": 43
                                     }
                                 },
@@ -92,23 +92,23 @@
                                     "value": "8",
                                     "start": {
                                         "row": 3,
-                                        "col": 7,
+                                        "col": 8,
                                         "index": 44
                                     },
                                     "end": {
                                         "row": 3,
-                                        "col": 8,
+                                        "col": 9,
                                         "index": 45
                                     }
                                 },
                                 "start": {
                                     "row": 3,
-                                    "col": 5,
+                                    "col": 6,
                                     "index": 42
                                 },
                                 "end": {
                                     "row": 3,
-                                    "col": 8,
+                                    "col": 9,
                                     "index": 45
                                 }
                             },
@@ -117,23 +117,23 @@
                                 "value": "10",
                                 "start": {
                                     "row": 3,
-                                    "col": 11,
+                                    "col": 12,
                                     "index": 48
                                 },
                                 "end": {
                                     "row": 3,
-                                    "col": 13,
+                                    "col": 14,
                                     "index": 50
                                 }
                             },
                             "start": {
                                 "row": 3,
-                                "col": 5,
+                                "col": 6,
                                 "index": 42
                             },
                             "end": {
                                 "row": 3,
-                                "col": 13,
+                                "col": 14,
                                 "index": 50
                             }
                         }
@@ -146,7 +146,7 @@
                     },
                     "end": {
                         "row": 4,
-                        "col": 1,
+                        "col": 2,
                         "index": 53
                     }
                 },
@@ -157,7 +157,7 @@
                 },
                 "end": {
                     "row": 4,
-                    "col": 1,
+                    "col": 2,
                     "index": 53
                 }
             },
@@ -168,7 +168,7 @@
             },
             "end": {
                 "row": 4,
-                "col": 1,
+                "col": 2,
                 "index": 53
             }
         }
@@ -180,7 +180,7 @@
     },
     "end": {
         "row": 4,
-        "col": 1,
+        "col": 2,
         "index": 53
     }
 }

@@ -22,7 +22,7 @@
                 },
                 "right": {
                     "kind": "UnaryExpression",
-                    "operator": "^",
+                    "operator": "~",
                     "argument": {
                         "kind": "Identifer",
                         "name": "y",
@@ -78,7 +78,7 @@
     },
     "end": {
         "row": 2,
-        "col": 0,
+        "col": 1,
         "index": 8
     }
 }

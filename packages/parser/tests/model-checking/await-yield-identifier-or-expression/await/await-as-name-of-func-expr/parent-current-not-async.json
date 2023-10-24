@@ -33,12 +33,12 @@
                                     "name": "a",
                                     "start": {
                                         "row": 2,
-                                        "col": 10,
+                                        "col": 11,
                                         "index": 30
                                     },
                                     "end": {
                                         "row": 2,
-                                        "col": 11,
+                                        "col": 12,
                                         "index": 31
                                     }
                                 },
@@ -49,12 +49,12 @@
                                         "name": "await",
                                         "start": {
                                             "row": 2,
-                                            "col": 22,
+                                            "col": 23,
                                             "index": 42
                                         },
                                         "end": {
                                             "row": 2,
-                                            "col": 27,
+                                            "col": 28,
                                             "index": 47
                                         }
                                     },
@@ -65,47 +65,47 @@
                                         "body": [],
                                         "start": {
                                             "row": 2,
-                                            "col": 30,
+                                            "col": 31,
                                             "index": 50
                                         },
                                         "end": {
                                             "row": 4,
-                                            "col": 5,
+                                            "col": 6,
                                             "index": 58
                                         }
                                     },
                                     "params": [],
                                     "start": {
                                         "row": 2,
-                                        "col": 13,
+                                        "col": 14,
                                         "index": 33
                                     },
                                     "end": {
                                         "row": 4,
-                                        "col": 5,
+                                        "col": 6,
                                         "index": 58
                                     }
                                 },
                                 "start": {
                                     "row": 2,
-                                    "col": 10,
+                                    "col": 11,
                                     "index": 30
                                 },
                                 "end": {
                                     "row": 4,
-                                    "col": 5,
+                                    "col": 6,
                                     "index": 58
                                 }
                             }
                         ],
                         "start": {
                             "row": 2,
-                            "col": 4,
+                            "col": 5,
                             "index": 24
                         },
                         "end": {
                             "row": 4,
-                            "col": 5,
+                            "col": 6,
                             "index": 58
                         }
                     }
@@ -117,7 +117,7 @@
                 },
                 "end": {
                     "row": 5,
-                    "col": 1,
+                    "col": 2,
                     "index": 60
                 }
             },
@@ -129,7 +129,7 @@
             },
             "end": {
                 "row": 5,
-                "col": 1,
+                "col": 2,
                 "index": 60
             }
         }
@@ -141,7 +141,7 @@
     },
     "end": {
         "row": 5,
-        "col": 1,
+        "col": 2,
         "index": 60
     }
 }

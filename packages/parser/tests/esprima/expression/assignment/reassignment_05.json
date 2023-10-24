@@ -5,7 +5,7 @@
             "kind": "ExpressionStatement",
             "expr": {
                 "kind": "AssigmentExpression",
-                "operator": "*=",
+                "operator": "-=",
                 "left": {
                     "kind": "Identifer",
                     "name": "x",

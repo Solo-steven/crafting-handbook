@@ -33,12 +33,12 @@
                                     "name": "obj",
                                     "start": {
                                         "row": 2,
-                                        "col": 10,
+                                        "col": 11,
                                         "index": 35
                                     },
                                     "end": {
                                         "row": 2,
-                                        "col": 13,
+                                        "col": 14,
                                         "index": 38
                                     }
                                 },
@@ -54,12 +54,12 @@
                                                 "name": "await",
                                                 "start": {
                                                     "row": 3,
-                                                    "col": 10,
+                                                    "col": 11,
                                                     "index": 53
                                                 },
                                                 "end": {
                                                     "row": 3,
-                                                    "col": 15,
+                                                    "col": 16,
                                                     "index": 58
                                                 }
                                             },
@@ -68,23 +68,23 @@
                                                 "value": "10",
                                                 "start": {
                                                     "row": 3,
-                                                    "col": 17,
+                                                    "col": 18,
                                                     "index": 60
                                                 },
                                                 "end": {
                                                     "row": 3,
-                                                    "col": 19,
+                                                    "col": 20,
                                                     "index": 62
                                                 }
                                             },
                                             "start": {
                                                 "row": 3,
-                                                "col": 10,
+                                                "col": 11,
                                                 "index": 53
                                             },
                                             "end": {
                                                 "row": 3,
-                                                "col": 19,
+                                                "col": 20,
                                                 "index": 62
                                             }
                                         }
@@ -92,35 +92,35 @@
                                     "trailingComma": true,
                                     "start": {
                                         "row": 2,
-                                        "col": 16,
+                                        "col": 17,
                                         "index": 41
                                     },
                                     "end": {
                                         "row": 4,
-                                        "col": 5,
+                                        "col": 6,
                                         "index": 69
                                     }
                                 },
                                 "start": {
                                     "row": 2,
-                                    "col": 10,
+                                    "col": 11,
                                     "index": 35
                                 },
                                 "end": {
                                     "row": 4,
-                                    "col": 5,
+                                    "col": 6,
                                     "index": 69
                                 }
                             }
                         ],
                         "start": {
                             "row": 2,
-                            "col": 4,
+                            "col": 5,
                             "index": 29
                         },
                         "end": {
                             "row": 4,
-                            "col": 5,
+                            "col": 6,
                             "index": 69
                         }
                     }
@@ -132,7 +132,7 @@
                 },
                 "end": {
                     "row": 5,
-                    "col": 1,
+                    "col": 2,
                     "index": 71
                 }
             },
@@ -144,7 +144,7 @@
             },
             "end": {
                 "row": 5,
-                "col": 1,
+                "col": 2,
                 "index": 71
             }
         }
@@ -156,7 +156,7 @@
     },
     "end": {
         "row": 5,
-        "col": 1,
+        "col": 2,
         "index": 71
     }
 }

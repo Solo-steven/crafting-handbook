@@ -5,7 +5,7 @@
             "kind": "ExpressionStatement",
             "expr": {
                 "kind": "UnaryExpression",
-                "operator": "^",
+                "operator": "~",
                 "argument": {
                     "kind": "Identifer",
                     "name": "x",

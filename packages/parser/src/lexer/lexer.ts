@@ -37,7 +37,7 @@ interface Context {
 function createContext(code: string): Context {
     return {
         code,
-        pos: 0, currentLine: 0, currentLineStart: 0, start: 0, end: 0,
+        pos: 0, currentLine: 1, currentLineStart: 0, start: 0, end: 0,
         sourceValue: "", token: null, startPosition: createSourcePosition(), endPosition: createSourcePosition(),
         templateStringStackCounter: [],
         changeLineFlag: false, spaceFlag: false, escFlag: false, beforeValue: "",
@@ -157,9 +157,9 @@ export function createLexer(code: string): Lexer {
      */
     function startToken(): void {
         context.startPosition = {
+            row: context.currentLine,
+            col: context.pos - context.currentLineStart + 1,
             index: context.pos,
-            col: context.pos - context.currentLineStart,
-            row: context.currentLine
         }
     }
     /**
@@ -172,9 +172,9 @@ export function createLexer(code: string): Lexer {
         context.token = kind;
         context.sourceValue = value;
         context.endPosition = {
+            row: context.currentLine,
+            col: context.pos - context.currentLineStart + 1,
             index: context.pos,
-            col: context.pos - context.currentLineStart,
-            row: context.currentLine
         }
         return kind;
     }
@@ -213,7 +213,7 @@ export function createLexer(code: string): Lexer {
      * @returns {boolean}
      */
     function isDigital(offset : number = 0): boolean {
-        const code = context.code[context.pos + offset].charCodeAt(offset);
+        const code = context.code[context.pos + offset].charCodeAt(0);
         return code >= 48 && code <= 57;
         
     }
@@ -317,7 +317,7 @@ export function createLexer(code: string): Lexer {
                     case "=":
                         context.pos += 2;
                         return finishToken(SyntaxKinds.MinusAssignOperator, "-=");
-                    case "+":
+                    case "-":
                         context.pos += 2;
                         return finishToken(SyntaxKinds.DecreOperator, "--");
                     default:
@@ -538,10 +538,10 @@ export function createLexer(code: string): Lexer {
                 switch (next) {
                     case "=": 
                         context.pos += 2;
-                        return finishToken(SyntaxKinds.BitwiseNOTAssginOperator, "^=");
+                        return finishToken(SyntaxKinds.BitwiseXORAssginOperator, "^=");
                     default:
                         context.pos += 1;
-                        return finishToken(SyntaxKinds.BitwiseNOTOperator, "^");
+                        return finishToken(SyntaxKinds.BitwiseXOROperator, "^");
                 }
             }
             case "~": {
@@ -549,10 +549,10 @@ export function createLexer(code: string): Lexer {
                 switch (next) {
                     case "=": 
                         context.pos += 2;
-                        return finishToken(SyntaxKinds.BitwiseXORAssginOperator, "~=");
+                        return finishToken(SyntaxKinds.BitwiseNOTAssginOperator, "~=");
                     default:
                         context.pos += 1;
-                        return finishToken(SyntaxKinds.BitwiseXOROperator, "~");
+                        return finishToken(SyntaxKinds.BitwiseNOTOperator, "~");
                 }
             }
             case "/": {
@@ -863,7 +863,7 @@ export function createLexer(code: string): Lexer {
         if(context.pos === context.code.length) {
             throw new Error("todo error - not close string literal");
         }
-        return finishToken(SyntaxKinds.StringLiteral, context.code.slice(startIndex, context.pos));
+        return finishToken(SyntaxKinds.StringLiteral, context.code.slice(startIndex, context.pos-1));
     }
     function readString() {
         const word = readWord();

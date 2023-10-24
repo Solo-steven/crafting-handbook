@@ -34,12 +34,12 @@
                                     "name": "new",
                                     "start": {
                                         "row": 2,
-                                        "col": 4,
+                                        "col": 5,
                                         "index": 19
                                     },
                                     "end": {
                                         "row": 2,
-                                        "col": 7,
+                                        "col": 8,
                                         "index": 22
                                     }
                                 },
@@ -48,46 +48,46 @@
                                     "name": "target",
                                     "start": {
                                         "row": 2,
-                                        "col": 8,
+                                        "col": 9,
                                         "index": 23
                                     },
                                     "end": {
                                         "row": 2,
-                                        "col": 14,
+                                        "col": 15,
                                         "index": 29
                                     }
                                 },
                                 "start": {
                                     "row": 2,
-                                    "col": 4,
+                                    "col": 5,
                                     "index": 19
                                 },
                                 "end": {
                                     "row": 2,
-                                    "col": 14,
+                                    "col": 15,
                                     "index": 29
                                 }
                             },
                             "arguments": [],
                             "start": {
                                 "row": 2,
-                                "col": 4,
+                                "col": 5,
                                 "index": 19
                             },
                             "end": {
                                 "row": 2,
-                                "col": 16,
+                                "col": 17,
                                 "index": 31
                             }
                         },
                         "start": {
                             "row": 2,
-                            "col": 4,
+                            "col": 5,
                             "index": 19
                         },
                         "end": {
                             "row": 2,
-                            "col": 16,
+                            "col": 17,
                             "index": 31
                         }
                     }
@@ -99,7 +99,7 @@
                 },
                 "end": {
                     "row": 3,
-                    "col": 1,
+                    "col": 2,
                     "index": 34
                 }
             },
@@ -111,7 +111,7 @@
             },
             "end": {
                 "row": 3,
-                "col": 1,
+                "col": 2,
                 "index": 34
             }
         }
@@ -123,7 +123,7 @@
     },
     "end": {
         "row": 4,
-        "col": 0,
+        "col": 1,
         "index": 35
     }
 }

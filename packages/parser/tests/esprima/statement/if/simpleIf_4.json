@@ -63,12 +63,12 @@
                 "kind": "EmptyStatement",
                 "start": {
                     "row": 2,
-                    "col": 6,
+                    "col": 7,
                     "index": 23
                 },
                 "end": {
                     "row": 2,
-                    "col": 7,
+                    "col": 8,
                     "index": 24
                 }
             },
@@ -79,7 +79,7 @@
             },
             "end": {
                 "row": 2,
-                "col": 7,
+                "col": 8,
                 "index": 24
             }
         }
@@ -91,7 +91,7 @@
     },
     "end": {
         "row": 2,
-        "col": 7,
+        "col": 8,
         "index": 24
     }
 }
