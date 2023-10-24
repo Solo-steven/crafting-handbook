@@ -16,5 +16,13 @@ export function tokenize(code: string) {
             break;
         }
     }
-    return tokens;
+    return [tokens, lexer.getTime(), lexer.getSkipTime()];
+}
+
+export function doNothing(code: string) {
+    for(const ch of code) {
+        if(ch == " ") {
+
+        }
+    }
 }

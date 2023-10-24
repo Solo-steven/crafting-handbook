@@ -2,7 +2,8 @@
     "name": "emcakit-jsparser",
     "packageManager": "yarn@3.6.3",
     "scripts": {
-        "build": "rollup --config  --bundleConfigAsCjs  rollup.config.js ",
+        "build": "rollup --config  --bundleConfigAsCjs  rollup.config.js",
+        "bench": "yarn build && node ./benchmark/index.js",
         "dev": "nodemon ./src/dev.ts",
         "test": "ts-node ./tests/runner.ts",
         "test:update": "TEST_UPDATE=1 ts-node ./tests/runner.ts",

@@ -4,7 +4,7 @@ import { createParser } from "@/src/parser";
 import { transformSyntaxKindToLiteral } from  "../tests/transform";
 import fs from 'fs';
 import path from "path";
-const code = fs.readFileSync(path.join(__dirname, "test.js"), "utf-8").toString();
+const code = fs.readFileSync(path.join(__dirname, "test1.js"), "utf-8").toString();
 
 printLexer(code);
 printParser(code);

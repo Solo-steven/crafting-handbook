@@ -1,27 +1,53 @@
 import { SyntaxKinds, LexicalLiteral, KeywordLiteralMapSyntaxKind } from "emcakit-jscommon";
 import { SourcePosition, cloneSourcePosition, createSourcePosition } from "emcakit-jscommon";
 import { ErrorMessageMap } from "./error";
+import { performance } from "node:perf_hooks";
+/**
+ * Context for lexer
+ * @member {string} code
+ * 
+ * 
+ */
 interface Context {
+    // code need to tokenize
     code: string;
-    sourcePosition: SourcePosition;
+    // current pos information
+    pos: number;
+    start: number;
+    end: number;
+    currentLine: number;
+    currentLineStart: number;
+    // current token and token's information
     sourceValue: string;
-    beforeValue: string;
     token: SyntaxKinds | null;
-
     startPosition: SourcePosition;
     endPosition: SourcePosition;
-
+    // stack for tokenize template literal
     templateStringStackCounter: Array<number>;
-
+    // (TODO_MAYBE_REMOVE): for line terminate handle and JSXText reading
     changeLineFlag: boolean;
     spaceFlag: boolean;
     escFlag: boolean;
+    beforeValue: string;
+    // (TODO_MAYBE_REMOVE): for measure performance
+    time: number;
+    skipTime: number;
+}
+
+function createContext(code: string): Context {
+    return {
+        code,
+        pos: 0, currentLine: 0, currentLineStart: 0, start: 0, end: 0,
+        sourceValue: "", token: null, startPosition: createSourcePosition(), endPosition: createSourcePosition(),
+        templateStringStackCounter: [],
+        changeLineFlag: false, spaceFlag: false, escFlag: false, beforeValue: "",
+        time: 0, skipTime: 0
+    }
 }
 
 function cloneContext(source: Context): Context {
     return {
         ...source,
-        sourcePosition: cloneSourcePosition(source.sourcePosition),
         startPosition: cloneSourcePosition(source.startPosition),
         endPosition: cloneSourcePosition(source.endPosition),
         templateStringStackCounter: [...source.templateStringStackCounter],
@@ -46,44 +72,33 @@ interface Lexer {
     getLineTerminatorFlag: () => boolean,
     // API for read regexliteral
     readRegex: () => { pattern: string, flag: string };
+    // Temp api for performance measure
+    getTime: () => number;
+    getSkipTime: () => number;
 }
 
-const stopSet = [ 
+const nonIdentifierStartSet = new Set([ 
     ...LexicalLiteral.punctuators,
     ...LexicalLiteral.operator, 
     ...LexicalLiteral.newLineChars, 
     ...LexicalLiteral.whiteSpaceChars
-]
-
-
-const KeywordLiteralSet = new Set([
-    ...LexicalLiteral.keywords,
-    ...LexicalLiteral.BooleanLiteral,
-    ...LexicalLiteral.NullLiteral,
-    ...LexicalLiteral.UndefinbedLiteral
 ]);
 
 export function createLexer(code: string): Lexer {
-/**
- *  Public API
- */
-    let context: Context = {
-        code,
-        sourcePosition: createSourcePosition(),
-        sourceValue: "",
-        beforeValue: "",
-        token: null,
-        startPosition: createSourcePosition(),
-        endPosition: createSourcePosition(),
-        templateStringStackCounter: [],
-        changeLineFlag: false,
-        spaceFlag: false,
-        escFlag: false
-    };
-    function getLineTerminatorFlag() {
+    let context = createContext(code);
+    /**
+     * Public Api for getting change line flag of current token.
+     * @returns {boolean}
+     */
+    function getLineTerminatorFlag(): boolean {
         return context.changeLineFlag;
     }
-    function getBeforeValue() {
+    /**
+     * Public Api for getting space and changeline value before
+     * current token and previous token.
+     * @returns {string}
+     */
+    function getBeforeValue(): string {
         return context.beforeValue;
     }
     function getSourceValue() {
@@ -127,96 +142,124 @@ export function createLexer(code: string): Lexer {
         nextToken,
         lookahead,
         readRegex,
+        getTime() {
+            return context.time;
+        },
+        getSkipTime() {
+            return context.skipTime;
+        }
     }
-/**
- *  Private utils function 
- */
-    function startToken() {
-        context.startPosition = cloneSourcePosition(context.sourcePosition);
+    /**
+     * Start reading a token, because token contain row and col 
+     * information, so we need to record the current pos as start
+     * mark.
+     * @returns {void}
+     */
+    function startToken(): void {
+        context.startPosition = {
+            index: context.pos,
+            col: context.pos - context.currentLineStart,
+            row: context.currentLine
+        }
     }
+    /**
+     * 
+     * @param kind 
+     * @param value 
+     * @returns 
+     */
     function finishToken(kind: SyntaxKinds, value: string): SyntaxKinds {
         context.token = kind;
         context.sourceValue = value;
-        context.endPosition = cloneSourcePosition(context.sourcePosition);
+        context.endPosition = {
+            index: context.pos,
+            col: context.pos - context.currentLineStart,
+            row: context.currentLine
+        }
         return kind;
     }
-    function getChar(n = 1): string {
-        if(n < 1) {
-            throw new Error(`[Error]: param 'n' at get function need to >= 1. but now get ${n}.`)
-        }
-        if(context.sourcePosition.index >= context.code.length) {
-            return "";
-        }
-        return context.code.slice(context.sourcePosition.index, context.sourcePosition.index + n);
-    }
-    function eatChar(n = 1): string {
-        if(n < 1) {
-            throw new Error(`[Error]: param 'n' at eat function need to >= 1. but now get ${n}.`)
-        }
-        const char = getChar(n);
-        for(const ch of char) {
-            if(ch === "\n") {
-                context.sourcePosition.row ++;
-                context.sourcePosition.col = 0;
-            } else {
-                context.sourcePosition.col ++;
-            }
-            context.sourcePosition.index ++;
-        }
-        return char;
-    }
-    function startWith(char: string): boolean {
-        return context.code.startsWith(char, context.sourcePosition.index)
-    }
-    function startWithSet(chars: Array<string>): boolean {
-        for(const value of chars) {
-            if(value.length === 0) {
-                throw new Error(`[Error]: is function can't access empty string.`);
-            }
-            if(context.code.startsWith(value, context.sourcePosition.index)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    function eof() {
-        return getChar() === "";
-    }
+    /**
+     * 
+     */
     function skipWhiteSpaceChangeLine() {
         context.changeLineFlag = false;
-        context.beforeValue = "";
-        while(
-            !eof() && ( startWith("\n") || startWith('\t') || startWith(" "))
-        ) {
-            if(startWith("\n")) {
-                context.changeLineFlag = true;
-                context.beforeValue += eatChar();
-                continue;
+        // TODO: consider the needing of `beforeValue`(only used for parse JSXText)
+        // context.beforeValue = "";
+        // const start = context.sourcePosition.index;
+        let s = performance.now();
+        loop: while(context.pos < code.length) {
+            switch(context.code[context.pos]) {
+                case '\n': 
+                    context.changeLineFlag = true;
+                    context.pos ++;
+                    context.currentLineStart = context.pos;
+                    context.currentLine ++;
+                    break;
+                case " ":
+                case "\t":
+                    context.spaceFlag = true;
+                    context.pos ++;
+                    break;
+                default:
+                    break loop;
             }
-            if(startWith('\t') || startWith(" ")) {
-                context.spaceFlag = true;
-                context.beforeValue += eatChar();
-                continue;
-            }
-            context.beforeValue +=  eatChar();
         }
+        // context.beforeValue = context.code.slice(start, context.sourcePosition.index);
+        context.skipTime += performance.now() - s;
     }
-/**
- * Main Worker Logic 
- */
+    /**
+     * 
+     * @param {number} offset 
+     * @returns {boolean}
+     */
+    function isDigital(offset : number = 0): boolean {
+        const code = context.code[context.pos + offset].charCodeAt(offset);
+        return code >= 48 && code <= 57;
+        
+    }
+    /**
+     * 
+     */
+    function isHex() {
+        const code = context.code[context.pos].charCodeAt(0);
+        return (
+            (code >= 48 && code <= 57) ||
+            (code >= 97 && code <= 122) ||
+            (code >= 65 && code <= 90 )
+        );
+    }
+    /**
+     * 
+     */
+    function isIdentifierStartChar() {
+        return !nonIdentifierStartSet.has(context.code[context.pos]);
+    }
+    /**
+     * lexicalError is used for tokenizer unexecpt char happended. ex: string start with " can't find end ""
+     * @param {string} content - error message
+     * @returns {Error} - a error object
+     */
+    function lexicalError(content: string): Error {
+        return new Error(`[Error]: Lexical Error, ${content}, start position is (${context.startPosition.row}, ${context.startPosition.col})`);
+    }
+    /**
+     * 
+     * @returns {SyntaxKinds}
+     */
     function lex(): SyntaxKinds {
         skipWhiteSpaceChangeLine();
-        const char = getChar();
+        const char = context.code[context.pos];
         startToken();
+        if(!char) {
+            return finishToken(SyntaxKinds.EOFToken, "eof");
+        }
         switch(char) {
-            case "":
-                return finishToken(SyntaxKinds.EOFToken, "eof");
             /** ==========================================
              *              Punctuators
              *  ==========================================
              */
             case "{":
-                eatChar();
+                context.pos ++;
                 context.templateStringStackCounter.push(-1);
                 return finishToken(SyntaxKinds.BracesLeftPunctuator, "{");
             case "}":
@@ -224,99 +267,339 @@ export function createLexer(code: string): Lexer {
                 if(result && result > 0) {
                     return readTemplateMiddleORTail();
                 }
-                eatChar();
+                context.pos ++;
                 return finishToken(SyntaxKinds.BracesRightPunctuator, "}");
             case "[":
-                eatChar();
+                context.pos ++;
                 return finishToken(SyntaxKinds.BracketLeftPunctuator, "[");
             case "]":
-                eatChar();
+                context.pos ++;
                 return finishToken(SyntaxKinds.BracketRightPunctuator,"]");
             case "(":
-                eatChar();
+                context.pos ++;
                 return finishToken(SyntaxKinds.ParenthesesLeftPunctuator, "(");
             case ")":
-                eatChar();
+                context.pos ++;
                 return finishToken(SyntaxKinds.ParenthesesRightPunctuator, ")");
             case ":":
-                eatChar();
+                context.pos ++;
                 return finishToken(SyntaxKinds.ColonPunctuator, ":");
             case ";":
-                eatChar();
+                context.pos ++;
                 return finishToken(SyntaxKinds.SemiPunctuator, ";");
             /** ==========================================
              *                Operators
              *  ==========================================
              */
+            case ",":
+                // ','
+                context.pos ++;
+                return finishToken(SyntaxKinds.CommaToken, ",");
             case "+": {
                 // '+', '+=', '++' 
-                return readPlusStart();
+                const next = context.code[context.pos +1];
+                switch (next) {
+                    case "=":
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.PlusAssignOperator, "+=");
+                    case "+":
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.IncreOperator, "++");
+                    default:
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.PlusOperator, "+");
+                }
             }
             case "-": {
                 // '-', '-=', '--'
-                return readMinusStart();
+                const next = context.code[context.pos +1];
+                switch (next) {
+                    case "=":
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.MinusAssignOperator, "-=");
+                    case "+":
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.DecreOperator, "--");
+                    default:
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.MinusOperator, "-");
+                }
             }
             case "*": {
                 // '*' , '**', '*=', '**=', 
-                return readMultiplyStart();
+                const next = context.code[context.pos + 1];
+                switch (next) {
+                    case "=":
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.MultiplyAssignOperator, "*=");
+                    case "*": {
+                        const nextNext = context.code[context.pos + 2];
+                        if(nextNext === "=") {
+                            context.pos += 3;
+                            return finishToken(SyntaxKinds.ExponAssignOperator, "**=");
+                        }
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.ExponOperator, "**");
+                    }
+                    default:
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.MultiplyOperator, "*");
+                }
             }
             case "%": {
                 // '%', '%='
-                return readModStart();
-            }
-            case "/": {
-                // '/' '// comment' '/* comments */'
-                return readSlashStart();
+                const next = context.code[context.pos + 1];
+                switch(next) {
+                    case "=":
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.ModAssignOperator, "%=");
+                    default:
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.ModOperator, "%");
+                }
             }
             case ">": {
                 // '>', '>>', '>>>' '>=', ">>=",  ">>>="
-                return readGTStart();
+                const next = context.code[context.pos + 1];
+                switch (next) {
+                    case ">": {
+                        const nextNext = context.code[context.pos +2];
+                        switch (nextNext) {
+                            case ">": {
+                                const nextNextNext = context.code[context.pos + 3];
+                                switch(nextNextNext) {
+                                    case "=": 
+                                        // >>>=
+                                        context.pos += 4;
+                                        return finishToken(SyntaxKinds.BitwiseRightShiftFillAssginOperator, ">>>=");
+                                    default:
+                                        // >>>
+                                        context.pos += 3;
+                                        return finishToken(SyntaxKinds.BitwiseRightShiftFillOperator, ">>>");
+                                }
+                            }
+                            case "=":
+                                // >>=
+                                context.pos += 3;
+                                return finishToken(SyntaxKinds.BitwiseRightShiftAssginOperator, ">>=");
+                            default:
+                                // >>
+                                context.pos += 2;
+                                return finishToken(SyntaxKinds.BitwiseRightShiftOperator, ">>");
+                        }
+                    }
+                    case "=": 
+                        // >=
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.GeqtOperator, ">=");
+                    default: 
+                        // >
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.GtOperator, ">");
+                }
             }
             case "<": {
-                // '<', '<<', '<=', '<<='
-                return readLTStart();
+                // '<', '<<', '<=', '<<=', "</"
+                const next = context.code[context.pos + 1];
+                switch (next) {
+                    case "<": {
+                        const nextNext = context.code[context.pos +2];
+                        switch (nextNext) {
+                            case "=":
+                                // <<=
+                                context.pos += 3;
+                                return finishToken(SyntaxKinds.BitwiseLeftShiftAssginOperator, "<<=");
+                            default:
+                                // <<
+                                context.pos += 2;
+                                return finishToken(SyntaxKinds.BitwiseLeftShiftOperator, "<<");
+                        }
+                    }
+                    case "=": 
+                        // <=
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.LeqtOperator, "<=");
+                    case "/":
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.JSXCloseTagStart, "</");
+                    default: 
+                        // <
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.LtOperator, "<");
+                }
             }
             case '=': {
-                // '=', '==', '===', 
-                return readAssignStart();
+                // '=', '==', '===', '=>'
+                const next = context.code[context.pos+1];
+                switch (next) {
+                    case "=": {
+                        const nextNext = context.code[context.pos +2];
+                        switch (nextNext) {
+                            case "=": 
+                                context.pos += 3;
+                                return finishToken(SyntaxKinds.StrictEqOperator, "===");
+                            default:
+                                context.pos += 2;
+                                return finishToken(SyntaxKinds.EqOperator, "==");
+                        }
+                    }
+                    case ">":
+                        context.pos +=2;
+                        return finishToken(SyntaxKinds.ArrowOperator, "=>");
+                    default:
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.AssginOperator, "=");
+                }
             }
             case "!": {
                 // '!', '!=', '!=='
-                return readExclamationStart();
-            }
-            case ",": {
-                // ','
-                eatChar();
-                return finishToken(SyntaxKinds.CommaToken, ",");
+                const next = context.code[context.pos+1];
+                switch (next) {
+                    case "=": {
+                        const nextNext = context.code[context.pos +2];
+                        switch (nextNext) {
+                            case "=": 
+                                context.pos += 3;
+                                return finishToken(SyntaxKinds.StrictNotEqOperator, "!==");
+                            default:
+                                context.pos += 2;
+                                return finishToken(SyntaxKinds.NotEqOperator, "!=");
+                        }
+                    }
+                    default:
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.LogicalNOTOperator, "!");
+                }
             }
             case "&": {
                 // '&', '&&', '&=', '&&='
-                return readANDStart();
+                const next = context.code[context.pos+1];
+                switch (next) {
+                    case "&": {
+                        const nextNext = context.code[context.pos + 2];
+                        switch(nextNext) {
+                            case "=": 
+                                context.pos += 3;
+                                return finishToken(SyntaxKinds.logicalANDAssginOperator, "&&=");
+                            default: 
+                                context.pos += 2;
+                                return finishToken(SyntaxKinds.LogicalANDOperator, "&&");
+                        }
+                    }
+                    case "=":
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.BitwiseANDAssginOperator, "&=");
+                    default:
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.BitwiseANDOperator, "&");
+                }
             }
             case "|": {
                 // '|', "||", '|=', '||='
-                return readORStart();
+                const next = context.code[context.pos+1];
+                switch (next) {
+                    case "|": {
+                        const nextNext = context.code[context.pos + 2];
+                        switch(nextNext) {
+                            case "=": 
+                                context.pos += 3;
+                                return finishToken(SyntaxKinds.LogicalORAssignOperator, "||=");
+                            default: 
+                                context.pos += 2;
+                                return finishToken(SyntaxKinds.LogicalOROperator, "||");
+                        }
+                    }
+                    case "=":
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.BitwiseORAssginOperator, "|=");
+                    default:
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.BitwiseOROperator, "|");
+                }
             }
             case "?": {
                 // '?', '?.' '??'
-                return readQustionStart();
+                const next = context.code[context.pos+1];
+                switch (next) {
+                    case ".": 
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.QustionDotOperator, "?.");
+                    case "?": 
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.NullishOperator, "??");
+                    default:
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.QustionOperator, "?");
+                }
             }
             case "^": {
                 // '^', '^='
-                return readUpArrowStart();
+                const next = context.code[context.pos+1];
+                switch (next) {
+                    case "=": 
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.BitwiseNOTAssginOperator, "^=");
+                    default:
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.BitwiseNOTOperator, "^");
+                }
             }
             case "~": {
-                return readTildeStart();
+                const next = context.code[context.pos+1];
+                switch (next) {
+                    case "=": 
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.BitwiseXORAssginOperator, "~=");
+                    default:
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.BitwiseXOROperator, "~");
+                }
+            }
+            case "/": {
+                // '/' '// comment' '/* comments */'
+                const next = context.code[context.pos + 1];
+                switch (next) {
+                    case "/": 
+                        // start with "//"
+                        return readComment();
+                    case "*": 
+                        // start with "/*"
+                        return readCommentBlock();
+                    case "=":
+                        // start with "/="
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.DivideAssignOperator, "/=");
+                    case ">": 
+                        // start with "/>"
+                        context.pos += 2;
+                        return finishToken(SyntaxKinds.JSXSelfClosedToken, "/>");
+                    default:
+                        // just "/"
+                        context.pos += 1;
+                        return finishToken(SyntaxKinds.DivideOperator, "/");
+                }
             }
             case ".": {
                 // '.', '...', 'float-literal', Sub State Machine 2
-                return readDotStart();
+                const next = context.code[context.pos + 1];
+                const nextNext = context.code[context.pos + 2];
+                if(next === "." && nextNext === ".") {
+                    context.pos += 3;
+                    return finishToken(SyntaxKinds.SpreadOperator, "...");
+                }
+                if(isDigital(1)) {
+                    return readDotStartFloat();
+                }
+                context.pos += 1;
+                return finishToken(SyntaxKinds.DotOperator, ".");
+            }
+            case '#': {
+                context.pos ++;
+                const word = readWord();
+                return finishToken(SyntaxKinds.PrivateName, word);
             }
             case '`': {
                 return readTemplateHeadORNoSubstitution();
-            }
-            case '#': {
-                return readPrivateName();
             }
             /** ==========================================
              *  Keyword, Id, Literal
@@ -332,10 +615,13 @@ export function createLexer(code: string): Lexer {
                 // Number Literal
                 return readNumberLiteral();
             }
-            case "\"":
+            case "\"": {
+                // String Literal
+                return readStringLiteral("\"");
+            }
             case "'": {
                 // String Literal
-                return readStringLiteral();
+                return readStringLiteral("'");
             }
             default: {
                 // Word -> Id or Keyword
@@ -343,636 +629,330 @@ export function createLexer(code: string): Lexer {
             }
         }
     }
-    /**
-     * sunStateMachineError is used for return a format error to developer that Sub State Machine
-     * expect start chars that is not show in current code string.
-     * @param {string} name - name of sub state machine
-     * @param {string} char - chars that sub state machine is expected
-     * @returns {Error} - a error object
-     */
-    function subStateMachineError(name: string, char: string): Error {
-        return new Error(`[Error]: ${name} state machine should only be called when currnet position is ${char}. but current position is ${getChar()}`);
-    }
-    /**
-     * lexicalError is used for tokenizer unexecpt char happended. ex: string start with " can't find end ""
-     * @param {string} content - error message
-     * @returns {Error} - a error object
-     */
-    function lexicalError(content: string): Error {
-        return new Error(`[Error]: Lexical Error, ${content}, start position is (${context.startPosition.row}, ${context.startPosition.col}), end position is ${context.sourcePosition.row}, ${context.sourcePosition.col}`);
-    }
     /** ======================================
-     *      Operators State Machine
+     *      State Machine
      *  ======================================
      */
-    function readPlusStart() {
-        // read any token start with '+', '+=', '++'
-        // MUST call when current char is '+'
-        if(!startWith("+")) {
-            throw subStateMachineError("readPlusStart", "+")
-        }
-        if(startWith("+=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.PlusAssignOperator, "+=");
-        }
-        if(startWith("++")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.IncreOperator, "++");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.PlusOperator, "+");
-    }
-    function readMinusStart() {
-        // read any token start with '-', '-=', '--'
-        // MUST call when current char is '-'
-        if(!startWith("-")) {
-            throw subStateMachineError("readMinusStart", "-");
-        }
-        if(startWith("-=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.MultiplyAssignOperator, "-=");
-        }
-        if(startWith("--")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.DecreOperator, "--");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.MinusOperator,"-");
-    }
-    function readMultiplyStart() {
-        // read any token start with '*', '*=', '**', '**='
-        // MUST call when current char is '*'
-        if(!startWith("*")) {
-            throw subStateMachineError("readMutiplyStart", "*");
-        }
-        if(startWith("**=")) {
-            eatChar(3);
-            return finishToken(SyntaxKinds.ExponAssignOperator, "**=");
-        }
-        if(startWith("**")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.ExponOperator, "**");
-        }
-        if(startWith("*=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.MultiplyAssignOperator,"*=");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.MultiplyOperator, "*");
-    }
-    function readSlashStart() {
-        // read any token start with '/', '/=', 'single-line-comment', 'block-comment'
-        // MUST call when current char is '/'
-        if(!startWith("/")) {
-            throw subStateMachineError("readSlashStart", "/");
-        }
-        if(startWith("//")) {
-            return readComment();
-        }
-        if(startWith("/*")) {
-            return readCommentBlock();
-        }
-        if(startWith("/=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.DivideAssignOperator, "//");
-        }
-        if(startWith("/>")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.JSXSelfClosedToken, "/>");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.DivideOperator, "/");
-    }
     function readComment() {
-        if(!startWith("//")) {
-            throw subStateMachineError("readComment", "//");
-        }
         // eat '//'
-        eatChar(2);
-        let comment = "";
-        while(!startWith("\n") && !eof()) {
-            comment += eatChar();
+        context.pos += 2;
+        const startIndex = context.pos;
+        while(context.pos < context.code.length) {
+            if(context.code[context.pos] === "\n") {
+                break;
+            }
+            context.pos ++;
         }
-        return finishToken(SyntaxKinds.Comment, comment);
+        return finishToken(SyntaxKinds.Comment, context.code.slice(startIndex, context.pos));
     }
     function readCommentBlock() {
-        if(!startWith("/*")) {
-            throw new Error(``);
-        }
-        // Eat '/*'
-        eatChar(2);
-        let comment = "";
-        while(!startWith("*/") && !eof()) {
-            comment += eatChar();
-        }
-        if(eof()) {
-            // lexical error, no close */ to comment.
-            throw lexicalError("block comment can't find close '*/'");
-        }
-        // eat '*/'
-        eatChar(2);
-        return finishToken(SyntaxKinds.BlockComment, comment);
-    }
-    function readModStart() {
-        // read any token start with '%', '%='
-        // MUST call when current char is '%'
-        if(!startWith("%")) {
-            throw subStateMachineError("readModStart", "%");
-        }
-        if(startWith("%=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.ModAssignOperator,"%=");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.ModOperator, "%");
-    }
-    function readGTStart() {
-        // read any token start with '>', '>=', '>>', '>>=', '>>>', '>>>='
-        // MUST call when current char is '>'
-        if(!startWith(">")) {
-            throw subStateMachineError("readGTStart", ">");
-        }
-        if(startWith(">>>=")) {
-            eatChar(4);
-            finishToken(SyntaxKinds.BitwiseRightShiftFillAssginOperator, ">>>=");
-        }
-        if(startWith(">>>")) {
-            eatChar(3);
-            return finishToken(SyntaxKinds.BitwiseRightShiftFillOperator, ">>>");
-        }
-        if(startWith(">>=")) {
-            eatChar(3);
-            return finishToken(SyntaxKinds.BitwiseRightShiftAssginOperator, ">>=");
-        }
-        if(startWith(">>")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.BitwiseRightShiftOperator, ">>")
-        }
-        if(startWith(">=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.GeqtOperator, ">=");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.GtOperator, ">");
-    }
-    function readLTStart() {
-        // read any token start with '<', '<=', '<<', '<<='
-        // MUST call when current char is '<'
-        if(!startWith("<")) {
-            throw subStateMachineError("readLTStart", "<");
-        }
-        if(startWith("<<=")) {
-            eatChar(3);
-            return finishToken(SyntaxKinds.BitwiseLeftShiftAssginOperator, "<<=");
-        }
-        if(startWith("<<")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.BitwiseLeftShiftOperator, "<<");
-        }
-        if(startWith("<=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.LeqtOperator, "<=");
-        }
-        if(startWith("</")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.JSXCloseTagStart, "</");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.LtOperator, "<");
-    }
-    function readAssignStart() {
-        // [READ]: '=', '==', '==='
-        // [MUST]: call when current char is '=' 
-        if(!startWith("=")) {
-            throw subStateMachineError("readAssginStart", "=");
-        }
-        if(startWith("===")) {
-            eatChar(3);
-            return finishToken(SyntaxKinds.StrictEqOperator, "===");
-        }
-        if(startWith("==")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.EqOperator, "==");
-        }
-        if(startWith("=>")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.ArrowOperator, "=>");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.AssginOperator, "=");
-    }
-    function readExclamationStart() {
-        // [READ]: '!', '!=', '!=='
-        // [MUST]: call when current char is '!'
-        if(!startWith("!")) {
-            throw subStateMachineError("readExclamationStart", "!");
-        }
-        if(startWith("!==")) {
-            eatChar(3);
-            return finishToken(SyntaxKinds.StrictNotEqOperator, "!==");
-        }
-        if(startWith("!=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.NotEqOperator, "!=");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.LogicalNOTOperator, "!");
-    }
-    function readANDStart() {
-        // [READ]: '&', '&&', '&=', '&&='
-        // [MUST]: call when current char is '&' 
-        if(!startWith("&")) {
-            throw subStateMachineError("readANDStart", "&");
-        }
-        if(startWith("&&=")) {
-            eatChar(3);
-            return finishToken(SyntaxKinds.logicalANDAssginOperator, "&&=");
-        }
-        if(startWith("&&")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.LogicalANDOperator, "&&");
-        }
-        if(startWith("&=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.BitwiseANDAssginOperator, "&=");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.BitwiseANDOperator, "&");
-    }
-    function readORStart() {
-        // [READ]: '|', '||', '|=', '||='
-        // [MUST]: call when current char is '|' 
-        if(!startWith("|")) {
-            throw subStateMachineError("readORStart", "|");
-        }
-        if(startWith("||=")) {
-            eatChar(3);
-            return finishToken(SyntaxKinds.LogicalORAssignOperator,"||=");
-        }
-        if(startWith("|=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.BitwiseORAssginOperator,"|=");
-        }
-        if(startWith("||")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.LogicalOROperator,"||");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.BitwiseOROperator,"|");
-    }
-    function readQustionStart() {
-        // [READ]: '?', '?.' '??'
-        // [MUST]: call when current char is '?'
-        if(!startWith("?")) {
-            throw subStateMachineError("readQustionStart", "?");
-        } 
-        if(startWith("?.")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.QustionDotOperator,"?.");
-        }
-        if(startWith("??")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.NullishOperator, "??");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.QustionOperator, "?");
-    }
-    function readDotStart() {
-        // [READ]: '.', '...'
-        // [MUST]: call when current char is '.'
-        if(!startWith(".")) {
-            throw subStateMachineError("readDotStart", ".");
-        } 
-        if(startWith("...")) {
-            eatChar(3);
-            return finishToken(SyntaxKinds.SpreadOperator, "...");
-        }
-        if(startWith(".")) {
-            eatChar();
-            if(startWithSet(LexicalLiteral.numberChars)) {
-                let floatWord = "";
-                while(startWithSet(LexicalLiteral.numberChars) && !eof()) {
-                    floatWord += eatChar();
+        // eat '/*'
+        context.pos += 2;
+        const startIndex = context.pos;
+        while(context.pos < context.code.length) {
+            if(context.code[context.pos] === "*") {
+                if(context.code[context.pos +1] === "/") {
+                    context.pos += 2;
+                    break;
                 }
-                return finishToken(SyntaxKinds.NumberLiteral, `.${floatWord}`);
             }
-            return finishToken(SyntaxKinds.DotOperator, ".");
+            context.pos ++;
         }
-        // TODO not . , ...
-        throw new Error();
+        if(context.pos === context.code.length) {
+            throw new Error("todo error - unclose block comment error");
+        }
+        return finishToken(SyntaxKinds.BlockComment, context.code.slice(startIndex, context.pos));
     }
-    function readTildeStart() {
-        // [READ]: '^', '^='
-        // [MUST]: call when current char is '^'
-        if(!startWith("~")) {
-            throw subStateMachineError("readTildeStart", "~");
-        } 
-        if(startWith("~=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.BitwiseXORAssginOperator, "~=");
+    function readDotStartFloat() {
+        const startIndex = context.pos;
+        // eat '.'
+        context.pos += 1;
+        while(context.pos < context.code.length) {
+            if(!isDigital()) {
+                break;
+            }
+            context.pos ++;
         }
-        eatChar();
-        return finishToken(SyntaxKinds.BitwiseXOROperator, "~");
-    }
-    function readUpArrowStart() {
-        // [READ]: '~', '~='
-        // [MUST]: call when current char is '~'
-        if(!startWith("^")) {
-            throw subStateMachineError("readUpArrowStart", "~");
-        } 
-        if(startWith("^=")) {
-            eatChar(2);
-            return finishToken(SyntaxKinds.BitwiseNOTAssginOperator, "^=");
-        }
-        eatChar();
-        return finishToken(SyntaxKinds.BitwiseXOROperator, "^");
+        return finishToken(SyntaxKinds.NumberLiteral ,context.code.slice(startIndex, context.pos));
     }
     /** ================================================
      *     Template
      *  ================================================
      */
     function readTemplateHeadORNoSubstitution() {
-        if(!startWith("`")) {
-            throw subStateMachineError("readTemplateHeadORNoSubstitution", "`");
-        }
-        eatChar(1);
-        let wordString = "";
+        // eat '`'
+        context.pos ++;
+        const startIndex = context.pos;
         let isEscape = false;
-        while(!(startWithSet(["${", "`"]) && !isEscape) && !eof() ) {
-            isEscape = startWith("\\");
-            wordString += eatChar();
+        while(context.pos < context.code.length) {
+            const current = context.code[context.pos];
+            isEscape = current === "\\";
+            if(isEscape) {
+                context.pos ++;
+                continue;
+            }
+            if(current === "\n") {
+                context.pos ++;
+                context.currentLine ++;
+                context.currentLineStart = context.pos;
+                continue;
+            }
+            if(!isEscape && current === "`") {
+                const endIndex = context.pos;
+                context.pos += 1;
+                return  finishToken(SyntaxKinds.TemplateNoSubstitution, context.code.slice(startIndex, endIndex));
+            }
+            if(current === "$") {
+                if(context.code[context.pos + 1] === "{") {
+                    const endIndex = context.pos;
+                    context.pos += 2;
+                    context.templateStringStackCounter.push(1);
+                    return  finishToken(SyntaxKinds.TemplateHead, context.code.slice(startIndex, endIndex));
+                }
+            }
+            context.pos ++;
         }
-        if(eof()) {
-            throw lexicalError("template string not closed with '`'");
-        }
-        if(startWith("${")) {
-            eatChar(2);
-            context.templateStringStackCounter.push(1);
-            return  finishToken(SyntaxKinds.TemplateHead, wordString);
-        }
-        eatChar(1);
-        return finishToken(SyntaxKinds.TemplateNoSubstitution, wordString);
+        throw new Error("todo error - not close template head or no subsitude");
     }
     function readTemplateMiddleORTail() {
-        if(!startWith("}")) {
-            throw subStateMachineError("readTemplateMiddleORTail", "}");
-        }
-        eatChar(1);
-        let wordString = "";
+        // eat `
+        context.pos ++;
+        const startIndex = context.pos;
         let isEscape = false;
-        while(!(startWithSet(["${", "`"]) && !isEscape) && !eof() ) {
-            isEscape = startWith("\\");
-            wordString += eatChar();
+        while(context.pos < context.code.length) {
+            const current = context.code[context.pos];
+            isEscape = current === "\\" && !isEscape;
+            if(isEscape) {
+                context.pos ++;
+                continue;
+            }
+            if(current === "\n") {
+                context.pos ++;
+                context.currentLine ++;
+                context.currentLineStart = context.pos;
+                continue;
+            }
+            if(!isEscape && current === "`") {
+                const endIndex = context.pos;
+                context.pos += 1;
+                return  finishToken(SyntaxKinds.TemplateTail, context.code.slice(startIndex, endIndex));
+            }
+            if(current === "$") {
+                if(context.code[context.pos + 1] === "{") {
+                    const endIndex = context.pos;
+                    context.pos += 2;
+                    context.templateStringStackCounter.push(1);
+                    return  finishToken(SyntaxKinds.TemplateMiddle, context.code.slice(startIndex, endIndex));
+                }
+            }
+            context.pos ++;
         }
-        if(eof()) {
-            throw lexicalError("template string not closed with '`'");
-        }
-        context.sourceValue = wordString;
-        if(startWith("${")) {
-            context.templateStringStackCounter.push(1);
-            eatChar(2);
-            return  finishToken(SyntaxKinds.TemplateMiddle, wordString);
-        }
-        eatChar(1);
-        return finishToken(SyntaxKinds.TemplateTail, wordString);
+        throw new Error("todo error - not close template middle or tail");
     }
-    function readPrivateName() {
-        if(!startWith("#")) {
-            throw subStateMachineError("readPrivateName", "#");
-        }
-        eatChar(1);
-        const word = readWord();
-        return finishToken(SyntaxKinds.PrivateName, word);
-    }
-
     /** ================================================
      *     Id, Literal, Keywords State Machine
      *  ================================================
      */
     function readNumberLiteral() {
         // Start With 0
-        if(startWith("0")) {
-            eatChar();
-            let floatWord = "";
-            if(startWith(".")) {
-                eatChar();
-                while(startWithSet(LexicalLiteral.numberChars)) {
-                    floatWord += eatChar();
-                }
-                return finishToken(SyntaxKinds.NumberLiteral, `0.${floatWord}`);
+        const char = context.code[context.pos];
+        if(char === "0") {
+            context.pos ++;
+            const next =  context.code[context.pos];
+            if(next === ".") {
+                return readDotStartFloat();
             }
-            if(!startWithSet(LexicalLiteral.nonDigitalPrefix)) {
-                return finishToken(SyntaxKinds.NumberLiteral, `0`);
-            }
-            if(startWithSet(LexicalLiteral.binaryPrfix)) {
-                eatChar();
-                return readBinaryNumberLiteral();
-            }
-            if(startWithSet(LexicalLiteral.octalPrefix)) {
-                eatChar();
-                return readOctalNumberLiteral();
-            }
-            if(startWithSet(LexicalLiteral.hexPrefix)) {
-                eatChar();
-                return readHexNumberLiteral();
-            }
-            throw new Error(`[Error]: Not Support 0x 0b Number, (${getStartPosition().row}, ${getStartPosition().col})`)
+            return finishToken(SyntaxKinds.NumberLiteral, "0");
         }
         // Start With Non 0
-        const intStartIndex = context.sourcePosition.index;
-        while(startWithSet(LexicalLiteral.numberChars) && !eof()) {
-            eatChar();
-        }
-        // default case, start with int part and followed by
-        // - float part
-        // - expon part
-        let numberWord = context.code.slice(intStartIndex, context.sourcePosition.index);
-        if(startWith(".")) {
-            eatChar();
-            const floatWordStartIndex = context.sourcePosition.index;
-            while(startWithSet(LexicalLiteral.numberChars) && !eof()) {
-                eatChar();
+        let startIndex = context.pos;
+        while(context.pos < context.code.length) {
+            if(!isDigital()) {
+                break;
             }
-            const floatWord = context.code.slice(floatWordStartIndex, context.sourcePosition.index);
-            numberWord = `${numberWord}.${floatWord}`;
+            context.pos ++;
         }
-        if(startWithSet(["e", "E"])) {
-            let exponWord = eatChar();;
-            if(startWithSet(["+", "-"])) {
-                exponWord += eatChar();
-            }
-            while(startWithSet(LexicalLiteral.numberChars)) {
-                exponWord += eatChar();
-            }
-            if(exponWord.length === 1) {
-                throw lexicalError(ErrorMessageMap.expon_number_must_have_expon_part);
-            }
-            return finishToken(SyntaxKinds.NumberLiteral, `${numberWord}${exponWord}`)
-        }
-        return finishToken(SyntaxKinds.NumberLiteral, numberWord);
-    }
-    function readBinaryNumberLiteral() {
-        const startIndex = context.sourcePosition.index;
-        let seprator = false;
-        while(startWithSet(LexicalLiteral.binaryChar)) {
-            if(startWith("_")) {
-                seprator = true;
-            }else {
-                seprator = false;
-            }
-            eatChar();
-        }
-        if(seprator) {
-            throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
-        }
-        const word = context.code.slice(startIndex, context.sourcePosition.index);
-        return finishToken(SyntaxKinds.NumberLiteral, word);
-    }
-    function readOctalNumberLiteral() {
-        const startIndex = context.sourcePosition.index;
-        let seprator = false;
-        while(startWithSet(LexicalLiteral.octalChars)) {
-            if(startWith("_")) {
-                seprator = true;
-            }else {
-                seprator = false;
-            }
-            eatChar();
-        }
-        if(seprator) {
-            throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
-        }
-        const word = context.code.slice(startIndex, context.sourcePosition.index);
-        return finishToken(SyntaxKinds.NumberLiteral, word);
-    }
-    function readHexNumberLiteral() {
-        const startIndex = context.sourcePosition.index;
-        let seprator = false;
-        while(startWithSet(LexicalLiteral.hexChars)) {
-            if(startWith("_")) {
-                seprator = true;
-            }else {
-                seprator = false;
-            }
-            eatChar();
-        }
-        if(seprator) {
-            throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
-        }
-        const word = context.code.slice(startIndex, context.sourcePosition.index);
-        return finishToken(SyntaxKinds.NumberLiteral, word);   
-    }
-    function readStringLiteral() {
-        let mode = "";
-        if(startWith(`'`)) {
-            mode = `'`;
-        }else if(startWith(`"`)) {
-            mode = `"`
-        }else {
-            throw new Error("There");
-        }
-        eatChar();
-        let word = "";
-        let isEscape = false;
-        while(!(startWith(mode) && !isEscape ) && !eof()) {
-            if(startWith("\n")) {
-                if(!isEscape) {
-                    throw lexicalError(`string literal start with ${mode} can not have changeline without \\ .`);
+        const intPart = context.code.slice(startIndex, context.pos);
+        if(context.code[context.pos] === ".") {
+            context.pos ++;
+            startIndex = context.pos;
+            while(context.pos < context.code.length) {
+                if(!isDigital()) {
+                    break;
                 }
-                isEscape = false;
-                eatChar();
-                word = word.slice(0, word.length-1);
-                continue;
+                context.pos ++;
             }
-            if(startWith('\\')) {
-                isEscape = !isEscape
-            }else {
-                isEscape = false;
+            const floatPart = context.code.slice(startIndex, context.pos);
+            return finishToken(SyntaxKinds.NumberLiteral, `${intPart}.${floatPart}`);
+        }
+        return finishToken(SyntaxKinds.NumberLiteral, intPart);
+    }
+    // function readBinaryNumberLiteral() {
+    //     const startIndex = context.sourcePosition.index;
+    //     let seprator = false;
+    //     while(startWithSet(LexicalLiteral.binaryChar)) {
+    //         if(startWith("_")) {
+    //             seprator = true;
+    //         }else {
+    //             seprator = false;
+    //         }
+    //         context.sourcePosition.index ++;
+    //     }
+    //     if(seprator) {
+    //         throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+    //     }
+    //     const word = context.code.slice(startIndex, context.sourcePosition.index);
+    //     return finishToken(SyntaxKinds.NumberLiteral, word);
+    // }
+    // function readOctalNumberLiteral() {
+    //     const startIndex = context.sourcePosition.index;
+    //     let seprator = false;
+    //     while(startWithSet(LexicalLiteral.octalChars)) {
+    //         if(startWith("_")) {
+    //             seprator = true;
+    //         }else {
+    //             seprator = false;
+    //         }
+    //         context.sourcePosition.index ++;
+    //     }
+    //     if(seprator) {
+    //         throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+    //     }
+    //     const word = context.code.slice(startIndex, context.sourcePosition.index);
+    //     return finishToken(SyntaxKinds.NumberLiteral, word);
+    // }
+    // function readHexNumberLiteral() {
+    //     const startIndex = context.sourcePosition.index;
+    //     let seprator = false;
+    //     while(startWithSet(LexicalLiteral.hexChars)) {
+    //         if(startWith("_")) {
+    //             seprator = true;
+    //         }else {
+    //             seprator = false;
+    //         }
+    //         context.sourcePosition.index ++;
+    //     }
+    //     if(seprator) {
+    //         throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+    //     }
+    //     const word = context.code.slice(startIndex, context.sourcePosition.index);
+    //     return finishToken(SyntaxKinds.NumberLiteral, word);   
+    // }
+    function readStringLiteral(mode: "\"" | "\'") {
+        // eat mode
+        context.pos ++;
+        let isEscape = false;
+        const startIndex = context.pos;
+        while(context.pos < context.code.length) {
+            const char = context.code[context.pos];
+            if(char === mode && !isEscape) {
+                // eat mode
+                context.pos ++
+                break;
             }
-            word += eatChar()
+            if(char === "\n" && !isEscape) {
+                context.pos ++;
+                context.currentLine ++;
+                context.currentLineStart = context.pos;
+                break;
+            }
+            // TODO: remove '\' from multiple line of string.
+            isEscape = char === "\\" && !isEscape ;
+            context.pos ++;
         }
-        if(eof()) {
-            throw lexicalError(`string literal start with ${mode} can't find closed char`);
+        if(context.pos === context.code.length) {
+            throw new Error("todo error - not close string literal");
         }
-        eatChar();
-        return finishToken(SyntaxKinds.StringLiteral, word);
+        return finishToken(SyntaxKinds.StringLiteral, context.code.slice(startIndex, context.pos));
     }
     function readString() {
         const word = readWord();
         // @ts-ignore
-        if(KeywordLiteralMapSyntaxKind[word]) {
+        const keywordKind = KeywordLiteralMapSyntaxKind[word];
+        if(keywordKind) {
             if(context.escFlag) {
                 context.escFlag = false;
                 throw new Error("keyword can not have any escap unicode");
             }
-            // @ts-ignore
-            const keywordkind = KeywordLiteralMapSyntaxKind[word] as unknown as any;
-            if(keywordkind == null) {
-                throw new Error(`[Error]: Keyword ${word} have no match method to create token`);
-            }
-            return finishToken(keywordkind as SyntaxKinds, word);
+            return finishToken(keywordKind as SyntaxKinds, word);
         }
         return finishToken(SyntaxKinds.Identifier, word);
     }
     function readWord() {
+        const startIndex = context.pos;
         let isEscape = false;
-        let word = "";
-        while(!startWithSet(stopSet) && !eof()) {
-            if(startWith("\\u") || startWith("\\U")) {
-                word += readHexEscap();
-            }
-            if(startWith("\\")) {
+        // TODO: remove performance mesure once speed up lexer.
+        const startTimeStamp = performance.now();
+        while(context.pos < context.code.length) {
+            const char = context.code[context.pos];
+            if(char === "\\") {
+                const next = context.code[context.pos+1];
+                if(next === "u" || next === "U") {
+                    readHexEscap();
+                    continue;
+                }
                 isEscape = !isEscape;
             }else {
                 isEscape = false;
             }
-            word += eatChar();
+            if(!isIdentifierStartChar()) {
+                break
+            }
+            context.pos ++;
         }
-        return word;
+        // TODO: remove performance mesure once speed up lexer.
+        context.time += performance.now() - startTimeStamp ;
+        return context.code.slice(startIndex, context.pos);
     }
     function readHexEscap() {
-        if(startWith("\\u") || startWith("\\U")) {
-            eatChar(2);
-            context.escFlag = true;
-            const hexStart = context.sourcePosition.index;
-            while(startWithSet(LexicalLiteral.hexChars) && !eof()) {
-                eatChar();
+        // eat \u \U
+        context.pos += 2;
+        while(context.pos < context.code.length) {
+            if(!isHex()) {
+                break;
             }
-            const hexString = context.code.slice(hexStart, context.sourcePosition.index);
-            return String.fromCodePoint(Number(`0x${hexString}`));
+            context.pos++;
         }
-        // error;
-        throw new Error("");
+        // TODO: return decoded unicode string
     }
     function readRegex(): { pattern: string, flag: string } {
         let pattern = "";
         let isEscape = false;
         let isInSet = false;
-        while(!(startWith("/") && !isEscape && !isInSet )&& !eof()) {
-            if(startWith("[")) {
-                isInSet = true;
-            }
-            if(startWith("]")) {
-                isInSet = false;
-            }
-            if(startWith("\\")) {
-                if(isEscape) {
-                    isEscape = false;
-                }else {
-                    isEscape = true;
-                }
-            }else {
-                isEscape = false;
-            }
-            pattern += eatChar();
-        }
-        eatChar();
         let flag = "";
-        while(
-            !startWithSet(stopSet)
-            && !eof()
-        ) {
-            flag += eatChar();
+        let startIndex = context.pos;
+        while(context.pos < context.code.length) {
+            const char = context.code[context.pos];
+            if(char === "/" && !isEscape && !isInSet) {
+                break;
+            }
+            if(char === "[" && !isEscape) {
+                isInSet = true;
+                context.pos ++;
+                continue;
+            }
+            if(char === "]" && !isEscape) {
+                isInSet = false;
+                context.pos ++;
+                continue;
+            }
+            isEscape = char === "\\" && !isEscape;
+            context.pos ++;
+        }
+        pattern = context.code.slice(startIndex, context.pos);
+        // eat /
+        context.pos ++;
+        /** tokenize flag  */
+        startIndex = context.pos;
+        while(context.pos < context.code.length) {
+            if(!isIdentifierStartChar()) {
+                break;
+            }
+            context.pos ++;
+        }
+        flag = context.code.slice(startIndex, context.pos);
+        if(context.pos === context.code.length) {
+            throw new Error("todo error - not closed regex");
         }
         finishToken(SyntaxKinds.RegexLiteral, pattern + flag);
         return { pattern, flag };

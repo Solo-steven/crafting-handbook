@@ -408,7 +408,7 @@ export function createParser(code: string) {
         if(expectToken) {
             message = `, expect token ${expectToken}`
         }
-        return new Error(`[Syntax Error]: Unexpect token${message}, got ${getToken()}(${getValue()}). ${getStartPosition().row},${getStartPosition().col}.${messsage}`);
+        return new Error(`[Syntax Error]: Unexpect token${message}, got ${getToken()}(${getValue()}). ${getStartPosition().row},${getStartPosition().col}.${messsage}\n ${code.slice(getStartPosition().index - 100, getStartPosition().index)} \n ${code.slice(getStartPosition().index, getEndPosition().index)}`);
     }
     /**
      * Given that this parser is recurive decent parser, some
