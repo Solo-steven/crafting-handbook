@@ -1,7 +1,6 @@
 /* eslint-env node */
 import path from "path";
 import { readdir, stat, readFile, writeFile } from "fs/promises";
-import { existsSync } from "fs";
 import { createParser } from "@/src/parser";
 import { transformSyntaxKindToLiteral } from "./transform";
 /**
@@ -26,36 +25,34 @@ interface TestCase {
     jsPath: string;
     jsonPath: string;
     fileName: string;
+    isExisted: boolean;
 }
 /**
- * Helper function for `findAllTestCase`, using recurion to find all test case 
- * under given root dir.
- * @param {string} dirPath 
- * @param {string} prefixFileName 
- * @param {string} casesPath 
- * @param {string} shouldNotExistPath 
+ * 
+ * @param jsRoot given js files dir root.
+ * @param jsonRoot given json files dir root.
+ * @param testCase 
  */
-async function recursivelyAddTestCase(dirPath: string, prefixFileName: string, casesPath: Array<TestCase>, shouldNotExistPath: Array<string>){
-    const filesPaths = await readdir(dirPath);
+async function recursivelyFindTestCase(jsRoot: string, jsonRoot: string, testCase: Array<TestCase> ) {
+    const [jsDir, jsonDir] = await Promise.all([readdir(jsRoot), readdir(jsonRoot)]);
     const subDir: Array<Promise<void>> = [];
-    for(const filePath of filesPaths) {
-        const isDir = (await stat(path.join(dirPath, filePath))).isDirectory();
+    for(const jsFileName of jsDir) {
+        const isDir = (await stat(path.join(jsRoot, jsFileName))).isDirectory();
         if(isDir) {
-            subDir.push(recursivelyAddTestCase(path.join(dirPath, filePath), path.join(prefixFileName, filePath), casesPath, shouldNotExistPath));
+            subDir.push(recursivelyFindTestCase(path.join(jsRoot, jsFileName), path.join(jsonRoot, jsFileName), testCase));
             continue;
         }
-        if(jsFileRegex.test(filePath)) {
-            const fileName = filePath.split(".")[0];
-            casesPath.push({
-                jsPath: path.join(dirPath, filePath),
-                jsonPath: existsSync(path.join(dirPath, `${fileName}.json`)) ? path.join(dirPath,`${fileName}.json`) : "",
-                fileName: path.join(prefixFileName, filePath)
-            })
-        }
-        if(jsonFileRegex.test(filePath)) {
-            continue;
-        }
-        shouldNotExistPath.push(filePath);
+        if(jsFileRegex.test(jsFileName)) {
+            const fileName = jsFileName.split(".")[0];
+            const jsPath =  path.join(jsRoot, jsFileName);
+            const jsonPath = path.join(jsonRoot, `${fileName}.json`);
+            testCase.push({
+                jsPath,
+                jsonPath,
+                fileName: jsPath,
+                isExisted: jsonDir.filter(file => file === `${fileName}.json`).length > 0 
+            })  
+        } 
     }
     await Promise.all(subDir);
 }
@@ -66,19 +63,22 @@ async function recursivelyAddTestCase(dirPath: string, prefixFileName: string, c
  * @returns 
  */
 async function findAllTestCase(): Promise<Array<TestCase>> {
-    const casesRoot = path.join(__dirname, "model-checking");
-    const fixtureRoot = path.join(__dirname, "esprima");
-    const babelRoot = path.join(__dirname, "uncategory");
-    const testCasesPaths: Array<TestCase> = []
-    const shouldNotExistedFilePath: Array<string> = [];
+    const modelCheckingJsonRoot = path.join(__dirname, "model-checking");
+    const modelCheckingJsRoot = path.join(__dirname, "../../../assets/parse/model-checking");
+    const esprimaJsonRoot = path.join(__dirname, "esprima");
+    const esprimaJsRoot = path.join(__dirname, "../../../assets/parse/esprima");
+    const uncategoryJsonRoot = path.join(__dirname, "uncategory");
+    const uncategoryJsRoot = path.join(__dirname, "../../../assets/parse/uncategory");
+    const testCases: Array<TestCase> = []
     await Promise.all(
         [
-            recursivelyAddTestCase(casesRoot, "model-checking", testCasesPaths, shouldNotExistedFilePath),
-            recursivelyAddTestCase(fixtureRoot, "esprima", testCasesPaths, shouldNotExistedFilePath),
-            recursivelyAddTestCase(babelRoot, "uncategory", testCasesPaths, shouldNotExistedFilePath),
+            recursivelyFindTestCase(modelCheckingJsRoot, modelCheckingJsonRoot, testCases),
+            recursivelyFindTestCase(esprimaJsRoot, esprimaJsonRoot, testCases),
+            recursivelyFindTestCase(uncategoryJsRoot, uncategoryJsonRoot, testCases),
         ]
     )
-   return testCasesPaths;
+
+   return testCases
 }
 /**
  *  Result structure of every test case, 
@@ -213,15 +213,11 @@ async function runInvalidTestCase(testCase: TestCase) {
  * @param {TestCase} testCase 
  */
 async function updateTestCase(testCase: TestCase) {
-    let isExisted = true;
-    if(!testCase.jsonPath) {
-        isExisted = false
-        testCase.jsonPath = testCase.jsPath.split(".")[0] + ".json";
-    }
+    const { isExisted } = testCase;
     try {
         const code = await readFile(testCase.jsPath);
         const astString = toASTString(code.toString());
-        if(testCase.jsonPath && isExisted) {
+        if(isExisted) {
             const existedASTString = await readFile(testCase.jsonPath);
             if(existedASTString.toString() === astString) {
                 passTestCases.push({
@@ -262,7 +258,7 @@ async function runerAllTestCase() {
             return updateTestCase(testCase);
         }
         // pass test case.
-        if(!testCase.jsonPath && !isUpdate) {
+        if(!testCase.isExisted && !isUpdate) {
             skipTestCases.push({
                 fileName: testCase.fileName,
                 result: `Skip because ${testCase.fileName} does not has corresponse json file.`

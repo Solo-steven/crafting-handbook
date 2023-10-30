@@ -1,0 +1,87 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "var",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "Identifer",
+                            "name": "async",
+                            "start": {
+                                "row": 1,
+                                "col": 12,
+                                "index": 11
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 17,
+                                "index": 16
+                            }
+                        },
+                        "init": {
+                            "kind": "NumberLiteral",
+                            "value": "4",
+                            "start": {
+                                "row": 1,
+                                "col": 20,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 21,
+                    "index": 20
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 21,
+                "index": 20
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 21
+    }
+}

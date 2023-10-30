@@ -77,14 +77,14 @@ import {
     SyntaxKinds,
     Visitor, 
     SytaxKindsMapLexicalLiteral,
-    traversal,
+    visitNode,
     ExpressionStatement,
     BoolLiteral,
     UndefinbedLiteral,
     EmptyStatement,
     RegexLiteral,
     ModuleItem,
-} from "emcakit-jscommon";
+} from "ecmakit-jscommon";
 
 const VisitorTable: Visitor = {
     [SyntaxKinds.Program]: transformKind,
@@ -199,5 +199,5 @@ function transformKind(node: ModuleItem) {
 }
 export function transformSyntaxKindToLiteral(program: Program): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    traversal(program, VisitorTable);
+    visitNode(program, VisitorTable);
 }

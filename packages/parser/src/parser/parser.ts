@@ -116,7 +116,7 @@ import {
     JSXExpressionContainer,
     JSXSpreadChild,
     JSXClosingElement,
-} from "emcakit-jscommon";
+} from "ecmakit-jscommon";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
 
@@ -387,7 +387,7 @@ export function createParser(code: string) {
         if(position === undefined)
             position = getStartPosition();
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        return new Error(`[Syntax Error]: ${messsage} (${position.row}, ${position.col}), got token ${SytaxKindsMapLexicalLiteral[getToken()]}`);
+        return new Error(`[Syntax Error]: ${messsage} (${position.row}, ${position.col}), got token ${SytaxKindsMapLexicalLiteral[getToken()]}.\n ${code.slice(getStartPosition().index - 100, getStartPosition().index)} \n ${code.slice(getStartPosition().index, getEndPosition().index)}`);
     }
     /**
      * Create a error object with message tell developer that get a 

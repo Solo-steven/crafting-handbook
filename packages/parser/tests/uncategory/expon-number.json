@@ -35,23 +35,23 @@
                 "value": "4e+6",
                 "start": {
                     "row": 2,
-                    "col": 0,
+                    "col": 1,
                     "index": 5
                 },
                 "end": {
                     "row": 2,
-                    "col": 4,
+                    "col": 5,
                     "index": 9
                 }
             },
             "start": {
                 "row": 2,
-                "col": 0,
+                "col": 1,
                 "index": 5
             },
             "end": {
                 "row": 2,
-                "col": 4,
+                "col": 5,
                 "index": 9
             }
         },
@@ -62,23 +62,23 @@
                 "value": "3.1e9",
                 "start": {
                     "row": 3,
-                    "col": 0,
+                    "col": 1,
                     "index": 11
                 },
                 "end": {
                     "row": 3,
-                    "col": 5,
+                    "col": 6,
                     "index": 16
                 }
             },
             "start": {
                 "row": 3,
-                "col": 0,
+                "col": 1,
                 "index": 11
             },
             "end": {
                 "row": 3,
-                "col": 5,
+                "col": 6,
                 "index": 16
             }
         }
@@ -90,7 +90,7 @@
     },
     "end": {
         "row": 3,
-        "col": 6,
+        "col": 7,
         "index": 17
     }
 }

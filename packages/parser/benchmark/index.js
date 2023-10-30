@@ -4,7 +4,7 @@ const { parseSync: swcParse } = require('@swc/core');
 const { parse, tokenize, doNothing } = require('../dist');
 const { Bench } = require('tinybench');
 const fs = require('fs');
-const bench = new Bench({time: 100});
+const bench = new Bench({time: 200});
 
 async function main() {
     const code  = fs.readFileSync("./dist/index.js").toString();
@@ -38,25 +38,6 @@ async function main() {
         //         }
         //     }
         // })
-        .add("read char code", () => {
-            const s = t[0].charCodeAt(0);
-            const cond1 = s === a;
-            const cond2 = t === b;
-            const cond3 = t === c
-            if(cond1 || cond2 || cond3) {
-                if(cond1) {
-
-                }
-                if(cond2) {
-
-                }
-            }
-        })
-        .add("set lookup", () => {
-            if(s.has("1")) {
-                
-            }
-        })
         .add("ecma-kit tokenize", () => {
             const [,time, skiptime] = tokenize(code);
             count += 1;

@@ -1,6 +1,6 @@
 import { createParser } from "@/src/parser";
 import { createLexer } from "@/src/lexer";
-import { SyntaxKinds } from "emcakit-jscommon";
+import { SyntaxKinds } from "ecmakit-jscommon";
 
 export function parse(code: string) {
     const parser = createParser(code);

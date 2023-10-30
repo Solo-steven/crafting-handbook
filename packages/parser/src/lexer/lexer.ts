@@ -1,5 +1,5 @@
-import { SyntaxKinds, LexicalLiteral, KeywordLiteralMapSyntaxKind } from "emcakit-jscommon";
-import { SourcePosition, cloneSourcePosition, createSourcePosition } from "emcakit-jscommon";
+import { SyntaxKinds, LexicalLiteral, KeywordLiteralMapSyntaxKind } from "ecmakit-jscommon";
+import { SourcePosition, cloneSourcePosition, createSourcePosition } from "ecmakit-jscommon";
 import { ErrorMessageMap } from "./error";
 import { performance } from "node:perf_hooks";
 /**
@@ -13,10 +13,9 @@ interface Context {
     code: string;
     // current pos information
     pos: number;
-    start: number;
-    end: number;
     currentLine: number;
     currentLineStart: number;
+    lastTokenEndSourcePosition: SourcePosition;
     // current token and token's information
     sourceValue: string;
     token: SyntaxKinds | null;
@@ -24,11 +23,7 @@ interface Context {
     endPosition: SourcePosition;
     // stack for tokenize template literal
     templateStringStackCounter: Array<number>;
-    // (TODO_MAYBE_REMOVE): for line terminate handle and JSXText reading
-    changeLineFlag: boolean;
-    spaceFlag: boolean;
     escFlag: boolean;
-    beforeValue: string;
     // (TODO_MAYBE_REMOVE): for measure performance
     time: number;
     skipTime: number;
@@ -37,10 +32,10 @@ interface Context {
 function createContext(code: string): Context {
     return {
         code,
-        pos: 0, currentLine: 1, currentLineStart: 0, start: 0, end: 0,
+        pos: 0, currentLine: 1, currentLineStart: 0, lastTokenEndSourcePosition: createSourcePosition(),
         sourceValue: "", token: null, startPosition: createSourcePosition(), endPosition: createSourcePosition(),
         templateStringStackCounter: [],
-        changeLineFlag: false, spaceFlag: false, escFlag: false, beforeValue: "",
+        escFlag: false,
         time: 0, skipTime: 0
     }
 }
@@ -84,6 +79,26 @@ const nonIdentifierStartSet = new Set([
     ...LexicalLiteral.whiteSpaceChars
 ]);
 
+const nonIdentifierStarMap: {[key: string]: number} = {};
+
+for(const item of [
+    ...LexicalLiteral.punctuators,
+    ...LexicalLiteral.operator, 
+    ...LexicalLiteral.newLineChars, 
+    ...LexicalLiteral.whiteSpaceChars
+]) {
+    nonIdentifierStarMap[item] = 1;
+}
+
+const KeywordLiteralSet = new Set([
+    ...LexicalLiteral.keywords,
+    ...LexicalLiteral.BooleanLiteral,
+    ...LexicalLiteral.NullLiteral,
+    ...LexicalLiteral.UndefinbedLiteral,
+])
+
+const changeLineRegex = /\n/;
+
 export function createLexer(code: string): Lexer {
     let context = createContext(code);
     /**
@@ -91,7 +106,9 @@ export function createLexer(code: string): Lexer {
      * @returns {boolean}
      */
     function getLineTerminatorFlag(): boolean {
-        return context.changeLineFlag;
+        const lastEndIndex = context.lastTokenEndSourcePosition.index;
+        const curStartIndex = context.startPosition.index;
+        return changeLineRegex.test(context.code.slice(lastEndIndex, curStartIndex));
     }
     /**
      * Public Api for getting space and changeline value before
@@ -99,7 +116,9 @@ export function createLexer(code: string): Lexer {
      * @returns {string}
      */
     function getBeforeValue(): string {
-        return context.beforeValue;
+        const lastEndIndex = context.lastTokenEndSourcePosition.index;
+        const curStartIndex = context.startPosition.index;
+        return context.code.slice(lastEndIndex, curStartIndex);
     }
     function getSourceValue() {
         return context.sourceValue;
@@ -156,6 +175,7 @@ export function createLexer(code: string): Lexer {
      * @returns {void}
      */
     function startToken(): void {
+        context.escFlag = false;
         context.startPosition = {
             row: context.currentLine,
             col: context.pos - context.currentLineStart + 1,
@@ -171,6 +191,7 @@ export function createLexer(code: string): Lexer {
     function finishToken(kind: SyntaxKinds, value: string): SyntaxKinds {
         context.token = kind;
         context.sourceValue = value;
+        context.lastTokenEndSourcePosition = context.endPosition;
         context.endPosition = {
             row: context.currentLine,
             col: context.pos - context.currentLineStart + 1,
@@ -182,7 +203,6 @@ export function createLexer(code: string): Lexer {
      * 
      */
     function skipWhiteSpaceChangeLine() {
-        context.changeLineFlag = false;
         // TODO: consider the needing of `beforeValue`(only used for parse JSXText)
         // context.beforeValue = "";
         // const start = context.sourcePosition.index;
@@ -190,14 +210,12 @@ export function createLexer(code: string): Lexer {
         loop: while(context.pos < code.length) {
             switch(context.code[context.pos]) {
                 case '\n': 
-                    context.changeLineFlag = true;
                     context.pos ++;
                     context.currentLineStart = context.pos;
                     context.currentLine ++;
                     break;
                 case " ":
                 case "\t":
-                    context.spaceFlag = true;
                     context.pos ++;
                     break;
                 default:
@@ -215,24 +233,38 @@ export function createLexer(code: string): Lexer {
     function isDigital(offset : number = 0): boolean {
         const code = context.code[context.pos + offset].charCodeAt(0);
         return code >= 48 && code <= 57;
-        
     }
     /**
      * 
      */
-    function isHex() {
+    function isHex(): boolean {
         const code = context.code[context.pos].charCodeAt(0);
         return (
             (code >= 48 && code <= 57) ||
-            (code >= 97 && code <= 122) ||
-            (code >= 65 && code <= 90 )
+            (code >= 97 && code <= 102) ||
+            (code >= 65 && code <= 70 )
+        );
+    }
+    /**
+     * 
+     */
+    function isBinary() {
+        const code = context.code[context.pos];
+        return (
+            code === "0" || code === "1"
+        );
+    }
+    function isOct() {
+        const code = context.code[context.pos].charCodeAt(0);
+        return (
+            (code >= 48 && code <= 56)
         );
     }
     /**
      * 
      */
     function isIdentifierStartChar() {
-        return !nonIdentifierStartSet.has(context.code[context.pos]);
+        // return !nonIdentifierStartSet.has(context.code[context.pos]);
     }
     /**
      * lexicalError is used for tokenizer unexecpt char happended. ex: string start with " can't find end ""
@@ -650,6 +682,13 @@ export function createLexer(code: string): Lexer {
         context.pos += 2;
         const startIndex = context.pos;
         while(context.pos < context.code.length) {
+            const char = context.code[context.pos];
+            if(char === "\n") {
+                context.pos ++;
+                context.currentLine ++;
+                context.currentLineStart = context.pos;
+                continue;
+            }
             if(context.code[context.pos] === "*") {
                 if(context.code[context.pos +1] === "/") {
                     context.pos += 2;
@@ -686,11 +725,6 @@ export function createLexer(code: string): Lexer {
         let isEscape = false;
         while(context.pos < context.code.length) {
             const current = context.code[context.pos];
-            isEscape = current === "\\";
-            if(isEscape) {
-                context.pos ++;
-                continue;
-            }
             if(current === "\n") {
                 context.pos ++;
                 context.currentLine ++;
@@ -710,6 +744,7 @@ export function createLexer(code: string): Lexer {
                     return  finishToken(SyntaxKinds.TemplateHead, context.code.slice(startIndex, endIndex));
                 }
             }
+            isEscape = current === "\\" && !isEscape;
             context.pos ++;
         }
         throw new Error("todo error - not close template head or no subsitude");
@@ -721,11 +756,6 @@ export function createLexer(code: string): Lexer {
         let isEscape = false;
         while(context.pos < context.code.length) {
             const current = context.code[context.pos];
-            isEscape = current === "\\" && !isEscape;
-            if(isEscape) {
-                context.pos ++;
-                continue;
-            }
             if(current === "\n") {
                 context.pos ++;
                 context.currentLine ++;
@@ -737,7 +767,7 @@ export function createLexer(code: string): Lexer {
                 context.pos += 1;
                 return  finishToken(SyntaxKinds.TemplateTail, context.code.slice(startIndex, endIndex));
             }
-            if(current === "$") {
+            if(!isEscape && current === "$") {
                 if(context.code[context.pos + 1] === "{") {
                     const endIndex = context.pos;
                     context.pos += 2;
@@ -745,6 +775,7 @@ export function createLexer(code: string): Lexer {
                     return  finishToken(SyntaxKinds.TemplateMiddle, context.code.slice(startIndex, endIndex));
                 }
             }
+            isEscape = current === "\\" && !isEscape;
             context.pos ++;
         }
         throw new Error("todo error - not close template middle or tail");
@@ -755,12 +786,24 @@ export function createLexer(code: string): Lexer {
      */
     function readNumberLiteral() {
         // Start With 0
-        const char = context.code[context.pos];
+        let char = context.code[context.pos];
         if(char === "0") {
             context.pos ++;
             const next =  context.code[context.pos];
             if(next === ".") {
                 return readDotStartFloat();
+            }
+            if(next === "b" || next === "B") {
+                context.pos ++;
+                return readBinaryNumberLiteral();
+            }
+            if(next === "o" || next === "O") {
+                context.pos ++;
+                return readOctalNumberLiteral();
+            }
+            if(next === "x" || next === "X") {
+                context.pos ++;
+                return readHexNumberLiteral();
             }
             return finishToken(SyntaxKinds.NumberLiteral, "0");
         }
@@ -772,7 +815,7 @@ export function createLexer(code: string): Lexer {
             }
             context.pos ++;
         }
-        const intPart = context.code.slice(startIndex, context.pos);
+        let numberWord = context.code.slice(startIndex, context.pos);
         if(context.code[context.pos] === ".") {
             context.pos ++;
             startIndex = context.pos;
@@ -783,61 +826,96 @@ export function createLexer(code: string): Lexer {
                 context.pos ++;
             }
             const floatPart = context.code.slice(startIndex, context.pos);
-            return finishToken(SyntaxKinds.NumberLiteral, `${intPart}.${floatPart}`);
+            numberWord = `${numberWord}.${floatPart}`;
         }
-        return finishToken(SyntaxKinds.NumberLiteral, intPart);
+        char = context.code[context.pos];
+        if(char === "e" || char === "E") {
+            startIndex = context.pos;
+            context.pos ++;
+            char = context.code[context.pos];
+            if(char === "+" || char == "-") {
+                context.pos ++;
+            }
+            while(context.pos < context.code.length) {
+                if(!isDigital()) {
+                    break;
+                }
+                context.pos ++;
+            }
+            const exponPart = context.code.slice(startIndex, context.pos);
+            if(exponPart.length === 1) {
+                throw new Error("todo error - expon length is 0");
+            }
+            numberWord += exponPart;
+        }
+        return finishToken(SyntaxKinds.NumberLiteral, numberWord);
     }
-    // function readBinaryNumberLiteral() {
-    //     const startIndex = context.sourcePosition.index;
-    //     let seprator = false;
-    //     while(startWithSet(LexicalLiteral.binaryChar)) {
-    //         if(startWith("_")) {
-    //             seprator = true;
-    //         }else {
-    //             seprator = false;
-    //         }
-    //         context.sourcePosition.index ++;
-    //     }
-    //     if(seprator) {
-    //         throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
-    //     }
-    //     const word = context.code.slice(startIndex, context.sourcePosition.index);
-    //     return finishToken(SyntaxKinds.NumberLiteral, word);
-    // }
-    // function readOctalNumberLiteral() {
-    //     const startIndex = context.sourcePosition.index;
-    //     let seprator = false;
-    //     while(startWithSet(LexicalLiteral.octalChars)) {
-    //         if(startWith("_")) {
-    //             seprator = true;
-    //         }else {
-    //             seprator = false;
-    //         }
-    //         context.sourcePosition.index ++;
-    //     }
-    //     if(seprator) {
-    //         throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
-    //     }
-    //     const word = context.code.slice(startIndex, context.sourcePosition.index);
-    //     return finishToken(SyntaxKinds.NumberLiteral, word);
-    // }
-    // function readHexNumberLiteral() {
-    //     const startIndex = context.sourcePosition.index;
-    //     let seprator = false;
-    //     while(startWithSet(LexicalLiteral.hexChars)) {
-    //         if(startWith("_")) {
-    //             seprator = true;
-    //         }else {
-    //             seprator = false;
-    //         }
-    //         context.sourcePosition.index ++;
-    //     }
-    //     if(seprator) {
-    //         throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
-    //     }
-    //     const word = context.code.slice(startIndex, context.sourcePosition.index);
-    //     return finishToken(SyntaxKinds.NumberLiteral, word);   
-    // }
+    function readBinaryNumberLiteral() {
+        const startIndex = context.pos;
+        let seprator = false;
+        while(context.pos < context.code.length) {
+            const char = context.code[context.pos];
+            if(char === "_") {
+                context.pos ++;
+                seprator = true;
+                continue;
+            }else {
+                seprator = false;
+            }
+            if(!isBinary()) {
+                break;
+            }
+            context.pos ++;
+        }
+        if(seprator) {
+            throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+        }
+        return finishToken(SyntaxKinds.NumberLiteral, context.code.slice(startIndex, context.pos));
+    }
+    function readOctalNumberLiteral() {
+        const startIndex = context.pos;
+        let seprator = false;
+        while(context.pos < context.code.length) {
+            const char = context.code[context.pos];
+            if(char === "_") {
+                context.pos ++;
+                seprator = true;
+                continue;
+            }else {
+                seprator = false;
+            }
+            if(!isOct()) {
+                break;
+            }
+            context.pos ++;
+        }
+        if(seprator) {
+            throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+        }
+        return finishToken(SyntaxKinds.NumberLiteral, context.code.slice(startIndex, context.pos));
+    }
+    function readHexNumberLiteral() {
+        const startIndex = context.pos;
+        let seprator = false;
+        while(context.pos < context.code.length) {
+            const char = context.code[context.pos];
+            if(char === "_") {
+                context.pos ++;
+                seprator = true;
+                continue;
+            }else {
+                seprator = false;
+            }
+            if(!isHex()) {
+                break;
+            }
+            context.pos ++;
+        }
+        if(seprator) {
+            throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+        }
+        return finishToken(SyntaxKinds.NumberLiteral, context.code.slice(startIndex, context.pos));
+    }
     function readStringLiteral(mode: "\"" | "\'") {
         // eat mode
         context.pos ++;
@@ -847,14 +925,10 @@ export function createLexer(code: string): Lexer {
             const char = context.code[context.pos];
             if(char === mode && !isEscape) {
                 // eat mode
-                context.pos ++
                 break;
             }
             if(char === "\n" && !isEscape) {
-                context.pos ++;
-                context.currentLine ++;
-                context.currentLineStart = context.pos;
-                break;
+                throw new Error("todo error - not close string literal");
             }
             // TODO: remove '\' from multiple line of string.
             isEscape = char === "\\" && !isEscape ;
@@ -863,13 +937,14 @@ export function createLexer(code: string): Lexer {
         if(context.pos === context.code.length) {
             throw new Error("todo error - not close string literal");
         }
+        context.pos ++
         return finishToken(SyntaxKinds.StringLiteral, context.code.slice(startIndex, context.pos-1));
     }
     function readString() {
         const word = readWord();
-        // @ts-ignore
-        const keywordKind = KeywordLiteralMapSyntaxKind[word];
-        if(keywordKind) {
+        if(KeywordLiteralSet.has(word)) {
+            // @ts-ignore
+            const keywordKind = KeywordLiteralMapSyntaxKind[word];
             if(context.escFlag) {
                 context.escFlag = false;
                 throw new Error("keyword can not have any escap unicode");
@@ -879,41 +954,47 @@ export function createLexer(code: string): Lexer {
         return finishToken(SyntaxKinds.Identifier, word);
     }
     function readWord() {
-        const startIndex = context.pos;
         let isEscape = false;
         // TODO: remove performance mesure once speed up lexer.
+        let word = "";
+        let startIndex = context.pos;
         const startTimeStamp = performance.now();
         while(context.pos < context.code.length) {
             const char = context.code[context.pos];
             if(char === "\\") {
                 const next = context.code[context.pos+1];
                 if(next === "u" || next === "U") {
-                    readHexEscap();
+                    context.escFlag = true;
+                    word += context.code.slice(startIndex, context.pos);
+                    word += readHexEscap();
+                    startIndex = context.pos;
                     continue;
                 }
                 isEscape = !isEscape;
             }else {
                 isEscape = false;
             }
-            if(!isIdentifierStartChar()) {
+            if(nonIdentifierStartSet.has(context.code[context.pos])) {
                 break
             }
             context.pos ++;
         }
         // TODO: remove performance mesure once speed up lexer.
         context.time += performance.now() - startTimeStamp ;
-        return context.code.slice(startIndex, context.pos);
+        word += context.code.slice(startIndex, context.pos);
+        return word;
     }
     function readHexEscap() {
         // eat \u \U
         context.pos += 2;
+        const startIndex = context.pos;
         while(context.pos < context.code.length) {
             if(!isHex()) {
                 break;
             }
             context.pos++;
         }
-        // TODO: return decoded unicode string
+        return String.fromCharCode(Number(`0x${context.code.slice(startIndex, context.pos)}`));
     }
     function readRegex(): { pattern: string, flag: string } {
         let pattern = "";
@@ -940,12 +1021,12 @@ export function createLexer(code: string): Lexer {
             context.pos ++;
         }
         pattern = context.code.slice(startIndex, context.pos);
-        // eat /
+        // eat `/`
         context.pos ++;
         /** tokenize flag  */
         startIndex = context.pos;
         while(context.pos < context.code.length) {
-            if(!isIdentifierStartChar()) {
+            if(nonIdentifierStarMap[context.code[context.pos]]) {
                 break;
             }
             context.pos ++;

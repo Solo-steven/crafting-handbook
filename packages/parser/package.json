@@ -1,6 +1,8 @@
 {
-    "name": "emcakit-jsparser",
+    "name": "ecmakit-jsparser",
     "packageManager": "yarn@3.6.3",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "scripts": {
         "build": "rollup --config  --bundleConfigAsCjs  rollup.config.js",
         "bench": "yarn build && node ./benchmark/index.js",
@@ -14,7 +16,7 @@
         "@rollup/plugin-typescript": "^11.1.5",
         "@swc/core": "^1.3.94",
         "acorn": "^8.10.0",
-        "emcakit-jscommon": "workspace:*",
+        "ecmakit-jscommon": "workspace:*",
         "nodemon": "^3.0.1",
         "rollup": "^4.1.4",
         "rollup-plugin-dts": "^6.1.0",
@@ -22,8 +24,6 @@
         "ts-node": "^10.9.1",
         "tsconfig-paths": "^4.2.0",
         "tslib": "^2.6.2",
-        "typescript": "^5.2.2",
-        "webpack": "^5.88.2",
-        "webpack-cli": "^5.1.4"
+        "typescript": "^5.2.2"
     }
 }

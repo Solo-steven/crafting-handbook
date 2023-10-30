@@ -658,3 +658,19 @@ export function isPattern(node: ModuleItem): node is Pattern {
 export function isCallExpression(node: ModuleItem): node is CallExpression{
     return node.kind === SyntaxKinds.CallExpression;
 }
+
+export function isIfStatement(node: ModuleItem): node is IfStatement {
+    return node.kind === SyntaxKinds.IfStatement;
+}
+
+export function isBlockStatement(node: ModuleItem): node is BlockStatement {
+    return node.kind === SyntaxKinds.BlockStatement;
+}
+
+export function isReturnStatement(node: ModuleItem): node is ReturnStatement {
+    return node.kind === SyntaxKinds.ReturnStatement;
+}
+
+export function isFunctionDeclaration(node: ModuleItem): node is FunctionDeclaration {
+    return node.kind === SyntaxKinds.FunctionDeclaration;
+}
