@@ -1,5 +1,5 @@
-import { SyntaxKinds, LexicalLiteral, KeywordLiteralMapSyntaxKind } from "ecmakit-jscommon";
-import { SourcePosition, cloneSourcePosition, createSourcePosition } from "ecmakit-jscommon";
+import { SyntaxKinds, LexicalLiteral, KeywordLiteralMapSyntaxKind } from "web-infra-common";
+import { SourcePosition, cloneSourcePosition, createSourcePosition } from "web-infra-common";
 import { ErrorMessageMap } from "./error";
 import { performance } from "node:perf_hooks";
 /**

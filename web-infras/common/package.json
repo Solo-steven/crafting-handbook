@@ -1,5 +1,5 @@
 {
-    "name": "ecmakit-jscommon",
+    "name": "web-infra-common",
     "packageManager": "yarn@3.6.3",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",

@@ -7,5 +7,17 @@ name = "js-bridge"
 version = "0.1.0"
 
 [[package]]
+name = "rustyc-backend"
+version = "0.1.0"
+
+[[package]]
+name = "rustyc-frontend"
+version = "0.1.0"
+
+[[package]]
+name = "rustyc-shared"
+version = "0.1.0"
+
+[[package]]
 name = "string-passing"
 version = "0.1.0"

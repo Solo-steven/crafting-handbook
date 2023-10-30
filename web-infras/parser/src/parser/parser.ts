@@ -116,7 +116,7 @@ import {
     JSXExpressionContainer,
     JSXSpreadChild,
     JSXClosingElement,
-} from "ecmakit-jscommon";
+} from "web-infra-common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
 

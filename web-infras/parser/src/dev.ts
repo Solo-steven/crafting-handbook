@@ -1,5 +1,5 @@
 import { createLexer } from "@/src/lexer";
-import { SyntaxKinds, SytaxKindsMapLexicalLiteral, ModuleItem } from "ecmakit-jscommon";
+import { SyntaxKinds, SytaxKindsMapLexicalLiteral, ModuleItem } from "web-infra-common";
 import { createParser } from "@/src/parser";
 import { transformSyntaxKindToLiteral } from  "../tests/transform";
 import fs from 'fs';

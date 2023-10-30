@@ -1,5 +1,5 @@
 {
-    "name": "ecmakit-jsparser",
+    "name": "web-infra-parser",
     "packageManager": "yarn@3.6.3",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -16,7 +16,7 @@
         "@rollup/plugin-typescript": "^11.1.5",
         "@swc/core": "^1.3.94",
         "acorn": "^8.10.0",
-        "ecmakit-jscommon": "workspace:*",
+        "web-infra-common": "workspace:*",
         "nodemon": "^3.0.1",
         "rollup": "^4.1.4",
         "rollup-plugin-dts": "^6.1.0",

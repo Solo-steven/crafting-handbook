@@ -1,7 +1,12 @@
 [workspace]
 members = [
+    # For rustyc
+    "compilers/rustyc/frontend",
+    "compilers/rustyc/shared",
+    "compilers/rustyc/backend",
     # For jsbridge
-    "js-bridge",
-    "js-bridge/examples/string-passing",
+    "others/js-bridge",
+    "others/js-bridge/examples/string-passing",
     # For souring rs
+
 ]

@@ -11,7 +11,7 @@ import {
     isFunctionExpression,
     isFunctionDeclaration,
     Program,
-} from "ecmakit-jscommon";
+} from "web-infra-common";
 import {
     BasicBlock,
     ControlFlow,
@@ -25,34 +25,6 @@ import {
     markAsExit
 } from "./type";
 
-import { parse } from "ecmakit-jsparser";
-
-const code = `
-    function test(input) {
-        function uu() {
-            if(input > 10) {
-                if(Math.random()) {
-                    return a;
-                }else {
-                    return b;
-                }
-            }else  {
-                return b;
-            }
-        }
-        if(input > 10) {
-            if(Math.random()) {
-                return a;
-            }else {
-                return b;
-            }
-        }else  {
-            return b;
-        }
-    }
-
-`;
-
 /**
  * 
  * @param node 
@@ -61,28 +33,56 @@ const code = `
 type Context = {
     currentBlock: BasicBlock;
     controlFlow: ControlFlow;
+    markTopLevelIfCondition: ModuleItem | null;
+    conditionPendingConnect: Array<BasicBlock>;
 } 
 
-function analyzeControlFlow(ast: Program) {
+export function analyzeControlFlow(ast: Program) {
     const controlFlows: Array<ControlFlow> = [];
     const context: Context = {
         currentBlock: createBasicBlock(),
         controlFlow: createControlFlow(),
+        markTopLevelIfCondition: null,
+        conditionPendingConnect: [],
     };
+    function connectPendingConditionBlocks() {
+        for(const block of context.conditionPendingConnect) {
+            connectBlock(block, context.currentBlock);
+        }
+    }
     function resetContext() {
         context.controlFlow = createControlFlow();
         context.currentBlock = createBlockForControlFlow(context.controlFlow);
+        context.conditionPendingConnect = [];
         markAsEntry(context.controlFlow, context.currentBlock);
     }
     function helperVisitScope(nodes: Array<ModuleItem>) {
+        let topLevelCondition = false;
+        let returnOrBranchFlag = false;
         for(const item of nodes) {
             if(isIfStatement(item)) {
+                returnOrBranchFlag = true;
                 const cache = context.currentBlock;
+                // if is first level, maybe need to create basic block for continue;
+                if(!context.markTopLevelIfCondition) {
+                    console.log(item);
+                    context.markTopLevelIfCondition = item;
+                    topLevelCondition = true;
+                }
                 visitNode(item, table);
                 context.currentBlock = cache;
                 continue;
             }
+            // if is first level, maybe need to create basic block for continue;
+            if(topLevelCondition) {
+                topLevelCondition = false;
+                context.markTopLevelIfCondition = null;
+                const cache = context.currentBlock;
+                context.currentBlock = createBlockForControlFlow(context.controlFlow);
+                connectPendingConditionBlocks();
+            }
             if(isReturnStatement(item)) {
+                returnOrBranchFlag = true;
                 addStatement(context.currentBlock, item);
                 markAsExit(context.controlFlow, context.currentBlock);
                 // TODO, remove dead code
@@ -98,8 +98,10 @@ function analyzeControlFlow(ast: Program) {
             }
             addStatement(context.currentBlock, item);
         }
+        if(!returnOrBranchFlag) {
+            context.conditionPendingConnect.push(context.currentBlock);
+        }
     }
-    
     function visitFunction(node: FunctionDeclaration | FunctionExpression) {
         const cache = {...context};
         resetContext();
@@ -110,7 +112,6 @@ function analyzeControlFlow(ast: Program) {
         // perform side effect, reset context for function
         context.controlFlow = cache.controlFlow;
         context.currentBlock = cache.currentBlock;
-    
     }
     
     function visitIfStatement(node: IfStatement) {
@@ -145,27 +146,11 @@ function analyzeControlFlow(ast: Program) {
             }
         }
     }
-    
     const table = {
         [SyntaxKinds.FunctionExpression]: visitFunction,
         [SyntaxKinds.FunctionDeclaration]: visitFunction,
         [SyntaxKinds.IfStatement]: visitIfStatement,
     }
-    
     visitNode(ast, table);
-
     return controlFlows;
 }
-
-
-function main() {
-    const ast = parse(code);
-    const controlFlows = analyzeControlFlow(ast);
-    for(const controlFlow of controlFlows) {
-        logOutBlockRelation(controlFlow.blocks);
-        console.log(controlFlow.entry);
-        console.log(controlFlow.exit);
-    }
-}
-
-main()

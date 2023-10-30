@@ -1,0 +1,9 @@
+[package]
+name = "rustyc-backend"
+description = "backend of rustyc, generate IR from ast and opti."
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
