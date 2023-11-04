@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 use std::str::CharIndices;
 
-use rustyc_shared::span::Span;
-use rustyc_shared::token::{TokenKind, PunctuatorKind, OperatorKind, KeywordKind};
+use crate::span::Span;
+use crate::token::{TokenKind, PunctuatorKind, OperatorKind, KeywordKind};
 
 #[derive(Debug, Clone, PartialEq)]
 struct TokenWithSpan {
@@ -206,6 +206,9 @@ impl<'a> Lexer<'a> {
                         self.eat_char();
                         self.finish_token();
                         self.current_kind = TokenKind::Operators(OperatorKind::Qustion);
+                    }
+                    '!' => {
+                        self.read_not_start();
                     }
                     '+' => {
                         self.read_plus_start();
@@ -546,6 +549,7 @@ impl<'a> Lexer<'a> {
             "return" => TokenKind::Keyword(KeywordKind::Return),
             "short" => TokenKind::Keyword(KeywordKind::Short),
             "signed" => TokenKind::Keyword(KeywordKind::Signed), 
+            "sizeof" => TokenKind::Operators(OperatorKind::Sizeof),
             "static" => TokenKind::Keyword(KeywordKind::Static),
             "struct" => TokenKind::Keyword(KeywordKind::Struct),
             "switch" => TokenKind::Keyword(KeywordKind::Switch),
@@ -570,7 +574,16 @@ impl<'a> Lexer<'a> {
                 }
             }
         }
+        if let Some(ch) = self.get_char() {
+            match ch {
+                '.' => {}
+                _ => {}
+            }
+        }
         self.finish_token();
         self.current_kind = TokenKind::LiteralValue;
+    }
+    fn read_digital_number() {
+        
     }
 }

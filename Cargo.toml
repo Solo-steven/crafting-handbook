@@ -2,8 +2,8 @@
 members = [
     # For rustyc
     "compilers/rustyc/frontend",
-    "compilers/rustyc/shared",
     "compilers/rustyc/backend",
+    "compilers/rustyc/interpreter",
     # For jsbridge
     "others/js-bridge",
     "others/js-bridge/examples/string-passing",

@@ -1,6 +1,6 @@
 [package]
-name = "rustyc-shared"
-description = "contain Token, AST and IR for rustyc"
+name = "rustyc-interpreter"
+description = "interpreter for rustyc, implement VM and IR parser"
 version = "0.1.0"
 edition = "2021"
 

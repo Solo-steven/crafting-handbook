@@ -13,12 +13,9 @@ version = "0.1.0"
 [[package]]
 name = "rustyc-frontend"
 version = "0.1.0"
-dependencies = [
- "rustyc-shared",
-]
 
 [[package]]
-name = "rustyc-shared"
+name = "rustyc-interpreter"
 version = "0.1.0"
 
 [[package]]

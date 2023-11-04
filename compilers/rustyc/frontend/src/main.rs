@@ -1,8 +1,9 @@
 
 mod lexer;
+mod span;
+mod token;
 
-use lexer::Lexer;
-use rustyc_shared::token::TokenKind;
+use crate::token::TokenKind;
 fn main(){
     let source = "
         int main() {
