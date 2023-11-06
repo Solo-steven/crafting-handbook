@@ -10,7 +10,6 @@ struct TokenWithSpan {
     start_span: Span,
     finish_span: Span,
 }
-
 /// 
 pub struct Lexer<'a> {
     source: Cow<'a, str>,
@@ -87,6 +86,9 @@ impl<'a> Lexer<'a> {
     pub fn get_finish_span(&self) -> Span {
         self.finish_span.clone()
     }
+    fn peek_char(&self) {
+
+    }
     /// Like common method `peek` in some compiler, this method return current char.
     fn get_char(&self) -> Option<char> {
         self.current_char
@@ -122,8 +124,8 @@ impl<'a> Lexer<'a> {
         }   
     }
     /// Skip ignoreable char for lexer. this method need to maintain the 
-    /// `current_line`` and `current_line_start` property if meet change-line 
-    /// char
+    /// `current_line` and `current_line_start` property if meet change-line 
+    /// char is meet.
     fn skip_changeline_and_spaces(&mut self) {
         loop {
             if let Some(ch) = self.get_char() {
@@ -181,7 +183,7 @@ impl<'a> Lexer<'a> {
                     ']' => {
                         self.eat_char();
                         self.finish_token();
-                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::BracesRight);
+                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::BracketRight);
                     }
                     '(' => {
                         self.eat_char();
@@ -193,8 +195,37 @@ impl<'a> Lexer<'a> {
                         self.finish_token();
                         self.current_kind = TokenKind::Punctuators(PunctuatorKind::ParenthesesRight);
                     }
+                    ':' => {
+                        self.eat_char();
+                        self.finish_token();
+                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::Colon);
+                    }
                     '*' => {
                         self.read_multiple_start();
+                    }
+                    'L' => {
+                        // this is safe because 'l' and 'L' just have one byte so next utf-8 char 
+                        // start must be offset +1.
+                        let next_char = self.source[self.current_offset + 1..].chars().next();
+                        if let Some(ch) = next_char {
+                            match ch {
+                                '\'' => {
+                                    self.eat_char();
+                                    self.read_char_literal();
+                                    return;
+                                }
+                                '\"' => {
+                                    self.eat_char();
+                                    self.read_string_literal();
+                                    return;
+                                }
+                                _ => {}
+                            }
+                        }
+                        self.read_word();
+                    }
+                    'l' => {
+                        
                     }
                     '/' => {
 
@@ -237,6 +268,12 @@ impl<'a> Lexer<'a> {
                     '~' => {
                         self.read_bitwise_not_start();
                     }
+                    '\'' => {
+                        self.read_char_literal();
+                    }
+                    '\"' => {
+                        self.read_string_literal();
+                    }
                     '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'  => {
                         self.read_number();
                     } 
@@ -262,15 +299,11 @@ impl<'a> Lexer<'a> {
                     self.finish_token();
                     self.current_kind = TokenKind::Operators(OperatorKind::SumAssignment)
                 }
-                _ => {
-                    self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::Plus)
-                }
+                _ => {}
             }
-        }else {
-            self.finish_token();
-            self.current_kind = TokenKind::Operators(OperatorKind::Plus)
-        };
+        }
+        self.finish_token();
+        self.current_kind = TokenKind::Operators(OperatorKind::Plus)
     }
     /// Read token when start with '-', it possible can be '-', '--', '-=', '->'
     fn read_minus_start(&mut self) {
@@ -289,13 +322,11 @@ impl<'a> Lexer<'a> {
                     self.eat_char();
                     self.current_kind = TokenKind::Operators(OperatorKind::Arrow);
                 }
-                _ => {
-                    self.current_kind = TokenKind::Operators(OperatorKind::Minus);
-                }
+                _ => {}
             }
-        }else {
-            self.current_kind = TokenKind::Operators(OperatorKind::Minus);
         }
+        self.finish_token();
+        self.current_kind = TokenKind::Operators(OperatorKind::Minus);
     }
     /// Read token when start with '*' char, is possible can be '*' or '*='
     fn read_multiple_start(&mut self) {
@@ -564,6 +595,12 @@ impl<'a> Lexer<'a> {
             "_Imaginary" => TokenKind::Keyword(KeywordKind::_Imaginary),
             _ => TokenKind::Identifier,
         };
+    }
+    fn read_char_literal(&mut self) {
+
+    }
+    fn read_string_literal(&mut self) {
+
     }
     fn read_number(&mut self) {
         loop {

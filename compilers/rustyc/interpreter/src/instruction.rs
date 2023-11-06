@@ -5,7 +5,7 @@ pub enum Instruction {
     Add(AddInstruction),
     Addi(AddImmiInstruction),
     Sub,
-    Subi,
+    Subi(SubiInstruction),
     Mul,
     Muli,
     Div,
@@ -74,7 +74,7 @@ pub struct  RetInstruction;
 #[derive(Debug, Clone, PartialEq)]
 pub struct LoadRegisterInstruction {
     pub base: u32,
-    pub offset: u32,
+    pub offset: i32,
     pub dst: u32,
 }
 /// `STR` instruction, store src register value (src) in memory address
@@ -83,7 +83,7 @@ pub struct LoadRegisterInstruction {
 #[derive(Debug, Clone, PartialEq)]
 pub struct StoreRegisterInstruction {
     pub base: u32,
-    pub offset: u32,
+    pub offset: i32,
     pub src: u32,
 }
 /// `IMM` instruction load a const value to target register
@@ -101,6 +101,12 @@ pub struct AddInstruction {
 }
 #[derive(Debug, Clone, PartialEq)]
 pub struct AddImmiInstruction {
+    pub src: u32,
+    pub dst: u32,
+    pub value: u32,
+}
+#[derive(Debug, Clone, PartialEq)]
+pub struct  SubiInstruction {
     pub src: u32,
     pub dst: u32,
     pub value: u32,

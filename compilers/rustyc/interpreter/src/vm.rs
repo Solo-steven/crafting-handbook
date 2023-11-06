@@ -8,7 +8,6 @@ pub struct VM {
     program_counter: u32,
     memory: [u32; MEMORY_MAX_SIZE],
     condition_flags: u8,
-    
 }
 
 impl VM {
@@ -20,19 +19,25 @@ impl VM {
             condition_flags: 0,
         }
     }
+    pub fn log(&mut self) {
+        
+    }
     pub fn execute_with_instruction(&mut self, instructions: Vec<Instruction>, base: usize) {
         self.program_counter = base as u32;
+        //println!("{:?}", base);
         loop {
             if self.program_counter as usize >= instructions.len() {
                 break;
             }
             let instruction = &instructions[self.program_counter as usize];
+            //sleep(time::Duration::from_secs(1));
             self.program_counter += 1;
             match *instruction {
                 // Arithmetic instructions
                 Instruction::Immi(ref instruction) => self.immi_instruction(instruction),
                 Instruction::Add(ref instruction ) => self.add_instruction(instruction),
                 Instruction::Addi(ref instruction) => self.addi_instruction(instruction),
+                Instruction::Subi(ref instruction) => self.subi_instruction(instruction),
                 // Relation instructions.
                 Instruction::Gt(ref instruction ) => self.gt_instruction(instruction),
                 Instruction::Gti(ref instruction) => self.gti_instruction(instruction),
@@ -57,9 +62,6 @@ impl VM {
                 _ => {}
             }
         }
-        println!("{:?}", self.registers);
-        println!("{:?}", self.condition_flags);
-        println!("{:?}", &self.memory[0..100]);
     }
     /// Execute 'JSR' instruction
     fn jsr_instruction(&mut self, instruction: &JSRInstruction) {
@@ -82,7 +84,7 @@ impl VM {
     }
     fn ldr_instruction(&mut self, instruction: &LoadRegisterInstruction) {
         // get address by base + offset
-        let address = (self.registers.get(instruction.base as usize) + instruction.offset) as usize;
+        let address = (self.registers.get(instruction.base as usize) as i32 + instruction.offset) as usize;
         // get value by memory[address]
         let value = self.memory[address];
         // set register to value
@@ -90,10 +92,9 @@ impl VM {
     }
     fn str_instruction(&mut self, instruction: &StoreRegisterInstruction) {
         // get address by base + offset
-        let address = (self.registers.get(instruction.base as usize) + instruction.offset) as usize;
+        let address = (self.registers.get(instruction.base as usize) as i32 + instruction.offset) as usize;
         // set memory by dst register
         self.memory[address] = self.registers.get(instruction.src as usize);
-        println!("{:?}", &self.memory[0..10]);
     }
     // Execute unconditional jump instuction
     fn jump_instruction(&mut self, instruction: &JumpInstruction) {
@@ -114,6 +115,10 @@ impl VM {
     fn addi_instruction(&mut self, instruction: &AddImmiInstruction) {
         let src_value = self.registers.get(instruction.src as usize);
         self.registers.set(instruction.dst as usize, src_value + instruction.value);
+    }
+    fn subi_instruction(&mut self, instruction: &SubiInstruction) {
+        let src_value = self.registers.get(instruction.src as usize);
+        self.registers.set(instruction.dst as usize, src_value - instruction.value);
     }
     /// Execute `GT` instruction. `GT` stand for greate then (>)
     /// format: `GT <src1> <src2>` (src1 > src2)
@@ -200,7 +205,7 @@ impl VM {
         }
     }
     /// Execute `Eq` instruction. `eq` stand for equal (==)
-    /// format: `eq <src1> <src2>` (src1 == src2)
+    /// - format: `eq <src1> <src2>` (src1 == src2)
     fn eq_instruction(&mut self, instruction: &EqualInstruction) {
         let src1_value = self.registers.get(instruction.src1 as usize);
         let src2_value = self.registers.get(instruction.src2 as usize);
@@ -211,17 +216,17 @@ impl VM {
         }
     }
     /// Execute `Eqi` instruction. `Eqi` stand for equal to immi (==)
-    /// format: `eqi <src> <const>` (src == const)
+    /// - format: `eqi <src> <const>` (src == const)
     fn eqi_instruction(&mut self, instruction: &EqualImmiInstruction) {
         let src_value = self.registers.get(instruction.src as usize);
-        if src_value < instruction.value {
+        if src_value == instruction.value {
             self.condition_flags |= 0b10000000;
         }else {
             self.condition_flags &= 0b01111111;
         }
     }
     /// Execute `neq` instruction. `neq` stand for not equal (!=)
-    /// format: `neq <src1> <src2>`(src1 != src2)
+    /// - format: `neq <src1> <src2>`(src1 != src2)
     fn neq_instruction(&mut self, instruction: &NonEqualInstruction) {
         let src1_value = self.registers.get(instruction.src1 as usize);
         let src2_value = self.registers.get(instruction.src2 as usize);
@@ -232,7 +237,7 @@ impl VM {
         }
     }
     /// Execute `neqi` instruction, `Neqi` stand for non-equal to immi (==)
-    /// format: `neqi <src> <const>` (src == const)
+    /// - format: `neqi <src> <const>` (src == const)
     fn neqi_instruction(&mut self, instruction: &NonEqualImmiInstruction) {
         let src_value = self.registers.get(instruction.src as usize);
         if src_value < instruction.value {
