@@ -5,33 +5,37 @@ export interface BasicBlock {
     predecessor: Array<BasicBlock>;
     successor: Array<BasicBlock>;
     statements: Array<ModuleItem>;
+    level: number,
 }
 
 let uuid = -1;
 
-export function createBasicBlockBuilder() {
-    let uuid = 0;
-    return function (
-        predecessor: Array<BasicBlock> = [], successor: Array<BasicBlock> = [], statements: Array<ModuleItem> = []
-    ): BasicBlock {
-       return {
-            blockId: uuid ++,
-            predecessor,
-            successor,
-            statements,
-        };
-    }
-}
+// export function createBasicBlockBuilder() {
+//     let uuid = 0;
+//     return function (
+//         predecessor: Array<BasicBlock> = [], successor: Array<BasicBlock> = [], statements: Array<ModuleItem> = []
+//     ): BasicBlock {
+//        return {
+//             blockId: uuid ++,
+//             predecessor,
+//             successor,
+//             statements,
+//             level: 0,
+//         };
+//     }
+// }
 export function createBasicBlock(
     predecessor: Array<BasicBlock> = [],
     successor: Array<BasicBlock> = [],
     statements: Array<ModuleItem> = [],
+    level = 0,
 ): BasicBlock {
    return {
         blockId: uuid ++,
         predecessor,
         successor,
         statements,
+        level,
     };
 }
 
@@ -77,8 +81,8 @@ export function createControlFlow(): ControlFlow {
     }
 }
 
-export function createBlockForControlFlow(controlFlow: ControlFlow): BasicBlock {
-    const block = createBasicBlock();
+export function createBlockForControlFlow(controlFlow: ControlFlow, level : number = 0): BasicBlock {
+    const block = createBasicBlock([], [], [],level);
     controlFlow.blocks.push(block);
     return block;
 }

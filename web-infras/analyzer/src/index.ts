@@ -6,23 +6,26 @@ import { parse } from "web-infra-parser";
 const code = `
     function test(input) {
         let a = 10;
-        let b = 10;
-        if(input > 10) {
-
-            a = a + b;
-        }else if(input == 10) {
-            a = a -b  + a ** b;
+        let b = 100;
+        if(Math.random()) {
+            let a = 10
+            a = a +1;
+        }else {
+            a = 100
         }
-        return a * b;
+        a = a +b;
     }
 `;
 
 function main() {
     const ast = parse(code);
     const controlFlows = analyzeControlFlow(ast);
-    for(const controlFlow of controlFlows) {
-        logOutBlockRelation(controlFlow.blocks, code);
-        analyzeReachDefinitionForControlFlow(controlFlow)
+    // for(const controlFlow of controlFlows) {
+    //     logOutBlockRelation(controlFlow.blocks, code);
+    // }
+    const table = analyzeReachDefinitionForControlFlow(controlFlows[0]);
+    for(const [key, value] of table.entries()) {
+
     }
 }
 

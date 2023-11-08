@@ -35,15 +35,17 @@ type Context = {
     controlFlow: ControlFlow;
     markTopLevelIfCondition: ModuleItem | null;
     conditionPendingConnect: Array<BasicBlock>;
+    level: number,
 } 
 
-export function analyzeControlFlow(ast: Program) {
+export function analyzeControlFlow(ast: Program, ) {
     const controlFlows: Array<ControlFlow> = [];
-    const context: Context = {
+    let context: Context = {
         currentBlock: createBasicBlock(),
         controlFlow: createControlFlow(),
         markTopLevelIfCondition: null,
         conditionPendingConnect: [],
+        level: 0,
     };
     function connectPendingConditionBlocks() {
         for(const block of context.conditionPendingConnect) {
@@ -54,6 +56,7 @@ export function analyzeControlFlow(ast: Program) {
         context.controlFlow = createControlFlow();
         context.currentBlock = createBlockForControlFlow(context.controlFlow);
         context.conditionPendingConnect = [];
+        context.level = 0;
         markAsEntry(context.controlFlow, context.currentBlock);
     }
     function helperVisitScope(nodes: Array<ModuleItem>) {
@@ -65,7 +68,7 @@ export function analyzeControlFlow(ast: Program) {
                 const cache = context.currentBlock;
                 // if is first level, maybe need to create basic block for continue;
                 if(!context.markTopLevelIfCondition) {
-                    console.log(item);
+                    // console.log(item);
                     context.markTopLevelIfCondition = item;
                     topLevelCondition = true;
                 }
@@ -77,7 +80,6 @@ export function analyzeControlFlow(ast: Program) {
             if(topLevelCondition) {
                 topLevelCondition = false;
                 context.markTopLevelIfCondition = null;
-                const cache = context.currentBlock;
                 context.currentBlock = createBlockForControlFlow(context.controlFlow);
                 connectPendingConditionBlocks();
             }
@@ -85,11 +87,13 @@ export function analyzeControlFlow(ast: Program) {
                 returnOrBranchFlag = true;
                 addStatement(context.currentBlock, item);
                 markAsExit(context.controlFlow, context.currentBlock);
-                // TODO, remove dead code
                 return;
             }
             if(isBlockStatement(item)) {
+                context.level ++;
+                // Problem: should block statement be another block ?
                 helperVisitScope(item.body);
+                context.level --;
             }
             if(isFunctionExpression(item) ||isFunctionDeclaration(item) ) {
                 addStatement(context.currentBlock, item);
@@ -110,8 +114,7 @@ export function analyzeControlFlow(ast: Program) {
         // add controlflow 
         controlFlows.push(context.controlFlow);
         // perform side effect, reset context for function
-        context.controlFlow = cache.controlFlow;
-        context.currentBlock = cache.currentBlock;
+        context = cache;
     }
     
     function visitIfStatement(node: IfStatement) {
@@ -130,7 +133,10 @@ export function analyzeControlFlow(ast: Program) {
         connectBlock(testBlock, conseqBlock);
         context.currentBlock = conseqBlock;
         if(isBlockStatement(node.conseqence)) {
+            context.level ++;
+            conseqBlock.level = context.level;
             helperVisitScope(node.conseqence.body);
+            context.level --;
         }else {
             helperVisitScope([node.conseqence]);
         }
@@ -140,7 +146,10 @@ export function analyzeControlFlow(ast: Program) {
             connectBlock(testBlock, alterBlock);
             context.currentBlock = alterBlock;
             if(isBlockStatement(node.alternative)) {
+                context.level ++;
+                alterBlock.level = context.level;
                 helperVisitScope(node.alternative.body);
+                context.level --;
             }else {
                 helperVisitScope([node.alternative]);
             }

@@ -2004,7 +2004,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web-infra-common@workspace:web-infras/common":
+"web-infra-analyzer@workspace:web-infras/analyzer":
+  version: 0.0.0-use.local
+  resolution: "web-infra-analyzer@workspace:web-infras/analyzer"
+  dependencies:
+    "@rollup/plugin-typescript": "npm:^11.1.5"
+    nodemon: "npm:^3.0.1"
+    rollup: "npm:^4.1.4"
+    rollup-plugin-dts: "npm:^6.1.0"
+    ts-node: "npm:^10.9.1"
+    tsconfig-paths: "npm:^4.2.0"
+    tslib: "npm:^2.6.2"
+    typescript: "npm:^5.2.2"
+    web-infra-common: "workspace:*"
+    web-infra-parser: "workspace:*"
+  languageName: unknown
+  linkType: soft
+
+"web-infra-common@workspace:*, web-infra-common@workspace:web-infras/common":
   version: 0.0.0-use.local
   resolution: "web-infra-common@workspace:web-infras/common"
   dependencies:
@@ -2017,7 +2034,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"web-infra-parser@workspace:web-infras/parser":
+"web-infra-parser@workspace:*, web-infra-parser@workspace:web-infras/parser":
   version: 0.0.0-use.local
   resolution: "web-infra-parser@workspace:web-infras/parser"
   dependencies:
@@ -2033,6 +2050,7 @@ __metadata:
     tsconfig-paths: "npm:^4.2.0"
     tslib: "npm:^2.6.2"
     typescript: "npm:^5.2.2"
+    web-infra-common: "workspace:*"
   languageName: unknown
   linkType: soft
 

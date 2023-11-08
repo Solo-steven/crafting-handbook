@@ -2,6 +2,7 @@
     "private": true,
     "workspaces": [
         "web-infras/parser",
-        "web-infras/common"
+        "web-infras/common",
+        "web-infras/analyzer"
     ]
 }

@@ -674,3 +674,7 @@ export function isReturnStatement(node: ModuleItem): node is ReturnStatement {
 export function isFunctionDeclaration(node: ModuleItem): node is FunctionDeclaration {
     return node.kind === SyntaxKinds.FunctionDeclaration;
 }
+
+export function isExpressionStatement(node: ModuleItem): node is ExpressionStatement {
+    return node.kind === SyntaxKinds.ExpressionStatement;
+}
