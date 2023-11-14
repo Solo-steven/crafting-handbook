@@ -5,7 +5,7 @@ pub enum TokenKind {
     Identifier,
     Operators(OperatorKind),
     Punctuators(PunctuatorKind),
-    LiteralValue,
+    LiteralValue(LiteralValueKind),
     EOFToken,
 }
 #[derive(Debug, Clone, PartialEq)]
@@ -97,4 +97,27 @@ pub enum PunctuatorKind {
     BracketRight, // ]
     ParenthesesLeft,  // (
     ParenthesesRight, // )
+}
+#[derive(Debug, Clone, PartialEq)]
+pub enum LiteralValueKind {
+    IntLiteral(IntLiteralBase,(Option<LongIntSuffix>, bool)),
+    FloatLiteral(FloatLiteralBase, bool),
+    CharLiteral,
+    StringLiteral,
+}
+#[derive(Debug, Clone, PartialEq)]
+pub enum IntLiteralBase {
+    Octal,
+    Hex,
+    Decimal,
+}
+#[derive(Debug, Clone, PartialEq)]
+pub enum LongIntSuffix {
+    Long,
+    LongLong,
+}
+#[derive(Debug, Clone, PartialEq)]
+pub enum FloatLiteralBase {
+    Hex,
+    Decimal,
 }

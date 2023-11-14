@@ -1,9 +1,7 @@
 
 mod vm;
-mod instruction;
-mod register;
 
-use instruction::*;
+use vm::instruction::*;
 
 fn run_simple_loop_with_register() {
     // C code: {

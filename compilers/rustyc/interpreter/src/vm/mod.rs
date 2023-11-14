@@ -1,5 +1,8 @@
-use crate::instruction::*;
-use crate::register::Registers;
+pub mod instruction;
+pub mod register;
+
+use crate::vm::instruction::*;
+use crate::vm::register::Registers;
 const MEMORY_MAX_SIZE: usize = 1024;
 
 #[derive(Debug, Clone, PartialEq)]
