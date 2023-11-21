@@ -7,6 +7,6 @@ members = [
     # For jsbridge
     "others/js-bridge",
     "others/js-bridge/examples/string-passing",
-    # For souring rs
-
+    # For souring rr
 ]
+resolver = "2"

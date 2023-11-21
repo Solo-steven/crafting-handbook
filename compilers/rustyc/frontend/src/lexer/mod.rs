@@ -1,18 +1,24 @@
+pub mod error;
+
 use std::borrow::Cow;
 use std::str::CharIndices;
 
+use crate::lexer::error::LexerPanicError;
 use crate::span::Span;
-use crate::token::{TokenKind, PunctuatorKind, OperatorKind, KeywordKind, LiteralValueKind};
-use crate::token::{FloatLiteralBase, IntLiteralBase, LongIntSuffix};
+use crate::token::{FloatLiteralBase, IntLiteralBase, LongIntSuffix, TokenKind};
 use crate::lexer_panic;
 
+
 #[derive(Debug, Clone, PartialEq)]
-struct TokenWithSpan {
+pub struct TokenWithSpan {
     kind: TokenKind,
     start_span: Span,
     finish_span: Span,
 }
-/// 
+
+const lexer_error_map: LexerPanicError = LexerPanicError::new();
+
+/// C99 spec-matched tokenizer (lexer).
 pub struct Lexer<'a> {
     source: &'a str,
     iter: CharIndices<'a>,
@@ -40,18 +46,22 @@ impl<'a> Lexer<'a> {
                 (0, None, TokenKind::EOFToken)
             }
         };
-        Self {
+        let mut lexer = Self {
             source,
             iter,
             lookahead_buffer: Vec::with_capacity(10),
-            current_kind: start_token,
+            current_kind: start_token.clone(),
             current_char: ch,
             current_line_start: offset,
             current_offset: offset,
             current_line: 0,
             start_span: Span::new(),
             finish_span: Span::new(),
+        };
+        if start_token == TokenKind::StartToken {
+            lexer.scan();
         }
+        lexer
     }
     pub fn get_token(&self) -> TokenKind {
         self.current_kind.clone()
@@ -158,50 +168,55 @@ impl<'a> Lexer<'a> {
             }
             Some(ch) => {
                 match ch {
+                    '.' => {
+                        self.eat_char();
+                        self.finish_token();
+                        self.current_kind = TokenKind::Dot;
+                    }
                     ',' => {
                         self.eat_char();
                         self.finish_token();
-                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::Comma);
+                        self.current_kind = TokenKind::Comma;
                     }
                     ';' => {
                         self.eat_char();
                         self.finish_token();
-                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::Semi);
+                        self.current_kind = TokenKind::Semi;
                     }
                     '{' => {
                         self.eat_char();
                         self.finish_token();
-                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::BracesLeft);
+                        self.current_kind = TokenKind::BracesLeft;
                     }
                     '}' => {
                         self.eat_char();
                         self.finish_token();
-                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::BracesRight);
+                        self.current_kind = TokenKind::BracesRight;
                     }
                     '[' => {
                         self.eat_char();
                         self.finish_token();
-                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::BracketLeft);
+                        self.current_kind = TokenKind::BracketLeft;
                     }
                     ']' => {
                         self.eat_char();
                         self.finish_token();
-                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::BracketRight);
+                        self.current_kind = TokenKind::BracketRight;
                     }
                     '(' => {
                         self.eat_char();
                         self.finish_token();
-                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::ParenthesesLeft);
+                        self.current_kind = TokenKind::ParenthesesLeft;
                     }
                     ')' => {
                         self.eat_char();
                         self.finish_token();
-                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::ParenthesesRight);
+                        self.current_kind = TokenKind::ParenthesesRight;
                     }
                     ':' => {
                         self.eat_char();
                         self.finish_token();
-                        self.current_kind = TokenKind::Punctuators(PunctuatorKind::Colon);
+                        self.current_kind = TokenKind::Colon;
                     }
                     '*' => {
                         self.read_multiple_start();
@@ -227,11 +242,23 @@ impl<'a> Lexer<'a> {
                         }
                         self.read_word();
                     }
-                    'l' => {
-                        
-                    }
                     '/' => {
-
+                        self.eat_char();
+                        if let Some(ch) = self.get_char() {
+                            match ch {
+                                '/' => {},
+                                '*' => {}
+                                '=' => {
+                                    self.eat_char();
+                                    self.finish_token();
+                                    self.current_kind = TokenKind::DiffAssignment;
+                                }
+                                _ => {
+                                    self.finish_token();
+                                    self.current_kind = TokenKind::Division;
+                                }
+                            }
+                        }
                     }
                     '%' => {
                         self.read_reminder_start();
@@ -239,7 +266,7 @@ impl<'a> Lexer<'a> {
                     '?' => {
                         self.eat_char();
                         self.finish_token();
-                        self.current_kind = TokenKind::Operators(OperatorKind::Qustion);
+                        self.current_kind = TokenKind::Qustion;
                     }
                     '!' => {
                         self.read_not_start();
@@ -295,18 +322,18 @@ impl<'a> Lexer<'a> {
                 '+' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::Increment);
+                    self.current_kind = TokenKind::Increment;
                 }
                 '=' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::SumAssignment)
+                    self.current_kind = TokenKind::SumAssignment;
                 }
                 _ => {}
             }
         }
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::Plus)
+        self.current_kind = TokenKind::Plus;
     }
     /// Read token when start with '-', it possible can be '-', '--', '-=', '->'
     fn read_minus_start(&mut self) {
@@ -315,21 +342,24 @@ impl<'a> Lexer<'a> {
             match ch {
                 '-' => {
                     self.eat_char();
-                    self.current_kind = TokenKind::Operators(OperatorKind::Decrement);
+                    self.current_kind = TokenKind::Decrement;
+                    return;
                 }
                 '=' => {
                     self.eat_char();
-                    self.current_kind = TokenKind::Operators(OperatorKind::DiffAssignment);
+                    self.current_kind = TokenKind::DiffAssignment;
+                    return;
                 }
                 '>' => {
                     self.eat_char();
-                    self.current_kind = TokenKind::Operators(OperatorKind::Arrow);
+                    self.current_kind = TokenKind::Arrow;
+                    return;
                 }
                 _ => {}
             }
         }
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::Minus);
+        self.current_kind = TokenKind::Minus;
     }
     /// Read token when start with '*' char, is possible can be '*' or '*='
     fn read_multiple_start(&mut self) {
@@ -339,18 +369,14 @@ impl<'a> Lexer<'a> {
                 '=' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::ProductAssignment);
+                    self.current_kind = TokenKind::ProductAssignment;
                     return;
                 }
                 _ => {}
             }
         }
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::Multiplication);
-    }
-    /// Read token when start with '/', it possble can be '/', '/=', comment or blockcomment
-    fn read_division_start() {
-
+        self.current_kind = TokenKind::Multiplication;
     }
     /// Read token when start with '%', it possible can be '%', '%='
     fn read_reminder_start(&mut self) {
@@ -360,14 +386,14 @@ impl<'a> Lexer<'a> {
                 '=' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::RemainderAssignment);
+                    self.current_kind = TokenKind::RemainderAssignment;
                     return;
                 }
                 _ => {}
             }
         }
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::Remainder);
+        self.current_kind = TokenKind::Remainder;
     }
     /// Read token when start with '>', it possible can be '>', '>>', '>=', '>>='
     fn read_gt_start(&mut self) {
@@ -377,7 +403,7 @@ impl<'a> Lexer<'a> {
                 '=' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::Geqt);
+                    self.current_kind = TokenKind::Geqt;
                     return;
                 }
                 '>' => {
@@ -387,21 +413,21 @@ impl<'a> Lexer<'a> {
                             '=' => {
                                 self.eat_char();
                                 self.finish_token();
-                                self.current_kind = TokenKind::Operators(OperatorKind::BitwiseRightShiftAssignment);
+                                self.current_kind = TokenKind::BitwiseRightShiftAssignment;
                                 return;
                             }
                             _ => {}
                         }
                     }
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::BitwiseRightShift);
+                    self.current_kind = TokenKind::BitwiseRightShift;
                     return;
                 }
                 _ => {}
             }
         }
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::Gt);
+        self.current_kind = TokenKind::Gt;
     }
     // Read token when start with '<', it possible can be '>', '>=', '>>', '>>='
     fn read_lt_start(&mut self) {
@@ -411,7 +437,7 @@ impl<'a> Lexer<'a> {
                 '=' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::Leqt);
+                    self.current_kind = TokenKind::Leqt;
                     return;
                 }
                 '<' => {
@@ -421,21 +447,21 @@ impl<'a> Lexer<'a> {
                             '=' => {
                                 self.eat_char();
                                 self.finish_token();
-                                self.current_kind = TokenKind::Operators(OperatorKind::BitwiseLeftShiftAssignment);
+                                self.current_kind = TokenKind::BitwiseLeftShiftAssignment;
                                 return;
                             }
                             _ => {}
                         }
                     }
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::BitwiseLeftShift);
+                    self.current_kind = TokenKind::BitwiseLeftShift;
                     return;
                 }
                 _ => {}
             }
         }
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::Lt);
+        self.current_kind = TokenKind::Lt;
     }
     /// Read token start with '=', it possible can be '=', '==' 
     fn read_eq_start(&mut self) {
@@ -445,14 +471,14 @@ impl<'a> Lexer<'a> {
                 '=' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::Equal);
+                    self.current_kind = TokenKind::Equal;
                     return;
                 }
                 _ => {}
             }
         }
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::Assignment);
+        self.current_kind = TokenKind::Assignment;
     }
     /// Read token when start with '&', it possible can be '&', '&=', '&&'
     fn read_and_start(&mut self) {
@@ -462,20 +488,20 @@ impl<'a> Lexer<'a> {
                 '=' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::BitwiseAndAssignment);
+                    self.current_kind = TokenKind::BitwiseAndAssignment;
                     return;
                 }
                 '&' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::LogicalAnd);
+                    self.current_kind = TokenKind::LogicalAnd;
                     return;
                 }
                 _ => {}
             }
         }
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::BitwiseAnd);
+        self.current_kind = TokenKind::BitwiseAnd;
     }
     /// Read token when start with '|', it possible can be '|', '|=', '||'
     fn read_or_start(&mut self) {
@@ -485,20 +511,20 @@ impl<'a> Lexer<'a> {
                 '=' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::BitwiseOrAssignment);
+                    self.current_kind = TokenKind::BitwiseOrAssignment;
                     return;
                 }
                 '&' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::LogicalOr);
+                    self.current_kind = TokenKind::LogicalOr;
                     return;
                 }
                 _ => {}
             }
         }
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::BitwiseOr);
+        self.current_kind = TokenKind::BitwiseOr;
     }
     /// Read token when start with '!', it possible can be '!', '!='
     fn read_not_start(&mut self) {
@@ -508,20 +534,20 @@ impl<'a> Lexer<'a> {
                 '=' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::NotEqual);
+                    self.current_kind = TokenKind::NotEqual;
                     return;
                 }
                 _ => {}
             }
         }
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::LogicalNot);
+        self.current_kind = TokenKind::LogicalNot;
     }
     /// Read token when start with '~', it possible can be '~'
     fn read_bitwise_not_start(&mut self) {
         self.eat_char();
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::BitwiseNot);
+        self.current_kind = TokenKind::BitwiseNot;
     }
     /// Read token when start with '~', it possible can be '^', '^='
     fn read_xor_start(&mut self) {
@@ -531,14 +557,14 @@ impl<'a> Lexer<'a> {
                 '=' => {
                     self.eat_char();
                     self.finish_token();
-                    self.current_kind = TokenKind::Operators(OperatorKind::BitwiseXorAssignment);
+                    self.current_kind = TokenKind::BitwiseXorAssignment;
                     return;
                 }
                 _ => {}
             }
         }
         self.finish_token();
-        self.current_kind = TokenKind::Operators(OperatorKind::BitwiseXor);
+        self.current_kind = TokenKind::BitwiseXor;
     }
     /// Read a identifier or keyword. frist start reading string until
     /// meet some punctuator or ignoreable char, and see if it is a keyword
@@ -550,7 +576,7 @@ impl<'a> Lexer<'a> {
                 match ch {
                     '+' | '-' | '*' | '%' | '/' | '&' | '\'' | '"' | 
                     '<' | '>' | '=' | '?' | '#' | '~' | '^' | '!' |
-                    '{' | '}' | '[' | ']' | '(' | ')' => break,
+                    '{' | '}' | '[' | ']' | '(' | ')'  | ';' | ','=> break,
                     '\t' | ' '| '\n' => break,
                     '\\' => {
                         let next_char = self.source[self.current_offset + 1..].chars().next();
@@ -587,43 +613,43 @@ impl<'a> Lexer<'a> {
         self.finish_token();
         let word = &self.source[self.start_span.offset..self.current_offset];
         self.current_kind = match word  {
-            "auto" => TokenKind::Keyword(KeywordKind::Auto),
-            "break" => TokenKind::Keyword(KeywordKind::Break), 
-            "case" => TokenKind::Keyword(KeywordKind::Case),
-            "char" => TokenKind::Keyword(KeywordKind::Char),
-            "const" => TokenKind::Keyword(KeywordKind::Const),
-            "continue" => TokenKind::Keyword(KeywordKind::Continue),
-            "default" => TokenKind::Keyword(KeywordKind::Default),
-            "Do" => TokenKind::Keyword(KeywordKind::Do),
-            "double" => TokenKind::Keyword(KeywordKind::Double),
-            "else" => TokenKind::Keyword(KeywordKind::Else),
-            "enum" => TokenKind::Keyword(KeywordKind::Enum),
-            "extern" => TokenKind::Keyword(KeywordKind::Extern),
-            "float" => TokenKind::Keyword(KeywordKind::Float),
-            "for" => TokenKind::Keyword(KeywordKind::For),
-            "goto" => TokenKind::Keyword(KeywordKind::Goto),
-            "if" => TokenKind::Keyword(KeywordKind::If),
-            "inline" => TokenKind::Keyword(KeywordKind::Inline),
-            "int" => TokenKind::Keyword(KeywordKind::Int),
-            "long" => TokenKind::Keyword(KeywordKind::Long),
-            "register" => TokenKind::Keyword(KeywordKind::Register),
-            "restrict" => TokenKind::Keyword(KeywordKind::Restrict),
-            "return" => TokenKind::Keyword(KeywordKind::Return),
-            "short" => TokenKind::Keyword(KeywordKind::Short),
-            "signed" => TokenKind::Keyword(KeywordKind::Signed), 
-            "sizeof" => TokenKind::Operators(OperatorKind::Sizeof),
-            "static" => TokenKind::Keyword(KeywordKind::Static),
-            "struct" => TokenKind::Keyword(KeywordKind::Struct),
-            "switch" => TokenKind::Keyword(KeywordKind::Switch),
-            "typedef" => TokenKind::Keyword(KeywordKind::Typedef),
-            "union" => TokenKind::Keyword(KeywordKind::Union),
-            "unsigned" => TokenKind::Keyword(KeywordKind::Unsigned),
-            "void" => TokenKind::Keyword(KeywordKind::Void),
-            "volatile" => TokenKind::Keyword(KeywordKind::Volatile),
-            "while" => TokenKind::Keyword(KeywordKind::While),
-            "_Bool" => TokenKind::Keyword(KeywordKind::_Bool),
-            "_Complex" => TokenKind::Keyword(KeywordKind::_Complex),
-            "_Imaginary" => TokenKind::Keyword(KeywordKind::_Imaginary),
+            "auto" => TokenKind::Auto,
+            "break" => TokenKind::Break, 
+            "case" => TokenKind::Case,
+            "char" => TokenKind::Char,
+            "const" => TokenKind::Const,
+            "continue" => TokenKind::Continue,
+            "default" => TokenKind::Default,
+            "Do" => TokenKind::Do,
+            "double" => TokenKind::Double,
+            "else" => TokenKind::Else,
+            "enum" => TokenKind::Enum,
+            "extern" => TokenKind::Extern,
+            "float" => TokenKind::Float,
+            "for" => TokenKind::For,
+            "goto" => TokenKind::Goto,
+            "if" => TokenKind::If,
+            "inline" => TokenKind::Inline,
+            "int" => TokenKind::Int,
+            "long" => TokenKind::Long,
+            "register" => TokenKind::Register,
+            "restrict" => TokenKind::Restrict,
+            "return" => TokenKind::Return,
+            "short" => TokenKind::Short,
+            "signed" => TokenKind::Signed, 
+            "sizeof" => TokenKind::Sizeof,
+            "static" => TokenKind::Static,
+            "struct" => TokenKind::Struct,
+            "switch" => TokenKind::Switch,
+            "typedef" => TokenKind::Typedef,
+            "union" => TokenKind::Union,
+            "unsigned" => TokenKind::Unsigned,
+            "void" => TokenKind::Void,
+            "volatile" => TokenKind::Volatile,
+            "while" => TokenKind::While,
+            "_Bool" => TokenKind::_Bool,
+            "_Complex" => TokenKind::_Complex,
+            "_Imaginary" => TokenKind::_Imaginary,
             _ => TokenKind::Identifier,
         };
     }
@@ -693,13 +719,13 @@ impl<'a> Lexer<'a> {
             if ch == mode {
                 self.eat_char();
                 self.finish_token();
-                self.current_kind = TokenKind::LiteralValue( 
-                    if mode == '\'' {
-                        LiteralValueKind::CharLiteral
+                self.current_kind = if mode == '\'' {
+                        TokenKind::CharLiteral
                     } else {
-                        LiteralValueKind::StringLiteral
+                        TokenKind::StringLiteral
                     }
-                );
+                ;
+                return;
             }
         }
         // TODO: error of unclose char string
@@ -749,13 +775,13 @@ impl<'a> Lexer<'a> {
                 }
                 let suffix = self.read_float_suffix();
                 self.finish_token();
-                self.current_kind = TokenKind::LiteralValue(LiteralValueKind::FloatLiteral(FloatLiteralBase::Decimal, suffix));
+                self.current_kind = TokenKind::FloatLiteral(FloatLiteralBase::Decimal, suffix);
                 return;
             }
         }
         let suffix_tuple = self.read_int_suffix();
         self.finish_token();
-        self.current_kind = TokenKind::LiteralValue(LiteralValueKind::IntLiteral(IntLiteralBase::Octal, suffix_tuple));
+        self.current_kind = TokenKind::IntLiteral(IntLiteralBase::Decimal, suffix_tuple);
     }
     /// Read number literal when start with 0 but not hex number.
     /// - decimal float
@@ -796,7 +822,7 @@ impl<'a> Lexer<'a> {
                 }
                 let suffix = self.read_float_suffix();
                 self.finish_token();
-                self.current_kind = TokenKind::LiteralValue(LiteralValueKind::FloatLiteral(FloatLiteralBase::Decimal, suffix));
+                self.current_kind = TokenKind::FloatLiteral(FloatLiteralBase::Decimal, suffix);
                 return;
             }
         }
@@ -805,7 +831,7 @@ impl<'a> Lexer<'a> {
         }
        let suffix_tuple = self.read_int_suffix();
         self.finish_token();
-        self.current_kind = TokenKind::LiteralValue(LiteralValueKind::IntLiteral(IntLiteralBase::Octal, suffix_tuple));
+        self.current_kind = TokenKind::IntLiteral(IntLiteralBase::Octal, suffix_tuple);
     }
     /// Read number literal when start with hex prefix like `0x` or `0X`
     /// 
@@ -831,13 +857,13 @@ impl<'a> Lexer<'a> {
                 }
                 let suffix = self.read_float_suffix();
                 self.finish_token();
-                self.current_kind = TokenKind::LiteralValue(LiteralValueKind::FloatLiteral(FloatLiteralBase::Hex,suffix));
+                self.current_kind = TokenKind::FloatLiteral(FloatLiteralBase::Hex,suffix);
                 return;
             }
         }
         let suffix_tuple = self.read_int_suffix();
         self.finish_token();
-        self.current_kind = TokenKind::LiteralValue(LiteralValueKind::IntLiteral(IntLiteralBase::Hex, suffix_tuple));
+        self.current_kind = TokenKind::IntLiteral(IntLiteralBase::Hex, suffix_tuple);
 
     }
     fn read_dot_start_number(&mut self) {
@@ -862,7 +888,7 @@ impl<'a> Lexer<'a> {
         let suffix = self.read_float_suffix();
         self.finish_token();
         // decimal float literal
-        self.current_kind = TokenKind::LiteralValue(LiteralValueKind::FloatLiteral(FloatLiteralBase::Decimal,suffix));
+        self.current_kind = TokenKind::FloatLiteral(FloatLiteralBase::Decimal,suffix);
     }
     /// (Maybe) Read integer number suffix
     /// - unsigned-suffix long-suffix(opt)
@@ -915,7 +941,8 @@ impl<'a> Lexer<'a> {
         }
         return false;
     }
-    /// 
+    /// Read float suffix if possible, return a bool to 
+    /// indicate is a float suffix being read or not.
     fn read_float_suffix(&mut self) -> bool {
         if let Some(ch) = self.get_char() {
             if ch == 'l' || ch == 'L' || ch == 'f' || ch == 'F' {

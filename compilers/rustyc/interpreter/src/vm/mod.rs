@@ -13,6 +13,12 @@ pub struct VM {
     condition_flags: u8,
 }
 
+impl Default for VM {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VM {
     pub fn new() -> Self {
         Self {
@@ -21,9 +27,6 @@ impl VM {
             memory: [0; MEMORY_MAX_SIZE],
             condition_flags: 0,
         }
-    }
-    pub fn log(&mut self) {
-        
     }
     pub fn execute_with_instruction(&mut self, instructions: Vec<Instruction>, base: usize) {
         self.program_counter = base as u32;

@@ -1,15 +1,8 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenKind {
-    StartToken, // start state for lexer.
-    Keyword(KeywordKind),
-    Identifier,
-    Operators(OperatorKind),
-    Punctuators(PunctuatorKind),
-    LiteralValue(LiteralValueKind),
-    EOFToken,
-}
-#[derive(Debug, Clone, PartialEq)]
-pub enum KeywordKind {
+    // Start Token State
+    StartToken,
+    // Keywords
     Auto,
     Break,
     Case,
@@ -46,9 +39,9 @@ pub enum KeywordKind {
     _Bool,
     _Complex,
     _Imaginary,
-}
-#[derive(Debug, Clone, PartialEq)]
-pub enum OperatorKind {
+    Identifier,
+    // Operators
+    Dot, // .
     Increment, // ++
     Decrement, // --
     Plus,      // +
@@ -85,9 +78,7 @@ pub enum OperatorKind {
     BitwiseOrAssignment, // |=
     BitwiseXorAssignment, // ^=
     Sizeof, // sizeof
-}
-#[derive(Debug, Clone, PartialEq)]
-pub enum PunctuatorKind {
+    // Punctuators
     Comma,  // ,
     Semi,   // ;
     Colon, // :
@@ -97,13 +88,13 @@ pub enum PunctuatorKind {
     BracketRight, // ]
     ParenthesesLeft,  // (
     ParenthesesRight, // )
-}
-#[derive(Debug, Clone, PartialEq)]
-pub enum LiteralValueKind {
+    // Literals
     IntLiteral(IntLiteralBase,(Option<LongIntSuffix>, bool)),
     FloatLiteral(FloatLiteralBase, bool),
     CharLiteral,
     StringLiteral,
+    // EOF token
+    EOFToken,
 }
 #[derive(Debug, Clone, PartialEq)]
 pub enum IntLiteralBase {

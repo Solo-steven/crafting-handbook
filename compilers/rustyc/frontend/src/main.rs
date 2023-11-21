@@ -1,19 +1,42 @@
 
 mod lexer;
+mod parser;
 mod span;
 mod token;
 mod marco;
+mod ast;
 
 use crate::token::TokenKind;
 fn main(){
     let source = "
-        int main() {
-            int a = 00010.0010f;
-            printf(10);
-            return 0;
+        struct Node {
+            int* value;
+            float account;
+            struct Node* left;
+            struct Node* right;
+        }
+        union IntOrFloat {
+            int age;
+            float number
+        }
+        enum Expr {
+            BinaryExpr;
+            UnaryExpr;
+            UpdateExpr;
+        }
+        struct Complex {
+            struct Node * root;
+            union IntOrFloat value;
+            enum Expr kind;
+        }
+        int main(int argc, char *argv) {
+            
         }
     ";
-    let mut lexer = lexer::Lexer::new(source);
+    let source2 = "
+        person->computeSome(a, b, 10);
+    ";
+    let mut lexer = lexer::Lexer::new(source2);
     loop {
         let tok = lexer.next_token();
         match tok {
@@ -26,4 +49,6 @@ fn main(){
             }
         }
     }
+    let mut parser = parser::Parser::new(source2);
+    parser.parse();
 }
