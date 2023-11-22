@@ -124,13 +124,9 @@ pub struct StoreInstruction {
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct BrInstruction {
-    address: usize,
     src: Identifier,
-}
-#[derive(Debug, PartialEq, Clone)]
-pub struct BrneqInstruction {
-    address: usize,
-    src: Identifier,
+    conseq: usize,
+    alter: usize,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct JumpInstruction {

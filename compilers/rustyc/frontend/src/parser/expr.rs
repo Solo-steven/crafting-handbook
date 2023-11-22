@@ -187,11 +187,11 @@ impl<'a> Parser<'a> {
                     value_type: match long_suffix {
                         Some(suffix) => {
                             match suffix {
-                                LongIntSuffix::Long => TypeSpecifier::Long,
-                                LongIntSuffix::LongLong => TypeSpecifier::LongLong
+                                LongIntSuffix::Long => ValueType::Long,
+                                LongIntSuffix::LongLong => ValueType::LongLong
                             }
                         }
-                        _ =>  if is_short { TypeSpecifier::Shorted } else { TypeSpecifier::Int }
+                        _ =>  if is_short { ValueType::Shorted } else { ValueType::Int }
                     }
                 }))
             }
@@ -200,7 +200,7 @@ impl<'a> Parser<'a> {
                 self.next_token();
                 ParserResult::Ok(Expression::FloatLiteral(FloatLiteral { 
                     raw_value , base,
-                    value_type: if is_float { TypeSpecifier::Float } else { TypeSpecifier::Double }
+                    value_type: if is_float { ValueType::Float } else { ValueType::Double }
                 }))
             }
             TokenKind::CharLiteral => {

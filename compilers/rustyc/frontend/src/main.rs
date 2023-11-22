@@ -7,30 +7,21 @@ mod marco;
 mod ast;
 
 use crate::token::TokenKind;
+use crate::parser::ParserResult;
+
+use serde_json::to_string_pretty;
+use std::io::Write;
+use std::fs;
+
 fn main(){
     let source = "
-        struct Node {
-            int* value;
-            float account;
-            struct Node* left;
-            struct Node* right;
-        }
-        union IntOrFloat {
-            int age;
-            float number
-        }
-        enum Expr {
-            BinaryExpr;
-            UnaryExpr;
-            UpdateExpr;
-        }
         struct Complex {
             struct Node * root;
             union IntOrFloat value;
             enum Expr kind;
-        }
-        int main(int argc, char *argv) {
-            
+        } test, i, **o;
+        int main() {
+
         }
     ";
     let source2 = "
@@ -49,6 +40,15 @@ fn main(){
             }
         }
     }
-    let mut parser = parser::Parser::new(source2);
-    parser.parse();
+    let mut parser = parser::Parser::new(source);
+    let result = parser.parse();
+    match result  {
+        ParserResult::Ok(program) => {
+            let mut file = fs::File::create("./test.json").unwrap();
+            write!(file, "{}",to_string_pretty(&program).unwrap().as_str());
+        }
+        ParserResult::Err(_) => {
+
+        }
+    }
 }

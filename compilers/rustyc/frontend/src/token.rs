@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenKind {
     // Start Token State
@@ -96,7 +97,7 @@ pub enum TokenKind {
     // EOF token
     EOFToken,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum IntLiteralBase {
     Octal,
     Hex,
@@ -107,7 +108,7 @@ pub enum LongIntSuffix {
     Long,
     LongLong,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum FloatLiteralBase {
     Hex,
     Decimal,

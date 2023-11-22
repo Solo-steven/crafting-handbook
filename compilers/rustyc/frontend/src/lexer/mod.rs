@@ -8,7 +8,6 @@ use crate::span::Span;
 use crate::token::{FloatLiteralBase, IntLiteralBase, LongIntSuffix, TokenKind};
 use crate::lexer_panic;
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct TokenWithSpan {
     kind: TokenKind,

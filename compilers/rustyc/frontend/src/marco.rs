@@ -179,3 +179,17 @@ macro_rules! map_update_token_to_update_ops {
         }
     };
 }
+#[macro_export]
+macro_rules! unwind_pointer_declarator_and_id_to_pointer_type {
+    ($declarator: expr, $value_type: expr) => {
+        {
+            for i in 0..$declarator.level {
+                $value_type = ValueType::PointerType(Box::new(PointerType {
+                    pointer_to: Box::new($value_type),
+                    qualifiers: std::mem::take(&mut $declarator.qualifiers[i]),
+                }))
+            }
+            $value_type
+        }
+    };
+}
