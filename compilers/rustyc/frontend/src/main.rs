@@ -1,4 +1,3 @@
-
 mod lexer;
 mod parser;
 mod span;
@@ -15,19 +14,12 @@ use std::fs;
 
 fn main(){
     let source = "
-        struct Complex {
-            struct Node * root;
-            union IntOrFloat value;
-            enum Expr kind;
-        } test, i, **o;
-        int main() {
-
-        }
+            (struct Node) { .value = 10, .left = 0, .right=0 }.value = 10 ;
     ";
     let source2 = "
         person->computeSome(a, b, 10);
     ";
-    let mut lexer = lexer::Lexer::new(source2);
+    let mut lexer = lexer::Lexer::new(source);
     loop {
         let tok = lexer.next_token();
         match tok {
@@ -45,10 +37,10 @@ fn main(){
     match result  {
         ParserResult::Ok(program) => {
             let mut file = fs::File::create("./test.json").unwrap();
-            write!(file, "{}",to_string_pretty(&program).unwrap().as_str());
+            let _ = write!(file, "{}",to_string_pretty(&program).unwrap().as_str());
         }
-        ParserResult::Err(_) => {
-
+        ParserResult::Err(err) => {
+            println!("Error : {}", err);
         }
     }
 }

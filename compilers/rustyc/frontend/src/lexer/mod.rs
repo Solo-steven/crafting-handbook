@@ -10,9 +10,9 @@ use crate::lexer_panic;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct TokenWithSpan {
-    kind: TokenKind,
-    start_span: Span,
-    finish_span: Span,
+    pub kind: TokenKind,
+    pub start_span: Span,
+    pub finish_span: Span,
 }
 
 const lexer_error_map: LexerPanicError = LexerPanicError::new();
@@ -250,7 +250,7 @@ impl<'a> Lexer<'a> {
                                 '=' => {
                                     self.eat_char();
                                     self.finish_token();
-                                    self.current_kind = TokenKind::DiffAssignment;
+                                    self.current_kind = TokenKind::QuotientAssignment;
                                 }
                                 _ => {
                                     self.finish_token();

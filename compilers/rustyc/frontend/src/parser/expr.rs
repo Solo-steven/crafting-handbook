@@ -13,6 +13,7 @@ use crate::{
     get_binary_op_priority,
     map_unary_token_to_unary_ops,
     map_update_token_to_update_ops,
+    is_looksahed_type_name_token,
 };
 
 impl<'a> Parser<'a> {
@@ -93,12 +94,37 @@ impl<'a> Parser<'a> {
         ParserResult::Ok(left)
     }
     fn parse_unary_expr(&mut self) -> ParserResult<Expression<'a>> {
+        if is_token!(TokenKind::ParenthesesLeft, self) {
+            if is_looksahed_type_name_token!(self) {
+                self.next_token();
+                let mut value_type = self.parse_value_type(None)?;
+                value_type =  self.parse_type_with_pointer_type(value_type);
+                expect_token!(TokenKind::ParenthesesRight, self);
+                if is_token!(TokenKind::BracesLeft, self) {
+                    self.cache_type_name = Some(value_type);
+                    return self.parse_update_expr();
+                }
+                let expr = self.parse_unary_expr()?;
+                return ParserResult::Ok(Expression::CastExpr(CastExpression { type_name: value_type, expr: Box::new(expr) }))
+            }
+        }
         if is_unary_ops_token!(self) {
             let unary_op = map_unary_token_to_unary_ops!(self.get_token());
             self.next_token();
-            // TODO: handle `sizeof (type-name)`
-            let expr = self.parse_unary_expr()?;
-            ParserResult::Ok(Expression::UnaryExpr(UnaryExpression { expr: Box::new(expr), ops: unary_op }))
+            if unary_op == UnaryOps::Sizeof {
+                if self.get_token() == TokenKind::ParenthesesLeft  {
+                    let expr = self.parse_unary_expr()?;
+                    ParserResult::Ok(Expression::SizeOfValueExpr(SizeOfValueExpression { expr: Box::new(expr) }))
+                }else {
+                    let mut value_type = self.parse_value_type(None)?;
+                    value_type =  self.parse_type_with_pointer_type(value_type);
+                    expect_token!(TokenKind::ParenthesesRight, self);
+                    ParserResult::Ok(Expression::SizeOfTypeExpr(SizeOfTypeExpression { value_type }))
+                }
+            } else {
+                let expr = self.parse_unary_expr()?;
+                ParserResult::Ok(Expression::UnaryExpr(UnaryExpression { expr: Box::new(expr), ops: unary_op }))
+            }
         }else {
             self.parse_update_expr()
         }
@@ -120,6 +146,7 @@ impl<'a> Parser<'a> {
     }
     fn parse_lefthand_side_expr(&mut self) -> ParserResult<Expression<'a>> {
         let mut base = self.parse_primary_expr()?;
+        println!("{:?}", base);
         let mut should_stop = false;
         while should_stop == false {
             match self.get_token() {
@@ -173,6 +200,7 @@ impl<'a> Parser<'a> {
     /// - char literal
     /// - identifier
     /// - ParenthesesExpr
+    /// - struct init literal
     fn parse_primary_expr(&mut self) -> ParserResult<Expression<'a>> {
         match self.get_token() {
             TokenKind::Identifier => {
@@ -213,10 +241,53 @@ impl<'a> Parser<'a> {
                 self.next_token();
                 ParserResult::Ok(Expression::StringLiteral(StringLiteral { raw_value }))
             }
+            TokenKind::ParenthesesLeft => {
+                self.next_token();
+                let expr = self.parse_expr()?;
+                expect_token!(TokenKind::ParenthesesRight, self);
+                ParserResult::Ok(Expression::ParenthesesExpr(ParenthesesExpression { expr: Box::new(expr) }))
+            }
+            TokenKind::BracesLeft => {
+                if self.cache_type_name.is_none() {
+                    ParserResult::Err(String::from("init list can only used when have type name or direct left hand side of declar"))
+                }else {
+                    let s = ParserResult::Ok(Expression::InitExpr(InitExpression { 
+                        value_type: self.cache_type_name.take(),
+                        designators: self.parse_init_list()?,
+                    }));
+                    println!("s:{:?}, next_token {:?}", s, self.get_token());
+                    s
+                }
+            }
             _ => {
-                ParserResult::Err(String::from(""))
+                ParserResult::Err(String::from("there"))
             }
         }
+    }
+    pub (super) fn parse_init_list(&mut self) -> ParserResult<Vec<Designator<'a>>> {
+        expect_token!(TokenKind::BracesLeft, self);
+        let mut is_start = true;
+        let mut designators = Vec::new();
+        loop {
+            if is_token!(TokenKind::BracesRight, self) {
+                break;
+            }
+            if is_start {
+                is_start = false;
+            }else {
+                expect_token!(TokenKind::Comma, self);
+            }
+            if is_token!(TokenKind::BracesRight, self) {
+                break;
+            }
+            expect_token!(TokenKind::Dot, self);
+            let id = self.parse_identifier()?;
+            expect_token!(TokenKind::Assignment, self);
+            let init_value = self.parse_assignment_expr()?;
+            designators.push(Designator { id, init_value });
+        }
+        expect_token!(TokenKind::BracesRight, self);
+        ParserResult::Ok(designators)
     }
     /// Parse a identifier, it would return error result if not match identifier token.
     pub (super) fn parse_identifier(&mut self) -> ParserResult<Identifier<'a>> {

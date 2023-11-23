@@ -1,4 +1,4 @@
-use crate::ast::expr::Identifier;
+use crate::ast::expr::{Identifier, InitExpression, Expression};
 use crate::parser::{Parser, ParserResult};
 use crate::ast::declar::*;
 use crate::token::*;
@@ -57,7 +57,7 @@ impl<'a> Parser<'a> {
                     }
                     TokenKind::Assignment => {
                         self.next_token();
-                        let init_value = Some(self.parse_expr()?);
+                        let init_value = Some(self.parse_declarator_init_value()?);
                         let declarators= self.parse_declaration_list(vec![Declarator { id, init_value, pointer_declarator: None }])?;
                         ParserResult::Ok(Declaration::DelcarList(DeclarationList { value_type, declarators }))
                     }
@@ -80,7 +80,7 @@ impl<'a> Parser<'a> {
     /// - `parse_float_value_type`
     /// - `parse_double_value_type`
     /// ### Wht signed need to be option bool, not just bool
-    fn parse_value_type(&mut self, signed: Option<bool>)  -> ParserResult<ValueType<'a>>{
+    pub (super) fn parse_value_type(&mut self, signed: Option<bool>)  -> ParserResult<ValueType<'a>>{
         match self.get_token() {
             TokenKind::Char => {
                 self.next_token();
@@ -241,7 +241,7 @@ impl<'a> Parser<'a> {
             Some(PointerDeclarator { qualifiers, level})
         }
     }
-    fn parse_type_with_pointer_type(&mut self , mut value_type: ValueType<'a>) -> ValueType<'a> {
+    pub (super) fn parse_type_with_pointer_type(&mut self , mut value_type: ValueType<'a>) -> ValueType<'a> {
         loop {
             if is_token!(TokenKind::Multiplication, self) {
                 self.next_token();
@@ -445,15 +445,25 @@ impl<'a> Parser<'a> {
         }
         ParserResult::Ok(list)
     }
-    /// Parse a declarator
+    /// Parse a declarator with possible init value
     fn parse_init_declarator(&mut self) -> ParserResult<Declarator<'a>> {
         let pointer_declarator = self.parse_maybe_pointer_declarator();
         let id = self.parse_identifier()?;
         if is_token!(TokenKind::Assignment, self) {
             self.next_token();
-            ParserResult::Ok(Declarator { pointer_declarator, id, init_value: Some(self.parse_expr()?) })
+            ParserResult::Ok(Declarator { 
+                pointer_declarator, id,
+                init_value: Some(self.parse_declarator_init_value()?)
+            })
         }else {
             ParserResult::Ok(Declarator { pointer_declarator, id, init_value: None })
         }
+    }
+    fn parse_declarator_init_value(&mut self) -> ParserResult<Expression<'a>> {
+        ParserResult::Ok(if is_token!(TokenKind::BracesLeft, self) {
+            Expression::InitExpr(InitExpression { value_type: None, designators: self.parse_init_list()?})
+        }else {
+            self.parse_assignment_expr()?
+        })
     }
 }

@@ -180,6 +180,18 @@ macro_rules! map_update_token_to_update_ops {
     };
 }
 #[macro_export]
+macro_rules! is_looksahed_type_name_token {
+    ($parser: expr) => {
+        match $parser.lookahead().kind {
+            TokenKind::Struct | TokenKind::Enum | TokenKind::Union | 
+            TokenKind::Char | TokenKind::Unsigned | TokenKind::Signed |
+            TokenKind::Int | TokenKind::Long | TokenKind::Short |
+            TokenKind::Float | TokenKind::Double => true,
+            _ => false,
+        }
+    };
+}
+#[macro_export]
 macro_rules! unwind_pointer_declarator_and_id_to_pointer_type {
     ($declarator: expr, $value_type: expr) => {
         {
@@ -190,6 +202,31 @@ macro_rules! unwind_pointer_declarator_and_id_to_pointer_type {
                 }))
             }
             $value_type
+        }
+    };
+}
+#[macro_export]
+macro_rules! combine_value_type_with_signed {
+    ($signed: expr, $value_type: expr) => {
+        match $signed {
+            Some(value) => {
+                match value  {
+                    true => $value_type,
+                    false => {
+                        match $value_type {
+                            ValueType::Char => ValueType::UnSignedChar,
+                            ValueType::Shorted => ValueType::UnsignedShort,
+                            ValueType::Long => ValueType::UnsignedLong,
+                            ValueType::LongLong => ValueType::UnsignedLongLong,
+                            ValueType::Int => ValueType::Unsigned,
+                            _ => {
+                                panic!()
+                            }
+                        }
+                    }
+                }
+            }
+            _  => $value_type,
         }
     };
 }

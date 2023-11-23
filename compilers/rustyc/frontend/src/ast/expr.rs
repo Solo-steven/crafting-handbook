@@ -12,17 +12,21 @@ pub enum Expression<'a> {
     ConditionalExpr(ConditionalExpression<'a>),
     BinaryExpr(BinaryExpression<'a>),
     UnaryExpr(UnaryExpression<'a>),
+    SizeOfValueExpr(SizeOfValueExpression<'a>),
+    SizeOfTypeExpr(SizeOfTypeExpression<'a>),
     CastExpr(CastExpression<'a>),
     UpdateExpr(UpdateExpression<'a>),
     MemberExpr(MemberExpression<'a>),
     SubscriptExpr(SubscriptionExpression<'a>),
     CallExpr(CallExpression<'a>),
     DereferenceExpr(DereferenceExpression<'a>),
+    InitExpr(InitExpression<'a>),
     StringLiteral(StringLiteral<'a>),
     CharLiteral(CharLiteral<'a>),
     IntLiteral(IntLiteral<'a>),
     FloatLiteral(FloatLiteral<'a>),
-    Identifier(Identifier<'a>)
+    Identifier(Identifier<'a>),
+    ParenthesesExpr(ParenthesesExpression<'a>)
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SequentialExpression<'a> {
@@ -89,6 +93,14 @@ pub struct UnaryExpression<'a> {
     pub ops: UnaryOps,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SizeOfTypeExpression<'a> {
+    pub value_type: ValueType<'a>,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SizeOfValueExpression<'a> {
+    pub expr: Box<Expression<'a>>
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum UnaryOps {
     Plus,      // +
     Minus,     // -
@@ -140,7 +152,15 @@ pub struct DereferenceExpression<'a> {
     pub property: Box<Identifier<'a>>
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct InitExpression {}
+pub struct InitExpression<'a> {
+    pub value_type: Option<ValueType<'a>>,
+    pub designators: Vec<Designator<'a>>,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Designator<'a> {
+    pub id: Identifier<'a>, 
+    pub init_value: Expression<'a>,
+}
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StringLiteral<'a> {
     pub raw_value: Cow<'a, str>
@@ -164,4 +184,8 @@ pub struct CharLiteral<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Identifier<'a> {
     pub name: Cow<'a, str>,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ParenthesesExpression<'a> {
+    pub expr: Box<Expression<'a>>
 }
