@@ -192,6 +192,18 @@ macro_rules! is_looksahed_type_name_token {
     };
 }
 #[macro_export]
+macro_rules! is_type_name_token {
+    ($parser: expr) => {
+        match $parser.get_token() {
+            TokenKind::Struct | TokenKind::Enum | TokenKind::Union | 
+            TokenKind::Char | TokenKind::Unsigned | TokenKind::Signed |
+            TokenKind::Int | TokenKind::Long | TokenKind::Short |
+            TokenKind::Float | TokenKind::Double => true,
+            _ => false,
+        }
+    };
+}
+#[macro_export]
 macro_rules! unwind_pointer_declarator_and_id_to_pointer_type {
     ($declarator: expr, $value_type: expr) => {
         {

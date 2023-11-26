@@ -14,7 +14,12 @@ use std::fs;
 
 fn main(){
     let source = "
-            (struct Node) { .value = 10, .left = 0, .right=0 }.value = 10 ;
+            int main() {
+                int sum = 0;
+                for(int i =0 ; i < 10; ++i) {
+                    sum += i;
+                }
+            }
     ";
     let source2 = "
         person->computeSome(a, b, 10);

@@ -1,0 +1,10 @@
+[package]
+name = "rustyc-optimizer"
+description = "rustyc ir, generate ir and opti ir, implement basic data flow anaylsis"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+

@@ -1,0 +1,13 @@
+[package]
+name = "lab-value-numbering"
+description = "basic implement for value numbering algorithm"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+lab-shared-data-structure = {version = "*", path = "../shared-data-structure"}
+serde= {version = "*", features = ["derive"]}
+serde_json = {version = "*"}
+

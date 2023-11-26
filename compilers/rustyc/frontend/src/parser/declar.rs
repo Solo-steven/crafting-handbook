@@ -461,7 +461,7 @@ impl<'a> Parser<'a> {
     }
     fn parse_declarator_init_value(&mut self) -> ParserResult<Expression<'a>> {
         ParserResult::Ok(if is_token!(TokenKind::BracesLeft, self) {
-            Expression::InitExpr(InitExpression { value_type: None, designators: self.parse_init_list()?})
+            Expression::InitExpr(InitExpression { value_type: None, designators: self.parse_designator_list()?})
         }else {
             self.parse_assignment_expr()?
         })

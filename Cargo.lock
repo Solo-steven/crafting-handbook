@@ -13,6 +13,22 @@ name = "js-bridge"
 version = "0.1.0"
 
 [[package]]
+name = "lab-shared-data-structure"
+version = "0.1.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "lab-value-numbering"
+version = "0.1.0"
+dependencies = [
+ "lab-shared-data-structure",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -47,6 +63,10 @@ dependencies = [
 
 [[package]]
 name = "rustyc-interpreter"
+version = "0.1.0"
+
+[[package]]
+name = "rustyc-optimizer"
 version = "0.1.0"
 
 [[package]]
@@ -85,10 +105,6 @@ dependencies = [
  "ryu",
  "serde",
 ]
-
-[[package]]
-name = "string-passing"
-version = "0.1.0"
 
 [[package]]
 name = "syn"

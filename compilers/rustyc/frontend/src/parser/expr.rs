@@ -102,6 +102,7 @@ impl<'a> Parser<'a> {
                 expect_token!(TokenKind::ParenthesesRight, self);
                 if is_token!(TokenKind::BracesLeft, self) {
                     self.cache_type_name = Some(value_type);
+                    // fall to parse left hand side expression
                     return self.parse_update_expr();
                 }
                 let expr = self.parse_unary_expr()?;
@@ -112,19 +113,15 @@ impl<'a> Parser<'a> {
             let unary_op = map_unary_token_to_unary_ops!(self.get_token());
             self.next_token();
             if unary_op == UnaryOps::Sizeof {
-                if self.get_token() == TokenKind::ParenthesesLeft  {
-                    let expr = self.parse_unary_expr()?;
-                    ParserResult::Ok(Expression::SizeOfValueExpr(SizeOfValueExpression { expr: Box::new(expr) }))
-                }else {
+                if !(self.get_token() == TokenKind::ParenthesesLeft)  {
                     let mut value_type = self.parse_value_type(None)?;
                     value_type =  self.parse_type_with_pointer_type(value_type);
                     expect_token!(TokenKind::ParenthesesRight, self);
-                    ParserResult::Ok(Expression::SizeOfTypeExpr(SizeOfTypeExpression { value_type }))
+                    return ParserResult::Ok(Expression::SizeOfTypeExpr(SizeOfTypeExpression { value_type }))
                 }
-            } else {
-                let expr = self.parse_unary_expr()?;
-                ParserResult::Ok(Expression::UnaryExpr(UnaryExpression { expr: Box::new(expr), ops: unary_op }))
             }
+            let expr = self.parse_unary_expr()?;
+            ParserResult::Ok(Expression::UnaryExpr(UnaryExpression { expr: Box::new(expr), ops: unary_op }))
         }else {
             self.parse_update_expr()
         }
@@ -253,18 +250,19 @@ impl<'a> Parser<'a> {
                 }else {
                     let s = ParserResult::Ok(Expression::InitExpr(InitExpression { 
                         value_type: self.cache_type_name.take(),
-                        designators: self.parse_init_list()?,
+                        designators: self.parse_designator_list()?,
                     }));
                     println!("s:{:?}, next_token {:?}", s, self.get_token());
                     s
                 }
             }
             _ => {
+                println!("{:?}", self.get_token());
                 ParserResult::Err(String::from("there"))
             }
         }
     }
-    pub (super) fn parse_init_list(&mut self) -> ParserResult<Vec<Designator<'a>>> {
+    pub (super) fn parse_designator_list(&mut self) -> ParserResult<Vec<Designator<'a>>> {
         expect_token!(TokenKind::BracesLeft, self);
         let mut is_start = true;
         let mut designators = Vec::new();

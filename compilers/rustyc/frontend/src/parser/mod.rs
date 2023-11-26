@@ -5,7 +5,6 @@ mod stmt;
 use std::borrow::Cow;
 
 use crate::ast::declar::ValueType;
-use crate::ast::stmt::*;
 use crate::ast::*;
 use crate::lexer::*;
 use crate::token::*;
@@ -67,7 +66,7 @@ impl<'a> Parser<'a> {
             TokenKind::Auto | TokenKind::Register | TokenKind::Extern => {
                 todo!();
             }
-            _ => ParserResult::Ok(BlockItem::Stmt( Statement::ExprStmt(self.parse_expr_statement()?))),
+            _ => ParserResult::Ok(BlockItem::Stmt(self.parse_statement()?)),
         }
     }
 }
