@@ -17,6 +17,7 @@ name = "lab-shared-data-structure"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -68,6 +69,9 @@ version = "0.1.0"
 [[package]]
 name = "rustyc-optimizer"
 version = "0.1.0"
+dependencies = [
+ "rustyc-frontend",
+]
 
 [[package]]
 name = "ryu"

@@ -1,134 +1,276 @@
-
+use std::collections::HashMap;
+use crate::ir::value::{Value, IrValueType};
+use crate::ir::function::BasicBlock;
+#[derive(Debug, PartialEq, Clone, Hash, Eq, Copy)]
+pub struct Instruction(pub usize);
 #[derive(Debug, PartialEq, Clone)]
-pub struct  Identifier(String);
-#[derive(Debug, PartialEq, Clone)]
-pub enum IdentifierOrConst {
-    Id(Identifier),
-    Const(ImmiConst),
-}
-#[derive(Debug, PartialEq, Clone)]
-pub enum ImmiConst {
-    U8(u8),
-    U16(u16),
-    I32(i32),
-    I64(i64),
-    F32(f32),
-    F64(f64),   
-}
-#[derive(Debug, PartialEq, Clone)]
-pub enum DataType {
-    U8,
-    U16,
-    I32,
-    I64,
-    F32,
-    F64,
-}
-#[derive(Debug, PartialEq, Clone)]
-pub enum Instruction {
-    // arthmatic instructions
-    Add(AddInstruction),
-    Sub(SubInstruction),
-    Mul(MulInstruction),
-    Divide(DivInstruction),
-    Reminder(ReminderInstruction),
-    BitwiseNot(BitwiseNotInstruction),
-    BitwiseOR(BitwiseORInstruction),
-    BitwiseAnd(BitwiseAndInstruction),
-    ShiftLeft(ShiftLeftInstruction),
-    ShiftRight(ShiftRightInstruction),
-    Copy(CopyInstruction),
-    Neg(NegInstruction),
-    Eq(EqInstruction),
-    NotEq(NotEqInstruction),
-    Gt(GtInstruction),
-    Gteq(GteqInstruction),
-    Lt(LtInstruction),
-    LtEq(LteqInstruction),
-    Call(CallInstruction),
+pub enum InstructionData {
+    Add {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    Sub {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    Mul  {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    Divide  {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    Reminder  {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    FAdd {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    FSub {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    FMul  {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    FDivide  {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    FReminder  {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    BitwiseNot {
+        opcode: OpCode,
+        src: Value,
+        dst: Value
+    },
+    BitwiseOR  {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    BitwiseAnd  {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    ShiftLeft  {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    ShiftRight  {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    LogicalAnd {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    LogicalOR {
+        opcode: OpCode,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    LogicalNot {
+        opcode: OpCode,
+        src: Value,
+        dst: Value
+    },
+    Move  {
+        opcode: OpCode,
+        src: Value,
+        dst: Value
+    },
+    Neg  {
+        opcode: OpCode,
+        src: Value,
+        dst: Value
+    },
+    Icmp {
+        opcode: OpCode,
+        flag: CmpFlag,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
+    Call {
+        params: Vec<Value>
+    },
+    // data type convert
+    ToU8 {
+        opcode: OpCode,
+        src: Value,
+        dst: Value,
+    },
+    ToU16 {
+        opcode: OpCode,
+        src: Value,
+        dst: Value,
+    },
+    ToU32 {
+        opcode: OpCode,
+        src: Value,
+        dst: Value,
+    },
+    ToU64 {
+        opcode: OpCode,
+        src: Value,
+        dst: Value,
+    },
+    ToI16 {
+        opcode: OpCode,
+        src: Value,
+        dst: Value,
+    },
+    ToI32 {
+        opcode: OpCode,
+        src: Value,
+        dst: Value,
+    },
+    ToI64 {
+        opcode: OpCode,
+        src: Value,
+        dst: Value,
+    },
+    ToF32 {
+        opcode: OpCode,
+        src: Value,
+        dst: Value,
+    },
+    ToF64 {
+        opcode: OpCode,
+        src: Value,
+        dst: Value,
+    },
+    // stack related
+    StackAlloc {
+        opcode: OpCode,
+        size: usize,
+        align: usize,
+        dst: Value,
+    },
+    StackAddr {
+        opcode: OpCode,
+        base: Value,
+        offset: Value,
+        dst: Value,
+    },
     // memory instruction
-    Load,
-    Store,
-    LoadIndirect,
-    StoreIndirect,
+    LoadRegister {
+        opcode: OpCode,
+        base: Value,
+        offset: Value,
+        dst: Value,
+        data_type: IrValueType,
+    },
+    StoreRegister {
+        opcode: OpCode,
+        base: Value,
+        offset: Value,
+        src: Value,
+        data_type: IrValueType,
+    },
     // Control instructions
-    Br,
-    Brneq,
+    BrIf {
+        opcode: OpCode,
+        test: Value,
+        conseq: BasicBlock,
+        alter: BasicBlock,
+    },
+    Jump {
+        opcode: OpCode,
+        dst: Value,
+    },
+}
+
+pub type InstructionMap = HashMap<Instruction, InstructionData>;
+#[derive(Debug, PartialEq, Clone)]
+pub enum OpCode {
+    Add,
+    Sub,
+    Mul,
+    Divide,
+    Reminder,
+    FAdd,
+    FSub,
+    FMul,
+    FDivide,
+    FReminder,
+    BitwiseNot,
+    BitwiseOR,
+    BitwiseAnd,
+    ShiftLeft,
+    ShiftRight,
+    LogicalNot,
+    LogicalOR,
+    LogicalAnd,
+    Mov,
+    Neg,
+    Icmp,
+    Fcmp,
+    Call,
+    // convert
+    ToU8,
+    ToU16,
+    ToU32,
+    ToU64,
+    ToI16,
+    ToI32,
+    ToI64,
+    ToF32,
+    ToF64, 
+    // stack relate
+    StackAlloc,
+    StackAddr,
+    // memory instruction
+    LoadRegister,
+    StoreRegister,
+    // Control instructions
+    BrIf,
     Jump,
 }
-/// Internal marco to create binary instruction like below format
-/// - `op <dst-reg> <src-reg1> <src-reg2>`
-macro_rules! BinaryInstruction {
-    ($($name: ident),*) => {
-        $(
-            #[derive(Debug, PartialEq, Clone)]
-            pub struct $name {
-                pub src1: IdentifierOrConst,
-                pub src2: IdentifierOrConst,
-                pub dst: Identifier,
-            }
-        )*
-    };
-}
-BinaryInstruction!{
-    AddInstruction,
-    SubInstruction,
-    MulInstruction,
-    DivInstruction,
-    ReminderInstruction,
-    BitwiseAndInstruction,
-    BitwiseORInstruction,
-    ShiftLeftInstruction,
-    ShiftRightInstruction,
-    GtInstruction,
-    GteqInstruction,
-    LtInstruction,
-    LteqInstruction,
-    EqInstruction,
-    NotEqInstruction
-}
-/// Internal marco to create unary instruction like below format
-/// - `op <dst-reg> <src-reg>`
-macro_rules! UnaryInstruction {
-    ($($name: ident),*) => {
-        $(
-            #[derive(Debug, PartialEq, Clone)]
-            pub struct $name {
-                pub src: IdentifierOrConst,
-                pub dst: Identifier,
-            }
-        )*
-    };
-}
-UnaryInstruction!{
-    BitwiseNotInstruction,
-    CopyInstruction,
-    NegInstruction
-}
 #[derive(Debug, PartialEq, Clone)]
-pub struct CallInstruction {
-    pub callee: Identifier,
-    pub argus: Vec<IdentifierOrConst>,
-}
-#[derive(Debug, PartialEq, Clone)]
-pub struct LoadInstruction {
-    base: IdentifierOrConst,
-    offset: IdentifierOrConst,
-    dst: Identifier,
-}
-#[derive(Debug, PartialEq, Clone)]
-pub struct StoreInstruction {
-    base: IdentifierOrConst,
-    offset: IdentifierOrConst,
-    src: Identifier,
-}
-#[derive(Debug, PartialEq, Clone)]
-pub struct BrInstruction {
-    src: Identifier,
-    conseq: usize,
-    alter: usize,
-}
-#[derive(Debug, PartialEq, Clone)]
-pub struct JumpInstruction {
-    address: usize,
+pub enum CmpFlag {
+    Eq,
+    NotEq,
+    Gt,
+    Gteq,
+    Lt,
+    LtEq,
+    Call,
 }

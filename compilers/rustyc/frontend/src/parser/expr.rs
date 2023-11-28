@@ -34,7 +34,11 @@ impl<'a> Parser<'a> {
             exprs.push(expr);
         }
         // TODO: take expr if exprs vec len is just one.
-        ParserResult::Ok(Expression::SequentialExpr(SequentialExpression { exprs }))
+        if exprs.len() == 1 {
+            ParserResult::Ok(exprs.pop().unwrap())
+        }else {
+            ParserResult::Ok(Expression::SequentialExpr(SequentialExpression { exprs }))
+        }
     }
     pub (super) fn parse_assignment_expr(&mut self) -> ParserResult<Expression<'a>> {
         let left = self.parse_condition_expr()?;

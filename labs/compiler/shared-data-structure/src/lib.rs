@@ -1,3 +1,4 @@
+pub mod create_graph;
 use serde::{Serialize, Deserialize};
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ControlFlow {
@@ -16,10 +17,10 @@ pub enum Instruction {
     UnaryInst(UnaryInstruction),
     Label(Label),
 }
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Hash, Eq)]
 pub enum IdentifierOrConst {
     Identifier(Identifier),
-    Const
+    Const(usize)
 }
 pub type Identifier = String;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -28,7 +29,7 @@ pub struct UnaryInstruction {
     pub dst: Identifier,
     pub ops: UnaryOps,
 }
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize,  Hash, Eq)]
 pub enum UnaryOps {
     Neg,
     Positve,

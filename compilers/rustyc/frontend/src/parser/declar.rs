@@ -32,37 +32,36 @@ impl<'a> Parser<'a> {
     /// - long, char, int, float, double, unsigned, signed
     /// - struct, union, enum
     pub (super) fn parse_declaration(&mut self) -> ParserResult<Declaration<'a>> {
-        let mut value_type = self.parse_value_type(None)?;
+        let value_type = self.parse_value_type(None)?;
         match self.get_token() {
             TokenKind::Multiplication | TokenKind::Identifier  => {
                 let is_identifier = self.get_token() == TokenKind::Identifier;
-                let pointer_declarator = self.parse_maybe_pointer_declarator();
+                let pointer_type = self.parse_type_with_pointer_type(value_type.clone());
                 let id = self.parse_identifier()?;
                 match self.get_token() {
                     TokenKind::ParenthesesLeft => {
                         if is_identifier {
                             ParserResult::Ok(Declaration::FunType(self.parse_function_type(value_type, id)?))
                         }else {
-                            let mut declarator = match pointer_declarator { Some(de) => de, None => panic!()};
-                            let unwind_value_type = unwind_pointer_declarator_and_id_to_pointer_type!(declarator, value_type);
-                            ParserResult::Ok(Declaration::FunType(self.parse_function_type(unwind_value_type, id)?))
+                            ParserResult::Ok(Declaration::FunType(self.parse_function_type(pointer_type, id)?))
                         }
                     }
                     TokenKind::Semi => {
                         self.next_token();
                         ParserResult::Ok(Declaration::DelcarList(DeclarationList { 
                             value_type,
-                            declarators: vec![Declarator { pointer_declarator, id , init_value: None }]
+                            declarators: vec![Declarator { value_type: pointer_type, id , init_value: None }]
                         }))
                     }
                     TokenKind::Assignment => {
                         self.next_token();
                         let init_value = Some(self.parse_declarator_init_value()?);
-                        let declarators= self.parse_declaration_list(vec![Declarator { id, init_value, pointer_declarator: None }])?;
+                        let declarators= self.parse_declaration_list(vec![Declarator { id, init_value, value_type: pointer_type }], value_type.clone())?;
                         ParserResult::Ok(Declaration::DelcarList(DeclarationList { value_type, declarators }))
                     }
                     TokenKind::Comma => {
-                        ParserResult::Ok(Declaration::DelcarList(DeclarationList { value_type, declarators: self.parse_declaration_list(Vec::new())? }))
+                        let declarators= self.parse_declaration_list(Vec::new(), value_type.clone())?;
+                        ParserResult::Ok(Declaration::DelcarList(DeclarationList { value_type, declarators }))
                     }
                     _ => ParserResult::Err(String::from(""))
                 }
@@ -204,74 +203,45 @@ impl<'a> Parser<'a> {
             _ => ParserResult::Ok(combine_value_type_with_signed(signed,ValueType::Long))
         }
     }
-    /// Parse pointer type following the some type.
-    fn parse_maybe_pointer_declarator(&mut self) -> Option<PointerDeclarator> {
-        let mut level = 0;
-        let mut qualifiers = Vec::new();
-        loop {
-            if is_token!(TokenKind::Multiplication, self) {
-                level += 1;
-                self.next_token();
-            }else {
-                break;
-            }
-            let mut cur_qualifiers = Vec::new();
-            loop {
-                match self.get_token() {
-                    TokenKind::Const => {
-                        self.next_token();
-                        cur_qualifiers.push(Qualifiers::Const);
-                    }
-                    TokenKind::Restrict => {
-                        self.next_token();
-                        cur_qualifiers.push(Qualifiers::Restrict);
-                    }
-                    TokenKind::Volatile => {
-                        self.next_token();
-                        cur_qualifiers.push(Qualifiers::Volatile);
-                    }
-                    _ => break,
-                }
-            }
-            qualifiers.push(cur_qualifiers);
-        }
-        if qualifiers.len() == 0 {
-            None
-        }else { 
-            Some(PointerDeclarator { qualifiers, level})
-        }
-    }
     pub (super) fn parse_type_with_pointer_type(&mut self , mut value_type: ValueType<'a>) -> ValueType<'a> {
+        let mut qualifiers = Vec::new();
+        let mut level = 0;
         loop {
             if is_token!(TokenKind::Multiplication, self) {
                 self.next_token();
             }else {
                 break;
             }
-            let mut qualifiers = Vec::new();
+            level += 1;
+            let mut layer_qualifiers = Vec::new();
             loop {
                 match self.get_token() {
                     TokenKind::Const => {
                         self.next_token();
-                        qualifiers.push(Qualifiers::Const);
+                        layer_qualifiers.push(Qualifiers::Const);
                     }
                     TokenKind::Restrict => {
                         self.next_token();
-                        qualifiers.push(Qualifiers::Restrict);
+                        layer_qualifiers.push(Qualifiers::Restrict);
                     }
                     TokenKind::Volatile => {
                         self.next_token();
-                        qualifiers.push(Qualifiers::Volatile);
+                        layer_qualifiers.push(Qualifiers::Volatile);
                     }
                     _ => break,
                 }
             }
-            value_type = ValueType::PointerType(Box::new(PointerType {
-                qualifiers,
-                pointer_to: Box::new(value_type),
-            }))
+            qualifiers.push(layer_qualifiers);
         }
-        value_type
+        if level > 0 {
+            ValueType::PointerType(Box::new(PointerType {
+                pointer_to: Box::new(value_type),
+                level, 
+                qualifiers,
+            }))
+        }else {
+            value_type
+        }
     }
     /// Parse enum type. enum type have two possible format
     /// - enum declaration, just enum name, can be using in declaration enum type,
@@ -433,30 +403,30 @@ impl<'a> Parser<'a> {
         }
         Ok(body)
     }
-    fn parse_declaration_list(&mut self, mut list: Vec<Declarator<'a>>) -> ParserResult<Vec<Declarator<'a>>> {
+    fn parse_declaration_list(&mut self, mut list: Vec<Declarator<'a>>, value_type: ValueType<'a>) -> ParserResult<Vec<Declarator<'a>>> {
         loop {
             if is_token!(TokenKind::Semi, self) {
                 self.next_token();
                 break;
             }
             expect_token!(TokenKind::Comma, self);
-            let declarator = self.parse_init_declarator()?;
+            let declarator = self.parse_init_declarator(value_type.clone())?;
             list.push(declarator)
         }
         ParserResult::Ok(list)
     }
     /// Parse a declarator with possible init value
-    fn parse_init_declarator(&mut self) -> ParserResult<Declarator<'a>> {
-        let pointer_declarator = self.parse_maybe_pointer_declarator();
+    fn parse_init_declarator(&mut self, value_type: ValueType<'a>) -> ParserResult<Declarator<'a>> {
+        let pointer_type = self.parse_type_with_pointer_type(value_type);
         let id = self.parse_identifier()?;
         if is_token!(TokenKind::Assignment, self) {
             self.next_token();
             ParserResult::Ok(Declarator { 
-                pointer_declarator, id,
+                value_type: pointer_type, id,
                 init_value: Some(self.parse_declarator_init_value()?)
             })
         }else {
-            ParserResult::Ok(Declarator { pointer_declarator, id, init_value: None })
+            ParserResult::Ok(Declarator { value_type: pointer_type, id, init_value: None })
         }
     }
     fn parse_declarator_init_value(&mut self) -> ParserResult<Expression<'a>> {

@@ -21,7 +21,7 @@ fn main(){
                 }
             }
     ";
-    let source2 = "
+    let _source2 = "
         person->computeSome(a, b, 10);
     ";
     let mut lexer = lexer::Lexer::new(source);

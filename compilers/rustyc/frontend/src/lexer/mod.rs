@@ -15,7 +15,7 @@ pub struct TokenWithSpan {
     pub finish_span: Span,
 }
 
-const lexer_error_map: LexerPanicError = LexerPanicError::new();
+// const lexer_error_map: LexerPanicError = LexerPanicError::new();
 
 /// C99 spec-matched tokenizer (lexer).
 pub struct Lexer<'a> {
@@ -788,6 +788,7 @@ impl<'a> Lexer<'a> {
     fn read_zero_start_number(&mut self) {
         // eat 0
         self.eat_char();
+        let mark = self.current_offset;
         let mut have_decimal = false;
         loop {
             match self.get_char() {
@@ -804,6 +805,7 @@ impl<'a> Lexer<'a> {
                 None => break,
             }
         }
+        let len = self.current_offset - mark;
         if let Some(ch) = self.get_char() {
             if ch == '.' {
                 self.eat_char();
@@ -828,9 +830,13 @@ impl<'a> Lexer<'a> {
         if have_decimal {
             lexer_panic!("octal number can not have 8 or 9 decimal");
         }
-       let suffix_tuple = self.read_int_suffix();
+        let suffix_tuple = self.read_int_suffix();
         self.finish_token();
-        self.current_kind = TokenKind::IntLiteral(IntLiteralBase::Octal, suffix_tuple);
+        if len == 0 {
+            self.current_kind = TokenKind::IntLiteral(IntLiteralBase::Decimal, suffix_tuple);
+        }else {
+            self.current_kind = TokenKind::IntLiteral(IntLiteralBase::Octal, suffix_tuple);
+        }
     }
     /// Read number literal when start with hex prefix like `0x` or `0X`
     /// 

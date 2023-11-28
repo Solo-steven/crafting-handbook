@@ -16,7 +16,7 @@ pub struct DeclarationList<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Declarator<'a> {
-    pub pointer_declarator: Option<PointerDeclarator>,
+    pub value_type: ValueType<'a>,
     pub id: Identifier<'a>,
     pub init_value: Option<Expression<'a>>
 }
@@ -134,12 +134,8 @@ pub struct StructDeclarator<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PointerType<'a> {
     pub pointer_to: Box<ValueType<'a>>,
-    pub qualifiers: Vec<Qualifiers>,
-}
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct PointerDeclarator {
     pub qualifiers: Vec<Vec<Qualifiers>>,
-    pub level: usize,
+    pub level: usize
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
