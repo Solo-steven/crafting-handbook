@@ -8,9 +8,9 @@ use std::io::Write;
 fn main() {
     let program = Parser::new("
         int main() {
-            float b = 10.0;
-            float *a = &b;
-            *a + 4.90;
+            int a = 10;
+            int *b = &a;
+            b = b + 4;
         }
     ").parse().unwrap();
     println!("{:#?}", program);

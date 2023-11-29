@@ -1,3 +1,4 @@
+mod strcut_layout;
 /// This module will take ast as input and covert
 /// ast into ir instructions.
 use std::collections::HashMap;
@@ -16,13 +17,18 @@ pub struct Converter {
 #[derive(Debug,Clone)]
 enum SymbolType {
     BasicType(IrValueType),
-    StructalType(HashMap<String, SymbolType>),
+    StructalType(HashMap<String, StructalSymbolTypeEntry>),
     PointerType(PointerSymbolType),
 }
 #[derive(Debug, Clone)]
 struct PointerSymbolType {
     pub level: usize,
     pub pointer_to: Box<SymbolType>
+}
+#[derive(Debug, Clone)]
+struct StructalSymbolTypeEntry {
+    pub offset: usize,
+    pub data_type: Box<SymbolType>,
 }
 #[derive(Debug)]
 struct SymbolEntry {
@@ -121,8 +127,8 @@ impl FunctionCoverter {
     fn accept_declar(&mut self, declar: &Declaration) {
         match declar {
             Declaration::DelcarList(declar_list) => self.accept_declar_list(declar_list),
-            Declaration::ValueType(value_type) => {}
-            _ => {/* Should panic, but should be unreachable */}
+            Declaration::ValueType(value_type) => self.accept_value_type(value_type),
+            Declaration::FunType(_)=> { unreachable!() /* this  */ }
         }
     }
     fn accept_declar_list(&mut self, declar_list: &DeclarationList) {
@@ -134,20 +140,47 @@ impl FunctionCoverter {
             if let Some(expr) = &declarator.init_value {
                 let init_value = self.accept_expr(expr);
                 let offset = self.function.create_u8_const(0);
-                println!("init: {:?} {:?}", declarator.value_type, ir_type);
                 self.function.build_store_register_inst(init_value, pointer, offset, ir_type.clone());
             }
         }
     }
+    fn accept_value_type(&mut self, value_type: &ValueType) {
+        match value_type {
+            ValueType::Struct(struct_type) => {
+                match struct_type.as_ref() {
+                    StructType::Declar(declar) => {},
+                    StructType::Def(def) => {},
+                }
+            },
+            _ => {/* skip basic type  */}
+        }
+    }
     fn accept_expr(&mut self, expr: &Expression) -> Value {
         match expr {
+            Expression::AssignmentExpr(assign_expr) => self.accept_assignment_expr(assign_expr),
+            Expression::ConditionalExpr(condition_expr) => todo!(),
             Expression::BinaryExpr(binary_expr) => self.accept_binary_expr(binary_expr),
             Expression::UnaryExpr(unary_expr) => self.accept_unary_expr(unary_expr),
+
             Expression::Identifier(id) => self.accept_identifier(id),
             Expression::IntLiteral(int_literal) => self.accept_int_literal(int_literal),
             Expression::FloatLiteral(float_literal) => self.accept_float_literal(float_literal),
             _ => {
                 println!("{:?}", expr);
+                todo!()
+            }
+        }
+    }
+    fn accept_assignment_expr(&mut self, assign_expr: &AssignmentExpression ) -> Value {
+        match &assign_expr.ops {
+            AssignmentOps::Assignment => {
+                let (left_value,  data_type) = self.accept_as_lefthand_expr(&assign_expr.left);
+                let right_value = self.accept_expr(&assign_expr.right);
+                let offset = self.function.create_u8_const(0);
+                self.function.build_store_register_inst(right_value, left_value, offset, get_ir_type_from_symbol_type(&data_type));
+                right_value
+            }
+            _ => {
                 todo!()
             }
         }
@@ -160,6 +193,7 @@ impl FunctionCoverter {
                     self.function.build_load_register_inst(symbol.reg , offset, ir_type.clone())
                 }
                 SymbolType::PointerType(pointer_type) => {
+                    // return the virtual register that contain the address that pointer point to.
                     let offset = self.function.create_u8_const(0);
                     let pointer_value = self.function.build_load_register_inst(symbol.reg, offset, IrValueType::U32);
                     self.pointer_table.insert(pointer_value, pointer_type.clone());
@@ -207,19 +241,20 @@ impl FunctionCoverter {
     fn accept_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
         match &unary_expr.ops {
             UnaryOps::AddressOf => {
-                self.accept_as_lefthand_expr(&unary_expr.expr)
+                self.accept_as_lefthand_expr(&unary_expr.expr).0
             },
             UnaryOps::Dereference => {
+                // return the value that a pointer point to.
                 let value = self.accept_expr(&unary_expr.expr);
                 let pointer_info = self.pointer_table.get(&value).unwrap();
                 if pointer_info.level == 1 {
                     let offset = self.function.create_u8_const(0);
                     self.function.build_load_register_inst(value, offset, get_ir_type_from_symbol_type(&pointer_info.pointer_to))
                 }else {
-                    let pointer_to = self.pointer_table.remove(&value).unwrap();
+                    let PointerSymbolType { level, pointer_to    } = self.pointer_table.remove(&value).unwrap();
                     let offset = self.function.create_u8_const(0);
                     let next_value = self.function.build_load_register_inst(value, offset, IrValueType::U32);
-                    self.pointer_table.insert(value, pointer_to);
+                    self.pointer_table.insert(next_value, PointerSymbolType { level: level - 1, pointer_to });
                     next_value
                 }
             },
@@ -243,6 +278,7 @@ impl FunctionCoverter {
             }
         }
     }
+    /// Generate instruction for binary expression, 
     fn accept_binary_expr(&mut self, binary_expr: &BinaryExpression) -> Value {
         let mut left_value = self.accept_expr(&binary_expr.left);
         let mut right_value = self.accept_expr(&binary_expr.right);
@@ -271,9 +307,16 @@ impl FunctionCoverter {
             } else { 
                 self.function.build_add_inst(left_value, right_value) 
             }, 
+            BinaryOps::Minus => if is_float {
+                self.function.build_sub_inst(left_value, right_value)
+            }else {
+                self.function.build_fadd_inst(left_value, right_value)
+            }
             _ => todo!(),
         }
     }
+    /// helper function for `accept_binary_expr`, generate type convert when we need to
+    /// convert the src to certain ir type.
     fn generate_type_convert(&mut self, src: Value, ir_type: &IrValueType) -> Value {
         match ir_type {
             IrValueType::U8 => self.function.build_to_u8_inst(src),
@@ -288,12 +331,41 @@ impl FunctionCoverter {
             _ => todo!(),
         }
     }
-    /// accept a expression that treat as left value, different from accept_expr, there will return the virtual register 
+    /// Accept a expression that treat as left value, different from accept_expr, there will return the virtual register 
     /// that contain the address of that expression, instead of the virtual register contain the value of expression.
-    fn accept_as_lefthand_expr(&mut self, expr: &Expression) -> Value {
+    /// not every expression can be left hand side value.
+    /// - identifier
+    /// - member-select expression 
+    /// - subscription expression
+    /// - deference expression
+    /// - unary expression with deference operator
+    fn accept_as_lefthand_expr(&mut self, expr: &Expression) -> (Value, SymbolType) {
         match expr {
             Expression::Identifier(id) => {
-                self.symbol_table.get(id.name.as_ref()).unwrap().reg
+                let SymbolEntry { reg, data_type } = self.symbol_table.get(id.name.as_ref()).unwrap();
+                (reg.clone(), data_type.clone())
+            }
+            Expression::UnaryExpr(unary_expr) => {
+                match unary_expr.ops {
+                    UnaryOps::Dereference => {
+                        let value= self.accept_expr(&unary_expr.expr);
+                        let pointer_info = self.pointer_table.get(&value).unwrap();
+                        if pointer_info.level == 1 {
+                            let offset = self.function.create_u8_const(0);
+                            (
+                                self.function.build_load_register_inst(value, offset, get_ir_type_from_symbol_type(&pointer_info.pointer_to)), 
+                                *pointer_info.pointer_to.clone()
+                            )
+                        }else {
+                            let PointerSymbolType { level, pointer_to    } = self.pointer_table.remove(&value).unwrap();
+                            let offset = self.function.create_u8_const(0);
+                            let next_value = self.function.build_load_register_inst(value, offset, IrValueType::U32);
+                            self.pointer_table.insert(next_value, PointerSymbolType { level: level - 1, pointer_to: pointer_to.clone() });
+                            (next_value, *pointer_to.clone())
+                        }
+                    }
+                    _ => unreachable!(),
+                }
             }
             _ => panic!(),
         }
@@ -330,6 +402,25 @@ fn map_ast_type_to_symbol_type(value_type: &ValueType) -> SymbolType {
                 pointer_to: Box::new(map_ast_type_to_symbol_type(&pointer_type.pointer_to))
             })
         }
+        ValueType::Struct(struct_type) => {
+            match struct_type.as_ref() {
+                StructType::Def(struct_def) => {
+                    let mut properties = HashMap::new();
+                    let mut offset = 0;
+                    for declarator in &struct_def.declarator {
+                        let data_type = map_ast_type_to_symbol_type(&declarator.value_type);
+                        let entry = StructalSymbolTypeEntry {
+                            offset,
+                            data_type: Box::new(data_type),
+                        };
+                        properties.insert(declarator.id.name.to_string(),entry);
+                    }
+                    SymbolType::StructalType(properties)
+
+                },
+                StructType::Declar(declar) => todo!(),
+            }
+        }
         _ => todo!(),
     }
 }
@@ -353,4 +444,11 @@ fn map_ast_type_to_ir_type(value_type: &ValueType) -> IrValueType {
 
 fn get_size_of_ast_type() {
 
+}
+
+pub fn construct_structal_layout_from_ast(struct_def: &StructDefinition) {
+    let mut map = HashMap::new();
+    for declarator in &struct_def.declarator {
+        map.insert(declarator.id.name.to_string(), map_ast_type_to_symbol_type(&declarator.value_type));
+    }
 }

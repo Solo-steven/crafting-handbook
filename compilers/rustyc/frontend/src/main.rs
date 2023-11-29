@@ -14,19 +14,14 @@ use std::fs;
 
 fn main(){
     let source = "
-            int main() {
-                int sum = 0;
-                for(int i =0 ; i < 10; ++i) {
-                    sum += i;
-                }
-            }
+        compute.someproperty.me;
     ";
-    let _source2 = "
+    let source2 = "
         person->computeSome(a, b, 10);
     ";
     let mut lexer = lexer::Lexer::new(source);
     loop {
-        let tok = lexer.next_token();
+        let tok = lexer.get_token();
         match tok {
             TokenKind::EOFToken => {
                 println!("kind: {:?}, value: {:?}, start : {:?}, finish: {:?}", tok, lexer.get_raw_value(), lexer.get_start_span(), lexer.get_finish_span());
@@ -36,6 +31,7 @@ fn main(){
                 println!("kind: {:?}, value: {:?}, start : {:?}, finish: {:?}", tok, lexer.get_raw_value(), lexer.get_start_span(), lexer.get_finish_span());
             }
         }
+        lexer.next_token();
     }
     let mut parser = parser::Parser::new(source);
     let result = parser.parse();

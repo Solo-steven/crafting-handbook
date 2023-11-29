@@ -3,7 +3,7 @@ pub mod error;
 use std::borrow::Cow;
 use std::str::CharIndices;
 
-use crate::lexer::error::LexerPanicError;
+// use crate::lexer::error::LexerPanicError;
 use crate::span::Span;
 use crate::token::{FloatLiteralBase, IntLiteralBase, LongIntSuffix, TokenKind};
 use crate::lexer_panic;
@@ -575,7 +575,7 @@ impl<'a> Lexer<'a> {
                 match ch {
                     '+' | '-' | '*' | '%' | '/' | '&' | '\'' | '"' | 
                     '<' | '>' | '=' | '?' | '#' | '~' | '^' | '!' |
-                    '{' | '}' | '[' | ']' | '(' | ')'  | ';' | ','=> break,
+                    '{' | '}' | '[' | ']' | '(' | ')'  | ';' | ',' | '.'=> break,
                     '\t' | ' '| '\n' => break,
                     '\\' => {
                         let next_char = self.source[self.current_offset + 1..].chars().next();

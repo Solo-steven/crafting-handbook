@@ -1,5 +1,5 @@
 #[derive(Debug,Clone)]
-enum SymbolType {
+pub enum SymbolType {
     BasicType(IrValueType),
     StructalType(HashMap<String, SymbolType>),
     PointerType(PointerSymbolType),
@@ -10,7 +10,8 @@ struct PointerSymbolType {
     pub pointer_to: Box<SymbolType>
 }
 #[derive(Debug)]
-struct SymbolEntry {
-    reg: Value,
-    data_type: SymbolType,
+pub struct SymbolEntry {
+    pub reg: Value,
+    pub data_type: SymbolType,
 }
+pub type SymbolTable = HashMap<String, SymbolEntry>;
