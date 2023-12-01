@@ -8,12 +8,12 @@ use std::io::Write;
 fn main() {
     let program = Parser::new("
         int main() {
-            int a = 10;
-            int *b = &a;
-            b = b + 4;
+            int base = 10;
+            int *p = &base;
+            *base = 100;
         }
     ").parse().unwrap();
-    println!("{:#?}", program);
+    // println!("{:#?}", program);
     let mut converter = Converter::new();
     converter.convert(&program);
     for func in &converter.functions {

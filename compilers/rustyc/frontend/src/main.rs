@@ -14,7 +14,7 @@ use std::fs;
 
 fn main(){
     let source = "
-        compute.someproperty.me;
+        a[2][5];
     ";
     let source2 = "
         person->computeSome(a, b, 10);

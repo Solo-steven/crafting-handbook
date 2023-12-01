@@ -147,14 +147,13 @@ impl<'a> Parser<'a> {
     }
     fn parse_lefthand_side_expr(&mut self) -> ParserResult<Expression<'a>> {
         let mut base = self.parse_primary_expr()?;
-        println!("{:?}", base);
         let mut should_stop = false;
         while should_stop == false {
             match self.get_token() {
                 TokenKind::BracketLeft => {
                     self.next_token();
                     let index = self.parse_expr()?;
-                    expect_token!(TokenKind::BracesRight, self);
+                    expect_token!(TokenKind::BracketRight, self);
                     base = Expression::SubscriptExpr(SubscriptionExpression { object: Box::new(base), index: Box::new(index) });
                 },
                 TokenKind::Dot => {
