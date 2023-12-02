@@ -3,9 +3,7 @@ use crate::ir::instructions::*;
 use crate::ir::function::*;
 use crate::ir::value::*;
 
-
 impl Function {
-
     /// Private method of add a register value
     fn add_register(&mut self, value_type: IrValueType) -> Value {
         let value_id = Value(self.values.len());
@@ -43,7 +41,7 @@ impl Function {
             };
             type1    
         }else {
-            panic!("instruction on two type value is not equal {}, {}", src1.0, src2.0);
+            panic!("instruction on two type value is not equal {}({:?}), {}({:?})", src1.0, type1,  src2.0, type2);
         }
     }
     #[inline]

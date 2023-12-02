@@ -1,3 +1,5 @@
+mod builder;
+mod print;
 use crate::ir::instructions::*;
 use crate::ir::value::*;
 use std::collections::HashMap;

@@ -81,10 +81,6 @@ enum CallSequnceType {
     Member(String),
     Derefer(String),
 }
-enum LeftRighValueEnum {
-    LeftValue(Value, SymbolType),
-    RightValue(Value),
-}
 
 impl FunctionCoverter {
     pub fn new() -> Self {
@@ -136,11 +132,17 @@ impl FunctionCoverter {
             let size = self.get_size_form_ast_type(&declarator.value_type);
             let pointer = self.function.build_stack_alloc_inst(size, 8);
             self.symbol_table.insert(declarator.id.name.to_string(), SymbolEntry { reg: pointer, data_type: symbol_type.clone() });
+            // TODO: if symbol table is struct type, init must handle extra.
             if let Some(expr) = &declarator.init_value {
-                let init_value = self.accept_expr(expr);
-                let offset = self.function.create_u8_const(0);
-                let ir_type = get_ir_type_from_symbol_type(&symbol_type);
-                self.function.build_store_register_inst(init_value, pointer, offset, ir_type.clone());
+                match symbol_type {
+                    SymbolType::BasicType(_) | SymbolType::PointerType(_) => {
+                        let init_value = self.accept_expr(expr);
+                        let offset = self.function.create_u8_const(0);
+                        let ir_type = get_ir_type_from_symbol_type(&symbol_type);
+                        self.function.build_store_register_inst(init_value, pointer, offset, ir_type.clone());
+                    }
+                    SymbolType::StructalType(_struct_type) => todo!(),
+                }
             }
         }
     }
@@ -172,20 +174,62 @@ impl FunctionCoverter {
         }
     }
     fn accept_assignment_expr(&mut self, assign_expr: &AssignmentExpression ) -> Value {
+        let (left_value,  data_type) = self.accept_as_lefthand_expr(&assign_expr.left);
+        let right_value = self.accept_expr(&assign_expr.right);
         match &assign_expr.ops {
-            AssignmentOps::Assignment => {
-                let (left_value,  data_type) = self.accept_as_lefthand_expr(&assign_expr.left);
-                let right_value = self.accept_expr(&assign_expr.right);
+            AssignmentOps::Assignment => {},
+            AssignmentOps::BitwiseOrAssignment => {}
+            AssignmentOps::BitwiseAndAssignment => {},
+            AssignmentOps::BitwiseLeftShiftAssignment => {},
+            AssignmentOps::BitwiseRightShiftAssignment => {},
+            AssignmentOps::BitwiseXorAssignment => {},
+            AssignmentOps::DiffAssignment => {},
+            AssignmentOps::ProductAssignment => {},
+            AssignmentOps::QuotientAssignment => {},
+            AssignmentOps::RemainderAssignment => {},
+            AssignmentOps::SumAssignment => {},
+        }
+        match &data_type {
+            SymbolType::BasicType(_) | SymbolType::PointerType(_) => {
                 let offset = self.function.create_u8_const(0);
                 self.function.build_store_register_inst(right_value, left_value, offset, get_ir_type_from_symbol_type(&data_type));
                 right_value
             }
-            _ => {
-                todo!()
+            SymbolType::StructalType(struct_type_name) => {
+                self.copy_struct_layout(left_value, right_value, struct_type_name);
+                right_value
             }
         }
     }
-    /// Accept a chain expr,
+    fn copy_struct_layout(&mut self, dst: Value, src: Value, name: &String) {
+        let layout = self.struct_layout_table.get(name).unwrap();
+        let mut defer_vec = Vec::new();
+        for layout_entry in layout.values() {
+            match &layout_entry.data_type {
+                SymbolType::BasicType(ir_type) => {
+                    let offset_value = self.function.create_u32_const(layout_entry.offset as u32);
+                    let register_value = self.function.build_load_register_inst(src, offset_value, ir_type.clone());
+                    self.function.build_store_register_inst(register_value, dst, offset_value, ir_type.clone());
+                }
+                SymbolType::PointerType(_) => {
+                    let offset_value = self.function.create_u32_const(layout_entry.offset as u32);
+                    let register_value = self.function.build_load_register_inst(src, offset_value, IrValueType::U32);
+                    self.function.build_store_register_inst(register_value, dst, offset_value, IrValueType::U32);
+                }
+                SymbolType::StructalType(next_name) => {
+                    let offset_value = self.function.create_u32_const(layout_entry.offset as u32);
+                    let next_dst = self.function.build_add_inst(dst, offset_value);
+                    let next_src = self.function.build_add_inst(src, offset_value);
+                    defer_vec.push((next_dst, next_src, next_name.clone()))
+                } 
+            }
+        }
+        for (next_dst, next_src, next_name) in defer_vec {
+            self.copy_struct_layout(next_dst, next_src, &next_name);
+        }
+
+    }
+    /// Accept a chain expr, in right handle side
     fn accept_chain_expr(&mut self, expr: &Expression) -> Value {
         // get the chain sequnce.
         let (name, callseqnce) = self.get_access_sequnce_from_chain_expr(expr);
@@ -210,6 +254,7 @@ impl FunctionCoverter {
         };
         // iterate call sequnce to get the base and offset of struct property.
         let mut offset = 0;
+        let mut current_data_type = &self.symbol_table.get(&name).unwrap().data_type;
         for item in callseqnce {
             let (property_name, is_pointer) = match item {
                 CallSequnceType::Derefer(name) => (name, true),
@@ -223,25 +268,35 @@ impl FunctionCoverter {
             }else {
                 offset += entry.offset;
             }
+            current_data_type = &entry.data_type;
             match &entry.data_type {
                 SymbolType::StructalType(struct_type_name) => {
                     symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
                 }
                 SymbolType::PointerType(pointer_type) => {
-                    let struct_type_name = match pointer_type.pointer_to.as_ref() {
-                        SymbolType::StructalType(name) => name,
-                        _ => unreachable!()
-                    };
-                    symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
+                    if let SymbolType::StructalType(name) = pointer_type.pointer_to.as_ref() {
+                        symbol_layout = self.struct_layout_table.get(name).unwrap();
+                    }
                 }
-                SymbolType::BasicType(ir_type) => {
-                    let offset_const = self.function.create_u64_const(offset as u64);
-                    return self.function.build_load_register_inst(base, offset_const, ir_type.clone());
-                },
+                SymbolType::BasicType(_) => {},
             }
         }
-        unreachable!();
-        
+        match current_data_type {
+            SymbolType::StructalType(_) => {
+                // struct_id = nested_struct.some_struct
+                let offset_const = self.function.create_u32_const(offset as u32);
+                self.function.build_add_inst(base, offset_const)
+            }
+            SymbolType::PointerType(_) => {
+                // struct_pointer = nested_struct.some_pointer_to_struct;
+                let offset_const = self.function.create_u32_const(offset as u32);
+                self.function.build_load_register_inst(base, offset_const, IrValueType::U32)
+            }
+            SymbolType::BasicType(ir_type) => {
+                let offset_const = self.function.create_u64_const(offset as u64);
+                self.function.build_load_register_inst(base, offset_const, ir_type.clone())
+            }
+        }
     }
     fn get_access_sequnce_from_chain_expr(&self, expr: &Expression) -> (String, Vec<CallSequnceType>) {
         let mut cur = expr;
@@ -282,10 +337,14 @@ impl FunctionCoverter {
                     self.pointer_table.insert(pointer_value, pointer_type.clone());
                     pointer_value
                 }
-                SymbolType::StructalType(_) => todo!(),
+                SymbolType::StructalType(_) => {
+                    // when struct identifier can show in right hand side, it only can be a simple assignment, which need 
+                    // two assgin a struct to a another.
+                    symbol.reg
+                },
             }
         }else {
-            panic!("the identifier should exised in symbol table");
+            unreachable!("the identifier should exised in symbol table");
         }
     }
     fn accept_int_literal(&mut self, int_literal: &IntLiteral) -> Value {
@@ -323,24 +382,8 @@ impl FunctionCoverter {
     }
     fn accept_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
         match &unary_expr.ops {
-            UnaryOps::AddressOf => {
-                self.accept_as_lefthand_expr(&unary_expr.expr).0
-            },
-            UnaryOps::Dereference => {
-                // return the value that a pointer point to.
-                let value = self.accept_expr(&unary_expr.expr);
-                let pointer_info = self.pointer_table.get(&value).unwrap();
-                if pointer_info.level == 1 {
-                    let offset = self.function.create_u8_const(0);
-                    self.function.build_load_register_inst(value, offset, get_ir_type_from_symbol_type(&pointer_info.pointer_to))
-                }else {
-                    let PointerSymbolType { level, pointer_to    } = self.pointer_table.remove(&value).unwrap();
-                    let offset = self.function.create_u8_const(0);
-                    let next_value = self.function.build_load_register_inst(value, offset, IrValueType::U32);
-                    self.pointer_table.insert(next_value, PointerSymbolType { level: level - 1, pointer_to });
-                    next_value
-                }
-            },
+            UnaryOps::AddressOf => self.accept_address_of_unary_expr(unary_expr),
+            UnaryOps::Dereference => self.accept_dereference_unary_expr(unary_expr),
             UnaryOps::BitwiseNot => { 
                 let src = self.accept_expr(&unary_expr.expr);
                 self.function.build_bitwise_not(src)
@@ -361,10 +404,30 @@ impl FunctionCoverter {
             }
         }
     }
-    fn accept_dereference_expr(&mut self, derefer_expr: &DereferenceExpression) {
-
+    fn accept_address_of_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
+        let (value, data_type) = self.accept_as_lefthand_expr(&unary_expr.expr);
+        let pointer_type = match data_type {
+            SymbolType::BasicType(bast_type) => PointerSymbolType { level: 1, pointer_to: Box::new(SymbolType::BasicType(bast_type)) },
+            SymbolType::PointerType(pointer_type) => PointerSymbolType { level:  pointer_type.level + 1, pointer_to: pointer_type.pointer_to.clone() },
+            SymbolType::StructalType(struct_type) => PointerSymbolType { level: 1, pointer_to: Box::new(SymbolType::StructalType(struct_type)) }
+        };
+        self.pointer_table.insert(value, pointer_type);
+        value
     }
-    /// Generate instruction for binary expression, 
+    fn accept_dereference_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
+        let value = self.accept_expr(&unary_expr.expr);
+        let PointerSymbolType { level, pointer_to} = self.pointer_table.remove(&value).unwrap();
+        if level == 1 {
+            let offset = self.function.create_u8_const(0);
+            self.function.build_load_register_inst(value, offset, get_ir_type_from_symbol_type(&pointer_to))
+        }else {
+            let offset = self.function.create_u8_const(0);
+            let next_value = self.function.build_load_register_inst(value, offset, IrValueType::U32);
+            self.pointer_table.insert(next_value, PointerSymbolType { level: level - 1, pointer_to });
+            next_value
+        }
+    }
+    /// Generate instruction for binary expression, in semantic correct  
     fn accept_binary_expr(&mut self, binary_expr: &BinaryExpression) -> Value {
         let mut left_value = self.accept_expr(&binary_expr.left);
         let mut right_value = self.accept_expr(&binary_expr.right);
@@ -430,30 +493,87 @@ impl FunctionCoverter {
                 let SymbolEntry { reg, data_type } = self.symbol_table.get(id.name.as_ref()).unwrap();
                 (reg.clone(), data_type.clone())
             }
-            Expression::UnaryExpr(unary_expr) => {
-                match unary_expr.ops {
-                    UnaryOps::Dereference => {
-                        let value= self.accept_expr(&unary_expr.expr);
-                        let pointer_info = self.pointer_table.get(&value).unwrap();
-                        if pointer_info.level == 1 {
-                            let offset = self.function.create_u8_const(0);
-                            (
-                                self.function.build_load_register_inst(value, offset, get_ir_type_from_symbol_type(&pointer_info.pointer_to)), 
-                                *pointer_info.pointer_to.clone()
-                            )
-                        }else {
-                            let PointerSymbolType { level, pointer_to } = self.pointer_table.remove(&value).unwrap();
-                            let offset = self.function.create_u8_const(0);
-                            let next_value = self.function.build_load_register_inst(value, offset, IrValueType::U32);
-                            self.pointer_table.insert(next_value, PointerSymbolType { level: level - 1, pointer_to: pointer_to.clone() });
-                            (next_value, *pointer_to.clone())
-                        }
-                    }
-                    _ => unreachable!(),
-                }
-            }
+            Expression::DereferenceExpr(_) | Expression::MemberExpr(_) => self.accept_chain_expr_as_leftvalue(expr),
+            Expression::UnaryExpr(unary_expr) => self.accept_deference_unary_expr_as_leftvalue(unary_expr),
             _ => panic!(),
         }
+    }
+    fn accept_deference_unary_expr_as_leftvalue(&mut self,unary_expr: &UnaryExpression) -> (Value, SymbolType) {
+        match unary_expr.ops {
+            UnaryOps::Dereference => {
+                let value= self.accept_expr(&unary_expr.expr);
+                let pointer_info = self.pointer_table.remove(&value).unwrap();
+                if pointer_info.level == 1 {
+                    (value,*pointer_info.pointer_to)
+                }else {
+                    unreachable!();
+                }
+            }
+            _ => unreachable!(),
+        }
+    }
+    fn accept_chain_expr_as_leftvalue(&mut self, expr: &Expression) -> (Value, SymbolType) {
+        // get the chain sequnce.
+        let (name, callseqnce) = self.get_access_sequnce_from_chain_expr(expr);
+        // get base virtual register and layout of struct.
+        let (mut base, mut symbol_layout) = match self.symbol_table.get(&name) {
+            Some(entry) => {
+                match &entry.data_type {
+                    SymbolType::StructalType(struct_type_name) => {
+                        (entry.reg, self.struct_layout_table.get(struct_type_name).unwrap())
+                    }
+                    SymbolType::PointerType(pointer_type) => {
+                        let struct_type_name = match pointer_type.pointer_to.as_ref() {
+                            SymbolType::StructalType(name) => name,
+                            _ => unreachable!()
+                        };
+                        (entry.reg, self.struct_layout_table.get(struct_type_name).unwrap())
+                    }
+                    SymbolType::BasicType(_) => unreachable!(),
+                }
+            },
+            None => unreachable!("{:?}, {:?} {:?}", name, self.symbol_table, self.symbol_table.get(&name))
+        };
+        // iterate call sequnce to get the base and offset of struct property.
+        let mut offset = 0;
+        let mut last_data_type = &self.symbol_table.get(&name).unwrap().data_type;
+        for item in callseqnce {
+            let (property_name, is_pointer) = match item {
+                CallSequnceType::Derefer(name) => (name, true),
+                CallSequnceType::Member(name) => (name, false)
+            };
+            let entry = symbol_layout.get(&property_name).unwrap();
+            if is_pointer {
+                let offset_zero = self.function.create_u64_const(offset as u64);
+                base = self.function.build_load_register_inst(base, offset_zero, IrValueType::U32); 
+                offset = entry.offset;
+            }else {
+                offset += entry.offset;
+            }
+            last_data_type = &entry.data_type;
+            match &entry.data_type {
+                SymbolType::StructalType(struct_type_name) => {
+                    symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
+                }
+                SymbolType::PointerType(pointer_type) => {
+                    let struct_type_name = match pointer_type.pointer_to.as_ref() {
+                        SymbolType::StructalType(name) => name,
+                        SymbolType::BasicType(ir_type) => {
+                            let offset_const = self.function.create_u32_const(offset as u32);
+                            return (self.function.build_add_inst(base, offset_const), SymbolType::BasicType(ir_type.clone()) );
+                        }
+                        _ => unreachable!()
+                    };
+                    symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
+                }
+                SymbolType::BasicType(ir_type) => {
+                    let offset_const = self.function.create_u32_const(offset as u32);
+                    return (self.function.build_add_inst(base, offset_const), SymbolType::BasicType(ir_type.clone()) )  
+                },
+            }
+        }
+        let offset_const = self.function.create_u32_const(offset as u32);
+        (self.function.build_add_inst(base, offset_const), last_data_type.clone())      
     }
     /// Mapping the ast type to symbol table, used when 
     /// - in declaration list, we need to get the symbol type of a declarator's value type.

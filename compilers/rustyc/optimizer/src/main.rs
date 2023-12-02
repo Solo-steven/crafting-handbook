@@ -8,9 +8,19 @@ use std::io::Write;
 fn main() {
     let program = Parser::new("
         int main() {
-            int base = 10;
-            int *p = &base;
-            *base = 100;
+            struct Nested {
+                int value1;
+                int value2;
+            };
+            struct Test {
+                int value;
+                int age;
+                struct Nested nested;
+                struct Nested *p;
+            };
+            struct Test base;
+            struct Test other; 
+            base = other;
         }
     ").parse().unwrap();
     // println!("{:#?}", program);
