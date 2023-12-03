@@ -58,7 +58,7 @@ impl Function {
         block_id
     }
     /// Connect two basic block as successor and predeccesor relationship.
-    pub fn connect_block(&mut self, successor: BasicBlock, predecessor: BasicBlock) {
+    pub fn connect_block(&mut self, predecessor: BasicBlock, successor: BasicBlock) {
         let successor_block = self.blocks.get_mut(&successor);
         if let Some(s) = successor_block {
             s.predecessor.push(predecessor);
@@ -79,5 +79,9 @@ impl Function {
         }else {
             panic!("Block {:?} is not existed", id);
         }
+    }
+    /// mark block as entry
+    pub fn mark_as_entry(&mut self, id:BasicBlock) {
+        self.entry_block.push(id);
     }
 }

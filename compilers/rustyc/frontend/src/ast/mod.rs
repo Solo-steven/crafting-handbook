@@ -11,7 +11,7 @@ pub struct Program<'a> {
     pub body: Vec<BlockItem<'a>>
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[serde(untagged)]
 pub enum BlockItem<'a>{
    Stmt(Statement<'a>),
    Declar(Declaration<'a>),

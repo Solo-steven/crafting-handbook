@@ -128,6 +128,13 @@ pub enum InstructionData {
         src2: Value,
         dst: Value,
     },
+    Fcmp {
+        opcode: OpCode,
+        flag: CmpFlag,
+        src1: Value,
+        src2: Value,
+        dst: Value,
+    },
     Call {
         params: Vec<Value>
     },
@@ -184,12 +191,6 @@ pub enum InstructionData {
         align: usize,
         dst: Value,
     },
-    StackAddr {
-        opcode: OpCode,
-        base: Value,
-        offset: Value,
-        dst: Value,
-    },
     // memory instruction
     LoadRegister {
         opcode: OpCode,
@@ -214,7 +215,7 @@ pub enum InstructionData {
     },
     Jump {
         opcode: OpCode,
-        dst: Value,
+        dst: BasicBlock,
     },
 }
 

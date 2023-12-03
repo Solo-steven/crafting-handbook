@@ -308,6 +308,14 @@ impl Function {
         self.add_inst_id_to_current_block(inst_id);
         dst
     }
+    pub fn build_fcmp_inst(&mut self, src1: Value, src2: Value, flag: CmpFlag) -> Value {
+        let inst_id = Instruction(self.instructions.len());
+        let value_type = self.check_value_pair_type_equal(src1, src2, &OpCode::Fcmp);
+        let dst = self.add_register(value_type);
+        self.instructions.insert(inst_id, InstructionData::Fcmp { opcode: OpCode::Fcmp, flag, src1, src2, dst});
+        self.add_inst_id_to_current_block(inst_id);
+        dst
+    }
     pub fn build_stack_alloc_inst(&mut self, size: usize, align: usize) -> Value {
         let inst_id = Instruction(self.instructions.len());
         let dst = self.add_register(IrValueType::U32);
@@ -320,12 +328,6 @@ impl Function {
             }
         );
         self.add_inst_id_to_current_block(inst_id);
-        dst
-    }
-    pub fn build_stack_addr_inst(&mut self, base: Value, offset: Value) -> Value {
-        let inst_id = Instruction(self.instructions.len());
-        let dst = self.add_register(IrValueType::U32);
-        self.instructions.insert(inst_id, InstructionData::StackAddr { opcode: OpCode::StackAddr, base, offset, dst });
         dst
     }
     pub fn build_load_register_inst(&mut self, base: Value, offset: Value, data_type: IrValueType) -> Value {
@@ -351,7 +353,7 @@ impl Function {
         self.instructions.insert(inst_id, InstructionData::BrIf { opcode: OpCode::BrIf, test, conseq, alter });
         self.add_inst_id_to_current_block(inst_id);
     }
-    pub fn build_jump_inst(&mut self, dst: Value) {
+    pub fn build_jump_inst(&mut self, dst: BasicBlock) {
         let inst_id = Instruction(self.instructions.len());
         self.instructions.insert(inst_id, InstructionData::Jump { opcode: OpCode::Jump, dst });
         self.add_inst_id_to_current_block(inst_id);

@@ -32,6 +32,7 @@ impl<'a> Parser<'a> {
         expect_token!(TokenKind::ParenthesesRight, self);
         let conseq = self.parse_statement()?;
         if is_token!(TokenKind::Else, self) {
+            self.next_token();
             ParserResult::Ok(IfStatement { test, conseq: Box::new(conseq), alter: Some(Box::new(self.parse_statement()?)) })
         }else {
             ParserResult::Ok(IfStatement{test, conseq: Box::new(conseq), alter: None })

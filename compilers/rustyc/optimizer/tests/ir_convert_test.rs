@@ -1,5 +1,4 @@
 
-
 #[cfg(test)]
 fn test_struct_access_by_member_and_dereference() {
     let program_text = "

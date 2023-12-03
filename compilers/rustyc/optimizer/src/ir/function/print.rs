@@ -56,6 +56,12 @@ impl Function {
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
                 output_code.push_str(format!(" {} = reminder {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
+            InstructionData::Icmp { opcode, flag, src1, src2, dst } => {
+                let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
+                let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = icmp {} {} {:?}\n", dst_str, src1_str, src2_str, flag).as_str());
+            }
             InstructionData::FAdd { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
@@ -137,6 +143,13 @@ impl Function {
             InstructionData::StackAlloc { opcode: _, size, align, dst } => {
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
                 output_code.push_str(format!(" stackalloc {}, {}, {}\n", dst_str, size, align).as_str());
+            }
+            InstructionData::BrIf { opcode: _ , test, conseq, alter } => {
+                let test_str = get_text_format_of_value(self.values.get(test).unwrap());
+                output_code.push_str(format!("brif {}, block{}, block{}\n", test_str, conseq.0 , alter.0).as_str());
+            }
+            InstructionData::Jump { opcode: _, dst } => {
+                output_code.push_str(format!(" jump {}\n", dst.0).as_str());
             }
             _ => {}
         }

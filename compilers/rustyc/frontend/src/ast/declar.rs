@@ -111,9 +111,18 @@ pub enum ValueType<'a> {
     Union(Box<UnionType<'a>>)
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum StorageClassSpecifier {
+    Extern,
+    Auto,
+    Register,
+    Static,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum StructType<'a> {
+    #[serde(rename="StructDef")]
     Def(StructDefinition<'a>),
+    #[serde(rename="StructDeclar")]
     Declar(StructDeclaration<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -147,7 +156,9 @@ pub enum Qualifiers {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum EnumType<'a> {
+    #[serde(rename="EnumDef")]
     Declar(EnumDeclaration<'a>),
+    #[serde(rename="EnumDeclar")]
     Def(EnumDefinition<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -167,7 +178,9 @@ pub struct Enumerator<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum UnionType<'a> {
+    #[serde(rename="UnionDef")]
     Declar(UnionDeclaration<'a>),
+    #[serde(rename="UnionDeclar")]
     Def(UnionDefinition<'a>)
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -31,5 +31,5 @@ pub struct StructLayoutEntry {
     pub data_type: SymbolType
 }
 
-
+/// 
 pub type StructSizeTable = HashMap<String,usize>;

@@ -203,7 +203,7 @@ impl<'a> Parser<'a> {
             _ => ParserResult::Ok(combine_value_type_with_signed(signed,ValueType::Long))
         }
     }
-    pub (super) fn parse_type_with_pointer_type(&mut self , mut value_type: ValueType<'a>) -> ValueType<'a> {
+    pub (super) fn parse_type_with_pointer_type(&mut self , value_type: ValueType<'a>) -> ValueType<'a> {
         let mut qualifiers = Vec::new();
         let mut level = 0;
         loop {

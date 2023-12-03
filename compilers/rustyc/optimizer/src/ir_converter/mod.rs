@@ -3,8 +3,9 @@ mod symbol_table;
 use std::collections::HashMap;
 use std::mem::replace;
 use crate::ir::function::*;
+use crate::ir::instructions::CmpFlag;
 use crate::ir::value::*;
-use crate::ir::convert::symbol_table::*;
+use crate::ir_converter::symbol_table::*;
 use rustyc_frontend::ast::*;
 use rustyc_frontend::ast::declar::*;
 use rustyc_frontend::ast::expr::*;
@@ -101,9 +102,7 @@ impl FunctionCoverter {
         self.function.name = func_def.id.name.to_string();
         let block = self.function.create_block();
         self.function.switch_to_block(block);
-        for block_item in &func_def.compound.body {
-            self.accept_block_item(block_item);
-        }
+        self.accept_compound_stmt(&func_def.compound);
     }
     fn accept_block_item(&mut self, block_item: &BlockItem) {
         match block_item {
@@ -113,11 +112,43 @@ impl FunctionCoverter {
     }
     fn accept_statement(&mut self, statement: &Statement ) {
         match statement {
-            Statement::ExprStmt(expr_stmt) => {
-                self.accept_expr(&expr_stmt.expr);
-            }
+            Statement::IfStmt(if_stmt) => self.accept_if_stmt(if_stmt),
+            Statement::CompoundStmt(compound_stmt) => self.accept_compound_stmt(compound_stmt),
+            Statement::ExprStmt(expr_stmt) => {self.accept_expr(&expr_stmt.expr);},
             _ => todo!()
+        };
+    }
+    fn accept_compound_stmt(&mut self, compound_stmt: &CompoundStatement) {
+        for item in &compound_stmt.body {
+            self.accept_block_item(item);
         }
+    }
+    fn accept_if_stmt(&mut self, if_stmt: &IfStatement) {
+        let value = self.accept_expr(&if_stmt.test);
+        let last_block = self.function.current_block.unwrap().clone();
+        let conseq_block = self.function.create_block();
+        self.function.connect_block(last_block,conseq_block);
+        let end_block = self.function.create_block();
+        self.function.connect_block(conseq_block, end_block);
+        self.function.switch_to_block(conseq_block);
+        self.accept_statement(if_stmt.conseq.as_ref());
+        self.function.build_jump_inst(end_block);
+        if let Some(stmt) = &if_stmt.alter {
+            let alter_block = self.function.create_block();
+            self.function.connect_block(last_block,alter_block);
+            self.function.connect_block(alter_block, end_block);
+            self.function.switch_to_block(alter_block);
+            self.accept_statement(&stmt);
+            self.function.build_jump_inst(end_block);
+
+            self.function.switch_to_block(last_block);
+            self.function.build_brif_inst(value, conseq_block, alter_block);
+        }else {
+            self.function.connect_block(last_block, end_block);
+            self.function.switch_to_block(last_block);
+            self.function.build_brif_inst(value, conseq_block, end_block);
+        }
+        self.function.switch_to_block(end_block);
     }
     fn accept_declar(&mut self, declar: &Declaration) {
         match declar {
@@ -227,10 +258,28 @@ impl FunctionCoverter {
         for (next_dst, next_src, next_name) in defer_vec {
             self.copy_struct_layout(next_dst, next_src, &next_name);
         }
-
     }
     /// Accept a chain expr, in right handle side
     fn accept_chain_expr(&mut self, expr: &Expression) -> Value {
+        let (base, offset, current_data_type) = self.accept_chain_expr_base(expr);
+        match current_data_type {
+            SymbolType::StructalType(_) => {
+                // struct_id = nested_struct.some_struct
+                let offset_const = self.function.create_u32_const(offset as u32);
+                self.function.build_add_inst(base, offset_const)
+            }
+            SymbolType::PointerType(_) => {
+                // struct_pointer = nested_struct.some_pointer_to_struct;
+                let offset_const = self.function.create_u32_const(offset as u32);
+                self.function.build_load_register_inst(base, offset_const, IrValueType::U32)
+            }
+            SymbolType::BasicType(ir_type) => {
+                let offset_const = self.function.create_u64_const(offset as u64);
+                self.function.build_load_register_inst(base, offset_const, ir_type)
+            }
+        }
+    }
+    fn accept_chain_expr_base(&mut self, expr: &Expression) -> (Value, usize, SymbolType) {
         // get the chain sequnce.
         let (name, callseqnce) = self.get_access_sequnce_from_chain_expr(expr);
         // get base virtual register and layout of struct.
@@ -281,22 +330,7 @@ impl FunctionCoverter {
                 SymbolType::BasicType(_) => {},
             }
         }
-        match current_data_type {
-            SymbolType::StructalType(_) => {
-                // struct_id = nested_struct.some_struct
-                let offset_const = self.function.create_u32_const(offset as u32);
-                self.function.build_add_inst(base, offset_const)
-            }
-            SymbolType::PointerType(_) => {
-                // struct_pointer = nested_struct.some_pointer_to_struct;
-                let offset_const = self.function.create_u32_const(offset as u32);
-                self.function.build_load_register_inst(base, offset_const, IrValueType::U32)
-            }
-            SymbolType::BasicType(ir_type) => {
-                let offset_const = self.function.create_u64_const(offset as u64);
-                self.function.build_load_register_inst(base, offset_const, ir_type.clone())
-            }
-        }
+        (base, offset, current_data_type.clone())
     }
     fn get_access_sequnce_from_chain_expr(&self, expr: &Expression) -> (String, Vec<CallSequnceType>) {
         let mut cur = expr;
@@ -457,10 +491,21 @@ impl FunctionCoverter {
                 self.function.build_add_inst(left_value, right_value) 
             }, 
             BinaryOps::Minus => if is_float {
-                self.function.build_sub_inst(left_value, right_value)
+                self.function.build_fsub_inst(left_value, right_value)
             }else {
-                self.function.build_fadd_inst(left_value, right_value)
+                self.function.build_sub_inst(left_value, right_value)
             }
+            BinaryOps::Multiplication => if is_float {
+                self.function.build_fmul_inst(left_value, right_value)
+            }else {
+                self.function.build_mul_inst(left_value, right_value)
+            }
+            BinaryOps::Gt => if is_float {
+                self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Gt)
+            }else {
+                self.function.build_icmp_inst(left_value, right_value, CmpFlag::Gt)
+            }
+
             _ => todo!(),
         }
     }
@@ -513,67 +558,22 @@ impl FunctionCoverter {
         }
     }
     fn accept_chain_expr_as_leftvalue(&mut self, expr: &Expression) -> (Value, SymbolType) {
-        // get the chain sequnce.
-        let (name, callseqnce) = self.get_access_sequnce_from_chain_expr(expr);
-        // get base virtual register and layout of struct.
-        let (mut base, mut symbol_layout) = match self.symbol_table.get(&name) {
-            Some(entry) => {
-                match &entry.data_type {
-                    SymbolType::StructalType(struct_type_name) => {
-                        (entry.reg, self.struct_layout_table.get(struct_type_name).unwrap())
-                    }
-                    SymbolType::PointerType(pointer_type) => {
-                        let struct_type_name = match pointer_type.pointer_to.as_ref() {
-                            SymbolType::StructalType(name) => name,
-                            _ => unreachable!()
-                        };
-                        (entry.reg, self.struct_layout_table.get(struct_type_name).unwrap())
-                    }
-                    SymbolType::BasicType(_) => unreachable!(),
-                }
-            },
-            None => unreachable!("{:?}, {:?} {:?}", name, self.symbol_table, self.symbol_table.get(&name))
-        };
-        // iterate call sequnce to get the base and offset of struct property.
-        let mut offset = 0;
-        let mut last_data_type = &self.symbol_table.get(&name).unwrap().data_type;
-        for item in callseqnce {
-            let (property_name, is_pointer) = match item {
-                CallSequnceType::Derefer(name) => (name, true),
-                CallSequnceType::Member(name) => (name, false)
-            };
-            let entry = symbol_layout.get(&property_name).unwrap();
-            if is_pointer {
-                let offset_zero = self.function.create_u64_const(offset as u64);
-                base = self.function.build_load_register_inst(base, offset_zero, IrValueType::U32); 
-                offset = entry.offset;
-            }else {
-                offset += entry.offset;
+        let (base, offset, current_data_type) = self.accept_chain_expr_base(expr);
+        match current_data_type {
+            SymbolType::BasicType(_) | SymbolType::StructalType(_) => {
+                let offset_const = self.function.create_u32_const(offset as u32);
+                (self.function.build_add_inst(base, offset_const), current_data_type.clone())
             }
-            last_data_type = &entry.data_type;
-            match &entry.data_type {
-                SymbolType::StructalType(struct_type_name) => {
-                    symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
-                }
-                SymbolType::PointerType(pointer_type) => {
-                    let struct_type_name = match pointer_type.pointer_to.as_ref() {
-                        SymbolType::StructalType(name) => name,
-                        SymbolType::BasicType(ir_type) => {
-                            let offset_const = self.function.create_u32_const(offset as u32);
-                            return (self.function.build_add_inst(base, offset_const), SymbolType::BasicType(ir_type.clone()) );
-                        }
-                        _ => unreachable!()
-                    };
-                    symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
-                }
-                SymbolType::BasicType(ir_type) => {
+            SymbolType::PointerType(pointer_type) => {
+                if let SymbolType::BasicType(ir_type) = pointer_type.pointer_to.as_ref() {
                     let offset_const = self.function.create_u32_const(offset as u32);
-                    return (self.function.build_add_inst(base, offset_const), SymbolType::BasicType(ir_type.clone()) )  
-                },
+                    (self.function.build_add_inst(base, offset_const), SymbolType::BasicType(ir_type.clone()) )
+                } else {
+                    let offset_const = self.function.create_u32_const(offset as u32);
+                    (self.function.build_add_inst(base, offset_const), pointer_type.pointer_to.as_ref().clone())      
+                }
             }
         }
-        let offset_const = self.function.create_u32_const(offset as u32);
-        (self.function.build_add_inst(base, offset_const), last_data_type.clone())      
     }
     /// Mapping the ast type to symbol table, used when 
     /// - in declaration list, we need to get the symbol type of a declarator's value type.
