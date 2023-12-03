@@ -33,4 +33,16 @@ fn test_struct_access_by_member_and_dereference() {
             p2->nested.value2;
         }
     ";
+    let linvess_code = "
+    int main() {
+        int a = 0, b = 8;
+        a = a +b ;
+        if (a > 2) {
+            b = a;
+        }else {
+            a =b;
+        }
+        int c = a;
+    }
+    ";
 }

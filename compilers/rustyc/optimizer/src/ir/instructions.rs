@@ -220,7 +220,7 @@ pub enum InstructionData {
 }
 
 pub type InstructionMap = HashMap<Instruction, InstructionData>;
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub enum OpCode {
     Add,
     Sub,
@@ -265,7 +265,7 @@ pub enum OpCode {
     BrIf,
     Jump,
 }
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub enum CmpFlag {
     Eq,
     NotEq,
