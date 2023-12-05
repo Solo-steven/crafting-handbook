@@ -29,7 +29,7 @@ impl Function {
         output_code
     }
     /// Private method for print a single instruction.
-    fn print_inst(&self, output_code: &mut String, instruction: &InstructionData) {
+    pub fn print_inst(&self, output_code: &mut String, instruction: &InstructionData) {
         output_code.push_str("\t");
         match instruction {
             InstructionData::Add { opcode: _, src1, src2, dst } => {
@@ -158,7 +158,7 @@ impl Function {
 
 
 /// Get the text format of a ValueData
-fn get_text_format_of_value(value: &ValueData) -> String {
+pub fn get_text_format_of_value(value: &ValueData) -> String {
     match value {
         ValueData::Immi(immi) => {
             match immi {
@@ -179,7 +179,7 @@ fn get_text_format_of_value(value: &ValueData) -> String {
     }
 }
 /// Get the text format of a DataType
-fn get_text_format_of_datatype(data_type: &IrValueType) -> &'static str {
+pub fn get_text_format_of_datatype(data_type: &IrValueType) -> &'static str {
     match data_type {
         IrValueType::U8 => "u8",
         IrValueType::U16 => "u16",

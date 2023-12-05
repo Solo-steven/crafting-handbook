@@ -14,8 +14,11 @@ type UseTable = HashMap<BasicBlock, HashSet<Value>>;
 type KillTable = HashMap<BasicBlock, HashSet<Value>>;
 /// Struct for Liveness anaylsis.
 pub struct LivenessAnaylsier {
+    /// use set for each block
     use_table: UseTable,
+    /// kill set for each block
     kill_table: KillTable,
+    /// liveout set for each block.
     liveness_table: LiveOutTable,
 }
 

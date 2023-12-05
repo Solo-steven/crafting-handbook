@@ -15,6 +15,7 @@ impl Function {
     /// Private method for add inst id to block.
     fn add_inst_id_to_current_block(&mut self, inst_id: Instruction) {
         if let Some(block) = self.current_block {
+            self.inst_map_block.insert(inst_id.clone(), block.clone());
             self.blocks.get_mut(&block).unwrap().instructions.push(inst_id);
         }else {
             panic!("Current block not set");
@@ -293,9 +294,10 @@ impl Function {
     pub fn build_to_f64_inst(&mut self, src: Value) -> Value {
         self.make_convert_inst(OpCode::ToF64, src )
     }
-    pub fn build_mov_inst(&mut self, src: Value, dst: Value) -> Value  {
+    pub fn build_mov_inst(&mut self, src: Value) -> Value  {
         let inst_id = Instruction(self.instructions.len());
         // TODO, dst can not be immi
+        let dst = self.add_register(self.get_value_ir_type(src.clone()));
         self.instructions.insert(inst_id, InstructionData::Move { opcode: OpCode::Mov, src , dst  });
         self.add_inst_id_to_current_block(inst_id);
         dst 

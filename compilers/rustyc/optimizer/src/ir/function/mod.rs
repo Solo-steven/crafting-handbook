@@ -1,5 +1,5 @@
 mod builder;
-mod print;
+pub mod print;
 use crate::ir::instructions::*;
 use crate::ir::value::*;
 use std::collections::HashMap;
@@ -13,6 +13,7 @@ pub struct Function {
     pub values: ValueMap,
     pub value_types: TypeMap,
     pub (super) next_temp_register_index: usize,
+    inst_map_block: HashMap<Instruction, BasicBlock>,
 
     pub entry_block: Vec<BasicBlock>,
     pub exit_block: Vec<BasicBlock>,
@@ -39,6 +40,7 @@ impl Function {
             instructions: HashMap::new(),
             blocks: HashMap::new(),
             next_block_index: 0,
+            inst_map_block: HashMap::new(),
             values: HashMap::new(),
             value_types: HashMap::new(),
             next_temp_register_index: 0,
@@ -83,5 +85,9 @@ impl Function {
     /// mark block as entry
     pub fn mark_as_entry(&mut self, id:BasicBlock) {
         self.entry_block.push(id);
+    }
+    /// Get basic block instrcution belong to.
+    pub fn get_block_from_inst(&self, inst: &Instruction) -> Option<&BasicBlock> {
+        self.inst_map_block.get(&inst)
     }
 }
