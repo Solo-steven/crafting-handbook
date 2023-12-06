@@ -10,19 +10,13 @@ use crate::ir::function::Function;
 use crate::ir_converter::Converter;
 use crate::ir_optimizer::liveness_anaylsis::{LivenessAnaylsier, print_set};
 use crate::ir_optimizer::use_def_chain::{print_use_def_table, UseDefAnaylsier};
+use crate::ir_optimizer::domtree::DomAnaylsier;
 use crate::ir_optimizer::value_numbering::local_value_numbering;
 use std::backtrace::Backtrace;
 use std::collections::{HashSet, HashMap};
 use std::fs::File;
 use std::io::Write;
 
-
-pub fn create_mock_graph() {
-    let mut func = Function::new(String::from("test_fun"));
-    let b0 = func.create_block();
-    func.switch_to_block(b0);
-    let t1 = func.build_stack_alloc_inst(32, 8);
-}
 
 pub fn create_reducnt_expr_graph() -> Function {
     let mut func = Function::new(String::from("test_fun"));
@@ -48,6 +42,9 @@ pub fn create_reducnt_expr_graph() -> Function {
     func
 }
 
+
+/// Create simple graph to test use-def information:
+/// ```
 /// t0 = 10;
 /// t1 = 1000;
 /// --------
@@ -55,6 +52,7 @@ pub fn create_reducnt_expr_graph() -> Function {
 /// t3 = t1 + t2;
 /// ----------
 /// t4 = t1 + t3;
+/// ```
 pub fn create_use_def_graph() -> Function {
     let mut func = Function::new(String::from("test_fun"));
     // block 0
@@ -76,6 +74,35 @@ pub fn create_use_def_graph() -> Function {
     func   
 }
 
+/// Create simple graph for test dom data flow anaylsis.
+/// struct of graph please reference to 
+pub fn create_dom_graph() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    let b0 = function.create_block();
+    let b1 = function.create_block();
+    let b2 = function.create_block();
+    let b3 = function.create_block();
+    let b4 = function.create_block();
+    let b5 = function.create_block();
+    let b6 = function.create_block();
+    let b7 = function.create_block();
+    let b8 = function.create_block();
+    
+    function.connect_block(b0, b1);
+    function.connect_block(b1, b2);
+    function.connect_block(b2, b3);
+    function.connect_block(b3, b4);
+    function.connect_block(b3, b1);
+
+    function.connect_block(b1, b5);
+    function.connect_block(b5, b6);
+    function.connect_block(b5, b8);
+    function.connect_block(b6, b7);
+    function.connect_block(b8, b7);
+    function.connect_block(b7, b3);
+    function
+}
+
 fn main() {
     let program = Parser::new("
         int main() {
@@ -87,17 +114,21 @@ fn main() {
      println!("{:#?}", program);
     let mut converter = Converter::new();
     converter.convert(&program);
+
+    let mut dom = DomAnaylsier::new();
+    dom.anaylsis(&create_dom_graph());
+
     // let mut liveness = LivenessAnaylsier::new();
-    let mut use_def = UseDefAnaylsier::new();
-    let func =create_use_def_graph();
-    println!("{:?}", func.print_to_string());
-    let table = use_def.anaylsis(&func);
-    print_use_def_table(&table, &func);
-    println!("{:?}", func.print_to_string());
+    // let mut use_def = UseDefAnaylsier::new();
+    // let func =create_use_def_graph();
+    // println!("{:?}", func.print_to_string());
+    // let table = use_def.anaylsis(&func);
+    // print_use_def_table(&table, &func);
+    // println!("{:?}", func.print_to_string());
 
 
-    for func in &converter.functions {
-        let mut file = File::create("./test.txt").unwrap();
-        write!(file, "{}", func.print_to_string().as_str());
-    }
+    // for func in &converter.functions {
+    //     let mut file = File::create("./test.txt").unwrap();
+    //     write!(file, "{}", func.print_to_string().as_str());
+    // }
 }

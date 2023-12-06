@@ -32,7 +32,7 @@ pub struct UseDefAnaylsier {
 }
 
 /// helper function to print out all the 
-pub fn print_use_def_table(table: &UseDefTable, function: &Function) {
+pub fn print_use_def_table(function: &Function, table: &UseDefTable) {
     for entry in table {
         println!("==== {} ====", entry.0.0);
         println!("use table:");
