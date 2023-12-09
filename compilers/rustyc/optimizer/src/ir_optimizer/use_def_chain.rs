@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::mem::replace;
 use crate::ir::value::*;
 use crate::ir::instructions::*;
@@ -11,13 +11,13 @@ pub type ValueTuple = (BasicBlock, Instruction, Value);
 pub type DefTable = HashMap<Value, Instruction>;
 /// Use table, mapping the Value in left hand side of three-address code
 /// to a series of use (instruction use value in right hand side).
-pub type UseTable = HashMap<Value, Vec<Instruction>>;
+pub type UseTable = HashMap<Value, HashSet<Instruction>>;
 /// A struct for a basic block, contain information that every value in 
 /// this basic block's use and def relationship.
 #[derive(Debug, Clone, PartialEq)]
 pub struct UseDefEntry  {
-    use_table: UseTable,
-    def_table: DefTable,
+    pub use_table: UseTable,
+    pub def_table: DefTable,
 }
 /// Mapping basic block to use-def-table.
 pub type UseDefTable = HashMap<BasicBlock, UseDefEntry>;
@@ -169,6 +169,8 @@ impl UseDefAnaylsier {
                             if self.is_value_register(value, function) { self.add_to_use_cache(value.clone(), block_id.clone(), inst_id.clone())}
                         }
                     }
+                    // TODO: Phi Node
+                    _ => {}
                 }
             }
         }
@@ -184,9 +186,9 @@ impl UseDefAnaylsier {
                 let def_entry = self.use_def_table.get_mut(def_block_id).unwrap();
                 let use_table = &mut def_entry.use_table;
                 if use_table.contains_key(use_value) {
-                    use_table.get_mut(use_value).unwrap().push(use_inst_id.clone());
+                    use_table.get_mut(use_value).unwrap().insert(use_inst_id.clone());
                 }else {
-                    use_table.insert(use_value.clone(), vec![use_inst_id.clone()]);
+                    use_table.insert(use_value.clone(), HashSet::from([use_inst_id.clone()]));
                 }
             }
         }

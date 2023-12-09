@@ -82,6 +82,8 @@ fn construct_key_from_inst(inst: &InstructionData, numbering_table: &mut Numberi
         InstructionData::LoadRegister { opcode:_, base, offset, dst, data_type } => None,
         InstructionData::Call { params: _ }=> None,
         InstructionData::Move { opcode, src, dst } => None,
+        // TODO: Phi
+        _ => None,
     }
 }
 /// Helper function for getting a value numbering from numbering table,

@@ -217,6 +217,12 @@ pub enum InstructionData {
         opcode: OpCode,
         dst: BasicBlock,
     },
+    // Phi
+    Phi {
+        opcode: OpCode,
+        dst: Value,
+        from: Vec<(BasicBlock, Value)>
+    }
 }
 
 pub type InstructionMap = HashMap<Instruction, InstructionData>;
@@ -264,6 +270,8 @@ pub enum OpCode {
     // Control instructions
     BrIf,
     Jump,
+    // Phi Node
+    Phi,
 }
 #[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub enum CmpFlag {

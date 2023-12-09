@@ -213,6 +213,8 @@ impl LivenessAnaylsier {
                         }
                     }
                 }
+                // TODO: phi
+                _ => {}
             }
         }
         (kill_set, use_set)

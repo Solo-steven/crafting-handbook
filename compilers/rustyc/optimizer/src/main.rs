@@ -11,6 +11,7 @@ use crate::ir_converter::Converter;
 use crate::ir_optimizer::liveness_anaylsis::{LivenessAnaylsier, print_set};
 use crate::ir_optimizer::use_def_chain::{print_use_def_table, UseDefAnaylsier};
 use crate::ir_optimizer::domtree::DomAnaylsier;
+use crate::ir_optimizer::mem2reg::Mem2RegPass;
 use crate::ir_optimizer::value_numbering::local_value_numbering;
 use std::backtrace::Backtrace;
 use std::collections::{HashSet, HashMap};
@@ -106,20 +107,31 @@ pub fn create_dom_graph() -> Function {
 fn main() {
     let program = Parser::new("
         int main() {
-            int a = 10, b = 100, c, d;
-            c = a + b ;
-            d = a + b;
+            int a = 10;
+            if(a > 10) {
+                a = 100;
+            }else {
+                a = 400;
+            }
+            a = a + 2;
         }
     ").parse().unwrap();
-     println!("{:#?}", program);
+    // println!("{:#?}", program);
     let mut converter = Converter::new();
     converter.convert(&program);
-
+    let func = &mut converter.functions[0];
     let mut dom = DomAnaylsier::new();
-    dom.anaylsis(&create_dom_graph());
+    let dom_table = dom.anaylsis(func);
 
+    let mut use_def = UseDefAnaylsier::new();
+    let use_def_table =  use_def.anaylsis(func);
+    let mut pass = Mem2RegPass::new();
+    println!("{:#?}",func.print_to_string().as_str());
+    pass.anaylsis(func, &use_def_table, &dom_table);
+    println!("{:#?}",func.print_to_string().as_str());
+    let mut file = File::create("./test.txt").unwrap();
+    write!(file, "{}", func.print_to_string().as_str());
     // let mut liveness = LivenessAnaylsier::new();
-    // let mut use_def = UseDefAnaylsier::new();
     // let func =create_use_def_graph();
     // println!("{:?}", func.print_to_string());
     // let table = use_def.anaylsis(&func);
@@ -128,7 +140,5 @@ fn main() {
 
 
     // for func in &converter.functions {
-    //     let mut file = File::create("./test.txt").unwrap();
-    //     write!(file, "{}", func.print_to_string().as_str());
     // }
 }

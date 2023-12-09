@@ -101,6 +101,7 @@ impl FunctionCoverter {
     fn accept_function_def(&mut self, func_def: &FunctionDefinition) {
         self.function.name = func_def.id.name.to_string();
         let block = self.function.create_block();
+        self.function.mark_as_entry(block.clone());
         self.function.switch_to_block(block);
         self.accept_compound_stmt(&func_def.compound);
     }

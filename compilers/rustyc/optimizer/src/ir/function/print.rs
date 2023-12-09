@@ -151,7 +151,13 @@ impl Function {
             InstructionData::Jump { opcode: _, dst } => {
                 output_code.push_str(format!(" jump {}\n", dst.0).as_str());
             }
-            _ => {}
+            InstructionData::Phi { opcode: _, dst, from } => {
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                let src1_str = get_text_format_of_value(self.values.get(&from[0].1).unwrap());
+                let src2_str = get_text_format_of_value(self.values.get(&from[1].1).unwrap());
+                output_code.push_str(format!("phi {}, block{} {}, block{} {}\n", dst_str,from[0].0.0, src1_str, from[1].0.0, src2_str).as_str());
+            }
+            _ => todo!()
         }
     }
 }

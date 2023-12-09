@@ -2,12 +2,13 @@ mod builder;
 pub mod print;
 use crate::ir::instructions::*;
 use crate::ir::value::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 #[derive(Debug, PartialEq, Clone)]
 pub struct Function {
     pub name: String,
 
     pub instructions: InstructionMap,
+    pub (super) next_inst_index: usize,
     pub blocks: BasicBlockMap,
     pub (super) next_block_index: usize,
     pub values: ValueMap,
@@ -27,7 +28,7 @@ pub struct BasicBlockData {
     pub name: String,
     pub successor: Vec<BasicBlock>,
     pub predecessor: Vec<BasicBlock>,
-    pub instructions: Vec<Instruction>,
+    pub instructions: VecDeque<Instruction>,
 }
 
 pub type BasicBlockMap = HashMap<BasicBlock, BasicBlockData>;
@@ -38,12 +39,13 @@ impl Function {
         Function {
             name,
             instructions: HashMap::new(),
+            next_inst_index: 1,
             blocks: HashMap::new(),
-            next_block_index: 0,
+            next_block_index: 1,
             inst_map_block: HashMap::new(),
             values: HashMap::new(),
             value_types: HashMap::new(),
-            next_temp_register_index: 0,
+            next_temp_register_index: 1,
             entry_block: Vec::new(),
             exit_block: Vec::new(),
             current_block: None
@@ -51,10 +53,10 @@ impl Function {
     }
     /// Create a basic block, and this block is not conncet yet.
     pub fn create_block(&mut self) -> BasicBlock {
-        let block_id = BasicBlock(self.blocks.len());
+        let block_id = BasicBlock(self.next_block_index);
         self.blocks.insert(
             block_id, 
-            BasicBlockData {  name: format!("block{}", self.next_block_index), successor: Vec::new(), predecessor: Vec::new(), instructions: Vec::new() }
+            BasicBlockData {  name: format!("block{}", self.next_block_index), successor: Vec::new(), predecessor: Vec::new(), instructions: VecDeque::new() }
         );
         self.next_block_index += 1;
         block_id
@@ -89,5 +91,19 @@ impl Function {
     /// Get basic block instrcution belong to.
     pub fn get_block_from_inst(&self, inst: &Instruction) -> Option<&BasicBlock> {
         self.inst_map_block.get(&inst)
+    }
+    pub fn insert_inst_to_block_front(&mut self, block: &BasicBlock, inst_data: InstructionData) -> Instruction {
+        let inst_id = Instruction(self.instructions.len());
+        self.blocks.get_mut(block).unwrap().instructions.push_front(inst_id.clone());
+        self.instructions.insert(inst_id.clone(), inst_data);
+        inst_id
+    }
+    pub fn remove_inst_from_block(&mut self, block: &BasicBlock, inst: &Instruction) {
+        self.blocks.get_mut(block).unwrap().instructions.retain(|inst_id| inst != inst_id );
+        self.instructions.remove(inst);
+    }
+    pub fn change_inst(&mut self, inst: &Instruction, inst_data: InstructionData) {
+        self.instructions.remove(inst);
+        self.instructions.insert(inst.clone(), inst_data);
     }
 }

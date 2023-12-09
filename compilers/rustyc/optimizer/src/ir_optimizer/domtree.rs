@@ -6,13 +6,22 @@ pub type DomTable = HashMap<BasicBlock, DomTableEntry>;
 /// Entry for record dom, idom and dom-frontier for a bb.
 #[derive(Debug, Clone, PartialEq)]
 pub struct DomTableEntry {
-    dom: HashSet<BasicBlock>,
-    idom: BasicBlock,
-    dom_frontier: HashSet<BasicBlock>,
+    pub dom: HashSet<BasicBlock>,
+    pub idom: BasicBlock,
+    pub dom_frontier: HashSet<BasicBlock>,
 }
 /// pretty print out the dom related info for a control flow graph.
-pub fn print_dom_table(function: &Function, table: &DomTable) {
-    
+/// |------------- { DOM } ----------------|
+/// | Block id  | Block Id  | ....         |
+/// | {dom-set} | {dom-set} | ....         |
+/// |--------------------------------------|
+pub fn print_dom_table(table: &DomTable) {
+    println!("");
+    let mut dom_text = String::from("| ");
+    for (block_id , block_entry) in table {
+        
+        dom_text.push_str(" | ");
+    }
 }
 /// Struct for anaylsis dom related info for a control flow graph
 pub struct DomAnaylsier {
@@ -83,20 +92,26 @@ impl DomAnaylsier {
             let dom_set = &entry.1.dom;
             let block_data = function.blocks.get(entry.0).unwrap();
             let mut predecessors = block_data.predecessor.clone();
+            // using nested loop to perfomance bottom-up bfs search for idom
             'find: loop {
                 if predecessors.len() == 0 {
-                    break;
+                    break 'find;
                 }
                 let mut next_predecessor = Vec::new();
-                for pre in predecessors {
-                    if dom_set.contains(&pre) {
+                // frist iterate over the predecessor to find if predecessor beem
+                // have dominate bb or not.
+                for pre in &predecessors {
+                    if dom_set.contains(pre) {
                         entry.1.idom = pre.clone();
                         break 'find;
-                    }else {
-                        for pre_pre in &function.blocks.get(&pre).unwrap().predecessor {
-                            if !next_predecessor.contains(pre_pre) {
-                                next_predecessor.push(pre_pre.clone());
-                            }
+                    }
+                }
+                // if we can not find idom in cuurent predecessor. we contine find idom
+                // in predecessor's predecessor
+                for pre in &predecessors {
+                    for pre_pre in &function.blocks.get(pre).unwrap().predecessor {
+                        if !next_predecessor.contains(pre_pre) {
+                            next_predecessor.push(pre_pre.clone());
                         }
                     }
                 }

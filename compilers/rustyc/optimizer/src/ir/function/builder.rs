@@ -5,8 +5,8 @@ use crate::ir::value::*;
 
 impl Function {
     /// Private method of add a register value
-    fn add_register(&mut self, value_type: IrValueType) -> Value {
-        let value_id = Value(self.values.len());
+    pub fn add_register(&mut self, value_type: IrValueType) -> Value {
+        let value_id = Value(self.next_temp_register_index);
         self.values.insert(value_id, ValueData::VirRegister(format!("t{}", self.next_temp_register_index)));
         self.value_types.insert(value_id, value_type);
         self.next_temp_register_index += 1;
@@ -16,7 +16,7 @@ impl Function {
     fn add_inst_id_to_current_block(&mut self, inst_id: Instruction) {
         if let Some(block) = self.current_block {
             self.inst_map_block.insert(inst_id.clone(), block.clone());
-            self.blocks.get_mut(&block).unwrap().instructions.push(inst_id);
+            self.blocks.get_mut(&block).unwrap().instructions.push_back(inst_id);
         }else {
             panic!("Current block not set");
         }
@@ -148,55 +148,64 @@ impl Function {
     }
     /// Create u8 const and insert into value list.
     pub fn create_u8_const(&mut self, data: u8) -> Value {
-        let value_id = Value(self.values.len());
+        let value_id =  Value(self.next_temp_register_index);
+        self.next_temp_register_index += 1;
         self.values.insert(value_id, ValueData::Immi(Immi::U8(data)));
         value_id
     }
     /// Create u16 const and insert into value list.
     pub fn create_u16_const(&mut self, data: u16) -> Value {
-        let value_id = Value(self.values.len());
+        let value_id =  Value(self.next_temp_register_index);
+        self.next_temp_register_index += 1;
         self.values.insert(value_id, ValueData::Immi(Immi::U16(data)));
         value_id
     }    
     /// Create u32 const and insert into value list.
     pub fn create_u32_const(&mut self, data: u32) -> Value {
-        let value_id = Value(self.values.len());
+        let value_id =  Value(self.next_temp_register_index);
+        self.next_temp_register_index += 1;
         self.values.insert(value_id, ValueData::Immi(Immi::U32(data)));
         value_id
     }
     /// Create u64 const and insert into value list.
     pub fn create_u64_const(&mut self, data: u64)-> Value {
-        let value_id = Value(self.values.len());
+        let value_id =  Value(self.next_temp_register_index);
+        self.next_temp_register_index += 1;
         self.values.insert(value_id, ValueData::Immi(Immi::U64(data)));
         value_id
     }
     /// Create i16 const and insert into value list.
     pub fn create_i16_const(&mut self, data: i16) -> Value {
-        let value_id = Value(self.values.len());
+        let value_id =  Value(self.next_temp_register_index);
+        self.next_temp_register_index += 1;
         self.values.insert(value_id, ValueData::Immi(Immi::I16(data)));
         value_id
     }   
     /// Create i32 const and insert into value list.
     pub fn create_i32_const(&mut self, data: i32) -> Value {
-        let value_id = Value(self.values.len());
+        let value_id =  Value(self.next_temp_register_index);
+        self.next_temp_register_index += 1;
         self.values.insert(value_id, ValueData::Immi(Immi::I32(data)));
         value_id
     }
     /// Create i64 const and insert into value list.
     pub fn create_i64_const(&mut self, data: i64) -> Value {
-        let value_id = Value(self.values.len());
+        let value_id =  Value(self.next_temp_register_index);
+        self.next_temp_register_index += 1;
         self.values.insert(value_id, ValueData::Immi(Immi::I64(data)));
         value_id
     }
     /// Create f32 const and insert into value list.
     pub fn create_f32_const(&mut self, data: f32) -> Value {
-        let value_id = Value(self.values.len());
+        let value_id =  Value(self.next_temp_register_index);
+        self.next_temp_register_index += 1;
         self.values.insert(value_id, ValueData::Immi(Immi::F32(data)));
         value_id
     }
     /// Create f64 const and insert into value list.
     pub fn create_f64_const(&mut self, data: f64) -> Value {
-        let value_id = Value(self.values.len());
+        let value_id = Value(self.next_temp_register_index);
+        self.next_temp_register_index += 1;
         self.values.insert(value_id, ValueData::Immi(Immi::F64(data)));
         value_id
     }
