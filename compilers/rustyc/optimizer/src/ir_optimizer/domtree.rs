@@ -11,10 +11,20 @@ pub struct DomTableEntry {
     pub dom_frontier: HashSet<BasicBlock>,
 }
 /// pretty print out the dom related info for a control flow graph.
+/// ```
 /// |------------- { DOM } ----------------|
 /// | Block id  | Block Id  | ....         |
 /// | {dom-set} | {dom-set} | ....         |
 /// |--------------------------------------|
+/// |------------- { IDOM } ---------------|
+/// | Block id  | Block Id  | ....         |
+/// |  idom-id  |  idom-id  | ....         |
+/// |--------------------------------------|
+/// |-------------  { DF } ----------------|
+/// |   Block id   |   Block Id   | ....   |
+/// | {df-dom-set} | {df-dom-set} | ....   |
+/// |--------------------------------------|
+/// ```
 pub fn print_dom_table(table: &DomTable) {
     println!("");
     let mut dom_text = String::from("| ");
@@ -97,7 +107,6 @@ impl DomAnaylsier {
                 if predecessors.len() == 0 {
                     break 'find;
                 }
-                let mut next_predecessor = Vec::new();
                 // frist iterate over the predecessor to find if predecessor beem
                 // have dominate bb or not.
                 for pre in &predecessors {
@@ -108,6 +117,7 @@ impl DomAnaylsier {
                 }
                 // if we can not find idom in cuurent predecessor. we contine find idom
                 // in predecessor's predecessor
+                let mut next_predecessor = Vec::new();
                 for pre in &predecessors {
                     for pre_pre in &function.blocks.get(pre).unwrap().predecessor {
                         if !next_predecessor.contains(pre_pre) {

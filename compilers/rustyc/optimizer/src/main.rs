@@ -23,13 +23,15 @@ pub fn create_reducnt_expr_graph() -> Function {
     let mut func = Function::new(String::from("test_fun"));
     let b0 = func.create_block();
     func.switch_to_block(b0);
-    let t1 = func.build_stack_alloc_inst(32, 8);
+    let mut size_const = func.create_u32_const(32 as u32);
+    let t1 = func.build_stack_alloc_inst(size_const, 8);
     {
         let const10 = func.create_i32_const(10);
         let offset = func.create_u32_const(0);
         func.build_store_register_inst(const10, t1, offset, IrValueType::I32);
     }
-    let t2 = func.build_stack_alloc_inst(32, 8);
+    size_const = func.create_u32_const(32 as u32);
+    let t2 = func.build_stack_alloc_inst(size_const, 8);
     {
         let const10 = func.create_i32_const(10);
         let offset = func.create_u32_const(0);
@@ -107,28 +109,30 @@ pub fn create_dom_graph() -> Function {
 fn main() {
     let program = Parser::new("
         int main() {
-            int a = 10;
-            if(a > 10) {
-                a = 100;
-            }else {
-                a = 400;
-            }
-            a = a + 2;
+            struct Wrapper {
+                int value;
+                int age;
+            };
+            struct Wrapper base;
+            struct Wrapper  *p = &base;
+            struct Wrapper  **pp = &p;
+            pp[0]->value;
+            p[0].age;
         }
     ").parse().unwrap();
     // println!("{:#?}", program);
     let mut converter = Converter::new();
     converter.convert(&program);
     let func = &mut converter.functions[0];
-    let mut dom = DomAnaylsier::new();
-    let dom_table = dom.anaylsis(func);
+    // let mut dom = DomAnaylsier::new();
+    // let dom_table = dom.anaylsis(func);
 
-    let mut use_def = UseDefAnaylsier::new();
-    let use_def_table =  use_def.anaylsis(func);
-    let mut pass = Mem2RegPass::new();
-    println!("{:#?}",func.print_to_string().as_str());
-    pass.anaylsis(func, &use_def_table, &dom_table);
-    println!("{:#?}",func.print_to_string().as_str());
+    // let mut use_def = UseDefAnaylsier::new();
+    // let use_def_table =  use_def.anaylsis(func);
+    // let mut pass = Mem2RegPass::new();
+    // println!("{:#?}",func.print_to_string().as_str());
+    // pass.anaylsis(func, &use_def_table, &dom_table);
+    // println!("{:#?}",func.print_to_string().as_str());
     let mut file = File::create("./test.txt").unwrap();
     write!(file, "{}", func.print_to_string().as_str());
     // let mut liveness = LivenessAnaylsier::new();

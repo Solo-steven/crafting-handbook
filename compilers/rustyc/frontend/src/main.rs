@@ -14,10 +14,9 @@ use std::fs;
 
 fn main(){
     let source = "
-        int a = 10;
-        struct Test {
-            int value1;
-        } te;
+        int a[100];
+        (int)a[10][30];
+        a[c+b][m];
     ";
     let source2 = "
         person->computeSome(a, b, 10);

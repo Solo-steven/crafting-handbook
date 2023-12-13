@@ -56,7 +56,13 @@ impl Function {
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
                 output_code.push_str(format!(" {} = reminder {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
-            InstructionData::Icmp { opcode, flag, src1, src2, dst } => {
+            InstructionData::Mul { opcode: _, src1, src2, dst } => {
+                let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
+                let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = mul {} {}\n", dst_str, src1_str, src2_str).as_str());
+            }
+            InstructionData::Icmp { opcode: _, flag, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
@@ -121,6 +127,11 @@ impl Function {
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
                 output_code.push_str(format!(" {} = toF64 {}\n", dst_str, src_str).as_str());
             }
+            InstructionData::ToAddress { opcode: _, src, dst } => {
+                let src_str = get_text_format_of_value(self.values.get(src).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = toAddress {}\n", dst_str, src_str).as_str());
+            }
             InstructionData::Move { opcode: _ , src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
@@ -142,7 +153,8 @@ impl Function {
             }
             InstructionData::StackAlloc { opcode: _, size, align, dst } => {
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" stackalloc {}, {}, {}\n", dst_str, size, align).as_str());
+                let size_str = get_text_format_of_value(self.values.get(size).unwrap());
+                output_code.push_str(format!(" stackalloc {}, {}, {}\n", dst_str, size_str, align).as_str());
             }
             InstructionData::BrIf { opcode: _ , test, conseq, alter } => {
                 let test_str = get_text_format_of_value(self.values.get(test).unwrap());
@@ -196,5 +208,6 @@ pub fn get_text_format_of_datatype(data_type: &IrValueType) -> &'static str {
         IrValueType::I64 => "i64",
         IrValueType::U32 => "u32",
         IrValueType::U64 => "u64",
+        IrValueType::Address => "address",
     }
 }

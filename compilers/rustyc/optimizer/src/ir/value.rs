@@ -29,6 +29,7 @@ pub enum IrValueType {
     I64,
     F32,
     F64,
+    Address,
 }
 pub type ValueMap = HashMap<Value, ValueData>;
 pub type TypeMap = HashMap<Value, IrValueType>;

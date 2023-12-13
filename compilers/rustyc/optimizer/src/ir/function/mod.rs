@@ -13,6 +13,7 @@ pub struct Function {
     pub (super) next_block_index: usize,
     pub values: ValueMap,
     pub value_types: TypeMap,
+    pub (super) next_value_index: usize,
     pub (super) next_temp_register_index: usize,
     inst_map_block: HashMap<Instruction, BasicBlock>,
 
@@ -45,6 +46,7 @@ impl Function {
             inst_map_block: HashMap::new(),
             values: HashMap::new(),
             value_types: HashMap::new(),
+            next_value_index: 1,
             next_temp_register_index: 1,
             entry_block: Vec::new(),
             exit_block: Vec::new(),

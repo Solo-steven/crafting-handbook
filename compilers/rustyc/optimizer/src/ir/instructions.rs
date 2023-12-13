@@ -184,10 +184,15 @@ pub enum InstructionData {
         src: Value,
         dst: Value,
     },
+    ToAddress {
+        opcode: OpCode,
+        src: Value, 
+        dst: Value,
+    },
     // stack related
     StackAlloc {
         opcode: OpCode,
-        size: usize,
+        size: Value,
         align: usize,
         dst: Value,
     },
@@ -261,6 +266,7 @@ pub enum OpCode {
     ToI64,
     ToF32,
     ToF64, 
+    ToAddress,
     // stack relate
     StackAlloc,
     StackAddr,

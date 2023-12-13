@@ -36,8 +36,11 @@ impl<'a> Parser<'a> {
         match self.get_token() {
             TokenKind::Multiplication | TokenKind::Identifier  => {
                 let is_identifier = self.get_token() == TokenKind::Identifier;
-                let pointer_type = self.parse_type_with_pointer_type(value_type.clone());
+                let mut pointer_type = self.parse_type_with_pointer_type(value_type.clone());
                 let id = self.parse_identifier()?;
+                if is_token!(TokenKind::BracketLeft, self) {
+                    pointer_type = self.parse_type_with_array_type(pointer_type)?;
+                }
                 match self.get_token() {
                     TokenKind::ParenthesesLeft => {
                         if is_identifier {
@@ -60,7 +63,7 @@ impl<'a> Parser<'a> {
                         ParserResult::Ok(Declaration::DelcarList(DeclarationList { value_type, declarators }))
                     }
                     TokenKind::Comma => {
-                        let declarators= self.parse_declaration_list(Vec::new(), value_type.clone())?;
+                        let declarators= self.parse_declaration_list(Vec::new(), pointer_type.clone())?;
                         ParserResult::Ok(Declaration::DelcarList(DeclarationList { value_type, declarators }))
                     }
                     _ => ParserResult::Err(String::from(""))
@@ -243,6 +246,25 @@ impl<'a> Parser<'a> {
             value_type
         }
     }
+    fn parse_type_with_array_type(&mut self , value_type: ValueType<'a>) -> ParserResult<ValueType<'a>> {
+        let mut dims = Vec::new();
+        loop {
+            if is_token!(TokenKind::BracketLeft, self) {
+                self.next_token();
+            }else {
+                break;
+            }
+            dims.push(self.parse_assignment_expr()?);
+            expect_token!(TokenKind::BracketRight, self);
+        }
+        if dims.len() > 0 {
+            Ok(ValueType::ArrayType(Box::new(
+                ArrayType { dims, array_of: Box::new(value_type) }
+            )))
+        }else {
+            Ok(value_type)
+        }
+    }
     /// Parse enum type. enum type have two possible format
     /// - enum declaration, just enum name, can be using in declaration enum type,
     ///   member of struct or variable decalration.
@@ -358,6 +380,7 @@ impl<'a> Parser<'a> {
         let mut value_type = self.parse_value_type(None)?;
         value_type = self.parse_type_with_pointer_type(value_type);
         let id = self.parse_identifier()?;
+        value_type = self.parse_type_with_array_type(value_type)?;
         // TODO init value
         ParserResult::Ok(StructDeclarator { value_type, id, init_value: None })
     }

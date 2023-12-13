@@ -104,8 +104,9 @@ pub enum ValueType<'a> {
     DoubleComplex,
     // long double Complex
     LongDoubleComplex,
-    // other (struct, enum, union)
+    // other (struct, enum, union, pointer, array)
     PointerType(Box<PointerType<'a>>),
+    ArrayType(Box<ArrayType<'a>>),
     Struct(Box<StructType<'a>>),
     Enum(Box<EnumType<'a>>),
     Union(Box<UnionType<'a>>)
@@ -191,4 +192,9 @@ pub struct UnionDeclaration<'a> {
 pub struct UnionDefinition<'a> {
     pub id: Option<Identifier<'a>>,
     pub declarator: Vec<StructDeclarator<'a>>
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ArrayType<'a> {
+    pub dims: Vec<Expression<'a>>,
+    pub array_of: Box<ValueType<'a>>
 }
