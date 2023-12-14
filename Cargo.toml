@@ -5,6 +5,8 @@ members = [
     "compilers/rustyc/backend",
     "compilers/rustyc/interpreter",
     "compilers/rustyc/optimizer",
+    # For Calculator toy lanf
+    "compilers/calculator",
     # For jsbridge
     "others/js-bridge",
     # For souring rs
