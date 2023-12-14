@@ -196,7 +196,8 @@ impl LivenessAnaylsier {
                     opcode: _ , 
                     size: _1, 
                     align: _2, 
-                    dst 
+                    dst ,
+                    is_aggregate: _3
                 } => {
                     kill_set.insert(dst.clone());
                 }
@@ -206,7 +207,7 @@ impl LivenessAnaylsier {
                     }
                     kill_set.insert(dst.clone());
                 }
-                InstructionData::Call { params } => {
+                InstructionData::Call { name: _, params } => {
                     for value in params {
                         if self.is_value_register(value, function)  && !kill_set.contains(value) {
                             use_set.insert(value.clone());

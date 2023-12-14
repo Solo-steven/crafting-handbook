@@ -136,6 +136,7 @@ pub enum InstructionData {
         dst: Value,
     },
     Call {
+        name: String,
         params: Vec<Value>
     },
     // data type convert
@@ -195,6 +196,7 @@ pub enum InstructionData {
         size: Value,
         align: usize,
         dst: Value,
+        is_aggregate: bool,
     },
     // memory instruction
     LoadRegister {
@@ -227,7 +229,9 @@ pub enum InstructionData {
         opcode: OpCode,
         dst: Value,
         from: Vec<(BasicBlock, Value)>
-    }
+    },
+    // comment,
+    Comment(String)
 }
 
 pub type InstructionMap = HashMap<Instruction, InstructionData>;

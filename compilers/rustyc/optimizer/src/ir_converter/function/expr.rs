@@ -132,6 +132,143 @@ impl FunctionCoverter {
             index += 1;
         }
     }
+    /// ## Accept a unary expression in right hand side
+    /// most of unary expression op is simple to generate. there are three op need to handle with sub-function.
+    /// - address of 
+    /// - dereference
+    /// - sizeof
+    fn accept_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
+        match &unary_expr.ops {
+            UnaryOps::BitwiseNot => { 
+                let src = self.accept_expr(&unary_expr.expr);
+                self.function.build_bitwise_not(src)
+             },
+            UnaryOps::LogicalNot => {
+                let src = self.accept_expr(&unary_expr.expr);
+                self.function.build_logical_not(src)
+            },
+            UnaryOps::Minus => {
+                let src = self.accept_expr(&unary_expr.expr);
+                self.function.build_neg_inst(src)
+            },
+            UnaryOps::Plus => {
+                self.accept_expr(&unary_expr.expr)
+            },
+            UnaryOps::AddressOf => self.accept_address_of_unary_expr(unary_expr),
+            UnaryOps::Dereference => self.accept_dereference_unary_expr(unary_expr),
+            UnaryOps::Sizeof => {
+                todo!();
+            }
+        }
+    }
+    /// ## Accept a right hand side unary expression where op is a address of (&)
+    /// By type checker, we can ensure that the oprand of address of operator is only some addressable oprand
+    /// and address of operand is actually just get address of those addressable operand. it is same as accept 
+    /// it as left hand side.
+    /// ## Pointer Table
+    /// please reference to the `Pointer Table` section of `accept_dereference_unary_expr`. because we might need
+    /// load a value contain address, we need data type of value, as the result. there insert value to `pointer_table`
+    /// to cache the type of pointer point to.
+    fn accept_address_of_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
+        let (value, data_type) = self.accept_as_lefthand_expr(&unary_expr.expr);
+        let pointer_type = match data_type {
+            SymbolType::BasicType(bast_type) => PointerSymbolType { level: 1, pointer_to: Box::new(SymbolType::BasicType(bast_type)) },
+            SymbolType::PointerType(pointer_type) => PointerSymbolType { level:  pointer_type.level + 1, pointer_to: pointer_type.pointer_to.clone() },
+            SymbolType::StructalType(struct_type) => PointerSymbolType { level: 1, pointer_to: Box::new(SymbolType::StructalType(struct_type)) },
+            SymbolType::ArrayType(array_type) => PointerSymbolType { level: 0, pointer_to: array_type.array_of }
+        };
+        self.pointer_table.insert(value, pointer_type);
+        value
+    }
+    /// ## Accept a right hand side unary expression where op is dereference(*)
+    /// By the type checker, we can ensure dereference operator only operate on pointer to a type 
+    /// or function pointer
+    /// 
+    /// - pointer (pointer to a type)
+    /// - result of address of operator (pointer to a type)
+    /// - dereference a pointer to other pointer (pointer to a type)
+    /// - array (pointer to a type)
+    /// - function (function pointer)
+    /// 
+    /// this constraint is reference to the C99 spec 6.5.3.2's number 4. dereference operator
+    /// can only work on function pointer or pointer to a type, otherwise, it would result a
+    /// undefined behavior.
+    /// 
+    /// When dereference a pointer, just load it's address and return the value that address point to.
+    /// ### Pointer Table
+    /// Because of there might be a pointer to a pointer, or more deep pointer. we will need a cache to store
+    /// the type that pointer point to, so we need use a cache to store a type pointer point to for temp register.
+    fn accept_dereference_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
+        let value = self.accept_expr(&unary_expr.expr);
+        let PointerSymbolType { level, pointer_to} = self.pointer_table.remove(&value).unwrap();
+        if let SymbolType::ArrayType(array_symbol_type) = pointer_to.as_ref(){
+            if level == array_symbol_type.dims - 1 {
+                let offset = self.function.create_u8_const(0);
+                let next_value = self.function.build_load_register_inst(value, offset, get_ir_type_from_symbol_type(&array_symbol_type.array_of));
+                next_value
+            }else {
+                self.pointer_table.insert(value, PointerSymbolType { level: level + 1, pointer_to });
+                value
+            }
+        }else if level == 1 {
+            let offset = self.function.create_u8_const(0);
+            self.function.build_load_register_inst(value, offset, IrValueType::Address)
+        }else {
+            let offset = self.function.create_u8_const(0);
+            let next_value = self.function.build_load_register_inst(value, offset, IrValueType::Address);
+            self.pointer_table.insert(next_value, PointerSymbolType { level: level - 1, pointer_to });
+            next_value
+        }
+    }
+    /// ## Accept a binary expression in right hand side
+    /// Generate binary expression is simple, just using posfix-order dfs to traversal child frist then generate
+    /// instruction by binary operator.
+    fn accept_binary_expr(&mut self, binary_expr: &BinaryExpression) -> Value {
+        let mut left_value = self.accept_expr(&binary_expr.left);
+        let mut right_value = self.accept_expr(&binary_expr.right);
+        let left_type = self.function.get_value_ir_type(left_value);
+        let right_type = self.function.get_value_ir_type(right_value);
+        let target_type;
+        // Get final type. Generate promot type if need, 
+        if left_type > right_type {
+            right_value = self.generate_type_convert(right_value, &left_type);
+            target_type = &left_type;
+        }else if left_type < right_type {
+            left_value = self.generate_type_convert(left_value, &right_type);
+            target_type = &right_type;
+        }else {
+            target_type = &left_type
+        }
+        let is_float = match target_type {
+            IrValueType::F32 | IrValueType::F64 => true,
+            _ => false
+        };
+        match binary_expr.ops {
+            BinaryOps::BitwiseAnd => self.function.build_bitwise_and_inst(left_value, right_value),
+            BinaryOps::BitwiseOr => self.function.build_bitwise_or_inst(left_value, right_value),
+            BinaryOps::Plus => if is_float { 
+                self.function.build_fadd_inst(left_value, right_value) 
+            } else { 
+                self.function.build_add_inst(left_value, right_value) 
+            }, 
+            BinaryOps::Minus => if is_float {
+                self.function.build_fsub_inst(left_value, right_value)
+            }else {
+                self.function.build_sub_inst(left_value, right_value)
+            }
+            BinaryOps::Multiplication => if is_float {
+                self.function.build_fmul_inst(left_value, right_value)
+            }else {
+                self.function.build_mul_inst(left_value, right_value)
+            }
+            BinaryOps::Gt => if is_float {
+                self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Gt)
+            }else {
+                self.function.build_icmp_inst(left_value, right_value, CmpFlag::Gt)
+            }
+            _ => todo!(),
+        }
+    }
     /// ## Accept a chain expr, in right hand side
     /// this function this just a simple extenstion of `accept_chain_expr_base`, just thr base and offset returned
     /// by this `accept_chain_expr_base`, we load this value that address is pointing to 
@@ -152,17 +289,10 @@ impl FunctionCoverter {
             }
             SymbolType::PointerType(pointer_type) => {
                 // struct_pointer = nested_struct.some_pointer_to_struct;
-                if array_access_level < pointer_type.level {
-                    let offset_const = self.function.create_i32_const(offset as i32);
-                    let pointer_value = self.function.build_add_inst(base, offset_const);
-                    self.pointer_table.insert(pointer_value, pointer_type.clone());
-                    pointer_value
-                }else {
-                    let offset_const = self.function.create_i32_const(offset as i32);
-                    let pointer_value = self.function.build_load_register_inst(base, offset_const, IrValueType::U32);
-                    self.pointer_table.insert(pointer_value, pointer_type);
-                    pointer_value
-                }
+                let offset_const = self.function.create_i32_const(offset as i32);
+                let pointer_value = self.function.build_load_register_inst(base, offset_const, IrValueType::Address);
+                self.pointer_table.insert(pointer_value, pointer_type);
+                pointer_value
             }
             SymbolType::BasicType(ir_type) => {
                 let offset_const = self.function.create_i32_const(offset as i32);
@@ -172,7 +302,7 @@ impl FunctionCoverter {
                 // rarely used, something like `&two_dims[10]` or `*two_dim[10]`;
                 let offset_const = self.function.create_i32_const(offset as i32);
                 let array_pointer_value = self.function.build_add_inst(base, offset_const);
-                self.pointer_table.insert(array_pointer_value, PointerSymbolType { level: array_access_level , pointer_to: Box::new(SymbolType::ArrayType(array_type)) } );
+                self.pointer_table.insert(array_pointer_value, PointerSymbolType { level:  array_access_level , pointer_to: Box::new(SymbolType::ArrayType(array_type)) } );
                 array_pointer_value
             }
         }
@@ -227,22 +357,24 @@ impl FunctionCoverter {
                     SymbolType::BasicType(_) => unreachable!("{}", self.error_map.unreach_in_accpet_chain_expr_base_identifier_is_not_strutual_type),
                 }
             },
-            None => unreachable!("{:?}, {:?} {:?}", name, self.symbol_table, self.symbol_table.get(&name))
+            None => unreachable!("{}", self.error_map.unreach_chain_expression_identifier_must_being_in_the_symbol_table)
         };
         // iterate call sequnce to get the base and offset of struct property.
         let mut offset = 0;
         let mut current_data_type = &self.symbol_table.get(&name).unwrap().data_type;
         let mut array_access_level = 0;
+        let mut is_end_of_array_access = false;
         for item in callseqnce {
             // if access by array subscription.
             if let CallSequnceType::Subscript((values, level)) = item {
                 // Create now base
+                is_end_of_array_access = true;
                 let offset_value = self.function.create_i32_const(offset as i32);
                 base = self.function.build_add_inst(base, offset_value);
                 if let SymbolType::ArrayType(array_symbol_type) = current_data_type {
                     // access_index = sum ( n_i * (h_(i-1) *.. (h_0)) )
                     let mut index: usize = 0;
-                    let mut array_access_index =self.function.create_i32_const(0);
+                    let mut array_access_index = self.function.create_i32_const(0);
                     for value in values {
                         let mut cur_row_base = self.function.create_i32_const(1); 
                         for i in 0..(array_symbol_type.dims - index - 1) {
@@ -281,28 +413,11 @@ impl FunctionCoverter {
                     array_access_level = level;
                     continue;
                 }else if let SymbolType::PointerType(pointer_symbol_type) = current_data_type  {
-                    // access_index = sum( value_i * (product of (value) from i-1 to 0))
-                    let mut index: usize = 0;
-                    let mut array_access_index =self.function.create_i32_const(0);
                     for value in &values {
-                        let mut cur_row_base = self.function.create_i32_const(1); 
-                        for i in 0..(values.len() - index - 1) {
-                            cur_row_base = self.function.build_mul_inst(cur_row_base, values[i]);
-                        }
-                        let cur_row_index = self.function.build_mul_inst(value.clone(), cur_row_base);
-                        array_access_index = self.function.build_add_inst(array_access_index, cur_row_index);
-                        index += 1;
-                    }
-                    let mul_value = if pointer_symbol_type.level == level {
-                        let size_of_array_element = self.get_size_from_symbol_type(pointer_symbol_type.pointer_to.as_ref());
-                        let value_of_size_of_array_element = self.function.create_i32_const(size_of_array_element as i32);
-                        self.function.build_mul_inst(array_access_index, value_of_size_of_array_element)
-                    }else {
-                        // size of pointer is 4
                         let value_of_size_of_array_element = self.function.create_i32_const(4 as i32);
-                        self.function.build_mul_inst(array_access_index, value_of_size_of_array_element)
-                    };
-                    base = self.function.build_add_inst(base, mul_value);
+                        let value_offset = self.function.build_mul_inst(value.clone(), value_of_size_of_array_element);
+                        base = self.function.build_load_register_inst(base, value_offset,IrValueType::Address);
+                    }
                     offset = 0;
                     if pointer_symbol_type.level >= level - 1 {
                         match pointer_symbol_type.pointer_to.as_ref() {
@@ -314,16 +429,17 @@ impl FunctionCoverter {
                                 current_data_type =  pointer_symbol_type.pointer_to.as_ref();
                             },
                             SymbolType::PointerType(_) => {
-                                unreachable!()
+                                unreachable!();
                             }
                         }
                     }
                     array_access_level = level;
                 } else {
-                    unreachable!();
+                    unreachable!("{}", self.error_map.unreach_subscription_object_is_not_a_pointer_or_array);
                 }
                 continue;
             }
+            is_end_of_array_access = false;
             let (property_name, is_pointer) = match item {
                 CallSequnceType::Derefer(name) => (name, true),
                 CallSequnceType::Member(name) => (name, false),
@@ -350,7 +466,7 @@ impl FunctionCoverter {
                 SymbolType::BasicType(_)| SymbolType::ArrayType(_) => {},
             }
         }
-        (base, offset, current_data_type.clone(), array_access_level)
+        (base, offset, current_data_type.clone(), if is_end_of_array_access { 0 } else  {array_access_level})
     }
     /// ## Helper function for `accept_chain_expr_base`
     /// There we do not using recursion visitor to unwind a chain expression to build the instructions, instead
@@ -455,143 +571,6 @@ impl FunctionCoverter {
             IrValueType::F32 => self.function.create_f32_const(value as f32),
             IrValueType::F64 => self.function.create_f64_const(value as f64),
             _ => unreachable!(),
-        }
-    }
-    /// ## Accept a unary expression in right hand side
-    /// most of unary expression op is simple to generate. there are three op need to handle with sub-function.
-    /// - address of 
-    /// - dereference
-    /// - sizeof
-    fn accept_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
-        match &unary_expr.ops {
-            UnaryOps::BitwiseNot => { 
-                let src = self.accept_expr(&unary_expr.expr);
-                self.function.build_bitwise_not(src)
-             },
-            UnaryOps::LogicalNot => {
-                let src = self.accept_expr(&unary_expr.expr);
-                self.function.build_logical_not(src)
-            },
-            UnaryOps::Minus => {
-                let src = self.accept_expr(&unary_expr.expr);
-                self.function.build_neg_inst(src)
-            },
-            UnaryOps::Plus => {
-                self.accept_expr(&unary_expr.expr)
-            },
-            UnaryOps::AddressOf => self.accept_address_of_unary_expr(unary_expr),
-            UnaryOps::Dereference => self.accept_dereference_unary_expr(unary_expr),
-            UnaryOps::Sizeof => {
-                todo!();
-            }
-        }
-    }
-    /// ## Accept a right hand side unary expression where op is a address of (&)
-    /// By type checker, we can ensure that the oprand of address of operator is only some addressable oprand
-    /// and address of operand is actually just get address of those addressable operand. it is same as accept 
-    /// it as left hand side.
-    /// ## Pointer Table
-    /// please reference to the `Pointer Table` section of `accept_dereference_unary_expr`. because we might need
-    /// load a value contain address, we need data type of value, as the result. there insert value to `pointer_table`
-    /// to cache the type of pointer point to.
-    fn accept_address_of_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
-        let (value, data_type) = self.accept_as_lefthand_expr(&unary_expr.expr);
-        let pointer_type = match data_type {
-            SymbolType::BasicType(bast_type) => PointerSymbolType { level: 1, pointer_to: Box::new(SymbolType::BasicType(bast_type)) },
-            SymbolType::PointerType(pointer_type) => PointerSymbolType { level:  pointer_type.level + 1, pointer_to: pointer_type.pointer_to.clone() },
-            SymbolType::StructalType(struct_type) => PointerSymbolType { level: 1, pointer_to: Box::new(SymbolType::StructalType(struct_type)) },
-            SymbolType::ArrayType(array_type) => PointerSymbolType { level: 1, pointer_to: array_type.array_of }
-        };
-        self.pointer_table.insert(value, pointer_type);
-        value
-    }
-    /// ## Accept a right hand side unary expression where op is dereference(*)
-    /// By the type checker, we can ensure dereference operator only operate on pointer to a type 
-    /// or function pointer
-    /// 
-    /// - pointer (pointer to a type)
-    /// - result of address of operator (pointer to a type)
-    /// - dereference a pointer to other pointer (pointer to a type)
-    /// - array (pointer to a type)
-    /// - function (function pointer)
-    /// 
-    /// this constraint is reference to the C99 spec 6.5.3.2's number 4. dereference operator
-    /// can only work on function pointer or pointer to a type, otherwise, it would result a
-    /// undefined behavior.
-    /// 
-    /// When dereference a pointer, just load it's address and return the value that address point to.
-    /// ### Pointer Table
-    /// Because of there might be a pointer to a pointer, or more deep pointer. we will need a cache to store
-    /// the type that pointer point to, so we need use a cache to store a type pointer point to for temp register.
-    fn accept_dereference_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
-        let value = self.accept_expr(&unary_expr.expr);
-        let PointerSymbolType { level, pointer_to} = self.pointer_table.remove(&value).unwrap();
-        if let SymbolType::ArrayType(array_symbol_type) = pointer_to.as_ref(){
-            if level == array_symbol_type.dims - 1 {
-                let offset = self.function.create_u8_const(0);
-                let next_value = self.function.build_load_register_inst(value, offset, get_ir_type_from_symbol_type(&array_symbol_type.array_of));
-                next_value
-            }else {
-                self.pointer_table.insert(value, PointerSymbolType { level: level + 1, pointer_to });
-                value
-            }
-        }else if level == 1 {
-            let offset = self.function.create_u8_const(0);
-            self.function.build_load_register_inst(value, offset, IrValueType::Address)
-        }else {
-            let offset = self.function.create_u8_const(0);
-            let next_value = self.function.build_load_register_inst(value, offset, IrValueType::Address);
-            self.pointer_table.insert(next_value, PointerSymbolType { level: level - 1, pointer_to });
-            next_value
-        }
-    }
-    /// ## Accept a binary expression in right hand side
-    /// Generate binary expression is simple, just using posfix-order dfs to traversal child frist then generate
-    /// instruction by binary operator.
-    fn accept_binary_expr(&mut self, binary_expr: &BinaryExpression) -> Value {
-        let mut left_value = self.accept_expr(&binary_expr.left);
-        let mut right_value = self.accept_expr(&binary_expr.right);
-        let left_type = self.function.get_value_ir_type(left_value);
-        let right_type = self.function.get_value_ir_type(right_value);
-        let target_type;
-        // Get final type. Generate promot type if need, 
-        if left_type > right_type {
-            right_value = self.generate_type_convert(right_value, &left_type);
-            target_type = &left_type;
-        }else if left_type < right_type {
-            left_value = self.generate_type_convert(left_value, &right_type);
-            target_type = &right_type;
-        }else {
-            target_type = &left_type
-        }
-        let is_float = match target_type {
-            IrValueType::F32 | IrValueType::F64 => true,
-            _ => false
-        };
-        match binary_expr.ops {
-            BinaryOps::BitwiseAnd => self.function.build_bitwise_and_inst(left_value, right_value),
-            BinaryOps::BitwiseOr => self.function.build_bitwise_or_inst(left_value, right_value),
-            BinaryOps::Plus => if is_float { 
-                self.function.build_fadd_inst(left_value, right_value) 
-            } else { 
-                self.function.build_add_inst(left_value, right_value) 
-            }, 
-            BinaryOps::Minus => if is_float {
-                self.function.build_fsub_inst(left_value, right_value)
-            }else {
-                self.function.build_sub_inst(left_value, right_value)
-            }
-            BinaryOps::Multiplication => if is_float {
-                self.function.build_fmul_inst(left_value, right_value)
-            }else {
-                self.function.build_mul_inst(left_value, right_value)
-            }
-            BinaryOps::Gt => if is_float {
-                self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Gt)
-            }else {
-                self.function.build_icmp_inst(left_value, right_value, CmpFlag::Gt)
-            }
-            _ => todo!(),
         }
     }
     /// ## Accept a expression that treat as left value.

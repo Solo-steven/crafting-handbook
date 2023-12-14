@@ -25,13 +25,76 @@ impl Function {
             }
         }
         // end of function block
-        output_code.push_str("}");
+        output_code.push_str("}\n");
+        // print out value type
+        // sort key frist
+        let mut sorted_value_key: Vec<&Value> = self.values.keys().collect();
+        let len = sorted_value_key.len();
+        for i in 0..len {
+            for j in 0..(len-i-1) {
+                if sorted_value_key[j].0 > sorted_value_key[j+1].0 {
+                    let temp = sorted_value_key[j+1];
+                    sorted_value_key[j+1] = sorted_value_key[j];
+                    sorted_value_key[j] = temp;
+                }
+            }
+        }
+        // 
+        for value in sorted_value_key {
+            match self.values.get(value).unwrap() {
+                ValueData::VirRegister(register) => {
+                    output_code.push_str(";;  ");
+                    output_code.push_str(&register);
+                    output_code.push_str(" -> ");
+                    let value_type = self.value_types.get(value).unwrap();
+                    output_code.push_str(get_text_format_of_datatype(value_type));
+                    output_code.push('\n');
+                }
+                ValueData::Immi(_) => {}
+            }
+        }
         output_code
     }
     /// Private method for print a single instruction.
     pub fn print_inst(&self, output_code: &mut String, instruction: &InstructionData) {
         output_code.push_str("\t");
         match instruction {
+            InstructionData::BitwiseAnd { opcode: _, src1, src2, dst } => {
+                let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
+                let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = bitwise-and {} {}\n", dst_str, src1_str, src2_str).as_str());
+            }
+            InstructionData::BitwiseOR { opcode: _, src1, src2, dst } => {
+                let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
+                let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = bitwise-or {} {}\n", dst_str, src1_str, src2_str).as_str());
+            }
+            InstructionData::ShiftLeft { opcode: _, src1, src2, dst } => {
+                let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
+                let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = shiftleft {} {}\n", dst_str, src1_str, src2_str).as_str());
+            }
+            InstructionData::ShiftRight { opcode: _, src1, src2, dst } => {
+                let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
+                let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = shiftright {} {}\n", dst_str, src1_str, src2_str).as_str());
+            }
+            InstructionData::LogicalAnd { opcode: _, src1, src2, dst } => {
+                let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
+                let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = logical-and {} {}\n", dst_str, src1_str, src2_str).as_str());
+            }
+            InstructionData::LogicalOR { opcode: _, src1, src2, dst } => {
+                let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
+                let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = logical-or {} {}\n", dst_str, src1_str, src2_str).as_str());
+            }
             InstructionData::Add { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
@@ -92,6 +155,38 @@ impl Function {
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
                 output_code.push_str(format!(" {} = freminder {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
+            InstructionData::FMul { opcode: _, src1, src2, dst } => {
+                let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
+                let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = fmul {} {}\n", dst_str, src1_str, src2_str).as_str());
+            }
+            InstructionData::Fcmp { opcode: _ , flag, src1, src2, dst } => {
+                let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
+                let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = icmp {} {} {:?}\n", dst_str, src1_str, src2_str, flag).as_str());
+            }
+            InstructionData::Neg { opcode: _, src, dst } => {
+                let src_str = get_text_format_of_value(self.values.get(src).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = neg {}\n", dst_str, src_str).as_str());
+            }
+            InstructionData::LogicalNot { opcode: _ , src, dst } => {
+                let src_str = get_text_format_of_value(self.values.get(src).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = logical-not {}\n", dst_str, src_str).as_str());
+            }
+            InstructionData::BitwiseNot { opcode: _ , src, dst } => {
+                let src_str = get_text_format_of_value(self.values.get(src).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = bitwise-not {}\n", dst_str, src_str).as_str());
+            }
+            InstructionData::ToU8 { opcode: _, src, dst } => {
+                let src_str = get_text_format_of_value(self.values.get(src).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = toU8 {}\n", dst_str, src_str).as_str());
+            }
             InstructionData::ToU16 { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
@@ -101,6 +196,11 @@ impl Function {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
                 output_code.push_str(format!(" {} = toU32 {}\n", dst_str, src_str).as_str());
+            }
+            InstructionData::ToU64 { opcode: _, src, dst } => {
+                let src_str = get_text_format_of_value(self.values.get(src).unwrap());
+                let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
+                output_code.push_str(format!(" {} = toU64 {}\n", dst_str, src_str).as_str());
             }
             InstructionData::ToI16 { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
@@ -151,10 +251,10 @@ impl Function {
                 let type_str = get_text_format_of_datatype(data_type);
                 output_code.push_str(format!(" store {} {} [{}, {}]\n", type_str, src_str, base_str, offset).as_str());
             }
-            InstructionData::StackAlloc { opcode: _, size, align, dst } => {
+            InstructionData::StackAlloc { opcode: _, size, align, dst , is_aggregate} => {
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
                 let size_str = get_text_format_of_value(self.values.get(size).unwrap());
-                output_code.push_str(format!(" stackalloc {}, {}, {}\n", dst_str, size_str, align).as_str());
+                output_code.push_str(format!(" stackalloc {}, {}, {} {}\n", dst_str, size_str, align, if is_aggregate.clone() {"aggregate"} else { "basic" } ).as_str());
             }
             InstructionData::BrIf { opcode: _ , test, conseq, alter } => {
                 let test_str = get_text_format_of_value(self.values.get(test).unwrap());
@@ -169,7 +269,25 @@ impl Function {
                 let src2_str = get_text_format_of_value(self.values.get(&from[1].1).unwrap());
                 output_code.push_str(format!("phi {}, block{} {}, block{} {}\n", dst_str,from[0].0.0, src1_str, from[1].0.0, src2_str).as_str());
             }
-            _ => todo!()
+            InstructionData::Call { name, params } => {
+                let mut param_string = String::from(name);
+                param_string.push('(');
+                let mut index = 0;
+                for param in params {
+                    param_string.push_str(get_text_format_of_value(self.values.get(param).unwrap()).as_str());
+                    if index != params.len() -1 {
+                        param_string.push_str(", ");
+                    }
+                    index += 1;
+                }
+                param_string.push(')');
+                output_code.push_str(param_string.as_str());
+            }
+            InstructionData::Comment(comment) => {
+                output_code.push_str(";;");
+                output_code.push_str(&comment);
+                output_code.push_str("\n");
+            }
         }
     }
 }

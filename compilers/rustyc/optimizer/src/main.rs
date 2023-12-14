@@ -24,14 +24,14 @@ pub fn create_reducnt_expr_graph() -> Function {
     let b0 = func.create_block();
     func.switch_to_block(b0);
     let mut size_const = func.create_u32_const(32 as u32);
-    let t1 = func.build_stack_alloc_inst(size_const, 8);
+    let t1 = func.build_stack_alloc_inst(size_const, 8, false);
     {
         let const10 = func.create_i32_const(10);
         let offset = func.create_u32_const(0);
         func.build_store_register_inst(const10, t1, offset, IrValueType::I32);
     }
     size_const = func.create_u32_const(32 as u32);
-    let t2 = func.build_stack_alloc_inst(size_const, 8);
+    let t2 = func.build_stack_alloc_inst(size_const, 8, false);
     {
         let const10 = func.create_i32_const(10);
         let offset = func.create_u32_const(0);
@@ -109,15 +109,34 @@ pub fn create_dom_graph() -> Function {
 fn main() {
     let program = Parser::new("
         int main() {
-            struct Wrapper {
-                int value;
-                int age;
+            struct Nested {
+                int value1;
+                int value2;
             };
-            struct Wrapper base;
-            struct Wrapper  *p = &base;
-            struct Wrapper  **pp = &p;
-            pp[0]->value;
-            p[0].age;
+            struct Top {
+                int value1;
+                int value2;
+                struct Nested nested;
+            };
+            struct TopPointer {
+                int value1;
+                int value2;
+                struct Nested *nested;
+            };
+            struct Top top;
+            struct TopPointer top_pointer;
+            struct Top *p1 = &top;
+            struct Top *p2 = &top_pointer;
+
+            top.value1;
+            top.value2;
+            top.nested.value1;
+            top.nested.value2;
+            top_pointer.nested->value1;
+            top_pointer.nested->value2;
+            p2->nested->value2;
+            p1->nested.value1;
+            p2->nested.value2;
         }
     ").parse().unwrap();
     // println!("{:#?}", program);

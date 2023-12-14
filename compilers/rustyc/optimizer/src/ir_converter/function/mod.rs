@@ -119,14 +119,14 @@ impl FunctionCoverter {
                     }
                     values.reverse();
                     array_symbol_type.value_of_dims = values;
-                    pointer = self.function.build_stack_alloc_inst(size, 8);
+                    pointer = self.function.build_stack_alloc_inst(size, 8, true);
                 }else {
                     unreachable!()
                 }
             }else {
                 let size_usize = self.get_size_form_ast_type(&declarator.value_type);
                 let size = self.function.create_u32_const(size_usize as u32);
-                pointer = self.function.build_stack_alloc_inst(size, 8);
+                pointer = self.function.build_stack_alloc_inst(size, 8, !is_ast_type_end_up_with_basic_type(&declarator.value_type));
             }
             self.symbol_table.insert(declarator.id.name.to_string(), SymbolEntry { reg: pointer, data_type: symbol_type.clone() });
             // TODO: if symbol table is struct type, init must handle extra.
@@ -317,6 +317,16 @@ impl FunctionCoverter {
             IrValueType::F64 => self.function.build_to_f64_inst(src),
             _ => { panic!("address type don not need to convert") }
         }
+    }
+}
+
+fn is_ast_type_end_up_with_basic_type(value_type: &ValueType) -> bool {
+    match value_type {
+        ValueType::ArrayType(_)  | ValueType::Union(_) | ValueType::Enum(_) | ValueType::Struct(_) => false,
+        ValueType::PointerType(pointer_type) => {
+            is_ast_type_end_up_with_basic_type(pointer_type.pointer_to.as_ref())
+        }
+        _ => true
     }
 }
 
