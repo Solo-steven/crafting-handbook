@@ -83,14 +83,14 @@ impl<'a> Parser<'a> {
             _ => ParserResult::Ok(BlockItem::Stmt(self.parse_statement()?)),
         }
     }
-    fn get_storage_class_specifier(&mut self) -> StorageClassSpecifier {
-        match &self.storage_class_specifier {
-            Some(specifier) => {
-                let specifier = specifier.clone();
-                self.storage_class_specifier = None;
-                specifier
-            },
-            _ => StorageClassSpecifier::Auto,
-        }
-    }
+    // fn get_storage_class_specifier(&mut self) -> StorageClassSpecifier {
+    //     match &self.storage_class_specifier {
+    //         Some(specifier) => {
+    //             let specifier = specifier.clone();
+    //             self.storage_class_specifier = None;
+    //             specifier
+    //         },
+    //         _ => StorageClassSpecifier::Auto,
+    //     }
+    // }
 }

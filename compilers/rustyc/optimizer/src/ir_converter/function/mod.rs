@@ -11,34 +11,94 @@ use rustyc_frontend::ast::*;
 use rustyc_frontend::ast::declar::*;
 use rustyc_frontend::ast::expr::*;
 use rustyc_frontend::ast::stmt::*;
-
-pub struct FunctionCoverter {
+pub struct FunctionCoverter<'a> {
+    ///
+    pub function_signature_table: &'a FunctionSignatureTable,
+    /// function ir instance of this function convert
     pub function: Function,
     /// for store struct-related info 
-    pub struct_layout_table: StructLayoutTable,
-    pub struct_size_table: StructSizeTable,
-    /// 
-    pub symbol_table: SymbolTable,
-    /// 
+    pub function_struct_layout_table: FunctionStructLayoutTable<'a>,
+    pub function_struct_size_table: FunctionStructSizeTable<'a>, 
+    /// symbol table for function scope
+    pub symbol_table: SymbolTable<'a>,
+    /// record extra info for the address ir type
     pub pointer_table: HashMap<Value, PointerSymbolType>,
     /// error map for function convert, developer can access error msg
     pub error_map: IrFunctionConvertErrorMap,
 }
-
-impl FunctionCoverter {
-    pub fn new() -> Self {
+impl<'a> FunctionCoverter<'a> {
+    pub fn new(
+        signature_table: &'a mut FunctionSignatureTable, 
+        global_struct_layout_table: &'a StructLayoutTable,
+        global_function_struct_size_table: &'a StructSizeTable,
+        global_symbol_table: Option<&'a SymbolTable<'a>>, 
+    ) -> Self {
         Self {
+            // function info
+            function_signature_table: signature_table,
             function: Function::new(String::from("")),
-            struct_layout_table: HashMap::new(),
-            struct_size_table: HashMap::new(),
-            symbol_table: HashMap::new(),
+            // struct info
+            function_struct_layout_table: FunctionStructLayoutTable::new(global_struct_layout_table),
+            function_struct_size_table: FunctionStructSizeTable::new(global_function_struct_size_table),
+            // symbol info
+            symbol_table: SymbolTable::new(global_symbol_table),
+            // extra info for value
             pointer_table: HashMap::new(),
+            // error map
             error_map: IrFunctionConvertErrorMap::new(),
         }
     }
     pub fn convert(&mut self, func_def: &FunctionDefinition) -> Function {
+        // init function name, param, return_type
+        self.function.name = func_def.id.name.to_string();
+        self.function.return_type = match self.map_ast_type_to_symbol_type(&func_def.return_type) {
+            SymbolType::BasicType(ir_type) => Some(ir_type),
+            SymbolType::PointerType(_) => Some(IrValueType::Address),
+            SymbolType::StructalType(_) => None,
+            SymbolType::ArrayType(_) => unreachable!(),
+        };
+        self.accept_function_param(&func_def.params);
+        self.create_symbol_for_return_type();
+        // start convert by visitor pattern.
         self.accept_function_def(func_def);
         replace(&mut self.function, Function::new(String::new()))
+    }
+    pub fn accept_function_param(&mut self, params: &Vec<ParamDeclar>) {
+        for param in params {
+            let name = param.id.name.to_string();
+            let symbol_type = self.map_ast_type_to_symbol_type(&param.value_type);
+            let reg = match self.map_ast_type_to_symbol_type(&param.value_type) {
+                SymbolType::BasicType(ir_type) => {
+                    self.function.add_register(ir_type)
+                }
+                SymbolType::ArrayType(array_type) => {
+                    let reg = self.function.add_register(IrValueType::Address);
+                    self.pointer_table.insert(reg, PointerSymbolType { level: 0, pointer_to: Box::new(SymbolType::ArrayType(array_type)) });
+                    reg
+                }
+                SymbolType::PointerType(pointer_type) => {
+                    let reg = self.function.add_register(IrValueType::Address);
+                    self.pointer_table.insert(reg, pointer_type);
+                    reg
+                }
+                SymbolType::StructalType(_) => {
+                    self.function.add_register(IrValueType::Address)
+                }
+            };
+            self.function.params_value.push(reg);
+            self.symbol_table.insert(name, SymbolEntry { reg, data_type: symbol_type })
+        }
+    }
+    pub fn create_symbol_for_return_type(&mut self) {
+        println!("{:?}, {}", self.function_signature_table, &self.function.name);
+        let signature = self.function_signature_table.get(&self.function.name).unwrap();
+        if let Some(return_symbol_type) = &signature.return_type {
+            if let SymbolType::StructalType(_) = return_symbol_type {
+                let reg = self.function.add_register(IrValueType::Address);
+                self.function.params_value.push(reg);
+                self.symbol_table.insert(String::from("__rustyc_return_strcut"), SymbolEntry { reg, data_type:return_symbol_type.clone() })
+            }
+        }
     }
     fn accept_function_def(&mut self, func_def: &FunctionDefinition) {
         self.function.name = func_def.id.name.to_string();
@@ -55,10 +115,28 @@ impl FunctionCoverter {
     }
     fn accept_statement(&mut self, statement: &Statement ) {
         match statement {
-            Statement::IfStmt(if_stmt) => self.accept_if_stmt(if_stmt),
             Statement::CompoundStmt(compound_stmt) => self.accept_compound_stmt(compound_stmt),
+            Statement::IfStmt(if_stmt) => self.accept_if_stmt(if_stmt),
             Statement::ExprStmt(expr_stmt) => {self.accept_expr(&expr_stmt.expr);},
+            Statement::ReturnStmt(return_stmt) => { self. accpet_return_stmt(return_stmt)}
             _ => todo!()
+        };
+    }
+    fn accpet_return_stmt(&mut self, return_stmt: &ReturnStatement) {
+        if let Some(expr) = &return_stmt.value {
+            let return_value = self.accept_expr(expr);
+            let self_signature = self.function_signature_table.get(&self.function.name).unwrap();
+            if let Some(return_symbol_type) = &self_signature.return_type  {
+                if let SymbolType::StructalType(struct_name) = &return_symbol_type {
+                    let dst = self.symbol_table.get("__rustyc_return_strcut").unwrap();
+                    self.copy_struct_layout(dst.reg, return_value, struct_name);
+                    self.function.build_ret_inst(None);
+                    return;
+                }
+            }
+            self.function.build_ret_inst(Some(return_value));
+        }else {
+            self.function.build_ret_inst(None);
         };
     }
     fn accept_compound_stmt(&mut self, compound_stmt: &CompoundStatement) {
@@ -119,24 +197,33 @@ impl FunctionCoverter {
                     }
                     values.reverse();
                     array_symbol_type.value_of_dims = values;
-                    pointer = self.function.build_stack_alloc_inst(size, 8, true);
+                    pointer = self.function.build_stack_alloc_inst(size, 8, None);
                 }else {
                     unreachable!()
                 }
             }else {
                 let size_usize = self.get_size_form_ast_type(&declarator.value_type);
                 let size = self.function.create_u32_const(size_usize as u32);
-                pointer = self.function.build_stack_alloc_inst(size, 8, !is_ast_type_end_up_with_basic_type(&declarator.value_type));
+                let ir_type = match symbol_type {
+                    SymbolType::BasicType(ref basic_ir_type) => Some(basic_ir_type.clone()),
+                    SymbolType::PointerType(_) => Some(IrValueType::Address),
+                    _ => None
+                };
+                pointer = self.function.build_stack_alloc_inst(size, 8,ir_type);
             }
             self.symbol_table.insert(declarator.id.name.to_string(), SymbolEntry { reg: pointer, data_type: symbol_type.clone() });
             // TODO: if symbol table is struct type, init must handle extra.
             if let Some(expr) = &declarator.init_value {
-                match symbol_type {
-                    SymbolType::BasicType(_) | SymbolType::PointerType(_) => {
+                match &symbol_type {
+                    SymbolType::BasicType(ref basic_ir_type) => {
                         let init_value = self.accept_expr(expr);
                         let offset = self.function.create_u8_const(0);
-                        let ir_type = get_ir_type_from_symbol_type(&symbol_type);
-                        self.function.build_store_register_inst(init_value, pointer, offset, ir_type.clone());
+                        self.function.build_store_register_inst(init_value, pointer, offset, basic_ir_type.clone());
+                    }
+                    SymbolType::PointerType(_) => {
+                        let init_value = self.accept_expr(expr);
+                        let offset = self.function.create_u8_const(0);
+                        self.function.build_store_register_inst(init_value, pointer, offset, IrValueType::Address);
                     }
                     // TODO: if symbol table is structral type, init must handle extra.
                     _ => todo!()
@@ -161,6 +248,7 @@ impl FunctionCoverter {
     fn get_size_form_ast_type(&mut self, value_type: &ValueType) -> usize {
         match value_type {
             ValueType::Char => 1,
+            ValueType::UnSignedChar => 1,
             ValueType::Shorted => 2,
             ValueType::UnsignedShort => 2,
             ValueType::Int => 4,
@@ -171,6 +259,7 @@ impl FunctionCoverter {
             ValueType::UnsignedLongLong => 8,
             ValueType::Float => 4,
             ValueType::Double => 8,
+            ValueType::LongDouble => 8,
             ValueType::PointerType(_) => 4,
             ValueType::ArrayType(array_type) => {
                 let mut size = self.get_size_form_ast_type(array_type.array_of.as_ref());
@@ -187,26 +276,32 @@ impl FunctionCoverter {
             ValueType::Struct(struct_type) => {
                 match struct_type.as_ref() {
                     StructType::Declar(declar) => {
-                        match self.struct_size_table.get(declar.id.name.as_ref()) {
+                        match self.function_struct_size_table.get(declar.id.name.as_ref()) {
                             Some(size) => size.clone(),
                             None => unreachable!("[Unreach Error]: when get a size from a struct type declar, there must be struct already declar, it ensure by typechecker"),
                         }
                     },
                     StructType::Def(def) => {
-                        if let Some(size) = self.struct_size_table.get(def.id.as_ref().unwrap().name.as_ref())  {
+                        if let Some(size) = self.function_struct_size_table.get(def.id.as_ref().unwrap().name.as_ref())  {
                             size.clone()
                         }else {
                             let mut size = 0;
                             for declarator in &def.declarator {
                                 size += self.get_size_form_ast_type(&declarator.value_type);
                             }
-                            self.struct_size_table.insert(def.id.as_ref().unwrap().name.to_string(), size);
+                            self.function_struct_size_table.insert(def.id.as_ref().unwrap().name.to_string(), size);
                             size
                         }
                     }
                 }
             }
-            _ => todo!()
+            ValueType::Union(_) => todo!(),
+            ValueType::Enum(_) => todo!(),
+            // not gonna to implement
+            ValueType::LongDoubleComplex => todo!(),
+            ValueType::FloatComplex => todo!(),
+            ValueType::DoubleComplex => todo!(),
+            ValueType::Void => todo!(),
         }
     }
     fn get_size_from_symbol_type(&self, symbol_type: &SymbolType) -> usize {
@@ -227,7 +322,7 @@ impl FunctionCoverter {
             }
             SymbolType::PointerType(_) => 32,
             SymbolType::StructalType(struct_name) => {
-                self.struct_size_table.get(struct_name).unwrap().clone()
+                self.function_struct_size_table.get(struct_name).unwrap().clone()
             }
             SymbolType::ArrayType(array_type) => {
                 self.get_size_from_symbol_type(array_type.array_of.as_ref())
@@ -238,13 +333,27 @@ impl FunctionCoverter {
     /// - in declaration list, we need to get the symbol type of a declarator's value type.
     fn map_ast_type_to_symbol_type(&mut self, value_type: &ValueType) -> SymbolType {
         match value_type  {
-            ValueType::Char | 
+            ValueType::Char | ValueType::UnSignedChar |
             ValueType::Shorted | ValueType::UnsignedShort |
             ValueType::Int | ValueType::Unsigned |
             ValueType::Long | ValueType::UnsignedLong |
             ValueType::LongLong | ValueType::UnsignedLongLong |
-            ValueType::Float | ValueType::Double  => {
-                SymbolType::BasicType(map_ast_type_to_ir_type(value_type))
+            ValueType::Float | ValueType::Double | ValueType::LongDouble   => {
+                SymbolType::BasicType(match value_type {
+                    ValueType::Char => IrValueType::U8,
+                    ValueType::Shorted => IrValueType::I16,
+                    ValueType::UnsignedShort => IrValueType::U16,
+                    ValueType::Int => IrValueType::I32,
+                    ValueType::Unsigned => IrValueType::U32,
+                    ValueType::Long => IrValueType::I64,
+                    ValueType::UnsignedLong => IrValueType::U64,
+                    ValueType::LongLong => IrValueType::I64,
+                    ValueType::UnsignedLongLong => IrValueType::U64,
+                    ValueType::Float => IrValueType::F32,
+                    ValueType::Double => IrValueType::F64,
+                    ValueType::PointerType(_) => IrValueType::Address,
+                    _ => unreachable!()
+                })
             }
             ValueType::PointerType(pointer_type) => {
                 SymbolType::PointerType(PointerSymbolType { 
@@ -263,7 +372,7 @@ impl FunctionCoverter {
                 // if is 
                 match struct_type.as_ref() {
                     StructType::Declar(declar) => {
-                        if self.struct_layout_table.get(declar.id.name.as_ref()).is_some() {
+                        if self.function_struct_layout_table.get(declar.id.name.as_ref()).is_some() {
                             SymbolType::StructalType(declar.id.name.to_string())
                         }else {
                             unreachable!("[Unreach Error]:")
@@ -271,19 +380,25 @@ impl FunctionCoverter {
                     },
                     StructType::Def(def) => {
                         let name = def.id.as_ref().unwrap().name.to_string();
-                        self.struct_layout_table.insert(name.clone(), HashMap::new());
+                        self.function_struct_layout_table.insert(name.clone(), HashMap::new());
                         let mut layout = HashMap::new();
                         let mut offset = 0;
                         for declarator in &def.declarator {
                             layout.insert(declarator.id.name.to_string(), StructLayoutEntry{ offset, data_type: self.map_ast_type_to_symbol_type(&declarator.value_type)  });
                             offset += self.get_size_form_ast_type(&declarator.value_type);
                         }
-                        self.struct_layout_table.insert(name, layout);
+                        self.function_struct_layout_table.insert(name, layout);
                         SymbolType::StructalType(def.id.as_ref().unwrap().name.to_string())
                     }
                 }
             }
-            _ => todo!(),
+            ValueType::Union(_) => todo!(),
+            ValueType::Enum(_) => todo!(),
+            // not gonna to implement
+            ValueType::LongDoubleComplex => todo!(),
+            ValueType::FloatComplex => todo!(),
+            ValueType::DoubleComplex => todo!(),
+            ValueType::Void => todo!(),
         }
     }
     fn align_two_base_type_value_to_same_type(&mut self, mut left_value: Value, mut right_value: Value) -> (Value, Value, IrValueType) {
@@ -315,47 +430,8 @@ impl FunctionCoverter {
             IrValueType::I64 => self.function.build_to_i64_inst(src),
             IrValueType::F32 => self.function.build_to_f32_inst(src),
             IrValueType::F64 => self.function.build_to_f64_inst(src),
-            _ => { panic!("address type don not need to convert") }
+            IrValueType::Address => self.function.build_to_address_inst(src),
         }
     }
 }
 
-fn is_ast_type_end_up_with_basic_type(value_type: &ValueType) -> bool {
-    match value_type {
-        ValueType::ArrayType(_)  | ValueType::Union(_) | ValueType::Enum(_) | ValueType::Struct(_) => false,
-        ValueType::PointerType(pointer_type) => {
-            is_ast_type_end_up_with_basic_type(pointer_type.pointer_to.as_ref())
-        }
-        _ => true
-    }
-}
-
-fn get_ir_type_from_symbol_type(symbol_type: &SymbolType) -> IrValueType {
-    match symbol_type {
-        SymbolType::BasicType(basic_type) => {
-            basic_type.clone()
-        }
-        SymbolType::PointerType(_) => {
-            IrValueType::Address
-        }
-        _ => panic!()
-    }
-}
-
-fn map_ast_type_to_ir_type(value_type: &ValueType) -> IrValueType {
-    match value_type {
-        ValueType::Char => IrValueType::U8,
-        ValueType::Shorted => IrValueType::I16,
-        ValueType::UnsignedShort => IrValueType::U16,
-        ValueType::Int => IrValueType::I32,
-        ValueType::Unsigned => IrValueType::U32,
-        ValueType::Long => IrValueType::I64,
-        ValueType::UnsignedLong => IrValueType::U64,
-        ValueType::LongLong => IrValueType::I64,
-        ValueType::UnsignedLongLong => IrValueType::U64,
-        ValueType::Float => IrValueType::F32,
-        ValueType::Double => IrValueType::F64,
-        ValueType::PointerType(_) => IrValueType::Address,
-        _ => todo!()
-    }
-}

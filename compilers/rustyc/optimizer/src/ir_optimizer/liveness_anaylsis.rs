@@ -197,7 +197,7 @@ impl LivenessAnaylsier {
                     size: _1, 
                     align: _2, 
                     dst ,
-                    is_aggregate: _3
+                    ir_type: _3,
                 } => {
                     kill_set.insert(dst.clone());
                 }
@@ -207,7 +207,11 @@ impl LivenessAnaylsier {
                     }
                     kill_set.insert(dst.clone());
                 }
-                InstructionData::Call { name: _, params } => {
+                InstructionData::Call { opcode: _, name: _1, params, dst } => {
+                    match dst {
+                        Some(value) => { kill_set.insert(value.clone()); },
+                        None => {},
+                    };
                     for value in params {
                         if self.is_value_register(value, function)  && !kill_set.contains(value) {
                             use_set.insert(value.clone());

@@ -14,9 +14,15 @@ use std::fs;
 
 fn main(){
     let source = "
-        int a[100];
-        (int)a[10][30];
-        a[c+b][m];
+    struct Wrapper {
+        int age;
+    };
+    struct Wrapper test() {
+        
+    }
+    int main() {
+        test();
+    }
     ";
     let source2 = "
         person->computeSome(a, b, 10);

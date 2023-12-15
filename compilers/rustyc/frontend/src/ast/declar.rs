@@ -3,11 +3,13 @@ use crate::ast::expr::{Identifier, Expression};
 use crate::ast::stmt::CompoundStatement;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[serde(tag="type")]
 pub enum Declaration<'a> {
-    ValueType(ValueType<'a>),
-    FunType(FunctionType<'a>),
     DelcarList(DeclarationList<'a>),
+    #[serde(untagged)]
+    ValueType(ValueType<'a>),
+    #[serde(untagged)]
+    FunType(FunctionType<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct DeclarationList<'a> {
@@ -23,7 +25,9 @@ pub struct Declarator<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum FunctionType<'a> {
+    #[serde(rename="FuncDeclar")]
     Declar(FunctionDeclaration<'a>),
+    #[serde(rename="FuncDef")]
     Def(FunctionDefinition<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

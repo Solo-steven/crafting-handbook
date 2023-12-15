@@ -1,10 +1,10 @@
 use std::collections::HashMap;
-use super::{map_ast_type_to_ir_type, get_ir_type_from_symbol_type};
 use crate::ir_converter::function::FunctionCoverter;
 use crate::ir::instructions::CmpFlag;
 use crate::ir::value::*;
 use crate::ir_converter::symbol_table::*;
 use rustyc_frontend::ast::expr::*;
+use rustyc_frontend::ast::declar::*;
 use rustyc_frontend::token::{IntLiteralBase, FloatLiteralBase};
 
 #[derive(Debug, Clone)]
@@ -14,7 +14,7 @@ enum CallSequnceType {
     Subscript((Vec<Value>, usize)), // (offset of linear array format, access level)
 }
 
-impl FunctionCoverter {
+impl<'a> FunctionCoverter<'a> {
     /// ## Accept a expression ast and generate instruction for ast.
     /// this function just perform a pattern match, call another function just like visitor pattern
     /// of ast traversal.
@@ -25,6 +25,7 @@ impl FunctionCoverter {
             Expression::BinaryExpr(binary_expr) => self.accept_binary_expr(binary_expr),
             Expression::UnaryExpr(unary_expr) => self.accept_unary_expr(unary_expr),
             Expression::MemberExpr(_) | Expression::DereferenceExpr(_) | Expression::SubscriptExpr(_) => self.accept_chain_expr(expr),
+            Expression::CallExpr(call_expr) => self.accept_call_expr(call_expr),
             Expression::Identifier(id) => self.accept_identifier(id),
             Expression::IntLiteral(int_literal) => self.accept_int_literal(int_literal),
             Expression::FloatLiteral(float_literal) => self.accept_float_literal(float_literal),
@@ -57,9 +58,14 @@ impl FunctionCoverter {
             AssignmentOps::SumAssignment => {},
         }
         match &data_type {
-            SymbolType::BasicType(_) | SymbolType::PointerType(_) => {
+            SymbolType::PointerType(_) => {
                 let offset = self.function.create_u8_const(0);
-                self.function.build_store_register_inst(right_value, left_value, offset, get_ir_type_from_symbol_type(&data_type));
+                self.function.build_store_register_inst(right_value, left_value, offset, IrValueType::Address);
+                right_value
+            }
+            SymbolType::BasicType(ir_type) => {
+                let offset = self.function.create_u8_const(0);
+                self.function.build_store_register_inst(right_value, left_value, offset, ir_type.clone());
                 right_value
             }
             SymbolType::StructalType(struct_type_name) => {
@@ -72,6 +78,55 @@ impl FunctionCoverter {
             }
         }
     }
+    /// ## Accept a binary expression in right hand side
+    /// Generate binary expression is simple, just using posfix-order dfs to traversal child frist then generate
+    /// instruction by binary operator.
+    fn accept_binary_expr(&mut self, binary_expr: &BinaryExpression) -> Value {
+        let mut left_value = self.accept_expr(&binary_expr.left);
+        let mut right_value = self.accept_expr(&binary_expr.right);
+        let left_type = self.function.get_value_ir_type(left_value);
+        let right_type = self.function.get_value_ir_type(right_value);
+        let target_type;
+        // Get final type. Generate promot type if need, 
+        if left_type > right_type {
+            right_value = self.generate_type_convert(right_value, &left_type);
+            target_type = &left_type;
+        }else if left_type < right_type {
+            left_value = self.generate_type_convert(left_value, &right_type);
+            target_type = &right_type;
+        }else {
+            target_type = &left_type
+        }
+        let is_float = match target_type {
+            IrValueType::F32 | IrValueType::F64 => true,
+            _ => false
+        };
+        match binary_expr.ops {
+            BinaryOps::BitwiseAnd => self.function.build_bitwise_and_inst(left_value, right_value),
+            BinaryOps::BitwiseOr => self.function.build_bitwise_or_inst(left_value, right_value),
+            BinaryOps::Plus => if is_float { 
+                self.function.build_fadd_inst(left_value, right_value) 
+            } else { 
+                self.function.build_add_inst(left_value, right_value) 
+            }, 
+            BinaryOps::Minus => if is_float {
+                self.function.build_fsub_inst(left_value, right_value)
+            }else {
+                self.function.build_sub_inst(left_value, right_value)
+            }
+            BinaryOps::Multiplication => if is_float {
+                self.function.build_fmul_inst(left_value, right_value)
+            }else {
+                self.function.build_mul_inst(left_value, right_value)
+            }
+            BinaryOps::Gt => if is_float {
+                self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Gt)
+            }else {
+                self.function.build_icmp_inst(left_value, right_value, CmpFlag::Gt)
+            }
+            _ => todo!(),
+        }
+    }
     /// Helper function for `accept_assignment_expr`
     /// when assign a struct data type, we need to copy the memory from src to dst (right hand side to 
     /// left hand side). this function implement copy struct by struct layout.
@@ -82,8 +137,8 @@ impl FunctionCoverter {
     /// The implementation of memcpy seems using a `word` to copy memory no matter what type the memory 
     /// address is point to. So there we follow the footstep of gcc lib, just copy size of memory by 
     /// unsigned int.
-    fn copy_struct_layout(&mut self, dst: Value, src: Value, name: &String) {
-        let layout = self.struct_layout_table.get(name).unwrap();
+    pub (super) fn copy_struct_layout(&mut self, dst: Value, src: Value, name: &String) {
+        let layout = self.function_struct_layout_table.get(name).unwrap();
         let mut index: usize = 0;
         for layout_entry in layout.values() {
             match &layout_entry.data_type {
@@ -98,7 +153,7 @@ impl FunctionCoverter {
                     self.function.build_store_register_inst(register_value, dst, offset_value, IrValueType::U32);
                 }
                 SymbolType::StructalType(next_name) => {
-                    let struct_size = self.struct_size_table.get(next_name).unwrap().clone();
+                    let struct_size = self.function_struct_size_table.get(next_name).unwrap().clone();
                     let mut offset = layout_entry.offset;
                     // TODO: size of word might not be 32bit
                     for _i in 0..struct_size / 4  {
@@ -112,7 +167,7 @@ impl FunctionCoverter {
                     // NOTE: by C99 spec, array in a struct type and only be const expression, so we know 
                     // exactly how length this array is. we can just using loop to copy memory
                     let array_size = if index == layout.len() -1 {
-                        let struc_size = self.struct_size_table.get(name).unwrap().clone();
+                        let struc_size = self.function_struct_size_table.get(name).unwrap().clone();
                         struc_size - layout_entry.offset
                     }else {
                         let layout_values_vec: Vec<_> = layout.values().collect();
@@ -204,7 +259,13 @@ impl FunctionCoverter {
         if let SymbolType::ArrayType(array_symbol_type) = pointer_to.as_ref(){
             if level == array_symbol_type.dims - 1 {
                 let offset = self.function.create_u8_const(0);
-                let next_value = self.function.build_load_register_inst(value, offset, get_ir_type_from_symbol_type(&array_symbol_type.array_of));
+                let next_value = self.function.build_load_register_inst(
+                    value, offset, 
+                    match array_symbol_type.array_of.as_ref() {
+                        SymbolType::BasicType(ir_type) => ir_type.clone(),
+                        _ => IrValueType::Address
+                    }
+                );
                 next_value
             }else {
                 self.pointer_table.insert(value, PointerSymbolType { level: level + 1, pointer_to });
@@ -212,7 +273,13 @@ impl FunctionCoverter {
             }
         }else if level == 1 {
             let offset = self.function.create_u8_const(0);
-            self.function.build_load_register_inst(value, offset, IrValueType::Address)
+            match pointer_to.as_ref() {
+                SymbolType::BasicType(ir_type) => self.function.build_load_register_inst(value, offset, ir_type.clone()),
+                SymbolType::StructalType(_) => self.function.build_load_register_inst(value, offset, IrValueType::Address),
+                // when is array type, it has already handled above, 
+                // there is not nested pointer type for symbol.
+                _ => unreachable!()
+            }
         }else {
             let offset = self.function.create_u8_const(0);
             let next_value = self.function.build_load_register_inst(value, offset, IrValueType::Address);
@@ -220,54 +287,38 @@ impl FunctionCoverter {
             next_value
         }
     }
-    /// ## Accept a binary expression in right hand side
-    /// Generate binary expression is simple, just using posfix-order dfs to traversal child frist then generate
-    /// instruction by binary operator.
-    fn accept_binary_expr(&mut self, binary_expr: &BinaryExpression) -> Value {
-        let mut left_value = self.accept_expr(&binary_expr.left);
-        let mut right_value = self.accept_expr(&binary_expr.right);
-        let left_type = self.function.get_value_ir_type(left_value);
-        let right_type = self.function.get_value_ir_type(right_value);
-        let target_type;
-        // Get final type. Generate promot type if need, 
-        if left_type > right_type {
-            right_value = self.generate_type_convert(right_value, &left_type);
-            target_type = &left_type;
-        }else if left_type < right_type {
-            left_value = self.generate_type_convert(left_value, &right_type);
-            target_type = &right_type;
-        }else {
-            target_type = &left_type
-        }
-        let is_float = match target_type {
-            IrValueType::F32 | IrValueType::F64 => true,
-            _ => false
-        };
-        match binary_expr.ops {
-            BinaryOps::BitwiseAnd => self.function.build_bitwise_and_inst(left_value, right_value),
-            BinaryOps::BitwiseOr => self.function.build_bitwise_or_inst(left_value, right_value),
-            BinaryOps::Plus => if is_float { 
-                self.function.build_fadd_inst(left_value, right_value) 
-            } else { 
-                self.function.build_add_inst(left_value, right_value) 
-            }, 
-            BinaryOps::Minus => if is_float {
-                self.function.build_fsub_inst(left_value, right_value)
-            }else {
-                self.function.build_sub_inst(left_value, right_value)
-            }
-            BinaryOps::Multiplication => if is_float {
-                self.function.build_fmul_inst(left_value, right_value)
-            }else {
-                self.function.build_mul_inst(left_value, right_value)
-            }
-            BinaryOps::Gt => if is_float {
-                self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Gt)
-            }else {
-                self.function.build_icmp_inst(left_value, right_value, CmpFlag::Gt)
-            }
+    fn accept_call_expr(&mut self, call_expr: &CallExpression) -> Value {
+        let callee_name = match call_expr.callee.as_ref() {
+            Expression::Identifier(id) => id.name.to_string(),
             _ => todo!(),
+        };
+        let signature = self.function_signature_table.get(&callee_name).unwrap();
+        let mut arugments: Vec<Value> = call_expr
+            .arguments
+            .iter()
+            .map(|argu_expr| self.accept_expr(argu_expr))
+            .collect();
+        if let Some(return_symbol_type) = &signature.return_type {
+            if let SymbolType::StructalType(struct_name) = return_symbol_type {
+                let struct_size = self.function_struct_size_table.get(struct_name).unwrap().clone();
+                let struct_size_value = self.function.create_u32_const(struct_size as u32);
+                let ret_value = self.function.build_stack_alloc_inst(struct_size_value, 8, None);
+                arugments.push(ret_value);
+            };
         }
+        let ir_return_type = match &signature.return_type {
+            Some(symbol_type) => {
+                match symbol_type {
+                    SymbolType::BasicType(ir_type) => Some(ir_type.clone()),
+                    SymbolType::PointerType(_) => Some(IrValueType::Address),
+                    SymbolType::StructalType(_) => None,
+                    SymbolType::ArrayType(_) => unreachable!(),
+                }
+            }
+            None => None,
+        };
+        self.function.build_call_inst(callee_name, arugments, ir_return_type);
+        Value(1)
     }
     /// ## Accept a chain expr, in right hand side
     /// this function this just a simple extenstion of `accept_chain_expr_base`, just thr base and offset returned
@@ -338,12 +389,12 @@ impl FunctionCoverter {
             Some(entry) => {
                 match &entry.data_type {
                     SymbolType::StructalType(struct_type_name) => {
-                        (entry.reg, self.struct_layout_table.get(struct_type_name).unwrap())
+                        (entry.reg, self.function_struct_layout_table.get(struct_type_name).unwrap())
                     }
                     SymbolType::PointerType(pointer_type) => {
                         match pointer_type.pointer_to.as_ref() {
                             SymbolType::StructalType(name) => {
-                                (entry.reg, self.struct_layout_table.get(name).unwrap())
+                                (entry.reg, self.function_struct_layout_table.get(name).unwrap())
                             }
                             SymbolType::BasicType(_) => {
                                 (entry.reg, &empty_map)
@@ -395,7 +446,7 @@ impl FunctionCoverter {
                         match array_symbol_type.array_of.as_ref() {
                             SymbolType::StructalType(struct_type_name) => {
                                 current_data_type = array_symbol_type.array_of.as_ref();
-                                symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap()
+                                symbol_layout = self.function_struct_layout_table.get(struct_type_name).unwrap()
                             }
                             SymbolType::PointerType(pointer_type) => {
                                 current_data_type = array_symbol_type.array_of.as_ref();
@@ -403,7 +454,7 @@ impl FunctionCoverter {
                                     SymbolType::StructalType(name) => name,
                                     _ => unreachable!()
                                 };
-                                symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap()
+                                symbol_layout = self.function_struct_layout_table.get(struct_type_name).unwrap()
                             }
                             SymbolType::BasicType(_) | SymbolType::ArrayType(_)  => {
                                 current_data_type =  array_symbol_type.array_of.as_ref();
@@ -423,7 +474,7 @@ impl FunctionCoverter {
                         match pointer_symbol_type.pointer_to.as_ref() {
                             SymbolType::StructalType(struct_type_name) => {
                                 current_data_type = pointer_symbol_type.pointer_to.as_ref();
-                                symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap()
+                                symbol_layout = self.function_struct_layout_table.get(struct_type_name).unwrap()
                             },
                             SymbolType::BasicType(_) | SymbolType::ArrayType(_)  => {
                                 current_data_type =  pointer_symbol_type.pointer_to.as_ref();
@@ -456,11 +507,11 @@ impl FunctionCoverter {
             current_data_type = &entry.data_type;
             match &entry.data_type {
                 SymbolType::StructalType(struct_type_name) => {
-                    symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
+                    symbol_layout = self.function_struct_layout_table.get(struct_type_name).unwrap();
                 }
                 SymbolType::PointerType(pointer_type) => {
                     if let SymbolType::StructalType(name) = pointer_type.pointer_to.as_ref() {
-                        symbol_layout = self.struct_layout_table.get(name).unwrap();
+                        symbol_layout = self.function_struct_layout_table.get(name).unwrap();
                     }
                 }
                 SymbolType::BasicType(_)| SymbolType::ArrayType(_) => {},
@@ -525,7 +576,7 @@ impl FunctionCoverter {
                 SymbolType::PointerType(pointer_type) => {
                     // return the virtual register that contain the address that pointer point to.
                     let offset = self.function.create_u8_const(0);
-                    let pointer_value = self.function.build_load_register_inst(symbol.reg, offset, IrValueType::U32);
+                    let pointer_value = self.function.build_load_register_inst(symbol.reg, offset, IrValueType::Address);
                     self.pointer_table.insert(pointer_value, pointer_type.clone());
                     pointer_value
                 }
@@ -546,7 +597,18 @@ impl FunctionCoverter {
             }
             _ => todo!()
         };
-        let ir_type =  map_ast_type_to_ir_type(&int_literal.value_type);
+        let ir_type =  match int_literal.value_type {
+            ValueType::Char => IrValueType::U8,
+            ValueType::Shorted => IrValueType::I16,
+            ValueType::UnsignedShort => IrValueType::U16,
+            ValueType::Int => IrValueType::I32,
+            ValueType::Unsigned => IrValueType::U32,
+            ValueType::Long => IrValueType::I64,
+            ValueType::UnsignedLong => IrValueType::U64,
+            ValueType::LongLong => IrValueType::I64,
+            ValueType::UnsignedLongLong => IrValueType::U64,
+            _ => unreachable!(),
+        };
         match ir_type {
             IrValueType::U8 => self.function.create_u8_const(value as u8),
             IrValueType::U16 => self.function.create_u16_const(value as u16),
@@ -566,7 +628,12 @@ impl FunctionCoverter {
             }
             _ => todo!()
         };
-        let ir_type = map_ast_type_to_ir_type(&float_literal.value_type);
+        let ir_type =  match float_literal.value_type {
+            ValueType::Float => IrValueType::F32,
+            ValueType::Double => IrValueType::F64,
+            ValueType::LongDouble => IrValueType::F64,
+            _ => unreachable!(),
+        };
         match ir_type {
             IrValueType::F32 => self.function.create_f32_const(value as f32),
             IrValueType::F64 => self.function.create_f64_const(value as f64),

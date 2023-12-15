@@ -6,16 +6,22 @@ use std::collections::{HashMap, VecDeque};
 #[derive(Debug, PartialEq, Clone)]
 pub struct Function {
     pub name: String,
+    pub return_type: Option<IrValueType>,
 
     pub instructions: InstructionMap,
     pub (super) next_inst_index: usize,
+
     pub blocks: BasicBlockMap,
     pub (super) next_block_index: usize,
+
     pub values: ValueMap,
     pub value_types: TypeMap,
     pub (super) next_value_index: usize,
     pub (super) next_temp_register_index: usize,
-    inst_map_block: HashMap<Instruction, BasicBlock>,
+    /***** relationship *****/
+    /// 
+    pub inst_map_block: HashMap<Instruction, BasicBlock>,
+    pub params_value: Vec<Value>,
 
     pub entry_block: Vec<BasicBlock>,
     pub exit_block: Vec<BasicBlock>,
@@ -39,11 +45,13 @@ impl Function {
     pub fn new(name: String) -> Self {
         Function {
             name,
+            return_type: None,
             instructions: HashMap::new(),
             next_inst_index: 1,
             blocks: HashMap::new(),
             next_block_index: 1,
             inst_map_block: HashMap::new(),
+            params_value: Vec::new(),
             values: HashMap::new(),
             value_types: HashMap::new(),
             next_value_index: 1,

@@ -11,20 +11,6 @@ pub struct DomTableEntry {
     pub dom_frontier: HashSet<BasicBlock>,
 }
 /// pretty print out the dom related info for a control flow graph.
-/// ```
-/// |------------- { DOM } ----------------|
-/// | Block id  | Block Id  | ....         |
-/// | {dom-set} | {dom-set} | ....         |
-/// |--------------------------------------|
-/// |------------- { IDOM } ---------------|
-/// | Block id  | Block Id  | ....         |
-/// |  idom-id  |  idom-id  | ....         |
-/// |--------------------------------------|
-/// |-------------  { DF } ----------------|
-/// |   Block id   |   Block Id   | ....   |
-/// | {df-dom-set} | {df-dom-set} | ....   |
-/// |--------------------------------------|
-/// ```
 pub fn print_dom_table(table: &DomTable) {
     println!("");
     let mut dom_text = String::from("| ");

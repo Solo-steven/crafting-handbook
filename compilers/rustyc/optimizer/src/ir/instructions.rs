@@ -135,9 +135,16 @@ pub enum InstructionData {
         src2: Value,
         dst: Value,
     },
+    // function call
     Call {
+        opcode: OpCode,
+        dst: Option<Value>,
         name: String,
         params: Vec<Value>
+    },
+    Ret {
+        opcode: OpCode,
+        value: Option<Value>
     },
     // data type convert
     ToU8 {
@@ -196,7 +203,7 @@ pub enum InstructionData {
         size: Value,
         align: usize,
         dst: Value,
-        is_aggregate: bool,
+        ir_type: Option<IrValueType>,
     },
     // memory instruction
     LoadRegister {
@@ -259,7 +266,9 @@ pub enum OpCode {
     Neg,
     Icmp,
     Fcmp,
+    // call
     Call,
+    Ret,
     // convert
     ToU8,
     ToU16,

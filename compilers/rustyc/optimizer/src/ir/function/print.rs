@@ -11,7 +11,29 @@ impl Function {
         output_code.push_str("function ");
         output_code.push_str(&self.name);
         output_code.push_str(" (");
-        output_code.push_str(") ");
+        let mut index = 0;
+        for value in &self.params_value {
+            let is_end = index == self.params_value.len() - 1;
+            match self.values.get(value).unwrap() {
+                ValueData::VirRegister(register) => {
+                    output_code.push_str(&register);
+                    output_code.push_str(" ");
+                    let value_type = self.value_types.get(value).unwrap();
+                    output_code.push_str(get_text_format_of_datatype(value_type));
+                    if !is_end {
+                        output_code.push_str(", ");
+                    }
+                }
+                ValueData::Immi(_) => {}
+            }
+            index +=1;
+        }
+        output_code.push_str(") -> ");
+        output_code.push_str(match self.return_type {
+            Some(ref ir_type) => get_text_format_of_datatype(ir_type),
+            None => "void",
+        });
+        output_code.push(' ');
         output_code.push_str("{\n");
         // blocks
         for (_ ,block) in &self.blocks {
@@ -63,67 +85,67 @@ impl Function {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = bitwise-and {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = bitwise-and {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::BitwiseOR { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = bitwise-or {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = bitwise-or {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::ShiftLeft { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = shiftleft {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = shiftleft {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::ShiftRight { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = shiftright {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = shiftright {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::LogicalAnd { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = logical-and {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = logical-and {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::LogicalOR { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = logical-or {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = logical-or {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::Add { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = add {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = add {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::Sub { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = sub {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = sub {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::Divide { opcode: _ , src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = divide {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = divide {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::Reminder { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = reminder {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = reminder {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::Mul { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = mul {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = mul {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::Icmp { opcode: _, flag, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
@@ -135,133 +157,141 @@ impl Function {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = fadd {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = fadd {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::FSub { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = fsub {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = fsub {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::FDivide { opcode: _ , src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = fdivide {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = fdivide {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::FReminder { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = freminder {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = freminder {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::FMul { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = fmul {} {}\n", dst_str, src1_str, src2_str).as_str());
+                output_code.push_str(format!("{} = fmul {} {}\n", dst_str, src1_str, src2_str).as_str());
             }
             InstructionData::Fcmp { opcode: _ , flag, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = icmp {} {} {:?}\n", dst_str, src1_str, src2_str, flag).as_str());
+                output_code.push_str(format!("{} = icmp {} {} {:?}\n", dst_str, src1_str, src2_str, flag).as_str());
             }
             InstructionData::Neg { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = neg {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = neg {}\n", dst_str, src_str).as_str());
             }
             InstructionData::LogicalNot { opcode: _ , src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = logical-not {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = logical-not {}\n", dst_str, src_str).as_str());
             }
             InstructionData::BitwiseNot { opcode: _ , src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = bitwise-not {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = bitwise-not {}\n", dst_str, src_str).as_str());
             }
             InstructionData::ToU8 { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = toU8 {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = toU8 {}\n", dst_str, src_str).as_str());
             }
             InstructionData::ToU16 { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = toU16 {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = toU16 {}\n", dst_str, src_str).as_str());
             }
             InstructionData::ToU32 { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = toU32 {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = toU32 {}\n", dst_str, src_str).as_str());
             }
             InstructionData::ToU64 { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = toU64 {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = toU64 {}\n", dst_str, src_str).as_str());
             }
             InstructionData::ToI16 { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = toI16 {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = toI16 {}\n", dst_str, src_str).as_str());
             }
             InstructionData::ToI32 { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = toI32 {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = toI32 {}\n", dst_str, src_str).as_str());
             }
             InstructionData::ToI64 { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = toI64 {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = toI64 {}\n", dst_str, src_str).as_str());
             }
             InstructionData::ToF32 { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = toF32 {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = toF32 {}\n", dst_str, src_str).as_str());
             }
             InstructionData::ToF64 { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = toF64 {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = toF64 {}\n", dst_str, src_str).as_str());
             }
             InstructionData::ToAddress { opcode: _, src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = toAddress {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = toAddress {}\n", dst_str, src_str).as_str());
             }
             InstructionData::Move { opcode: _ , src, dst } => {
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = {}\n", dst_str, src_str).as_str());
+                output_code.push_str(format!("{} = {}\n", dst_str, src_str).as_str());
             }
             InstructionData::LoadRegister { opcode: _, base, offset, dst, data_type } => {
                 let base_str = get_text_format_of_value(self.values.get(base).unwrap());
                 let offset = get_text_format_of_value(self.values.get(offset).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
                 let type_str = get_text_format_of_datatype(data_type);
-                output_code.push_str(format!(" load {} {} [{}, {}]\n", type_str, dst_str, base_str, offset).as_str());
+                output_code.push_str(format!("load {} {} [{}, {}]\n", type_str, dst_str, base_str, offset).as_str());
             }
             InstructionData::StoreRegister { opcode: _, base, offset, src , data_type} => {
                 let base_str = get_text_format_of_value(self.values.get(base).unwrap());
                 let offset = get_text_format_of_value(self.values.get(offset).unwrap());
                 let src_str = get_text_format_of_value(self.values.get(src).unwrap());
                 let type_str = get_text_format_of_datatype(data_type);
-                output_code.push_str(format!(" store {} {} [{}, {}]\n", type_str, src_str, base_str, offset).as_str());
+                output_code.push_str(format!("store {} {} [{}, {}]\n", type_str, src_str, base_str, offset).as_str());
             }
-            InstructionData::StackAlloc { opcode: _, size, align, dst , is_aggregate} => {
+            InstructionData::StackAlloc { opcode: _, size, align, dst , ir_type} => {
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
                 let size_str = get_text_format_of_value(self.values.get(size).unwrap());
-                output_code.push_str(format!(" stackalloc {}, {}, {} {}\n", dst_str, size_str, align, if is_aggregate.clone() {"aggregate"} else { "basic" } ).as_str());
+                output_code.push_str(format!(
+                    "{} = stackalloc {}, size {}, align {}\n", 
+                    dst_str,
+                    match ir_type {
+                        Some(ir) => get_text_format_of_datatype(ir),
+                        None => "aggregate",
+                    }
+                    , size_str, align, 
+                ).as_str());
             }
             InstructionData::BrIf { opcode: _ , test, conseq, alter } => {
                 let test_str = get_text_format_of_value(self.values.get(test).unwrap());
                 output_code.push_str(format!("brif {}, block{}, block{}\n", test_str, conseq.0 , alter.0).as_str());
             }
             InstructionData::Jump { opcode: _, dst } => {
-                output_code.push_str(format!(" jump {}\n", dst.0).as_str());
+                output_code.push_str(format!("jump {}\n", dst.0).as_str());
             }
             InstructionData::Phi { opcode: _, dst, from } => {
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
@@ -269,7 +299,7 @@ impl Function {
                 let src2_str = get_text_format_of_value(self.values.get(&from[1].1).unwrap());
                 output_code.push_str(format!("phi {}, block{} {}, block{} {}\n", dst_str,from[0].0.0, src1_str, from[1].0.0, src2_str).as_str());
             }
-            InstructionData::Call { name, params } => {
+            InstructionData::Call { opcode: _, dst, name, params } => {
                 let mut param_string = String::from(name);
                 param_string.push('(');
                 let mut index = 0;
@@ -280,8 +310,15 @@ impl Function {
                     }
                     index += 1;
                 }
-                param_string.push(')');
+                param_string.push_str(")\n");
                 output_code.push_str(param_string.as_str());
+            }
+            InstructionData::Ret { opcode: _, value } => {
+                let s = match value {
+                    Some(val) => get_text_format_of_value(self.values.get(val).unwrap()),
+                    None => String::from("void"),
+                };
+                output_code.push_str(format!("ret {}\n", s).as_str())
             }
             InstructionData::Comment(comment) => {
                 output_code.push_str(";;");

@@ -373,7 +373,7 @@ impl Function {
         self.add_inst_id_to_current_block(inst_id);
         dst
     }
-    pub fn build_stack_alloc_inst(&mut self, size: Value, align: usize, is_aggregate: bool) -> Value {
+    pub fn build_stack_alloc_inst(&mut self, size: Value, align: usize, ir_type: Option<IrValueType>) -> Value {
         let inst_id = Instruction(self.next_inst_index);
         self.next_inst_index += 1;
         let dst = self.add_register(IrValueType::Address);
@@ -382,7 +382,8 @@ impl Function {
             InstructionData::StackAlloc { 
                 opcode: OpCode::StackAlloc, 
                 size, align,
-                dst, is_aggregate
+                dst,
+                ir_type,
             }
         );
         self.add_inst_id_to_current_block(inst_id);
@@ -420,6 +421,30 @@ impl Function {
         let inst_id = Instruction(self.next_inst_index);
         self.next_inst_index += 1;
         self.instructions.insert(inst_id, InstructionData::Jump { opcode: OpCode::Jump, dst });
+        self.add_inst_id_to_current_block(inst_id);
+    }
+    pub fn build_call_inst(&mut self, name: String, params: Vec<Value>, return_type: Option<IrValueType>) -> Option<Value> {
+        let dst = match return_type {
+            Some(ir_type) => Some(self.add_register(ir_type)),
+            None => None
+        };
+        let inst_id = Instruction(self.next_inst_index);
+        self.next_inst_index += 1;
+        self.instructions.insert(inst_id, 
+            InstructionData::Call { 
+                dst, name, params,
+                opcode: OpCode::Call,
+            }
+        );
+        self.add_inst_id_to_current_block(inst_id);
+        dst
+    }
+    pub fn build_ret_inst(&mut self, src: Option<Value>) {
+        let inst_id = Instruction(self.next_inst_index);
+        self.next_inst_index += 1;
+        self.instructions.insert(inst_id, 
+            InstructionData::Ret { opcode: OpCode::Ret, value: src }
+        );
         self.add_inst_id_to_current_block(inst_id);
     }
     pub fn build_comment(&mut self, comment: &str) {

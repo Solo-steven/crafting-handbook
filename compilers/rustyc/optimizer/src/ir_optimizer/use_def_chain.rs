@@ -157,17 +157,21 @@ impl UseDefAnaylsier {
                     InstructionData::BrIf { opcode: _, test, conseq: _1, alter: _2} => {
                         if self.is_value_register(test, function) { self.add_to_use_cache(test.clone(), block_id.clone(), inst_id.clone())}
                     }
-                    InstructionData::StackAlloc { opcode: _ , size: _1, align: _2, dst, is_aggregate: _3 } => {
+                    InstructionData::StackAlloc { opcode: _ , size: _1, align: _2, dst, ir_type: _4, } => {
                         if self.is_value_register(dst, function) { self.add_to_def_cache(dst.clone(), block_id.clone(), inst_id.clone())}
                     }
                     InstructionData::Move { opcode: _, src, dst } => {
                         if self.is_value_register(dst, function) { self.add_to_def_cache(dst.clone(), block_id.clone(), inst_id.clone())}
                         if self.is_value_register(src, function) { self.add_to_use_cache(src.clone(), block_id.clone(), inst_id.clone())}
                     }
-                    InstructionData::Call { name: _, params } => {
+                    InstructionData::Call { opcode: _ ,name: _1, params , dst} => {
                         for value in params {
                             if self.is_value_register(value, function) { self.add_to_use_cache(value.clone(), block_id.clone(), inst_id.clone())}
                         }
+                        match dst {
+                            Some(value) => {self.add_to_def_cache(value.clone(), block_id.clone(), inst_id.clone());},
+                            None => {},
+                        };
                     }
                     // TODO: Phi Node
                     _ => {}

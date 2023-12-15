@@ -33,7 +33,13 @@ impl Mem2RegPass {
         for entry_block_id in &function.entry_block {
             let block_data = function.blocks.get(entry_block_id).unwrap();
             for inst_id in &block_data.instructions {
-                if let InstructionData::StackAlloc { opcode: _0, size: _1, align: _2, dst , is_aggregate}  = function.instructions.get(inst_id).unwrap() {
+                if let InstructionData::StackAlloc { 
+                    opcode: _0, 
+                    size: _1, 
+                    align: _2, 
+                    dst,
+                    ir_type: _3,
+                }  = function.instructions.get(inst_id).unwrap() {
                     alloc_pointers_and_bb_ids.push((dst.clone(), entry_block_id.clone()));
                 }
             }

@@ -16,6 +16,7 @@ use crate::ir_optimizer::value_numbering::local_value_numbering;
 use std::backtrace::Backtrace;
 use std::collections::{HashSet, HashMap};
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::Write;
 
 
@@ -24,14 +25,14 @@ pub fn create_reducnt_expr_graph() -> Function {
     let b0 = func.create_block();
     func.switch_to_block(b0);
     let mut size_const = func.create_u32_const(32 as u32);
-    let t1 = func.build_stack_alloc_inst(size_const, 8, false);
+    let t1 = func.build_stack_alloc_inst(size_const, 8, Some(IrValueType::U32));
     {
         let const10 = func.create_i32_const(10);
         let offset = func.create_u32_const(0);
         func.build_store_register_inst(const10, t1, offset, IrValueType::I32);
     }
     size_const = func.create_u32_const(32 as u32);
-    let t2 = func.build_stack_alloc_inst(size_const, 8, false);
+    let t2 = func.build_stack_alloc_inst(size_const, 8, Some(IrValueType::U32));
     {
         let const10 = func.create_i32_const(10);
         let offset = func.create_u32_const(0);
@@ -108,41 +109,20 @@ pub fn create_dom_graph() -> Function {
 
 fn main() {
     let program = Parser::new("
-        int main() {
-            struct Nested {
-                int value1;
-                int value2;
-            };
-            struct Top {
-                int value1;
-                int value2;
-                struct Nested nested;
-            };
-            struct TopPointer {
-                int value1;
-                int value2;
-                struct Nested *nested;
-            };
-            struct Top top;
-            struct TopPointer top_pointer;
-            struct Top *p1 = &top;
-            struct Top *p2 = &top_pointer;
-
-            top.value1;
-            top.value2;
-            top.nested.value1;
-            top.nested.value2;
-            top_pointer.nested->value1;
-            top_pointer.nested->value2;
-            p2->nested->value2;
-            p1->nested.value1;
-            p2->nested.value2;
-        }
+    struct Wrapper {
+        int age;
+    };
+    struct Wrapper test() {
+        struct Wrapper a;
+        return a;
+    }
+    int main() {
+        test();
+    }
     ").parse().unwrap();
     // println!("{:#?}", program);
     let mut converter = Converter::new();
     converter.convert(&program);
-    let func = &mut converter.functions[0];
     // let mut dom = DomAnaylsier::new();
     // let dom_table = dom.anaylsis(func);
 
@@ -152,8 +132,21 @@ fn main() {
     // println!("{:#?}",func.print_to_string().as_str());
     // pass.anaylsis(func, &use_def_table, &dom_table);
     // println!("{:#?}",func.print_to_string().as_str());
-    let mut file = File::create("./test.txt").unwrap();
-    write!(file, "{}", func.print_to_string().as_str());
+    let mut is_start = true;
+    for func in &mut converter.functions {
+        if is_start {
+            let mut file = File::create("./test.txt").unwrap();
+            write!(file, "{}", func.print_to_string().as_str()).unwrap();
+            is_start = false;
+        }else {
+            let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open("./test.txt")
+            .unwrap();
+            write!(file, "{}", func.print_to_string().as_str()).unwrap();
+        }
+    }
     // let mut liveness = LivenessAnaylsier::new();
     // let func =create_use_def_graph();
     // println!("{:?}", func.print_to_string());

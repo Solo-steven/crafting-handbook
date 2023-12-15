@@ -2,7 +2,7 @@ use crate::ast::expr::{Identifier, InitExpression, Expression};
 use crate::parser::{Parser, ParserResult};
 use crate::ast::declar::*;
 use crate::token::*;
-use crate::{expect_token, is_token, unwind_pointer_declarator_and_id_to_pointer_type};
+use crate::{expect_token, is_token};
 
 fn combine_value_type_with_signed(signed: Option<bool>, value_type: ValueType) -> ValueType {
     match signed {
