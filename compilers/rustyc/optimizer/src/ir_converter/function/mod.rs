@@ -126,7 +126,7 @@ impl<'a> FunctionCoverter<'a> {
     }
     fn accpet_return_stmt(&mut self, return_stmt: &ReturnStatement) {
         if let Some(expr) = &return_stmt.value {
-            let return_value = self.accept_expr(expr);
+            let return_value = self.accept_expr_with_value(expr);
             let self_signature = self.function_signature_table.get(&self.function.name).unwrap();
             if let Some(return_symbol_type) = &self_signature.return_type  {
                 if let SymbolType::StructalType(struct_name) = &return_symbol_type {
@@ -160,7 +160,7 @@ impl<'a> FunctionCoverter<'a> {
         self.struct_size_table.exit_scope();
     }
     fn accept_if_stmt(&mut self, if_stmt: &IfStatement) {
-        let value = self.accept_expr(&if_stmt.test);
+        let value = self.accept_expr_with_value(&if_stmt.test);
         let last_block = self.function.current_block.unwrap().clone();
         let conseq_block = self.function.create_block();
         self.function.connect_block(last_block,conseq_block);
@@ -193,8 +193,9 @@ impl<'a> FunctionCoverter<'a> {
             Declaration::FunType(_)=> { unreachable!() /* this  */ }
         }
     }
+    /// ## Accpet A declaration list
+    /// 
     fn accept_declar_list(&mut self, declar_list: &DeclarationList) {
-        println!("{:?}", declar_list);
         for declarator in &declar_list.declarators {
             let symbol_type = self.map_ast_type_to_symbol_type(&declarator.value_type);
             let size = self.get_size_form_ast_type(&declarator.value_type);
@@ -204,18 +205,17 @@ impl<'a> FunctionCoverter<'a> {
                 _ => None
             };
             let pointer = self.function.build_stack_alloc_inst(size, 8,ir_type);
-            println!("{:?}", declarator.id.name.to_string());
             self.symbol_table.insert(declarator.id.name.to_string(), SymbolEntry { reg: pointer, symbol_type: symbol_type.clone() });
             // TODO: if symbol table is struct type, init must handle extra.
             if let Some(expr) = &declarator.init_value {
                 match &symbol_type {
                     SymbolType::BasicType(ref basic_ir_type) => {
-                        let init_value = self.accept_expr(expr);
+                        let init_value = self.accept_expr_with_value(expr);
                         let offset = self.function.create_u8_const(0);
                         self.function.build_store_register_inst(init_value, pointer, offset, basic_ir_type.clone());
                     }
                     SymbolType::PointerType(_) => {
-                        let init_value = self.accept_expr(expr);
+                        let init_value = self.accept_expr_with_value(expr);
                         let offset = self.function.create_u8_const(0);
                         self.function.build_store_register_inst(init_value, pointer, offset, IrValueType::Address);
                     }
@@ -270,7 +270,7 @@ impl<'a> FunctionCoverter<'a> {
         if let SymbolType::ArrayType(array_symbol_type) = &mut symbol_type {
              if let ValueType::ArrayType(array_value_type) = value_type {
                  for expr in &array_value_type.dims {
-                    array_symbol_type.value_of_dims.push(self.accept_expr(expr));
+                    array_symbol_type.value_of_dims.push(self.accept_expr_with_value(expr));
                  }
                  array_symbol_type.value_of_dims.reverse();
              }else {

@@ -16,19 +16,20 @@ enum CallSequnceType {
 
 impl<'a> FunctionCoverter<'a> {
     /// ## Accept a expression ast and generate instruction for ast.
-    /// this function just perform a pattern match, call another function just like visitor pattern
-    /// of ast traversal.
-    pub (super) fn accept_expr(&mut self, expr: &Expression) -> Value {
+    /// this function just perform a pattern match, call other function just like visitor pattern
+    /// of ast traversal. please note that since call expression might not return value. so this 
+    /// function return a option of value.
+    pub (super) fn accept_expr(&mut self, expr: &Expression) -> Option<Value> {
         match expr {
-            Expression::AssignmentExpr(assign_expr) => self.accept_assignment_expr(assign_expr),
-            Expression::ConditionalExpr(condition_expr) => self.accept_condition_expr(condition_expr),
-            Expression::BinaryExpr(binary_expr) => self.accept_binary_expr(binary_expr),
-            Expression::UnaryExpr(unary_expr) => self.accept_unary_expr(unary_expr),
-            Expression::MemberExpr(_) | Expression::DereferenceExpr(_) | Expression::SubscriptExpr(_) => self.accept_chain_expr(expr),
+            Expression::AssignmentExpr(assign_expr) => Some(self.accept_assignment_expr(assign_expr)),
+            Expression::ConditionalExpr(condition_expr) => Some(self.accept_condition_expr(condition_expr)),
+            Expression::BinaryExpr(binary_expr) => Some(self.accept_binary_expr(binary_expr)),
+            Expression::UnaryExpr(unary_expr) => Some(self.accept_unary_expr(unary_expr)),
+            Expression::MemberExpr(_) | Expression::DereferenceExpr(_) | Expression::SubscriptExpr(_) => Some(self.accept_chain_expr(expr)),
             Expression::CallExpr(call_expr) => self.accept_call_expr(call_expr),
-            Expression::Identifier(id) => self.accept_identifier(id),
-            Expression::IntLiteral(int_literal) => self.accept_int_literal(int_literal),
-            Expression::FloatLiteral(float_literal) => self.accept_float_literal(float_literal),
+            Expression::Identifier(id) => Some(self.accept_identifier(id)),
+            Expression::IntLiteral(int_literal) => Some(self.accept_int_literal(int_literal)),
+            Expression::FloatLiteral(float_literal) => Some(self.accept_float_literal(float_literal)),
             Expression::ParenthesesExpr(para_expr) => self.accept_expr(&para_expr.expr),
             Expression::CastExpr(cast_expr) => todo!(),
             _ => {
@@ -37,13 +38,20 @@ impl<'a> FunctionCoverter<'a> {
             }
         }
     }
+    /// ## Accept a expression ast and generate instruction for ast.
+    /// Since call expression might not return a value, but should a call expression is sematic 
+    /// correct is checked by typechecker, in most situation, we need return value. so we can using
+    /// this function to unwarp the return value of `accept_value`.
+    pub (super) fn accept_expr_with_value(&mut self, expr: &Expression) -> Value {
+        self.accept_expr(expr).unwrap()
+    }
     /// ## Accept a assignment expression
     /// Generate assignment expression, when a expression in left hand side, it should return a value contain address
     /// of expression and symbol type of expresion, in the other side, when a expression in right hand side, return value
     /// would be a virtual register contain value of expression.
     fn accept_assignment_expr(&mut self, assign_expr: &AssignmentExpression ) -> Value {
         let (left_value,  data_type) = self.accept_as_lefthand_expr(&assign_expr.left);
-        let right_value = self.accept_expr(&assign_expr.right);
+        let right_value = self.accept_expr_with_value(&assign_expr.right);
         match &assign_expr.ops {
             AssignmentOps::BitwiseOrAssignment => {}
             AssignmentOps::BitwiseAndAssignment => {},
@@ -82,7 +90,7 @@ impl<'a> FunctionCoverter<'a> {
     /// condition expr can be convert by phi instruction with two branch basic block.
     fn accept_condition_expr(&mut self, cond_expr: &ConditionalExpression) -> Value {
         // build branch
-        let test_value = self.accept_expr(cond_expr.condi.as_ref());
+        let test_value = self.accept_expr_with_value(cond_expr.condi.as_ref());
         let cond_conseq_block = self.function.create_block();
         let cond_alter_block = self.function.create_block();
         let cond_final_block = self.function.create_block();
@@ -91,13 +99,13 @@ impl<'a> FunctionCoverter<'a> {
         self.function.connect_block(self.function.current_block.unwrap(), cond_conseq_block);
         self.function.connect_block(cond_conseq_block, cond_final_block);
         self.function.switch_to_block(cond_conseq_block);
-        let conseq_value = self.accept_expr(cond_expr.conseq.as_ref());
+        let conseq_value = self.accept_expr_with_value(cond_expr.conseq.as_ref());
         self.function.build_jump_inst(cond_final_block);
         // alter
         self.function.connect_block(self.function.current_block.unwrap(), cond_alter_block);
         self.function.connect_block(cond_alter_block, cond_final_block);
         self.function.switch_to_block(cond_alter_block);
-        let alter_value = self.accept_expr(cond_expr.alter.as_ref());
+        let alter_value = self.accept_expr_with_value(cond_expr.alter.as_ref());
         self.function.build_jump_inst(cond_final_block);
         // final
         let cond_final_block = self.function.create_block();
@@ -108,8 +116,8 @@ impl<'a> FunctionCoverter<'a> {
     /// Generate binary expression is simple, just using posfix-order dfs to traversal child frist then generate
     /// instruction by binary operator.
     fn accept_binary_expr(&mut self, binary_expr: &BinaryExpression) -> Value {
-        let left_value = self.accept_expr(&binary_expr.left);
-        let right_value = self.accept_expr(&binary_expr.right);
+        let left_value = self.accept_expr_with_value(&binary_expr.left);
+        let right_value = self.accept_expr_with_value(&binary_expr.right);
         let (left_value, right_value, target_type) = self.align_two_base_type_value_to_same_type(left_value, right_value, None);
         let is_float = match target_type {
             IrValueType::F32 | IrValueType::F64 => true,
@@ -205,23 +213,22 @@ impl<'a> FunctionCoverter<'a> {
     /// most of unary expression op is simple to generate. there are three op need to handle with sub-function.
     /// - address of 
     /// - dereference
-    /// - sizeof
     fn accept_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
         match &unary_expr.ops {
             UnaryOps::BitwiseNot => { 
-                let src = self.accept_expr(&unary_expr.expr);
+                let src = self.accept_expr_with_value(&unary_expr.expr);
                 self.function.build_bitwise_not(src)
              },
             UnaryOps::LogicalNot => {
-                let src = self.accept_expr(&unary_expr.expr);
+                let src = self.accept_expr_with_value(&unary_expr.expr);
                 self.function.build_logical_not(src)
             },
             UnaryOps::Minus => {
-                let src = self.accept_expr(&unary_expr.expr);
+                let src = self.accept_expr_with_value(&unary_expr.expr);
                 self.function.build_neg_inst(src)
             },
             UnaryOps::Plus => {
-                self.accept_expr(&unary_expr.expr)
+                self.accept_expr_with_value(&unary_expr.expr)
             },
             UnaryOps::AddressOf => self.accept_address_of_unary_expr(unary_expr),
             UnaryOps::Dereference => self.accept_dereference_unary_expr(unary_expr),
@@ -284,7 +291,7 @@ impl<'a> FunctionCoverter<'a> {
     /// Because of there might be a pointer to a pointer, or more deep pointer. we will need a cache to store
     /// the type that pointer point to, so we need use a cache to store a type pointer point to for temp register.
     fn accept_dereference_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
-        let value = self.accept_expr(&unary_expr.expr);
+        let value = self.accept_expr_with_value(&unary_expr.expr);
         if let Some(address_cache) = self.address_cache.remove(&value) {
             match address_cache {
                 AddressCacheEntry::PointerSymbolType(pointer_symbol_type) => {
@@ -331,7 +338,11 @@ impl<'a> FunctionCoverter<'a> {
             unreachable!();
         }
     }
-    fn accept_call_expr(&mut self, call_expr: &CallExpression) -> Value {
+    /// Accept a call expression 
+    /// build proper call instruction for function call, when callee return type is a struct type, we need to 
+    /// alloc a struct in current scope and pass to function, and callee function will perform copy by value to
+    /// the pointer we passed into.
+    fn accept_call_expr(&mut self, call_expr: &CallExpression) -> Option<Value> {
         let callee_name = match call_expr.callee.as_ref() {
             Expression::Identifier(id) => id.name.to_string(),
             _ => todo!(),
@@ -340,7 +351,7 @@ impl<'a> FunctionCoverter<'a> {
         let mut arugments: Vec<Value> = call_expr
             .arguments
             .iter()
-            .map(|argu_expr| self.accept_expr(argu_expr))
+            .map(|argu_expr| self.accept_expr_with_value(argu_expr))
             .collect();
         if let Some(return_symbol_type) = &signature.return_type {
             if let SymbolType::StructalType(struct_name) = return_symbol_type {
@@ -361,8 +372,7 @@ impl<'a> FunctionCoverter<'a> {
             }
             None => None,
         };
-        self.function.build_call_inst(callee_name, arugments, ir_return_type);
-        Value(1)
+        self.function.build_call_inst(callee_name, arugments, ir_return_type)
     }
     /// ## Accept a chain expr, in right hand side
     /// this function this just a simple extenstion of `accept_chain_expr_base`, just thr base and offset returned
@@ -589,7 +599,7 @@ impl<'a> FunctionCoverter<'a> {
                     let mut values = Vec::new();
                     loop {
                         level += 1;
-                        values.push(self.accept_expr(&subscript_expr.index));
+                        values.push(self.accept_expr_with_value(&subscript_expr.index));
                         if let Expression::SubscriptExpr(next_expr) = subscript_expr.object.as_ref() {
                             subscript_expr = next_expr;
                         }else {
@@ -704,7 +714,6 @@ impl<'a> FunctionCoverter<'a> {
     fn accept_as_lefthand_expr(&mut self, expr: &Expression) -> (Value, SymbolType) {
         match expr {
             Expression::Identifier(id) => {
-                println!("{:?}, {:?}", self.symbol_table, id);
                 let SymbolEntry { reg, symbol_type } = self.symbol_table.get(id.name.as_ref()).unwrap();
                 (reg.clone(), symbol_type.clone())
             }
@@ -713,20 +722,31 @@ impl<'a> FunctionCoverter<'a> {
             _ => panic!(),
         }
     }
+    /// ## Accpet a deference unary expression as left hand side value
+    /// when deference is left hand side, the operand must be a indirect expressioon, it should be 
+    /// ensure by type checker. since it is a indirect expression, we need to get it's value as address.
+    /// so we frist accept it as a right hand side value to get a indirect expression's value, and 
+    /// return this value as address.
     fn accept_deference_unary_expr_as_leftvalue(&mut self,unary_expr: &UnaryExpression) -> (Value, SymbolType) {
         match unary_expr.ops {
             UnaryOps::Dereference => {
-                let value= self.accept_expr(&unary_expr.expr);
+                let value= self.accept_expr_with_value(&unary_expr.expr);
                 if let Some(address_cache) = self.address_cache.remove(&value) {
                     match address_cache {
+                        // when dereference a level 1 pointer, it will be the type that pointer point to.
+                        // otherwise, it would be a level - 1 pointer as return value.
                         AddressCacheEntry::PointerSymbolType(pointer_symbol_type) => {
-                            // when 
                             if pointer_symbol_type.level == 1 {
                                 (value, *pointer_symbol_type.pointer_to)
                             }else {
-                                (value, SymbolType::PointerType(pointer_symbol_type))
+                                (value, SymbolType::PointerType(
+                                    PointerSymbolType { level: pointer_symbol_type.level - 1, pointer_to: pointer_symbol_type.pointer_to }
+                                ))
                             }
                         }
+                        // when dreference a array, it must be access to the (dims-1) level of array to perform
+                        // access to the element, since c99 can not change the array pointer to other pointer 
+                        // and this should be ensure by typechecker.
                         AddressCacheEntry::ArrayAccessType { access_level, array_symbol_type } => {
                             if access_level == array_symbol_type.value_of_dims.len() {
                                 (value, *array_symbol_type.array_of)
@@ -736,9 +756,12 @@ impl<'a> FunctionCoverter<'a> {
                         }
                     }
                 }else {
+                    // when call `accept_expr_with_value` it should return as a value contain address
+                    // and extra info should be storage into `address_cache`
                     unreachable!();
                 }
             }
+            // if a unary expression in left hand side, it only can be a dereference operator
             _ => unreachable!(),
         }
     }

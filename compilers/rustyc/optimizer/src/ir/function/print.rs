@@ -300,6 +300,10 @@ impl Function {
                 output_code.push_str(format!("phi {}, block{} {}, block{} {}\n", dst_str,from[0].0.0, src1_str, from[1].0.0, src2_str).as_str());
             }
             InstructionData::Call { opcode: _, dst, name, params } => {
+                if let Some(value) = dst  {
+                    let dst_str = get_text_format_of_value(self.values.get(value).unwrap());
+                    output_code.push_str(format!("{} = ", dst_str).as_str());
+                }
                 let mut param_string = String::from(name);
                 param_string.push('(');
                 let mut index = 0;

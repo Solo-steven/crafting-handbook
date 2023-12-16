@@ -115,7 +115,7 @@ impl<'a> Converter<'a> {
        if let SymbolType::ArrayType(array_symbol_type) = &mut symbol_type {
             if let ValueType::ArrayType(array_value_type) = value_type {
                 for expr in &array_value_type.dims {
-                    //array_symbol_type.value_of_dims.push();
+                    array_symbol_type.value_of_dims.push(self.accpet_expr_const(expr));
                 }
             }
        }
@@ -123,6 +123,9 @@ impl<'a> Converter<'a> {
     }
     fn get_size_form_ast_type(&mut self, value_type: &ValueType) -> usize {
         get_size_form_ast_type(value_type, &mut self.struct_size_table)
+    }
+    fn accpet_expr_const(&mut self, _expr: &Expression) -> Value {
+        todo!();
     }
 }
 
@@ -138,6 +141,7 @@ fn map_ast_type_to_symbol_type(value_type: &ValueType, struct_layout_table: &mut
         ValueType::Float | ValueType::Double | ValueType::LongDouble => {
             SymbolType::BasicType(match value_type {
                 ValueType::Char => IrValueType::U8,
+                ValueType::UnSignedChar => IrValueType::U8,
                 ValueType::Shorted => IrValueType::I16,
                 ValueType::UnsignedShort => IrValueType::U16,
                 ValueType::Int => IrValueType::I32,
@@ -148,8 +152,8 @@ fn map_ast_type_to_symbol_type(value_type: &ValueType, struct_layout_table: &mut
                 ValueType::UnsignedLongLong => IrValueType::U64,
                 ValueType::Float => IrValueType::F32,
                 ValueType::Double => IrValueType::F64,
-                ValueType::PointerType(_) => IrValueType::Address,
-                _ => todo!()
+                ValueType::LongDouble => IrValueType::F64,
+                _ => unreachable!(),
             })
         }
         ValueType::PointerType(pointer_type) => {

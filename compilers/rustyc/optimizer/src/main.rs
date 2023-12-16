@@ -109,19 +109,12 @@ pub fn create_dom_graph() -> Function {
 
 fn main() {
     let program = Parser::new("
+    int test() {
+        return 1;
+    }
     int main() {
-        struct Test {
-            int value;
-            int age;
-        };
-        struct Test a;
-        struct Test b;
-        struct Test *p = &a;
-        struct Test *pp = &b;
-        p->age + 10;
-        p->value + 100;
-        p->age = p->value + 1000;
-        pp->value = pp->value + p->value;
+        int a = 0;
+        a = test() + 10;
         return 0;
     }
     ").parse().unwrap();
