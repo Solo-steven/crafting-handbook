@@ -95,8 +95,11 @@ impl Function {
         }
     }
     /// mark block as entry
-    pub fn mark_as_entry(&mut self, id:BasicBlock) {
+    pub fn mark_as_entry(&mut self, id: BasicBlock) {
         self.entry_block.push(id);
+    }
+    pub fn mark_as_exit(&mut self, id: BasicBlock) {
+        self.exit_block.push(id);
     }
     /// Get basic block instrcution belong to.
     pub fn get_block_from_inst(&self, inst: &Instruction) -> Option<&BasicBlock> {

@@ -1,6 +1,12 @@
+/// This module provide four kind of table
 use std::collections::HashMap;
 use crate::ir::value::{Value, IrValueType};
-
+/// ## Symbol Table For Function Scope
+/// when enter a function scope, we need to create this table and provide
+/// global table as root table. since block scope in C can only exit in
+/// function, so every time we enter a block scope we will create a sub-table
+/// for current symbol table.
+#[derive(Debug, Clone)]
 pub struct SymbolTable<'a> {
     table_list: Vec<HashMap<String, SymbolEntry>>,
     root_table: Option<&'a SymbolTable<'a>>,
@@ -12,13 +18,15 @@ impl<'a> SymbolTable<'a> {
             root_table,
         }
     }
+    /// Insert a symbol in current symbol table
     pub fn insert(&mut self, name: String, entry: SymbolEntry) {
         let len = self.table_list.len()-1; 
         self.table_list[len].insert(name, entry);
     }
+    /// Get a symbol 
     pub fn get(&self, name: &str) -> Option<&SymbolEntry> {
         let mut index = self.table_list.len()-1;
-        for _i in 0..self.table_list.len() {
+        for _i in 0..self.table_list.len()-1 {
             let current_table = &self.table_list[index];
             if let Some(entry) = current_table.get(name) {
                 return Some(entry);
@@ -32,16 +40,19 @@ impl<'a> SymbolTable<'a> {
             None => None
         }
     }
-    pub fn remove(&mut self) {
+    pub fn enter_scope(&mut self) {
+        self.table_list.push(Default::default());
+    }
+    pub fn exit_scope(&mut self) {
         self.table_list.pop();
     }
 }
-#[derive(Debug)]
 /// A symbol entry contain the virtual register store the address of that symbol.
 /// and the data type of that symbol.
+#[derive(Debug, Clone)]
 pub struct SymbolEntry {
     pub reg: Value,
-    pub data_type: SymbolType,
+    pub symbol_type: SymbolType,
 }
 #[derive(Debug,Clone)]
 pub enum SymbolType {
@@ -50,6 +61,10 @@ pub enum SymbolType {
     StructalType(String),
     ArrayType(ArraySymbolType)
 }
+/// level of pointer symbol mean this pointer type 
+/// is how many `pointer to` anther non-pointer type
+/// ex: int**p, is pointer to pointer to int. so the 
+/// level will be 2.
 #[derive(Debug, Clone)]
 pub struct PointerSymbolType {
     pub level: usize,
@@ -57,78 +72,108 @@ pub struct PointerSymbolType {
 }
 #[derive(Debug, Clone)]
 pub struct  ArraySymbolType {
-    pub dims: usize,
     pub array_of: Box<SymbolType>,
-    /// for example if access `array[2][4]`,
-    /// output will be `[Value(2), Value(4)]`.
+    /// for example if access `array[2][4]` then the 
+    /// `value_of_dims` will be `[Value(2), Value(4)]`.
     pub value_of_dims: Vec<Value>,
 }
-/// 
-pub type StructLayoutTable = HashMap<String, StructLayout>;
-///
+
+pub type AddressCache = HashMap<Value, AddressCacheEntry>;
+pub enum AddressCacheEntry {
+    PointerSymbolType(PointerSymbolType),
+    ArrayAccessType {
+        access_level: usize,
+        array_symbol_type: ArraySymbolType,
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct StructLayoutTable<'a> {
+    table_list: Vec<HashMap<String, StructLayout>>,
+    root_table: Option<&'a StructLayoutTable<'a>>
+}
 pub type StructLayout = HashMap<String, StructLayoutEntry>;
-///
 #[derive(Debug, Clone)]
 pub struct StructLayoutEntry {
     pub offset: usize,
     pub data_type: SymbolType
 }
-/// 
-pub type StructSizeTable = HashMap<String,usize>;
+impl<'a> StructLayoutTable<'a> {
+    pub fn new(root_table: Option<&'a StructLayoutTable<'a>>) -> Self {
+        Self {
+            table_list: vec![HashMap::new()],
+            root_table,
+        }
+    }
+    pub fn insert(&mut self, name: String, entry: StructLayout) {
+        let len = self.table_list.len()-1; 
+        self.table_list[len].insert(name, entry);
+    }
+    pub fn get(&self, name: &str) -> Option<&StructLayout> {
+        let mut index = self.table_list.len()-1;
+        for _i in 0..self.table_list.len()-1 {
+            let current_table = &self.table_list[index];
+            if let Some(entry) = current_table.get(name) {
+                return Some(entry);
+            }
+            index -=1;
+        }
+        match self.root_table {
+            Some(table) => {
+                table.get(name)
+            }
+            None => None
+        }
+    }
+    pub fn enter_scope(&mut self) {
+        self.table_list.push(Default::default());
+    }
+    pub fn exit_scope(&mut self) {
+        self.table_list.pop();
+    }
+}
+
 
 #[derive(Debug, Clone)]
-pub struct FunctionStructLayoutTable<'a> {
-    pub struct_layout_table: StructLayoutTable,
-    pub global_struct_layout_table: &'a StructLayoutTable,
+pub struct StructSizeTable<'a> {
+    table_list: Vec<HashMap<String, usize>>,
+    root_table: Option<&'a StructSizeTable<'a>>
 }
-
-impl<'a> FunctionStructLayoutTable<'a> {
-    pub fn new(global_struct_layout_table: &'a StructLayoutTable) -> Self {
+impl<'a> StructSizeTable<'a> {
+    pub fn new(root_table: Option<&'a StructSizeTable<'a>>) -> Self {
         Self {
-            struct_layout_table: HashMap::new(),
-            global_struct_layout_table,
+            table_list: vec![HashMap::new()],
+            root_table,
         }
     }
-    pub fn get(&self, name: &str) -> Option<&HashMap<String, StructLayoutEntry>> {
-        if let Some(entry) = self.struct_layout_table.get(name) {
-            return Some(entry)
-        }
-        if let Some(entry) = self.global_struct_layout_table.get(name) {
-            return Some(entry)
-        }
-        return None
-    }
-    pub fn insert(&mut self, name: String, layout:HashMap<String, StructLayoutEntry> ) {
-        self.struct_layout_table.insert(name, layout);
-    }
-}
-#[derive(Debug, Clone)]
-pub struct FunctionStructSizeTable<'a> {
-    pub struct_size_table: StructSizeTable,
-    pub global_function_struct_size_table: &'a StructSizeTable,
-}
-
-impl <'a> FunctionStructSizeTable<'a> {
-    pub fn new(global_function_struct_size_table: &'a StructSizeTable) -> Self {
-        Self {
-            struct_size_table: HashMap::new(),
-            global_function_struct_size_table,
-        }
+    pub fn insert(&mut self, name: String, entry: usize) {
+        let len = self.table_list.len()-1; 
+        self.table_list[len].insert(name, entry);
     }
     pub fn get(&self, name: &str) -> Option<&usize> {
-        if let Some(entry) = self.struct_size_table.get(name) {
-            return Some(entry);
+        let mut index = self.table_list.len()-1;
+        for _i in 0..self.table_list.len()-1 {
+            let current_table = &self.table_list[index];
+            if let Some(entry) = current_table.get(name) {
+                return Some(entry);
+            }
+            index -=1;
         }
-        if let Some(entry) = self.global_function_struct_size_table.get(name) {
-            return Some(entry);
+        match self.root_table {
+            Some(table) => {
+                table.get(name)
+            }
+            None => None
         }
-        return None;
     }
-    pub fn insert(&mut self, name: String, size: usize) {
-        self.struct_size_table.insert(name, size);
+    pub fn enter_scope(&mut self) {
+        self.table_list.push(Default::default());
+    }
+    pub fn exit_scope(&mut self) {
+        self.table_list.pop();
     }
 }
-
+///
 pub type FunctionSignatureTable = HashMap<String, FunctionSignature>;
 #[derive(Debug, Clone)]
 pub struct FunctionSignature {

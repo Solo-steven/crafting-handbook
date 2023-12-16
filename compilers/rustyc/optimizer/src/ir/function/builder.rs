@@ -423,6 +423,15 @@ impl Function {
         self.instructions.insert(inst_id, InstructionData::Jump { opcode: OpCode::Jump, dst });
         self.add_inst_id_to_current_block(inst_id);
     }
+    pub fn build_phi_inst(&mut self, pairs: Vec<(BasicBlock, Value)>) -> Value {
+        let inst_id = Instruction(self.next_inst_index);
+        self.next_inst_index += 1;
+        let value_type = self.get_value_ir_type(pairs[0].1.clone());
+        let dst = self.add_register(value_type.clone());
+        self.instructions.insert(inst_id, InstructionData::Phi { opcode: OpCode::Phi, dst, from: pairs });
+        self.add_inst_id_to_current_block(inst_id);
+        dst
+    }
     pub fn build_call_inst(&mut self, name: String, params: Vec<Value>, return_type: Option<IrValueType>) -> Option<Value> {
         let dst = match return_type {
             Some(ir_type) => Some(self.add_register(ir_type)),

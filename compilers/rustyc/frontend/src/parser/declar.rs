@@ -63,7 +63,7 @@ impl<'a> Parser<'a> {
                         ParserResult::Ok(Declaration::DelcarList(DeclarationList { value_type, declarators }))
                     }
                     TokenKind::Comma => {
-                        let declarators= self.parse_declaration_list(Vec::new(), pointer_type.clone())?;
+                        let declarators= self.parse_declaration_list(vec![Declarator { id, init_value: None, value_type: pointer_type }], value_type.clone())?;
                         ParserResult::Ok(Declaration::DelcarList(DeclarationList { value_type, declarators }))
                     }
                     _ => ParserResult::Err(String::from(""))

@@ -14,14 +14,12 @@ use std::fs;
 
 fn main(){
     let source = "
-    struct Wrapper {
-        int age;
-    };
-    struct Wrapper test() {
-        
-    }
     int main() {
-        test();
+        struct Test {
+            int value;
+            int age;
+        };
+        struct Test a, b;
     }
     ";
     let source2 = "
