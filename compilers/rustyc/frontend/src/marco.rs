@@ -186,7 +186,19 @@ macro_rules! is_looksahed_type_name_token {
             TokenKind::Struct | TokenKind::Enum | TokenKind::Union | 
             TokenKind::Char | TokenKind::Unsigned | TokenKind::Signed |
             TokenKind::Int | TokenKind::Long | TokenKind::Short |
-            TokenKind::Float | TokenKind::Double => true,
+            TokenKind::Float | TokenKind::Double | TokenKind::Void => true,
+            _ => false,
+        }
+    };
+}
+#[macro_export]
+macro_rules! is_current_type_name_token {
+    ($parser: expr) => {
+        match $parser.get_token() {
+            TokenKind::Struct | TokenKind::Enum | TokenKind::Union | 
+            TokenKind::Char | TokenKind::Unsigned | TokenKind::Signed |
+            TokenKind::Int | TokenKind::Long | TokenKind::Short |
+            TokenKind::Float | TokenKind::Double | TokenKind::Void => true,
             _ => false,
         }
     };

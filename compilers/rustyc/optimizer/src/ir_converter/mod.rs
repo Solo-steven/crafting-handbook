@@ -198,13 +198,13 @@ fn map_ast_type_to_symbol_type(value_type: &ValueType, struct_layout_table: &mut
                 }
             }
         }
+        ValueType::Void => SymbolType::BasicType(IrValueType::Void),
         ValueType::Union(_) => todo!(),
         ValueType::Enum(_) => todo!(),
         // not gonna to implement
         ValueType::LongDoubleComplex => todo!(),
         ValueType::FloatComplex => todo!(),
         ValueType::DoubleComplex => todo!(),
-        ValueType::Void => todo!(),
     }
 }
 /// ## Helper function to get the size from a as type
@@ -260,12 +260,12 @@ fn get_size_form_ast_type(value_type: &ValueType, struct_size_table: &mut Struct
                 }
             }
         }
+        ValueType::Void => 0,
         ValueType::Union(_) => todo!(),
         ValueType::Enum(_) => todo!(),
         // not gonna to implement
         ValueType::LongDoubleComplex => todo!(),
         ValueType::FloatComplex => todo!(),
         ValueType::DoubleComplex => todo!(),
-        ValueType::Void => todo!(),
     }
 }

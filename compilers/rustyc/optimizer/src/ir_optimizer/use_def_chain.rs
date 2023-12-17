@@ -121,7 +121,8 @@ impl UseDefAnaylsier {
                     InstructionData::ToI32 { opcode: _ , src, dst } |
                     InstructionData::ToI64 { opcode: _ , src, dst } |
                     InstructionData::ToF32 { opcode: _ , src, dst } |
-                    InstructionData::ToF64 { opcode: _ , src, dst } => {
+                    InstructionData::ToF64 { opcode: _ , src, dst } | 
+                    InstructionData::ToAddress { opcode: _ , src, dst } => {
                         if self.is_value_register(dst, function) { self.add_to_def_cache(dst.clone(), block_id.clone(), inst_id.clone())}
                         if self.is_value_register(src, function) { self.add_to_use_cache(src.clone(), block_id.clone(), inst_id.clone())}
                     }
@@ -173,8 +174,22 @@ impl UseDefAnaylsier {
                             None => {},
                         };
                     }
-                    // TODO: Phi Node
-                    _ => {}
+                    InstructionData::Ret { opcode: _ , value } => {
+                        if let Some(val) = value {
+                            if self.is_value_register(val, function) {
+                                self.add_to_use_cache(val.clone(), block_id.clone(), inst_id.clone());
+                            }
+                        }
+                    }
+                    InstructionData::Phi { opcode: _, dst, from } => {
+                        if self.is_value_register(dst, function) { self.add_to_def_cache(dst.clone(), block_id.clone(), inst_id.clone())}
+                        for (_block, value) in from {
+                            if self.is_value_register(value, function) {
+                                self.add_to_use_cache(value.clone(), block_id.clone(), inst_id.clone());
+                            }
+                        }
+                    }
+                    InstructionData::Comment(_) => {}
                 }
             }
         }

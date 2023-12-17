@@ -151,7 +151,7 @@ impl Function {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
                 let src2_str = get_text_format_of_value(self.values.get(src2).unwrap());
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                output_code.push_str(format!(" {} = icmp {} {} {:?}\n", dst_str, src1_str, src2_str, flag).as_str());
+                output_code.push_str(format!("{} = icmp {} {} {:?}\n", dst_str, src1_str, src2_str, flag).as_str());
             }
             InstructionData::FAdd { opcode: _, src1, src2, dst } => {
                 let src1_str = get_text_format_of_value(self.values.get(src1).unwrap());
@@ -358,6 +358,7 @@ pub fn get_text_format_of_value(value: &ValueData) -> String {
 /// Get the text format of a DataType
 pub fn get_text_format_of_datatype(data_type: &IrValueType) -> &'static str {
     match data_type {
+        IrValueType::Void => "void",
         IrValueType::U8 => "u8",
         IrValueType::U16 => "u16",
         IrValueType::F32 => "f32",

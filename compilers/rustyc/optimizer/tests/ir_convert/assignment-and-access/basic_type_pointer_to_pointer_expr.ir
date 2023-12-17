@@ -1,0 +1,58 @@
+function main () -> i32 {
+block1:
+	t1 = stackalloc i32, size 4, align 8
+	t2 = stackalloc address, size 4, align 8
+	store address t1 [t2, 0]
+	t3 = stackalloc address, size 4, align 8
+	store address t2 [t3, 0]
+	t4 = stackalloc i32, size 4, align 8
+	store i32 10 [t4, 0]
+	load address t5 [t3, 0]
+	load address t6 [t5, 0]
+	load i32 t7 [t6, 0]
+	t8 = add t7 10
+	load address t9 [t3, 0]
+	load address t10 [t9, 0]
+	load i32 t11 [t10, 0]
+	load i32 t12 [t4, 0]
+	t13 = add t11 t12
+	load address t14 [t3, 0]
+	load address t15 [t14, 0]
+	load address t16 [t2, 0]
+	load i32 t17 [t16, 0]
+	t18 = add t17 10
+	store i32 t18 [t15, 0]
+	load address t19 [t3, 0]
+	load address t20 [t19, 0]
+	load address t21 [t3, 0]
+	load address t22 [t21, 0]
+	load i32 t23 [t22, 0]
+	load i32 t24 [t4, 0]
+	t25 = add t23 t24
+	store i32 t25 [t20, 0]
+}
+;;  t1 -> address
+;;  t2 -> address
+;;  t3 -> address
+;;  t4 -> address
+;;  t5 -> address
+;;  t6 -> address
+;;  t7 -> i32
+;;  t8 -> i32
+;;  t9 -> address
+;;  t10 -> address
+;;  t11 -> i32
+;;  t12 -> i32
+;;  t13 -> i32
+;;  t14 -> address
+;;  t15 -> address
+;;  t16 -> address
+;;  t17 -> i32
+;;  t18 -> i32
+;;  t19 -> address
+;;  t20 -> address
+;;  t21 -> address
+;;  t22 -> address
+;;  t23 -> i32
+;;  t24 -> i32
+;;  t25 -> i32

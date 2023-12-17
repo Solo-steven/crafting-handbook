@@ -15,11 +15,11 @@ use std::fs;
 fn main(){
     let source = "
     int main() {
-        struct Test {
-            int value;
-            int age;
-        };
-        struct Test a, b;
+        int c = 10, b = 4;
+        int array[c][b];
+        sizeof(array);
+        sizeof(int [c][b]);
+        return 0; 
     }
     ";
     let source2 = "

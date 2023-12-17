@@ -140,7 +140,8 @@ impl LivenessAnaylsier {
                 InstructionData::ToI32 { opcode: _ , src, dst } |
                 InstructionData::ToI64 { opcode: _ , src, dst } |
                 InstructionData::ToF32 { opcode: _ , src, dst } |
-                InstructionData::ToF64 { opcode: _ , src, dst } => {
+                InstructionData::ToF64 { opcode: _ , src, dst } | 
+                InstructionData::ToAddress { opcode: _ , src, dst }=> {
                     if self.is_value_register(src, function) && !kill_set.contains(src) {
                         use_set.insert(src.clone());
                     }
@@ -218,8 +219,18 @@ impl LivenessAnaylsier {
                         }
                     }
                 }
-                // TODO: phi
-                _ => {}
+                InstructionData::Ret { opcode: _, value } => {
+                    if let Some(val) = value {
+                        use_set.insert(val.clone());
+                    }
+                }
+                InstructionData::Phi { opcode: _, dst, from } => {
+                    kill_set.insert(dst.clone());
+                    for (_block, val) in from {
+                        use_set.insert(val.clone());
+                    }
+                }
+                InstructionData::Comment(_) => {}
             }
         }
         (kill_set, use_set)

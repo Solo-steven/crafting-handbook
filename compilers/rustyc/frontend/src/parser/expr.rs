@@ -14,6 +14,7 @@ use crate::{
     map_unary_token_to_unary_ops,
     map_update_token_to_update_ops,
     is_looksahed_type_name_token,
+    is_current_type_name_token,
 };
 
 impl<'a> Parser<'a> {
@@ -117,12 +118,17 @@ impl<'a> Parser<'a> {
             let unary_op = map_unary_token_to_unary_ops!(self.get_token());
             self.next_token();
             if unary_op == UnaryOps::Sizeof {
-                if !(self.get_token() == TokenKind::ParenthesesLeft)  {
+                expect_token!(TokenKind::ParenthesesLeft, self);
+                if is_current_type_name_token!(self) {
                     let mut value_type = self.parse_value_type(None)?;
                     value_type =  self.parse_type_with_pointer_type(value_type);
+                    value_type = self.parse_type_with_array_type(value_type)?;
                     expect_token!(TokenKind::ParenthesesRight, self);
                     return ParserResult::Ok(Expression::SizeOfTypeExpr(SizeOfTypeExpression { value_type }))
                 }
+                let expr = self.parse_unary_expr()?;
+                expect_token!(TokenKind::ParenthesesRight, self);
+                return ParserResult::Ok(Expression::SizeOfValueExpr(SizeOfValueExpression{ expr: Box::new(expr) }))
             }
             let expr = self.parse_unary_expr()?;
             ParserResult::Ok(Expression::UnaryExpr(UnaryExpression { expr: Box::new(expr), ops: unary_op }))

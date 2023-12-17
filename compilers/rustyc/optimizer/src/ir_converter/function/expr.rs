@@ -14,6 +14,73 @@ enum CallSequnceType {
     Subscript((Vec<Value>, usize)), // (offset of linear array format, access level)
 }
 
+/// ## Helper Marco for getting a size from a symbol type.
+/// Using a marco instead of function for avoid some borrowing problem. and this marco 
+/// will return a value as the size of symbol type
+macro_rules! get_size_from_symbol_type {
+    ($converter: expr, $symbol_type: expr) => {
+        match $symbol_type {
+            SymbolType::BasicType(ir_type) => {
+                match ir_type {
+                    IrValueType::Void => $converter.function.create_u8_const(0),
+                    IrValueType::U8 => $converter.function.create_u8_const(1),
+                    IrValueType::U16 => $converter.function.create_u8_const(2),
+                    IrValueType::U32 => $converter.function.create_u8_const(4),
+                    IrValueType::U64 => $converter.function.create_u8_const(8),
+                    IrValueType::I16 => $converter.function.create_u8_const(2),
+                    IrValueType::I32 => $converter.function.create_u8_const(4),
+                    IrValueType::I64 => $converter.function.create_u8_const(8),
+                    IrValueType::Address => $converter.function.create_u8_const(4),
+                    IrValueType::F32 => $converter.function.create_u8_const(4),
+                    IrValueType::F64 => $converter.function.create_u8_const(8),
+                }
+            }
+            SymbolType::PointerType(_) => $converter.function.create_u8_const(4),
+            SymbolType::StructalType(struct_name) => {
+                let size_usize =$converter.struct_size_table.get(struct_name).unwrap().clone();
+                $converter.function.create_u8_const(size_usize as u8)
+            }
+            SymbolType::ArrayType(array_symbol_type) => {
+                let mut array_size_value = match array_symbol_type.array_of.as_ref() {
+                    SymbolType::BasicType(ir_type) => {
+                        match ir_type {
+                            IrValueType::Void => $converter.function.create_u8_const(0),
+                            IrValueType::U8 => $converter.function.create_u8_const(1),
+                            IrValueType::U16 => $converter.function.create_u8_const(2),
+                            IrValueType::U32 => $converter.function.create_u8_const(4),
+                            IrValueType::U64 => $converter.function.create_u8_const(8),
+                            IrValueType::I16 => $converter.function.create_u8_const(2),
+                            IrValueType::I32 => $converter.function.create_u8_const(4),
+                            IrValueType::I64 => $converter.function.create_u8_const(8),
+                            IrValueType::Address => $converter.function.create_u8_const(4),
+                            IrValueType::F32 => $converter.function.create_u8_const(4),
+                            IrValueType::F64 => $converter.function.create_u8_const(8),
+                        }
+                    }
+                    SymbolType::PointerType(_) => $converter.function.create_u8_const(4),
+                    SymbolType::StructalType(struct_name) => {
+                        let size_usize =$converter.struct_size_table.get(struct_name).unwrap().clone();
+                        $converter.function.create_u8_const(size_usize as u8)
+                    }
+                    _ => unreachable!(),
+                };
+                for val in &array_symbol_type.value_of_dims {
+                    array_size_value = $converter.function.build_mul_inst(array_size_value, val.clone());
+                }
+                array_size_value  
+            }
+        }  
+    };
+}
+/// ## Helper marco for unreachable error
+/// By typecheck, we can ensure that some sematic error, will not be happend, so
+/// those sematic error case.
+macro_rules! unreachable_error {
+    ($string: expr) => {
+        panic!("{}", $string)
+    };
+}
+
 impl<'a> FunctionCoverter<'a> {
     /// ## Accept a expression ast and generate instruction for ast.
     /// this function just perform a pattern match, call other function just like visitor pattern
@@ -21,6 +88,7 @@ impl<'a> FunctionCoverter<'a> {
     /// function return a option of value.
     pub (super) fn accept_expr(&mut self, expr: &Expression) -> Option<Value> {
         match expr {
+            Expression::SequentialExpr(seq_expr) => self.accept_sequement_expr(seq_expr),
             Expression::AssignmentExpr(assign_expr) => Some(self.accept_assignment_expr(assign_expr)),
             Expression::ConditionalExpr(condition_expr) => Some(self.accept_condition_expr(condition_expr)),
             Expression::BinaryExpr(binary_expr) => Some(self.accept_binary_expr(binary_expr)),
@@ -31,7 +99,9 @@ impl<'a> FunctionCoverter<'a> {
             Expression::IntLiteral(int_literal) => Some(self.accept_int_literal(int_literal)),
             Expression::FloatLiteral(float_literal) => Some(self.accept_float_literal(float_literal)),
             Expression::ParenthesesExpr(para_expr) => self.accept_expr(&para_expr.expr),
-            Expression::CastExpr(cast_expr) => todo!(),
+            Expression::CastExpr(cast_expr) => Some(self.accpet_cast_expr(cast_expr)),
+            Expression::SizeOfTypeExpr(size_of_type_expr) => Some(self.accept_size_of_type_expr(size_of_type_expr)),
+            Expression::SizeOfValueExpr(size_of_value_expr) => Some(self.accept_size_of_value_expr(size_of_value_expr)),
             _ => {
                 println!("{:?}", expr);
                 todo!()
@@ -44,6 +114,15 @@ impl<'a> FunctionCoverter<'a> {
     /// this function to unwarp the return value of `accept_value`.
     pub (super) fn accept_expr_with_value(&mut self, expr: &Expression) -> Value {
         self.accept_expr(expr).unwrap()
+    }
+    /// ## Accpet Sequential Expression
+    /// Just using loop to accept vec of expression and return the last value;
+    fn accept_sequement_expr(&mut self, seq_expr: &SequentialExpression) -> Option<Value> {
+        let mut last_value = None;
+        for expr in &seq_expr.exprs {
+            last_value = self.accept_expr(expr);
+        }
+        last_value
     }
     /// ## Accept a assignment expression
     /// Generate assignment expression, when a expression in left hand side, it should return a value contain address
@@ -82,7 +161,7 @@ impl<'a> FunctionCoverter<'a> {
             }
             SymbolType::ArrayType(_) => {
                 // in C99, we can not assign a array. this should be check by type checker
-                unreachable!("{}", self.error_map.unreach_assignment_expr_left_value_is_array_type);
+                unreachable_error!(self.error_map.unreach_assignment_expr_left_value_is_array_type);
             }
         }
     }
@@ -147,6 +226,73 @@ impl<'a> FunctionCoverter<'a> {
                 self.function.build_icmp_inst(left_value, right_value, CmpFlag::Gt)
             }
             _ => todo!(),
+        }
+    }
+    /// ## Accept a cast expression
+    /// If cast type is basic type, just build a convert instruction. if convert type is a 
+    /// pointer, add new value to function and add info to address cache.
+    fn accpet_cast_expr(&mut self, cast_expr: &CastExpression) -> Value {
+        let to_symbol_type = self.map_ast_type_to_symbol_type(&cast_expr.type_name);
+        let src = self.accept_expr_with_value(&cast_expr.expr);
+        match to_symbol_type {
+            SymbolType::BasicType(ir_type) => {
+                self.generate_type_convert(src, &ir_type)
+            }   
+            SymbolType::PointerType(pointer_type) => {
+                let cast_value = self.generate_type_convert(src, &IrValueType::Address);
+                self.address_cache.insert(
+                    cast_value,
+                    AddressCacheEntry::PointerSymbolType(PointerSymbolType { level: pointer_type.level, pointer_to: pointer_type.pointer_to }
+                ));
+                cast_value
+            }
+            SymbolType::StructalType(_) => {
+                // C99 forbiden cast object to struct
+                // you can only convert a struc pointer.
+                unreachable_error!(self.error_map.unreach_convert_a_struct_type);
+            }
+            SymbolType::ArrayType(_) => {
+                // C99 forbiden cast to array type
+                unreachable_error!(self.error_map.unreach_convert_a_array_type);
+            }
+        }
+    }
+    /// ## Accept size of type expression
+    /// Calling `get_size_from_ast_type` to return a value of size. if it is a variable length array
+    /// we need to create symbol and passing it as extra info,
+    fn accept_size_of_type_expr(&mut self, size_of_type_expr: &SizeOfTypeExpression) -> Value {
+        let temp_symbol_type = self.map_ast_type_to_symbol_type(&size_of_type_expr.value_type);
+        self.get_size_form_ast_type(&size_of_type_expr.value_type, Some(&temp_symbol_type))
+    }
+    /// ## Accept a size of expression
+    /// If expression is a identifier, return size according to symbol type. if is a expression, it have to
+    /// be a basic type, just return a size of basic type.
+    fn accept_size_of_value_expr(&mut self, size_of_value_expr: &SizeOfValueExpression) -> Value {
+        if let Expression::Identifier(id) = size_of_value_expr.expr.as_ref() {
+            let symbol = self.symbol_table.get(&id.name).unwrap();
+            get_size_from_symbol_type!(self, &symbol.symbol_type)
+        }else {
+            let value  = self.accept_expr(&size_of_value_expr.expr);
+            match value {
+                Some(val) => {
+                    let ir_type = self.function.get_value_ir_type(val);
+                    let size_usize = match ir_type {
+                        IrValueType::Void => 0,
+                        IrValueType::U8 => 1,
+                        IrValueType::U16 => 2,
+                        IrValueType::U32 => 4,
+                        IrValueType::U64 => 8,
+                        IrValueType::I16 => 2,
+                        IrValueType::I32 => 4,
+                        IrValueType::I64 => 8,
+                        IrValueType::Address => 4,
+                        IrValueType::F32 => 4,
+                        IrValueType::F64 => 8,
+                    };
+                    self.function.create_u8_const(size_usize as u8)
+                }
+                None => self.function.create_u8_const(0)
+            }
         }
     }
     /// Helper function for `accept_assignment_expr`
@@ -232,7 +378,7 @@ impl<'a> FunctionCoverter<'a> {
             },
             UnaryOps::AddressOf => self.accept_address_of_unary_expr(unary_expr),
             UnaryOps::Dereference => self.accept_dereference_unary_expr(unary_expr),
-            _ => unreachable!(),
+            _ => unreachable_error!(self.error_map.unreach_size_of_operator_in_unary_expr),
         }
     }
     /// ## Accept a right hand side unary expression where op is a address of (&)
@@ -301,7 +447,7 @@ impl<'a> FunctionCoverter<'a> {
                             SymbolType::BasicType(ir_type) => self.function.build_load_register_inst(value, offset, ir_type.clone()),
                             SymbolType::StructalType(_) => self.function.build_load_register_inst(value, offset, IrValueType::Address),
                             // when is array type, it has already handled above, 
-                            // there is not nested pointer type for symbol.
+                            // there is no nested pointer type for symbol.
                             _ => unreachable!()
                         }
                     }else {
@@ -493,9 +639,8 @@ impl<'a> FunctionCoverter<'a> {
                         index += 1;
                     }
                     // mul access index by the size of array type
-                    let size_of_array_element = self.get_size_from_symbol_type(array_symbol_type.array_of.as_ref());
-                    let value_of_size_of_array_element = self.function.create_i32_const(size_of_array_element as i32);
-                    let mul_value = self.function.build_mul_inst(array_access_index, value_of_size_of_array_element);
+                    let value_of_array_element = get_size_from_symbol_type!(self, array_symbol_type.array_of.as_ref());
+                    let mul_value = self.function.build_mul_inst(array_access_index, value_of_array_element);
                     base = self.function.build_add_inst(base, mul_value);
                     offset = 0;
                     // if access to end, we maybe need to change strucy layout if array of type is struct 
@@ -543,7 +688,7 @@ impl<'a> FunctionCoverter<'a> {
                     }
                     array_access_level = level;
                 } else {
-                    unreachable!("{}", self.error_map.unreach_subscription_object_is_not_a_pointer_or_array);
+                    unreachable_error!(self.error_map.unreach_subscription_object_is_not_a_pointer_or_array);
                 }
                 continue;
             }

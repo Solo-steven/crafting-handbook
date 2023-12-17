@@ -198,7 +198,7 @@ impl<'a> FunctionCoverter<'a> {
     fn accept_declar_list(&mut self, declar_list: &DeclarationList) {
         for declarator in &declar_list.declarators {
             let symbol_type = self.map_ast_type_to_symbol_type(&declarator.value_type);
-            let size = self.get_size_form_ast_type(&declarator.value_type);
+            let size = self.get_size_form_ast_type(&declarator.value_type, Some(&symbol_type));
             let ir_type = match symbol_type {
                 SymbolType::BasicType(ref basic_ir_type) => Some(basic_ir_type.clone()),
                 SymbolType::PointerType(_) => Some(IrValueType::Address),
@@ -231,34 +231,9 @@ impl<'a> FunctionCoverter<'a> {
         match value_type {
             ValueType::Struct(_) => {
                 self.map_ast_type_to_symbol_type(value_type);
-                self.get_size_form_ast_type(value_type);
+                self.get_size_form_ast_type(value_type, None);
             }
             _ => {}
-        }
-    }
-    fn get_size_from_symbol_type(&self, symbol_type: &SymbolType) -> usize {
-        match symbol_type {
-            SymbolType::BasicType(ir_type) => {
-                match ir_type {
-                    IrValueType::U8 => 1,
-                    IrValueType::U16 => 2,
-                    IrValueType::U32 => 4,
-                    IrValueType::U64 => 8,
-                    IrValueType::I16 => 2,
-                    IrValueType::I32 => 4,
-                    IrValueType::I64 => 8,
-                    IrValueType::Address => 4,
-                    IrValueType::F32 => 4,
-                    IrValueType::F64 => 8,
-                }
-            }
-            SymbolType::PointerType(_) => 32,
-            SymbolType::StructalType(struct_name) => {
-                self.struct_size_table.get(struct_name).unwrap().clone()
-            }
-            SymbolType::ArrayType(array_type) => {
-                self.get_size_from_symbol_type(array_type.array_of.as_ref())
-            }
         }
     }
     /// ## Helper function For Getting symbol type from variable AST type
@@ -282,27 +257,27 @@ impl<'a> FunctionCoverter<'a> {
     /// ## Helpr function for getting value of ast type size
     /// This function is a wrapper function for util function `get_size_from_ast_type`,
     /// Since util function can not get the size of variable arry. so this wrapper function 
-    /// will get size of variable array by the help of `accept_expr`.
-    fn get_size_form_ast_type(&mut self, value_type: &ValueType) -> Value {
-        let mut symbol_type = self.map_ast_type_to_symbol_type(value_type);
-        if let SymbolType::ArrayType(array_symbol_type) = &mut symbol_type {
-            if let ValueType::ArrayType(array_value_type) = value_type {
-                let values = &array_symbol_type.value_of_dims;
-                let const_size = get_size_form_ast_type(&array_value_type.array_of, &mut self.struct_size_table) as u32;
-                let mut size = self.function.create_u32_const(const_size);
-                for index in 0..values.len() {
-                    let value = values[values.len() - index -1];
-                    let (next_size, next_value, _) = self.align_two_base_type_value_to_same_type(size, value, Some(IrValueType::U32));
-                    size = self.function.build_mul_inst(next_size, next_value);
+    /// will get size of variable array by the help of `accept_expr` and givn symbol type.
+    fn get_size_form_ast_type(&mut self, value_type: &ValueType, helper_symbol_type: Option<&SymbolType>) -> Value {
+        if let Some(symbol_type) = helper_symbol_type {
+            if let SymbolType::ArrayType(array_symbol_type) = &symbol_type {
+                if let ValueType::ArrayType(array_value_type) = value_type {
+                    let values = &array_symbol_type.value_of_dims;
+                    let const_size = get_size_form_ast_type(&array_value_type.array_of, &mut self.struct_size_table) as u32;
+                    let mut size = self.function.create_u32_const(const_size);
+                    for index in 0..values.len() {
+                        let value = values[values.len() - index -1];
+                        let (next_size, next_value, _) = self.align_two_base_type_value_to_same_type(size, value, Some(IrValueType::U32));
+                        size = self.function.build_mul_inst(next_size, next_value);
+                    }
+                    return size;
+                }else {
+                    unreachable!()
                 }
-                size
-            }else {
-                unreachable!()
             }
-        }else {
-            let size_usize = get_size_form_ast_type(&value_type, &mut self.struct_size_table);
-            self.function.create_u32_const(size_usize as u32)
         }
+        let size_usize = get_size_form_ast_type(&value_type, &mut self.struct_size_table);
+        self.function.create_u32_const(size_usize as u32)
     }
     /// ## Helper function to Align two value with same type.
     /// when performance some instuction, we maybe need to prompt or narrow data type for instruction.
@@ -342,6 +317,7 @@ impl<'a> FunctionCoverter<'a> {
     /// this function will not check is src value and target type is same.
     fn generate_type_convert(&mut self, src: Value, ir_type: &IrValueType) -> Value {
         match ir_type {
+            IrValueType::Void => panic!(),
             IrValueType::U8 => self.function.build_to_u8_inst(src),
             IrValueType::U16 => self.function.build_to_u16_inst(src),
             IrValueType::U32 => self.function.build_to_u32_inst(src),

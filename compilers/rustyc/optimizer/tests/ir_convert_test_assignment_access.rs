@@ -3,14 +3,15 @@ use std::fs::read_to_string;
 use rustyc_frontend::parser::Parser;
 use rustyc_optimizer::ir_converter::Converter;
 
+/// Get a path to `assets/c` in the repo
 fn get_c_dir_path() -> String {
     String::from(env::current_dir().unwrap().join("../../../assets/c/").as_os_str().to_str().unwrap())
 }
-
+/// Gte a path the ir result `./test/ir_convert`.
 fn get_ir_result_dir_path() -> String {
     String::from(env::current_dir().unwrap().join("tests/ir_convert/").as_os_str().to_str().unwrap())
 }
-
+/// Test helper, test is c code ouput ir match as expect.
 fn test_file_name(name: &'static str)  {
     let mut path = get_c_dir_path();
     path.push_str(name);
@@ -38,26 +39,23 @@ fn test_file_name(name: &'static str)  {
         Err(_) => panic!("Can not read c code - {}", path),
     }
 }
-
 #[test]
-fn test_basic_type_access_int() {
-    test_file_name("simple_basic_access_int");
-}
-
-#[test]
-fn test_basic_access_float() {
-    test_file_name("simple_basic_access_float");
+fn test_basic_type_assignmenr() {
+    test_file_name("assignment-and-access/basic_type_assignment");
 }
 #[test]
-fn test_basic_pointer_access() {
-    test_file_name("simple_basic_pointer_access");
+fn test_basic_type_pointer_assignment() {
+    test_file_name("assignment-and-access/basic_type_pointer_assignment");
 }
 #[test]
-fn test_pointer_to_pointer_access() {
-    
+fn test_basic_type_pointer_expr() {
+    test_file_name("assignment-and-access/basic_type_pointer_expr");
 }
-
 #[test]
-fn test_complex_struct_access() {
-
+fn test_basic_type_pointer_to_pointer_assignment() {
+    test_file_name("assignment-and-access/basic_type_pointer_to_pointer_assignment");
+}
+#[test]
+fn test_basic_type_pointer_to_pointer_expr() {
+    test_file_name("assignment-and-access/basic_type_pointer_to_pointer_expr");
 }

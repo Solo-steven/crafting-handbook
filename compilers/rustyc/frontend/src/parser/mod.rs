@@ -61,7 +61,7 @@ impl<'a> Parser<'a> {
             TokenKind::Struct | TokenKind::Enum | TokenKind::Union | 
             TokenKind::Char | TokenKind::Unsigned | TokenKind::Signed |
             TokenKind::Int | TokenKind::Long | TokenKind::Short |
-            TokenKind::Float | TokenKind::Double  => ParserResult::Ok(BlockItem::Declar(self.parse_declaration()?)),
+            TokenKind::Float | TokenKind::Double | TokenKind::Void  => ParserResult::Ok(BlockItem::Declar(self.parse_declaration()?)),
             TokenKind::Typedef  => {
                 todo!();
             }

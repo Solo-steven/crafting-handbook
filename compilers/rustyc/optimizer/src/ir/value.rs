@@ -20,6 +20,7 @@ pub enum Immi {
 }
 #[derive(Debug, PartialEq, Clone, PartialOrd)]
 pub enum IrValueType {
+    Void,
     U8,
     U16,
     U32,

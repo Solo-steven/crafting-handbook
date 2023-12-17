@@ -64,7 +64,8 @@ fn construct_key_from_inst(inst: &InstructionData, numbering_table: &mut Numberi
         InstructionData::ToI32 { opcode , src, dst } |
         InstructionData::ToI64 { opcode , src, dst } |
         InstructionData::ToF32 { opcode , src, dst } |
-        InstructionData::ToF64 { opcode , src, dst }  => {
+        InstructionData::ToF64 { opcode , src, dst } |
+        InstructionData::ToAddress { opcode, src, dst } => {
             let src_number = get_numbering(src, numbering_table);
             Some((InstOpKey::Unary((src_number, opcode.clone())), dst.clone()))
         },
@@ -75,7 +76,7 @@ fn construct_key_from_inst(inst: &InstructionData, numbering_table: &mut Numberi
             Some((InstOpKey::Cmp((src1_number, src2_number, flag.clone())), dst.clone()))
         }
         // those instruction should not be see as redunent.
-        // TODO: Phi
+        // TODO: Phi ?
         _ => None,
     }
 }

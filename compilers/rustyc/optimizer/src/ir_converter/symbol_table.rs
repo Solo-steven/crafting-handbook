@@ -23,15 +23,13 @@ impl<'a> SymbolTable<'a> {
         let len = self.table_list.len()-1; 
         self.table_list[len].insert(name, entry);
     }
-    /// Get a symbol 
+    /// Get a symbol by looking up table
     pub fn get(&self, name: &str) -> Option<&SymbolEntry> {
-        let mut index = self.table_list.len()-1;
-        for _i in 0..self.table_list.len()-1 {
+        for index in (0..self.table_list.len()).rev() {
             let current_table = &self.table_list[index];
             if let Some(entry) = current_table.get(name) {
                 return Some(entry);
             }
-            index -=1;
         }
         match self.root_table {
             Some(table) => {
@@ -40,9 +38,11 @@ impl<'a> SymbolTable<'a> {
             None => None
         }
     }
+    // enter a scope, create a new table.
     pub fn enter_scope(&mut self) {
         self.table_list.push(Default::default());
     }
+    // eixt a scope, pop a table.
     pub fn exit_scope(&mut self) {
         self.table_list.pop();
     }
@@ -110,13 +110,11 @@ impl<'a> StructLayoutTable<'a> {
         self.table_list[len].insert(name, entry);
     }
     pub fn get(&self, name: &str) -> Option<&StructLayout> {
-        let mut index = self.table_list.len()-1;
-        for _i in 0..self.table_list.len()-1 {
+        for index in (0..self.table_list.len()).rev() {
             let current_table = &self.table_list[index];
             if let Some(entry) = current_table.get(name) {
                 return Some(entry);
             }
-            index -=1;
         }
         match self.root_table {
             Some(table) => {
@@ -151,13 +149,11 @@ impl<'a> StructSizeTable<'a> {
         self.table_list[len].insert(name, entry);
     }
     pub fn get(&self, name: &str) -> Option<&usize> {
-        let mut index = self.table_list.len()-1;
-        for _i in 0..self.table_list.len()-1 {
+        for index in (0..self.table_list.len()).rev() {
             let current_table = &self.table_list[index];
             if let Some(entry) = current_table.get(name) {
                 return Some(entry);
             }
-            index -=1;
         }
         match self.root_table {
             Some(table) => {

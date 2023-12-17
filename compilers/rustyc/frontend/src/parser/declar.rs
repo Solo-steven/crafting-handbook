@@ -89,6 +89,7 @@ impl<'a> Parser<'a> {
                 ParserResult::Ok(ValueType::Char)
             }
             TokenKind::Void => {
+                println!("void type");
                 self.next_token();
                 ParserResult::Ok(ValueType::Void)
             }
@@ -246,7 +247,7 @@ impl<'a> Parser<'a> {
             value_type
         }
     }
-    fn parse_type_with_array_type(&mut self , value_type: ValueType<'a>) -> ParserResult<ValueType<'a>> {
+    pub (super) fn parse_type_with_array_type(&mut self , value_type: ValueType<'a>) -> ParserResult<ValueType<'a>> {
         let mut dims = Vec::new();
         loop {
             if is_token!(TokenKind::BracketLeft, self) {
