@@ -1,0 +1,14 @@
+function main () -> i32 {
+block1:
+	t1 = stackalloc aggregate, size 8, align 8
+	t2 = stackalloc aggregate, size 8, align 8
+	t3 = stackalloc address, size 4, align 8
+	store address t1 [t3, 0]
+	t4 = stackalloc address, size 4, align 8
+	store address t2 [t4, 0]
+	ret 0
+}
+;;  t1 -> address
+;;  t2 -> address
+;;  t3 -> address
+;;  t4 -> address

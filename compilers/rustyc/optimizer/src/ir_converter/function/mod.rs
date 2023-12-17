@@ -119,6 +119,7 @@ impl<'a> FunctionCoverter<'a> {
         match statement {
             Statement::CompoundStmt(compound_stmt) => self.accept_compound_stmt(compound_stmt),
             Statement::IfStmt(if_stmt) => self.accept_if_stmt(if_stmt),
+            Statement::ForStmt(for_stmt) => self.accpet_for_stmt(for_stmt),
             Statement::ExprStmt(expr_stmt) => {self.accept_expr(&expr_stmt.expr);},
             Statement::ReturnStmt(return_stmt) => { self. accpet_return_stmt(return_stmt)}
             _ => todo!()
@@ -185,6 +186,43 @@ impl<'a> FunctionCoverter<'a> {
             self.function.build_brif_inst(value, conseq_block, end_block);
         }
         self.function.switch_to_block(end_block);
+    }
+    fn accpet_for_stmt(&mut self, for_stmt: &ForStatement) {
+        match &for_stmt.init {
+            Some(declar_for_expr) => {
+                match &declar_for_expr {
+                    DeclarationOrExpression::Declar(declar) => self.accept_declar(&declar),
+                    DeclarationOrExpression::Expr(expr) => { self.accept_expr(expr); },
+                }
+            }
+            None => {}
+        }
+        let test_block = self.function.create_block();
+        let body_block = self.function.create_block();
+        let final_block = self.function.create_block();
+        self.function.build_jump_inst(test_block);
+        self.function.connect_block(self.function.current_block.unwrap(), test_block);
+        self.function.connect_block(test_block, final_block);
+        self.function.connect_block(test_block, body_block);
+        self.function.connect_block(body_block, test_block);
+        self.function.connect_block(body_block, final_block);
+        self.function.switch_to_block(test_block);
+        match &for_stmt.test {
+            Some(test_expr) => {
+                let test_value = self.accept_expr_with_value(test_expr);
+                self.function.build_brif_inst(test_value, body_block, final_block);
+            }
+            None => {}
+        }
+        self.function.switch_to_block(body_block);
+        self.accept_statement(for_stmt.body.as_ref());
+        match &for_stmt.update {
+            Some(update_expr) => { self.accept_expr(update_expr); }
+            None => {}
+        }
+        self.function.build_jump_inst(test_block);
+
+        self.function.switch_to_block(final_block);
     }
     fn accept_declar(&mut self, declar: &Declaration) {
         match declar {

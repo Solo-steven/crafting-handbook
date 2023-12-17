@@ -5,11 +5,11 @@ use rustyc_optimizer::ir_converter::Converter;
 
 /// Get a path to `assets/c` in the repo
 fn get_c_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("../../../assets/c/").as_os_str().to_str().unwrap())
+    String::from(env::current_dir().unwrap().join("../../../assets/c/expr/").as_os_str().to_str().unwrap())
 }
 /// Gte a path the ir result `./test/ir_convert`.
 fn get_ir_result_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("tests/ir_convert/").as_os_str().to_str().unwrap())
+    String::from(env::current_dir().unwrap().join("tests/ir_convert/expr/").as_os_str().to_str().unwrap())
 }
 /// Test helper, test is c code ouput ir match as expect.
 fn test_file_name(name: &'static str)  {
@@ -42,13 +42,21 @@ fn test_file_name(name: &'static str)  {
 
 #[test]
 fn test_cast_basic_type_expr() {
-    test_file_name("expr/cast_basic_type_expr");
+    test_file_name("cast_basic_type_expr");
 }
 #[test]
 fn test_cast_struct_pointer_expr() {
-    test_file_name("expr/cast_struct_pointer_expr");
+    test_file_name("cast_struct_pointer_expr");
 }
 #[test]
 fn test_size_of_array_basic_type_expr() {
-    test_file_name("expr/sizeof_array_basic_type_expr");
+    test_file_name("sizeof_array_basic_type_expr");
+}
+#[test]
+fn test_should_cast_basic_type_implicitly() {
+    test_file_name("should_cast_basic_type_implicitly");
+}
+#[test]
+fn test_assignment_expr() {
+    test_file_name("assignment_expr");
 }

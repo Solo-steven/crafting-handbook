@@ -1,0 +1,18 @@
+function main () -> i32 {
+block1:
+	t1 = stackalloc i32, size 4, align 8
+	store i32 10 [t1, 0]
+	t2 = stackalloc f32, size 4, align 8
+	store f32 100 [t2, 0]
+	load i32 t3 [t1, 0]
+	load f32 t4 [t2, 0]
+	t5 = toF32 t3
+	t6 = mul t5 t4
+	ret 0
+}
+;;  t1 -> address
+;;  t2 -> address
+;;  t3 -> i32
+;;  t4 -> f32
+;;  t5 -> f32
+;;  t6 -> f32

@@ -110,9 +110,11 @@ pub fn create_dom_graph() -> Function {
 fn main() {
     let program = Parser::new("
     int main() {
-        int i = 10;
-        float k = (float) i;
-        return 0;
+        int a = 10;
+        for (int i = 0; i < 100; ++i) {
+            a = 10 + a;
+        }
+        return a;
     }
     ").parse().unwrap();
     // println!("{:#?}", program);

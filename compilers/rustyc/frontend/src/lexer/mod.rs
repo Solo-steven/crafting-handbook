@@ -322,11 +322,13 @@ impl<'a> Lexer<'a> {
                     self.eat_char();
                     self.finish_token();
                     self.current_kind = TokenKind::Increment;
+                    return;
                 }
                 '=' => {
                     self.eat_char();
                     self.finish_token();
                     self.current_kind = TokenKind::SumAssignment;
+                    return;
                 }
                 _ => {}
             }

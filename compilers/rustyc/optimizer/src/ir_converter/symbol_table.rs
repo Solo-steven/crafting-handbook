@@ -1,5 +1,5 @@
 /// This module provide four kind of table
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 use crate::ir::value::{Value, IrValueType};
 /// ## Symbol Table For Function Scope
 /// when enter a function scope, we need to create this table and provide
@@ -92,7 +92,7 @@ pub struct StructLayoutTable<'a> {
     table_list: Vec<HashMap<String, StructLayout>>,
     root_table: Option<&'a StructLayoutTable<'a>>
 }
-pub type StructLayout = HashMap<String, StructLayoutEntry>;
+pub type StructLayout = BTreeMap<String, StructLayoutEntry>;
 #[derive(Debug, Clone)]
 pub struct StructLayoutEntry {
     pub offset: usize,

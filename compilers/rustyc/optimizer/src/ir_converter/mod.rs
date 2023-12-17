@@ -3,6 +3,7 @@ mod symbol_table;
 mod function;
 
 use crate::ir_converter::function::FunctionCoverter;
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 use crate::ir::function::*;
 use crate::ir::value::*;
@@ -180,8 +181,8 @@ fn map_ast_type_to_symbol_type(value_type: &ValueType, struct_layout_table: &mut
                 },
                 StructType::Def(def) => {
                     let name = def.id.as_ref().unwrap().name.to_string();
-                    struct_layout_table.insert(name.clone(), HashMap::new());
-                    let mut layout = HashMap::new();
+                    struct_layout_table.insert(name.clone(), BTreeMap::new());
+                    let mut layout = BTreeMap::new();
                     let mut offset = 0;
                     for declarator in &def.declarator {
                         layout.insert(

@@ -11,7 +11,6 @@ int main() {
     struct Top top;
     int a = 100;
     top.value1 = 10 + top.nested.value2;
-    top.value2 = 100 + a / 10 * 9;
-    top.nested.value2 = top.nested.value1 = 1000;
+    top.value2 = 100 + a * 10 * 9;
     top.value1 =  top.nested.value2 + 900;
 }

@@ -15,11 +15,11 @@ use std::fs;
 fn main(){
     let source = "
     int main() {
-        int c = 10, b = 4;
-        int array[c][b];
-        sizeof(array);
-        sizeof(int [c][b]);
-        return 0; 
+        int a = 10;
+        for (int i = 0; i < 100; ++i) {
+            a = 10 + a;
+        }
+        return a;
     }
     ";
     let source2 = "

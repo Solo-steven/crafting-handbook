@@ -3,13 +3,13 @@ use std::fs::read_to_string;
 use rustyc_frontend::parser::Parser;
 use rustyc_optimizer::ir_converter::Converter;
 
-/// Get a path to `assets/c` in the repo
+/// Get a path to `assets/c/assignment-and-access/` in the repo
 fn get_c_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("../../../assets/c/").as_os_str().to_str().unwrap())
+    String::from(env::current_dir().unwrap().join("../../../assets/c/assignment-and-access/").as_os_str().to_str().unwrap())
 }
-/// Gte a path the ir result `./test/ir_convert`.
+/// Gte a path the ir result `./test/ir_convert/assignment-and-access/`.
 fn get_ir_result_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("tests/ir_convert/").as_os_str().to_str().unwrap())
+    String::from(env::current_dir().unwrap().join("tests/ir_convert/assignment-and-access/").as_os_str().to_str().unwrap())
 }
 /// Test helper, test is c code ouput ir match as expect.
 fn test_file_name(name: &'static str)  {
@@ -41,21 +41,49 @@ fn test_file_name(name: &'static str)  {
 }
 #[test]
 fn test_basic_type_assignmenr() {
-    test_file_name("assignment-and-access/basic_type_assignment");
+    test_file_name("basic_type_assignment");
 }
 #[test]
 fn test_basic_type_pointer_assignment() {
-    test_file_name("assignment-and-access/basic_type_pointer_assignment");
+    test_file_name("basic_type_pointer_assignment");
 }
 #[test]
 fn test_basic_type_pointer_expr() {
-    test_file_name("assignment-and-access/basic_type_pointer_expr");
+    test_file_name("basic_type_pointer_expr");
 }
 #[test]
 fn test_basic_type_pointer_to_pointer_assignment() {
-    test_file_name("assignment-and-access/basic_type_pointer_to_pointer_assignment");
+    test_file_name("basic_type_pointer_to_pointer_assignment");
 }
 #[test]
 fn test_basic_type_pointer_to_pointer_expr() {
-    test_file_name("assignment-and-access/basic_type_pointer_to_pointer_expr");
+    test_file_name("basic_type_pointer_to_pointer_expr");
+}
+#[test]
+fn test_struct_type_assignment() {
+    test_file_name("struct_type_assignment");
+}
+#[test]
+fn test_struct_type_expr() {
+    test_file_name("struct_type_expr");
+}
+#[test]
+fn test_struct_type_pointer_assignment() {
+    test_file_name("struct_type_pointer_assignment");
+}
+#[test]
+fn test_struct_type_pointer_expr() {
+    test_file_name("struct_type_pointer_expr");
+}
+#[test]
+fn test_struct_nested_assignment() {
+    test_file_name("struct_nested_assignment");
+}
+#[test]
+fn test_struct_nested_expr() {
+    test_file_name("struct_nested_expr");
+}
+#[test]
+fn test_struct_nested_pointer_assignment() {
+    test_file_name("struct_nested_pointer_assignment");
 }

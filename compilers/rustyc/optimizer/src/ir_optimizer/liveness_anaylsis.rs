@@ -63,9 +63,7 @@ impl LivenessAnaylsier {
         while changed {
             changed = false;
             for (block_id, block_data) in &function.blocks {
-                if self.computed_liveout_set(block_id, block_data) {
-                    changed = true;
-                }
+                changed = changed || self.computed_liveout_set(block_id, block_data);
             }
         }
         // clear data struct for next usage.
@@ -164,7 +162,7 @@ impl LivenessAnaylsier {
                     src, 
                     data_type: _1 
                 } => {
-                    if self.is_value_register(base, function) && kill_set.contains(base) {
+                    if self.is_value_register(base, function) && !kill_set.contains(base) {
                         use_set.insert(base.clone());
                     }
                     if self.is_value_register(offset, function) && !kill_set.contains(offset) {
@@ -179,7 +177,7 @@ impl LivenessAnaylsier {
                     dst, 
                     data_type: _1, 
                 } => {
-                    if self.is_value_register(base, function) && kill_set.contains(base) {
+                    if self.is_value_register(base, function) && !kill_set.contains(base) {
                         use_set.insert(base.clone());
                     }
                     if self.is_value_register(offset, function) && !kill_set.contains(offset) {

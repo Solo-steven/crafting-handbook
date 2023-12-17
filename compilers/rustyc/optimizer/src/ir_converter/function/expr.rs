@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use crate::ir_converter::function::FunctionCoverter;
 use crate::ir::instructions::CmpFlag;
 use crate::ir::value::*;
@@ -93,6 +93,7 @@ impl<'a> FunctionCoverter<'a> {
             Expression::ConditionalExpr(condition_expr) => Some(self.accept_condition_expr(condition_expr)),
             Expression::BinaryExpr(binary_expr) => Some(self.accept_binary_expr(binary_expr)),
             Expression::UnaryExpr(unary_expr) => Some(self.accept_unary_expr(unary_expr)),
+            Expression::UpdateExpr(update_expr) => Some(self.accept_update_expr(update_expr)),
             Expression::MemberExpr(_) | Expression::DereferenceExpr(_) | Expression::SubscriptExpr(_) => Some(self.accept_chain_expr(expr)),
             Expression::CallExpr(call_expr) => self.accept_call_expr(call_expr),
             Expression::Identifier(id) => Some(self.accept_identifier(id)),
@@ -165,6 +166,66 @@ impl<'a> FunctionCoverter<'a> {
             }
         }
     }
+    /// Helper function for `accept_assignment_expr`
+    /// when assign a struct data type, we need to copy the memory from src to dst (right hand side to 
+    /// left hand side). this function implement copy struct by struct layout.
+    /// ### Memory copy
+    /// memory copy is a big issue, since i can not find there is any memory copy instruction in assembly 
+    /// level, and llvm just using memcpy of c standard lib to performance the memory copy.
+    /// 
+    /// The implementation of memcpy seems using a `word` to copy memory no matter what type the memory 
+    /// address is point to. So there we follow the footstep of gcc lib, just copy size of memory by 
+    /// unsigned int.
+    pub (super) fn copy_struct_layout(&mut self, dst: Value, src: Value, name: &String) {
+        let layout = self.struct_layout_table.get(name).unwrap();
+        let mut index: usize = 0;
+        for layout_entry in layout.values() {
+            match &layout_entry.data_type {
+                SymbolType::BasicType(ir_type) => {
+                    let offset_value = self.function.create_u32_const(layout_entry.offset as u32);
+                    let register_value = self.function.build_load_register_inst(src, offset_value, ir_type.clone());
+                    self.function.build_store_register_inst(register_value, dst, offset_value, ir_type.clone());
+                }
+                SymbolType::PointerType(_) => {
+                    let offset_value = self.function.create_u32_const(layout_entry.offset as u32);
+                    let register_value = self.function.build_load_register_inst(src, offset_value, IrValueType::U32);
+                    self.function.build_store_register_inst(register_value, dst, offset_value, IrValueType::U32);
+                }
+                SymbolType::StructalType(next_name) => {
+                    let struct_size = self.struct_size_table.get(next_name).unwrap().clone();
+                    let mut offset = layout_entry.offset;
+                    // TODO: size of word might not be 32bit
+                    for _i in 0..struct_size / 4  {
+                        let offset_value = self.function.create_u32_const(offset as u32);
+                        let register_value = self.function.build_load_register_inst(src, offset_value, IrValueType::U32);
+                        self.function.build_store_register_inst(register_value, dst, offset_value, IrValueType::U32);
+                        offset += 4;
+                    }
+                }
+                SymbolType::ArrayType(_array_symbol_type) => {
+                    // NOTE: by C99 spec, array in a struct type and only be const expression, so we know 
+                    // exactly how length this array is. we can just using loop to copy memory
+                    let array_size = if index == layout.len() -1 {
+                        let struc_size = self.struct_size_table.get(name).unwrap().clone();
+                        struc_size - layout_entry.offset
+                    }else {
+                        let layout_values_vec: Vec<_> = layout.values().collect();
+                        let next_entry_offset = layout_values_vec[index+1].offset;
+                        next_entry_offset - layout_entry.offset
+                    };
+                    let mut offset = layout_entry.offset;
+                    // TODO: size of word might not be 32bit (4 byte)
+                    for _i in 0..array_size/4  {
+                        let offset_value = self.function.create_u32_const(offset as u32);
+                        let register_value = self.function.build_load_register_inst(src, offset_value, IrValueType::U32);
+                        self.function.build_store_register_inst(register_value, dst, offset_value, IrValueType::U32);
+                        offset += 4;
+                    }
+                }
+            }
+            index += 1;
+        }
+    }
     /// ## Accept a condition expression in right hand side
     /// condition expr can be convert by phi instruction with two branch basic block.
     fn accept_condition_expr(&mut self, cond_expr: &ConditionalExpression) -> Value {
@@ -205,6 +266,11 @@ impl<'a> FunctionCoverter<'a> {
         match binary_expr.ops {
             BinaryOps::BitwiseAnd => self.function.build_bitwise_and_inst(left_value, right_value),
             BinaryOps::BitwiseOr => self.function.build_bitwise_or_inst(left_value, right_value),
+            BinaryOps::BitwiseXor => { todo!() }
+            BinaryOps::BitwiseLeftShift => self.function.build_shiftleft_inst(left_value, right_value),
+            BinaryOps::BitwiseRightShift => self.function.build_shiftright_inst(left_value, right_value),
+            BinaryOps::LogicalAnd => self.function.build_logical_and_inst(left_value, right_value),
+            BinaryOps::LogicalOr => self.function.build_logical_or_inst(left_value, right_value),
             BinaryOps::Plus => if is_float { 
                 self.function.build_fadd_inst(left_value, right_value) 
             } else { 
@@ -220,12 +286,46 @@ impl<'a> FunctionCoverter<'a> {
             }else {
                 self.function.build_mul_inst(left_value, right_value)
             }
+            BinaryOps::Division => if is_float {
+                self.function.build_fdivide_inst(left_value, right_value)
+            }else {
+                self.function.build_divide_inst(left_value, right_value)
+            }
+            BinaryOps::Remainder => if is_float {
+                self.function.build_freminder_inst(left_value, right_value)
+            }else {
+                self.function.build_reminder_inst(left_value, right_value)
+            }
             BinaryOps::Gt => if is_float {
                 self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Gt)
             }else {
                 self.function.build_icmp_inst(left_value, right_value, CmpFlag::Gt)
             }
-            _ => todo!(),
+            BinaryOps::Lt => if is_float {
+                self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Lt)
+            }else {
+                self.function.build_icmp_inst(left_value, right_value, CmpFlag::Lt)
+            }
+            BinaryOps::Geqt => if is_float {
+                self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Gteq)
+            }else {
+                self.function.build_icmp_inst(left_value, right_value, CmpFlag::Gteq)
+            }
+            BinaryOps::Leqt => if is_float {
+                self.function.build_fcmp_inst(left_value, right_value, CmpFlag::LtEq)
+            }else {
+                self.function.build_icmp_inst(left_value, right_value, CmpFlag::LtEq)
+            }
+            BinaryOps::Equal => if is_float {
+                self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Eq)
+            }else {
+                self.function.build_icmp_inst(left_value, right_value, CmpFlag::Eq)
+            }
+            BinaryOps::NotEqual => if is_float {
+                self.function.build_fcmp_inst(left_value, right_value, CmpFlag::NotEq)
+            }else {
+                self.function.build_icmp_inst(left_value, right_value, CmpFlag::NotEq)
+            }
         }
     }
     /// ## Accept a cast expression
@@ -293,66 +393,6 @@ impl<'a> FunctionCoverter<'a> {
                 }
                 None => self.function.create_u8_const(0)
             }
-        }
-    }
-    /// Helper function for `accept_assignment_expr`
-    /// when assign a struct data type, we need to copy the memory from src to dst (right hand side to 
-    /// left hand side). this function implement copy struct by struct layout.
-    /// ### Memory copy
-    /// memory copy is a big issue, since i can not find there is any memory copy instruction in assembly 
-    /// level, and llvm just using memcpy of c standard lib to performance the memory copy.
-    /// 
-    /// The implementation of memcpy seems using a `word` to copy memory no matter what type the memory 
-    /// address is point to. So there we follow the footstep of gcc lib, just copy size of memory by 
-    /// unsigned int.
-    pub (super) fn copy_struct_layout(&mut self, dst: Value, src: Value, name: &String) {
-        let layout = self.struct_layout_table.get(name).unwrap();
-        let mut index: usize = 0;
-        for layout_entry in layout.values() {
-            match &layout_entry.data_type {
-                SymbolType::BasicType(ir_type) => {
-                    let offset_value = self.function.create_u32_const(layout_entry.offset as u32);
-                    let register_value = self.function.build_load_register_inst(src, offset_value, ir_type.clone());
-                    self.function.build_store_register_inst(register_value, dst, offset_value, ir_type.clone());
-                }
-                SymbolType::PointerType(_) => {
-                    let offset_value = self.function.create_u32_const(layout_entry.offset as u32);
-                    let register_value = self.function.build_load_register_inst(src, offset_value, IrValueType::U32);
-                    self.function.build_store_register_inst(register_value, dst, offset_value, IrValueType::U32);
-                }
-                SymbolType::StructalType(next_name) => {
-                    let struct_size = self.struct_size_table.get(next_name).unwrap().clone();
-                    let mut offset = layout_entry.offset;
-                    // TODO: size of word might not be 32bit
-                    for _i in 0..struct_size / 4  {
-                        let offset_value = self.function.create_u32_const(offset as u32);
-                        let register_value = self.function.build_load_register_inst(src, offset_value, IrValueType::U32);
-                        self.function.build_store_register_inst(register_value, dst, offset_value, IrValueType::U32);
-                        offset += 4;
-                    }
-                }
-                SymbolType::ArrayType(_array_symbol_type) => {
-                    // NOTE: by C99 spec, array in a struct type and only be const expression, so we know 
-                    // exactly how length this array is. we can just using loop to copy memory
-                    let array_size = if index == layout.len() -1 {
-                        let struc_size = self.struct_size_table.get(name).unwrap().clone();
-                        struc_size - layout_entry.offset
-                    }else {
-                        let layout_values_vec: Vec<_> = layout.values().collect();
-                        let next_entry_offset = layout_values_vec[index+1].offset;
-                        next_entry_offset - layout_entry.offset
-                    };
-                    let mut offset = layout_entry.offset;
-                    // TODO: size of word might not be 32bit (4 byte)
-                    for _i in 0..array_size/4  {
-                        let offset_value = self.function.create_u32_const(offset as u32);
-                        let register_value = self.function.build_load_register_inst(src, offset_value, IrValueType::U32);
-                        self.function.build_store_register_inst(register_value, dst, offset_value, IrValueType::U32);
-                        offset += 4;
-                    }
-                }
-            }
-            index += 1;
         }
     }
     /// ## Accept a unary expression in right hand side
@@ -484,6 +524,40 @@ impl<'a> FunctionCoverter<'a> {
             unreachable!();
         }
     }
+    fn accept_update_expr(&mut self, update_expr: &UpdateExpression) -> Value {
+        let (reg, symbol_type) = self.accept_as_lefthand_expr(&update_expr.expr);
+        let ir_type = match symbol_type {
+            SymbolType::BasicType(ir_type) => ir_type,
+            SymbolType::PointerType(_) => IrValueType::Address, 
+            SymbolType::ArrayType(_) | SymbolType::StructalType(_) => unreachable!(),
+        };
+        if update_expr.posfix {
+            todo!()
+        }else {
+            let offset_0 = self.function.create_u32_const(0);
+            let value = self.function.build_load_register_inst(reg, offset_0,ir_type.clone());
+            let const_one = self.function.create_u32_const(1);
+            let (next_value, next_const, target_type) = self.align_two_base_type_value_to_same_type(value, const_one, None);
+            let is_float = match target_type {
+                IrValueType::F32 | IrValueType::F64 => true,
+                _ => false,
+            };
+            let prefix_value = match update_expr.ops {
+                UpdateOps::Decrement => if is_float {
+                    self.function.build_fsub_inst(next_value, next_const)
+                }else {
+                    self.function.build_sub_inst(next_value, next_const)
+                }
+                UpdateOps::Increment => if is_float {
+                    self.function.build_fadd_inst(next_value, next_const)
+                }else {
+                    self.function.build_add_inst(next_value, next_const)
+                }
+            };
+            self.function.build_store_register_inst(prefix_value, reg, const_one, ir_type.clone());
+            prefix_value
+        }
+    }
     /// Accept a call expression 
     /// build proper call instruction for function call, when callee return type is a struct type, we need to 
     /// alloc a struct in current scope and pass to function, and callee function will perform copy by value to
@@ -587,7 +661,7 @@ impl<'a> FunctionCoverter<'a> {
         // Get the chain sequnce, name is the identifier of chain expression
         let (name, callseqnce) = self.get_access_sequnce_from_chain_expr(expr);
         // Get base virtual register and layout of struct if possible.
-        let empty_map = HashMap::new();
+        let empty_map = BTreeMap::new();
         let (mut base, mut symbol_layout) = match self.symbol_table.get(&name) {
             Some(entry) => {
                 match &entry.symbol_type {

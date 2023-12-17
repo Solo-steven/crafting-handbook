@@ -10,7 +10,7 @@ use super::expr::Identifier;
  */
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
-pub enum Statement<'a> {
+pub enum  Statement<'a> {
     CompoundStmt(CompoundStatement<'a>),
     ExprStmt(ExpressionStatement<'a>),
     IfStmt(IfStatement<'a>),

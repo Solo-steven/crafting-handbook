@@ -46,7 +46,7 @@ impl<'a> Parser<'a> {
         if is_assignment_ops_token!(self) {
             let ops = map_assignment_token_to_assignment_ops!(self.get_token());
             self.next_token();
-            let right = self.parse_condition_expr()?;
+            let right = self.parse_assignment_expr()?;
             ParserResult::Ok(Expression::AssignmentExpr(AssignmentExpression { left: Box::new(left), right: Box::new(right), ops }))
         }else {
             ParserResult::Ok(left)
