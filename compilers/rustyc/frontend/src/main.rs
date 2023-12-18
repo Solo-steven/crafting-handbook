@@ -14,12 +14,17 @@ use std::fs;
 
 fn main(){
     let source = "
+    struct Wrapper {
+        int value;
+        int age;
+    };
+    struct Wrapper* test() {
+        struct Wrapper a;
+        return &a;
+    }
     int main() {
-        int a = 10;
-        for (int i = 0; i < 100; ++i) {
-            a = 10 + a;
-        }
-        return a;
+        test()->age;
+        return 0;
     }
     ";
     let source2 = "

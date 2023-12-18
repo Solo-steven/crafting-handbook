@@ -83,11 +83,11 @@ impl<'a> Converter<'a> {
             .collect();
         self.function_signature_table.insert(
             func_declar.id.name.to_string(), 
-            FunctionSignature { return_type: Some(return_symbol_type), params: params_symbol_type}
+            FunctionSignature { return_type: return_symbol_type, params: params_symbol_type}
         );
     }
     fn accept_function_def(&mut self, func_def: &FunctionDefinition) {
-        let return_symbol_type = self.get_signature_return_symbol_type_from_ast_type(&func_def.return_type);
+        let return_symbol_type = self.map_ast_type_to_symbol_type(&func_def.return_type);
         let params_symbol_type: Vec<SymbolType> = 
             func_def.params
             .iter()
@@ -104,12 +104,6 @@ impl<'a> Converter<'a> {
                 Some(&self.struct_size_table),
                 Some(&self.symbol_table)
             ).convert(func_def));
-    }
-    fn get_signature_return_symbol_type_from_ast_type(&mut self, value_type: &ValueType) -> Option<SymbolType> {
-        match value_type {
-            ValueType::Void => None,
-            _ => Some(self.map_ast_type_to_symbol_type(value_type))
-        }
     }
     fn map_ast_type_to_symbol_type(&mut self, value_type: &ValueType) -> SymbolType {
        let mut symbol_type = map_ast_type_to_symbol_type(value_type, &mut self.struct_layout_table, &mut self.struct_size_table);

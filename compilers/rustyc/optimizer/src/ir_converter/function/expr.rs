@@ -14,6 +14,12 @@ enum CallSequnceType {
     Subscript((Vec<Value>, usize)), // (offset of linear array format, access level)
 }
 
+enum ChainBase {
+    Identifier(String),
+    CallExprReturnStruct(Value, String),
+    CallExprReturnPointer(Value, PointerSymbolType),
+}
+
 /// ## Helper Marco for getting a size from a symbol type.
 /// Using a marco instead of function for avoid some borrowing problem. and this marco 
 /// will return a value as the size of symbol type
@@ -328,9 +334,9 @@ impl<'a> FunctionCoverter<'a> {
             }
         }
     }
-    /// ## Accept a cast expression
-    /// If cast type is basic type, just build a convert instruction. if convert type is a 
-    /// pointer, add new value to function and add info to address cache.
+    
+    /// ## Accept a cast expression base
+    /// If cast type is basic type, just build a convert instruction.
     fn accpet_cast_expr(&mut self, cast_expr: &CastExpression) -> Value {
         let to_symbol_type = self.map_ast_type_to_symbol_type(&cast_expr.type_name);
         let src = self.accept_expr_with_value(&cast_expr.expr);
@@ -338,12 +344,8 @@ impl<'a> FunctionCoverter<'a> {
             SymbolType::BasicType(ir_type) => {
                 self.generate_type_convert(src, &ir_type)
             }   
-            SymbolType::PointerType(pointer_type) => {
+            SymbolType::PointerType(_pointer_type) => {
                 let cast_value = self.generate_type_convert(src, &IrValueType::Address);
-                self.address_cache.insert(
-                    cast_value,
-                    AddressCacheEntry::PointerSymbolType(PointerSymbolType { level: pointer_type.level, pointer_to: pointer_type.pointer_to }
-                ));
                 cast_value
             }
             SymbolType::StructalType(_) => {
@@ -422,6 +424,7 @@ impl<'a> FunctionCoverter<'a> {
         }
     }
     /// ## Accept a right hand side unary expression where op is a address of (&)
+    /// - TODO: depercate
     /// By type checker, we can ensure that the oprand of address of operator is only some addressable oprand
     /// and address of operand is actually just get address of those addressable operand. it is same as accept 
     /// it as left hand side.
@@ -429,34 +432,8 @@ impl<'a> FunctionCoverter<'a> {
     /// please reference to the `Pointer Table` section of `accept_dereference_unary_expr`. because we might need
     /// load a value contain address, we need data type of value, as the result. there insert value to `pointer_table`
     /// to cache the type of pointer point to.
-    fn accept_address_of_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
-        let (value, data_type) = self.accept_as_lefthand_expr(&unary_expr.expr);
-        match data_type {
-            SymbolType::BasicType(bast_type) => {
-                let address_cache = AddressCacheEntry::PointerSymbolType(
-                    PointerSymbolType { level: 1, pointer_to: Box::new(SymbolType::BasicType(bast_type)) }
-                );
-                self.address_cache.insert(value, address_cache);
-            },
-            SymbolType::PointerType(pointer_type) => {
-                let address_cache = AddressCacheEntry::PointerSymbolType(
-                    PointerSymbolType { level: pointer_type.level + 1, pointer_to: pointer_type.pointer_to }
-                );
-                self.address_cache.insert(value, address_cache);
-            },
-            SymbolType::StructalType(struct_type) => {
-                let address_cache = AddressCacheEntry::PointerSymbolType(
-                    PointerSymbolType { level: 1, pointer_to: Box::new(SymbolType::StructalType(struct_type)) }
-                );
-                self.address_cache.insert(value, address_cache);
-            },
-            SymbolType::ArrayType(array_type) => {
-                // TODO: is return array type is array access or just a identifier of array.
-                let array_access = AddressCacheEntry::ArrayAccessType { access_level: 0, array_symbol_type: array_type };
-                self.address_cache.insert(value, array_access);
-            }
-        };
-        value
+    fn accept_address_of_unary_expr(&mut self, unary_expr: &UnaryExpression) ->Value {
+        self.accept_as_lefthand_expr(&unary_expr.expr).0
     }
     /// ## Accept a right hand side unary expression where op is dereference(*)
     /// By the type checker, we can ensure dereference operator only operate on pointer to a type 
@@ -477,51 +454,30 @@ impl<'a> FunctionCoverter<'a> {
     /// Because of there might be a pointer to a pointer, or more deep pointer. we will need a cache to store
     /// the type that pointer point to, so we need use a cache to store a type pointer point to for temp register.
     fn accept_dereference_unary_expr(&mut self, unary_expr: &UnaryExpression) -> Value {
-        let value = self.accept_expr_with_value(&unary_expr.expr);
-        if let Some(address_cache) = self.address_cache.remove(&value) {
-            match address_cache {
-                AddressCacheEntry::PointerSymbolType(pointer_symbol_type) => {
-                    if pointer_symbol_type.level == 1 {
-                        let offset = self.function.create_u8_const(0);
-                        match pointer_symbol_type.pointer_to.as_ref() {
-                            SymbolType::BasicType(ir_type) => self.function.build_load_register_inst(value, offset, ir_type.clone()),
-                            SymbolType::StructalType(_) => self.function.build_load_register_inst(value, offset, IrValueType::Address),
-                            // when is array type, it has already handled above, 
-                            // there is no nested pointer type for symbol.
-                            _ => unreachable!()
-                        }
-                    }else {
-                        let offset = self.function.create_u8_const(0);
-                        let next_value = self.function.build_load_register_inst(value, offset, IrValueType::Address);
-                        self.address_cache.insert(
-                            next_value,
-                            AddressCacheEntry::PointerSymbolType(PointerSymbolType { level: pointer_symbol_type.level - 1, pointer_to: pointer_symbol_type.pointer_to })
-                        );
-                        next_value
-                    }
-                }
-                AddressCacheEntry::ArrayAccessType { access_level, array_symbol_type } => {
-                    if access_level == array_symbol_type.value_of_dims.len() - 1 {
-                        let offset = self.function.create_u8_const(0);
-                        let next_value = self.function.build_load_register_inst(
-                            value, offset, 
-                            match array_symbol_type.array_of.as_ref() {
-                                SymbolType::BasicType(ir_type) => ir_type.clone(),
-                                _ => IrValueType::Address
-                            }
-                        );
-                        next_value
-                    }else {
-                        self.address_cache.insert(
-                            value, 
-                            AddressCacheEntry::ArrayAccessType { access_level: access_level+1, array_symbol_type }
-                        );
-                        value
-                    }
+        let (value, symbol_type) = self.accept_as_lefthand_expr(&unary_expr.expr);
+        match symbol_type {
+            SymbolType::ArrayType(array_symbol_type) => {
+                if array_symbol_type.value_of_dims.len() == 1 {
+                    let offset_0 = self.function.create_u8_const(0);
+                    let array_of_type = match *array_symbol_type.array_of {
+                        SymbolType::BasicType(basic_type) => basic_type, 
+                        _ => unreachable!(),
+                    };
+                    self.function.build_load_register_inst(value, offset_0, array_of_type)
+                }else {
+                    unreachable!();
                 }
             }
-        }else {
-            unreachable!();
+            SymbolType::PointerType(pointer_type) => {
+                let offset_0 = self.function.create_u8_const(0);
+                let address = self.function.build_load_register_inst(value, offset_0, IrValueType::Address);
+                let pointer_to_type = match *pointer_type.pointer_to {
+                    SymbolType::BasicType(basic_type) => basic_type, 
+                    _ => unreachable!(),
+                };
+                self.function.build_load_register_inst(address, offset_0, pointer_to_type)
+            }
+            SymbolType::StructalType(_) | SymbolType::BasicType(_) => unreachable!(),
         }
     }
     fn accept_update_expr(&mut self, update_expr: &UpdateExpression) -> Value {
@@ -573,26 +529,29 @@ impl<'a> FunctionCoverter<'a> {
             .iter()
             .map(|argu_expr| self.accept_expr_with_value(argu_expr))
             .collect();
-        if let Some(return_symbol_type) = &signature.return_type {
-            if let SymbolType::StructalType(struct_name) = return_symbol_type {
-                let struct_size = self.struct_size_table.get(struct_name).unwrap().clone();
-                let struct_size_value = self.function.create_u32_const(struct_size as u32);
-                let ret_value = self.function.build_stack_alloc_inst(struct_size_value, 8, None);
-                arugments.push(ret_value);
-            };
-        }
-        let ir_return_type = match &signature.return_type {
-            Some(symbol_type) => {
-                match symbol_type {
-                    SymbolType::BasicType(ir_type) => Some(ir_type.clone()),
-                    SymbolType::PointerType(_) => Some(IrValueType::Address),
-                    SymbolType::StructalType(_) => None,
-                    SymbolType::ArrayType(_) => unreachable!(),
-                }
-            }
-            None => None,
+        let mut ret_value: Option<Value> = None;
+        let return_symbol_type = &signature.return_type;
+        if let SymbolType::StructalType(struct_name) = return_symbol_type {
+            let struct_size = self.struct_size_table.get(struct_name).unwrap().clone();
+            let struct_size_value = self.function.create_u32_const(struct_size as u32);
+            ret_value = Some(self.function.build_stack_alloc_inst(struct_size_value, 8, None));
+            arugments.push(ret_value.as_ref().unwrap().clone());
         };
-        self.function.build_call_inst(callee_name, arugments, ir_return_type)
+        let ir_return_type = match &signature.return_type {
+                SymbolType::BasicType(ir_type) => Some(ir_type.clone()),
+                SymbolType::PointerType(_) => Some(IrValueType::Address),
+                SymbolType::StructalType(_) => None,
+                SymbolType::ArrayType(_) => unreachable!(),
+        };
+        let call_inst_value = self.function.build_call_inst(callee_name, arugments, ir_return_type);
+        if let Some(ret_val) = ret_value {
+            if let Some(_call_inst_val) = call_inst_value.clone() {
+                unreachable!();
+            }else {
+                return Some(ret_val);
+            }
+        }
+        return call_inst_value;
     }
     /// ## Accept a chain expr, in right hand side
     /// this function this just a simple extenstion of `accept_chain_expr_base`, just thr base and offset returned
@@ -604,7 +563,7 @@ impl<'a> FunctionCoverter<'a> {
     /// Actually, the struct type value can only be appeared in right hand side when it is a assignment, so we return 
     /// the address of struct to left assignment expression do the copy job.
     fn accept_chain_expr(&mut self, expr: &Expression) -> Value {
-        let (base, offset, current_data_type, array_access_level) = self.accept_chain_expr_base(expr);
+        let (base, offset, current_data_type, _) = self.accept_chain_expr_base(expr);
         match current_data_type {
             SymbolType::StructalType(_) => {
                 // right hand side of assign a struct to anthoer struct, just return the address, let `accept_assign_expr`
@@ -612,25 +571,20 @@ impl<'a> FunctionCoverter<'a> {
                 let offset_const = self.function.create_i32_const(offset as i32);
                 self.function.build_add_inst(base, offset_const)
             }
-            SymbolType::PointerType(pointer_type) => {
+            SymbolType::PointerType(_pointer_type) => {
                 // struct_pointer = nested_struct.some_pointer_to_struct;
                 let offset_const = self.function.create_i32_const(offset as i32);
                 let pointer_value = self.function.build_load_register_inst(base, offset_const, IrValueType::Address);
-                self.address_cache.insert(pointer_value,AddressCacheEntry::PointerSymbolType(pointer_type));
                 pointer_value
             }
             SymbolType::BasicType(ir_type) => {
                 let offset_const = self.function.create_i32_const(offset as i32);
                 self.function.build_load_register_inst(base, offset_const, ir_type)
             }
-            SymbolType::ArrayType(array_type) => {
+            SymbolType::ArrayType(_array_type) => {
                 // rarely used, something like `&two_dims[10]` or `*two_dim[10]`;
                 let offset_const = self.function.create_i32_const(offset as i32);
                 let array_pointer_value = self.function.build_add_inst(base, offset_const);
-                self.address_cache.insert(
-                    array_pointer_value, 
-                    AddressCacheEntry::ArrayAccessType { access_level: array_access_level, array_symbol_type: array_type }
-                );
                 array_pointer_value
             }
         }
@@ -659,37 +613,69 @@ impl<'a> FunctionCoverter<'a> {
     /// value is a address, so we need to load it as new base, and replace offset to current entry's offset. 
     fn accept_chain_expr_base(&mut self, expr: &Expression) -> (Value, usize, SymbolType, usize) {
         // Get the chain sequnce, name is the identifier of chain expression
-        let (name, callseqnce) = self.get_access_sequnce_from_chain_expr(expr);
-        // Get base virtual register and layout of struct if possible.
+        let (chain_base, callseqnce) = self.get_access_sequnce_from_chain_expr(expr);
+        let mut base: Value;
+        let mut symbol_layout: &BTreeMap<String, StructLayoutEntry>;
+        let mut current_data_type: &SymbolType;
         let empty_map = BTreeMap::new();
-        let (mut base, mut symbol_layout) = match self.symbol_table.get(&name) {
-            Some(entry) => {
-                match &entry.symbol_type {
-                    SymbolType::StructalType(struct_type_name) => {
-                        (entry.reg, self.struct_layout_table.get(struct_type_name).unwrap())
-                    }
-                    SymbolType::PointerType(pointer_type) => {
-                        match pointer_type.pointer_to.as_ref() {
-                            SymbolType::StructalType(name) => {
-                                (entry.reg, self.struct_layout_table.get(name).unwrap())
+        let empty_symbol: SymbolType;
+        match chain_base {
+            ChainBase::Identifier(name) => {
+                let (base_reg, symbol_layout_ref) = match self.symbol_table.get(&name) {
+                    Some(entry) => {
+                        match &entry.symbol_type {
+                            SymbolType::StructalType(struct_type_name) => {
+                                (entry.reg, self.struct_layout_table.get(struct_type_name).unwrap())
                             }
-                            SymbolType::BasicType(_) => {
+                            SymbolType::PointerType(pointer_type) => {
+                                match pointer_type.pointer_to.as_ref() {
+                                    SymbolType::StructalType(name) => {
+                                        (entry.reg, self.struct_layout_table.get(name).unwrap())
+                                    }
+                                    SymbolType::BasicType(_) => {
+                                        (entry.reg, &empty_map)
+                                    }
+                                    _ => unreachable!("{}", self.error_map.unreach_in_accpet_chain_expr_base_identifier_is_not_strutual_type),
+                                }
+                            }
+                            SymbolType::ArrayType(_) => {
                                 (entry.reg, &empty_map)
                             }
-                            _ => unreachable!("{}", self.error_map.unreach_in_accpet_chain_expr_base_identifier_is_not_strutual_type),
+                            SymbolType::BasicType(_) => unreachable!("{}", self.error_map.unreach_in_accpet_chain_expr_base_identifier_is_not_strutual_type),
                         }
+                    },
+                    None => unreachable!("{}", self.error_map.unreach_chain_expression_identifier_must_being_in_the_symbol_table)
+                };
+                base = base_reg;
+                symbol_layout = symbol_layout_ref;
+                current_data_type = &self.symbol_table.get(&name).unwrap().symbol_type;
+
+            }
+            ChainBase::CallExprReturnStruct(base_reg, struct_name) => {
+                base = base_reg;
+                symbol_layout = self.struct_layout_table.get(&struct_name).unwrap();
+                empty_symbol = SymbolType::StructalType(struct_name);
+                current_data_type = &empty_symbol;
+            }
+            ChainBase::CallExprReturnPointer(base_reg,pointer_symbol_type) => {
+                base = base_reg;
+                match pointer_symbol_type.pointer_to.as_ref() {
+                    SymbolType::BasicType(_) => {
+                        symbol_layout = &empty_map;
                     }
-                    SymbolType::ArrayType(_) => {
-                        (entry.reg, &empty_map)
+                    SymbolType::StructalType(struct_name) => {
+                        symbol_layout = self.struct_layout_table.get(struct_name).unwrap();
                     }
-                    SymbolType::BasicType(_) => unreachable!("{}", self.error_map.unreach_in_accpet_chain_expr_base_identifier_is_not_strutual_type),
+                    SymbolType::ArrayType(_) => todo!(),
+                    SymbolType::PointerType(_) => unimplemented!(),
                 }
-            },
-            None => unreachable!("{}", self.error_map.unreach_chain_expression_identifier_must_being_in_the_symbol_table)
-        };
+                empty_symbol = SymbolType::PointerType(pointer_symbol_type);
+                current_data_type = &empty_symbol;
+            }
+        }
+        // Get base virtual register and layout of struct if possible.
         // iterate call sequnce to get the base and offset of struct property.
         let mut offset = 0;
-        let mut current_data_type = &self.symbol_table.get(&name).unwrap().symbol_type;
         let mut array_access_level = 0;
         let mut is_end_of_array_access = false;
         for item in callseqnce {
@@ -799,7 +785,7 @@ impl<'a> FunctionCoverter<'a> {
     /// There we do not using recursion visitor to unwind a chain expression to build the instructions, instead
     /// we frist iterative over chain expression to find how this expression is access memory, this by member 
     /// select (both dot operator and dereference member select) or subscription access.
-    fn get_access_sequnce_from_chain_expr(&mut self, expr: &Expression) -> (String, Vec<CallSequnceType>) {
+    fn get_access_sequnce_from_chain_expr(&mut self, expr: &Expression) -> (ChainBase, Vec<CallSequnceType>) {
         let mut cur = expr;
         let mut sequence = Vec::new();
         loop {
@@ -832,9 +818,33 @@ impl<'a> FunctionCoverter<'a> {
                 Expression::Identifier(identifier) => {
                     sequence.reverse();
                     return (
-                        identifier.name.to_string(),
+                        ChainBase::Identifier(identifier.name.to_string()),
                         sequence,
                     )
+                }
+                Expression::CallExpr(call_expr) => {
+                    let base = self.accept_call_expr(call_expr).unwrap();
+                    let callee_name = match call_expr.callee.as_ref() {
+                        Expression::Identifier(id) => id.name.to_string(),
+                        _ => todo!(),
+                    };
+                    let signature = self.function_signature_table.get(&callee_name).unwrap();
+                    sequence.reverse();
+                    match &signature.return_type {
+                        SymbolType::StructalType(struct_name) => {
+                            return (
+                                ChainBase::CallExprReturnStruct(base, struct_name.clone()),
+                                sequence,
+                            );
+                        }
+                        SymbolType::PointerType(pointer_symbol_type) => {
+                            return (
+                                ChainBase::CallExprReturnPointer(base, pointer_symbol_type.clone()),
+                                sequence,
+                            );
+                        }
+                        SymbolType::BasicType(_) | SymbolType::ArrayType(_) => unreachable!(),
+                    }
                 }
                 _ => unreachable!()
             }
@@ -849,11 +859,10 @@ impl<'a> FunctionCoverter<'a> {
                     let offset = self.function.create_u8_const(0);
                     self.function.build_load_register_inst(symbol.reg , offset, ir_type.clone())
                 }
-                SymbolType::PointerType(pointer_type) => {
+                SymbolType::PointerType(_pointer_type) => {
                     // return the virtual register that contain the address that pointer point to.
                     let offset = self.function.create_u8_const(0);
                     let pointer_value = self.function.build_load_register_inst(symbol.reg, offset, IrValueType::Address);
-                    self.address_cache.insert(pointer_value, AddressCacheEntry::PointerSymbolType(pointer_type.clone()));
                     pointer_value
                 }
                 SymbolType::StructalType(_) | SymbolType::ArrayType(_) => {
@@ -943,49 +952,39 @@ impl<'a> FunctionCoverter<'a> {
     }
     /// ## Accpet a deference unary expression as left hand side value
     /// when deference is left hand side, the operand must be a indirect expressioon, it should be 
-    /// ensure by type checker. since it is a indirect expression, we need to get it's value as address.
-    /// so we frist accept it as a right hand side value to get a indirect expression's value, and 
-    /// return this value as address.
+    /// ensure by type checker.
     fn accept_deference_unary_expr_as_leftvalue(&mut self,unary_expr: &UnaryExpression) -> (Value, SymbolType) {
-        match unary_expr.ops {
+        match &unary_expr.ops {
             UnaryOps::Dereference => {
-                let value= self.accept_expr_with_value(&unary_expr.expr);
-                if let Some(address_cache) = self.address_cache.remove(&value) {
-                    match address_cache {
-                        // when dereference a level 1 pointer, it will be the type that pointer point to.
-                        // otherwise, it would be a level - 1 pointer as return value.
-                        AddressCacheEntry::PointerSymbolType(pointer_symbol_type) => {
-                            if pointer_symbol_type.level == 1 {
-                                (value, *pointer_symbol_type.pointer_to)
-                            }else {
-                                (value, SymbolType::PointerType(
-                                    PointerSymbolType { level: pointer_symbol_type.level - 1, pointer_to: pointer_symbol_type.pointer_to }
-                                ))
-                            }
-                        }
-                        // when dreference a array, it must be access to the (dims-1) level of array to perform
-                        // access to the element, since c99 can not change the array pointer to other pointer 
-                        // and this should be ensure by typechecker.
-                        AddressCacheEntry::ArrayAccessType { access_level, array_symbol_type } => {
-                            if access_level == array_symbol_type.value_of_dims.len() {
-                                (value, *array_symbol_type.array_of)
-                            }else {
-                                unreachable!();
-                            }
+                let (value, symbol_type) = self.accept_as_lefthand_expr(&unary_expr.expr);
+                match symbol_type {
+                    // |-------|     |---|---------|
+                    // | value | ------> | addrsss |
+                    // |-------|     |---|---------|
+                    SymbolType::PointerType(mut pointer_symbol_type) => {
+                        let offset_0 = self.function.create_u8_const(0);
+                        let next_value = self.function.build_load_register_inst(value, offset_0, IrValueType::Address);
+                        if pointer_symbol_type.level == 1 {
+                            (next_value, *pointer_symbol_type.pointer_to)
+                        }else {
+                            pointer_symbol_type.level -= 1;
+                            (next_value, SymbolType::PointerType(pointer_symbol_type))
                         }
                     }
-                }else {
-                    // when call `accept_expr_with_value` it should return as a value contain address
-                    // and extra info should be storage into `address_cache`
-                    unreachable!();
+                    SymbolType::ArrayType(mut array_symbol_type) => {
+                        let offset_0 = self.function.create_u8_const(0);
+                        let next_value = self.function.build_load_register_inst(value, offset_0, IrValueType::Address);
+                        array_symbol_type.value_of_dims.pop();
+                        (next_value, SymbolType::ArrayType(array_symbol_type))
+                    }
+                    SymbolType::BasicType(_) | SymbolType::StructalType(_) => unreachable!(), 
                 }
             }
-            // if a unary expression in left hand side, it only can be a dereference operator
             _ => unreachable!(),
         }
     }
     fn accept_chain_expr_as_leftvalue(&mut self, expr: &Expression) -> (Value, SymbolType) {
-        let (base, offset, current_data_type, access_level) = self.accept_chain_expr_base(expr);
+        let (base, offset,current_data_type, access_level) = self.accept_chain_expr_base(expr);
         match current_data_type {
             SymbolType::BasicType(_) | SymbolType::StructalType(_) => {
                 let offset_const = self.function.create_u32_const(offset as u32);
@@ -1004,11 +1003,12 @@ impl<'a> FunctionCoverter<'a> {
                     (pointer_value, SymbolType::PointerType(pointer_type))
                 }
             }
-            SymbolType::ArrayType(_) => {
-                // When array type accept as a left value, the only situation allowed by type checker is 
-                // using as operand of address of operator.
+            SymbolType::ArrayType(mut array_symbol_type) => {
+                for _i in 0..access_level {
+                    array_symbol_type.value_of_dims.pop();
+                }
                 let offset_const = self.function.create_u32_const(offset as u32);
-                (self.function.build_add_inst(base, offset_const), current_data_type.clone())
+                (self.function.build_add_inst(base, offset_const), SymbolType::ArrayType(array_symbol_type))
             }
         }
     }   

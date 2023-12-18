@@ -1,7 +1,6 @@
 mod expr;
 mod error_map;
 
-use std::collections::HashMap;
 use std::mem::replace;
 use crate::ir::function::*;
 use crate::ir::value::*;
@@ -23,8 +22,6 @@ pub struct FunctionCoverter<'a> {
     pub struct_size_table: StructSizeTable<'a>, 
     /// symbol table for function scope
     pub symbol_table: SymbolTable<'a>,
-    /// record extra info for the address ir type
-    pub address_cache: AddressCache,
     /// error map for function convert.
     pub error_map: IrFunctionConvertErrorMap,
 }
@@ -44,8 +41,6 @@ impl<'a> FunctionCoverter<'a> {
             struct_size_table: StructSizeTable::new(global_struct_size_table),
             // symbol info
             symbol_table: SymbolTable::new(global_symbol_table),
-            // extra info for value
-            address_cache: HashMap::new(),
             // error map
             error_map: IrFunctionConvertErrorMap::new(),
         }
@@ -74,14 +69,12 @@ impl<'a> FunctionCoverter<'a> {
                 SymbolType::BasicType(ir_type) => {
                     self.function.add_register(ir_type)
                 }
-                SymbolType::ArrayType(array_type) => {
+                SymbolType::ArrayType(_array_type) => {
                     let reg = self.function.add_register(IrValueType::Address);
-                    self.address_cache.insert(reg, AddressCacheEntry::ArrayAccessType { access_level: 0, array_symbol_type: array_type });
                     reg
                 }
-                SymbolType::PointerType(pointer_type) => {
+                SymbolType::PointerType(_pointer_type) => {
                     let reg = self.function.add_register(IrValueType::Address);
-                    self.address_cache.insert(reg, AddressCacheEntry::PointerSymbolType(pointer_type));
                     reg
                 }
                 SymbolType::StructalType(_) => {
@@ -94,12 +87,11 @@ impl<'a> FunctionCoverter<'a> {
     }
     pub fn create_symbol_for_return_type(&mut self) {
         let signature = self.function_signature_table.get(&self.function.name).unwrap();
-        if let Some(return_symbol_type) = &signature.return_type {
-            if let SymbolType::StructalType(_) = return_symbol_type {
-                let reg = self.function.add_register(IrValueType::Address);
-                self.function.params_value.push(reg);
-                self.symbol_table.insert(String::from("__rustyc_return_strcut"), SymbolEntry { reg, symbol_type:return_symbol_type.clone() })
-            }
+        let return_symbol_type = &signature.return_type;
+        if let SymbolType::StructalType(_) = return_symbol_type {
+            let reg = self.function.add_register(IrValueType::Address);
+            self.function.params_value.push(reg);
+            self.symbol_table.insert(String::from("__rustyc_return_strcut"), SymbolEntry { reg, symbol_type:return_symbol_type.clone() })
         }
     }
     fn accept_function_def(&mut self, func_def: &FunctionDefinition) {
@@ -129,13 +121,12 @@ impl<'a> FunctionCoverter<'a> {
         if let Some(expr) = &return_stmt.value {
             let return_value = self.accept_expr_with_value(expr);
             let self_signature = self.function_signature_table.get(&self.function.name).unwrap();
-            if let Some(return_symbol_type) = &self_signature.return_type  {
-                if let SymbolType::StructalType(struct_name) = &return_symbol_type {
-                    let dst = self.symbol_table.get("__rustyc_return_strcut").unwrap();
-                    self.copy_struct_layout(dst.reg, return_value, struct_name);
-                    self.function.build_ret_inst(None);
-                    return;
-                }
+            let return_symbol_type = &self_signature.return_type;
+            if let SymbolType::StructalType(struct_name) = &return_symbol_type {
+                let dst = self.symbol_table.get("__rustyc_return_strcut").unwrap();
+                self.copy_struct_layout(dst.reg, return_value, struct_name);
+                self.function.build_ret_inst(None);
+                return;
             }
             self.function.build_ret_inst(Some(return_value));
         }else {

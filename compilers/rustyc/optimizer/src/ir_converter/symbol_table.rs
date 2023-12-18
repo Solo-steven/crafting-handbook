@@ -78,15 +78,6 @@ pub struct  ArraySymbolType {
     pub value_of_dims: Vec<Value>,
 }
 
-pub type AddressCache = HashMap<Value, AddressCacheEntry>;
-pub enum AddressCacheEntry {
-    PointerSymbolType(PointerSymbolType),
-    ArrayAccessType {
-        access_level: usize,
-        array_symbol_type: ArraySymbolType,
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct StructLayoutTable<'a> {
     table_list: Vec<HashMap<String, StructLayout>>,
@@ -173,6 +164,6 @@ impl<'a> StructSizeTable<'a> {
 pub type FunctionSignatureTable = HashMap<String, FunctionSignature>;
 #[derive(Debug, Clone)]
 pub struct FunctionSignature {
-    pub return_type: Option<SymbolType>,
+    pub return_type: SymbolType,
     pub params: Vec<SymbolType>
 }

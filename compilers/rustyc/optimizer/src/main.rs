@@ -5,20 +5,70 @@ pub mod ir_optimizer;
 
 use ir::value::IrValueType;
 use rustyc_frontend::parser::Parser;
-use rustyc_optimizer::ir::function::{self, BasicBlock};
 use crate::ir::function::Function;
 use crate::ir_converter::Converter;
-use crate::ir_optimizer::liveness_anaylsis::{LivenessAnaylsier, print_set};
-use crate::ir_optimizer::use_def_chain::{print_use_def_table, UseDefAnaylsier};
-use crate::ir_optimizer::domtree::DomAnaylsier;
-use crate::ir_optimizer::mem2reg::Mem2RegPass;
-use crate::ir_optimizer::value_numbering::local_value_numbering;
-use std::backtrace::Backtrace;
-use std::collections::{HashSet, HashMap};
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::Write;
 
+
+fn main() {
+    let program = Parser::new("
+    struct Wrapper {
+        int value;
+        int age;
+    };
+    struct Wrapper** test() {
+        struct Wrapper a;
+        struct Wrapper *p = &a;
+        return &p;
+    }
+    int main() {
+        struct Wrapper a;
+        struct Wrapper *p = &a;
+        struct Wrapper **pp = &p;
+        test()[0]->age;
+        return 0;
+    }
+    ").parse().unwrap();
+    // println!("{:#?}", program);
+    let mut converter = Converter::new();
+    converter.convert(&program);
+    // let mut dom = DomAnaylsier::new();
+    // let dom_table = dom.anaylsis(func);
+
+    // let mut use_def = UseDefAnaylsier::new();
+    // let use_def_table =  use_def.anaylsis(func);
+    // let mut pass = Mem2RegPass::new();
+    // println!("{:#?}",func.print_to_string().as_str());
+    // pass.anaylsis(func, &use_def_table, &dom_table);
+    // println!("{:#?}",func.print_to_string().as_str());
+    let mut is_start = true;
+    for func in &mut converter.functions {
+        if is_start {
+            let mut file = File::create("./test.txt").unwrap();
+            write!(file, "{}", func.print_to_string().as_str()).unwrap();
+            is_start = false;
+        }else {
+            let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open("./test.txt")
+            .unwrap();
+            write!(file, "{}", func.print_to_string().as_str()).unwrap();
+        }
+    }
+    // let mut liveness = LivenessAnaylsier::new();
+    // let func =create_use_def_graph();
+    // println!("{:?}", func.print_to_string());
+    // let table = use_def.anaylsis(&func);
+    // print_use_def_table(&table, &func);
+    // println!("{:?}", func.print_to_string());
+
+
+    // for func in &converter.functions {
+    // }
+}
 
 pub fn create_reducnt_expr_graph() -> Function {
     let mut func = Function::new(String::from("test_fun"));
@@ -105,53 +155,4 @@ pub fn create_dom_graph() -> Function {
     function.connect_block(b8, b7);
     function.connect_block(b7, b3);
     function
-}
-
-fn main() {
-    let program = Parser::new("
-    int main() {
-        int a = 10;
-        for (int i = 0; i < 100; ++i) {
-            a = 10 + a;
-        }
-        return a;
-    }
-    ").parse().unwrap();
-    // println!("{:#?}", program);
-    let mut converter = Converter::new();
-    converter.convert(&program);
-    // let mut dom = DomAnaylsier::new();
-    // let dom_table = dom.anaylsis(func);
-
-    // let mut use_def = UseDefAnaylsier::new();
-    // let use_def_table =  use_def.anaylsis(func);
-    // let mut pass = Mem2RegPass::new();
-    // println!("{:#?}",func.print_to_string().as_str());
-    // pass.anaylsis(func, &use_def_table, &dom_table);
-    // println!("{:#?}",func.print_to_string().as_str());
-    let mut is_start = true;
-    for func in &mut converter.functions {
-        if is_start {
-            let mut file = File::create("./test.txt").unwrap();
-            write!(file, "{}", func.print_to_string().as_str()).unwrap();
-            is_start = false;
-        }else {
-            let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open("./test.txt")
-            .unwrap();
-            write!(file, "{}", func.print_to_string().as_str()).unwrap();
-        }
-    }
-    // let mut liveness = LivenessAnaylsier::new();
-    // let func =create_use_def_graph();
-    // println!("{:?}", func.print_to_string());
-    // let table = use_def.anaylsis(&func);
-    // print_use_def_table(&table, &func);
-    // println!("{:?}", func.print_to_string());
-
-
-    // for func in &converter.functions {
-    // }
 }
