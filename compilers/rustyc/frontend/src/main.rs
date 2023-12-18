@@ -14,16 +14,8 @@ use std::fs;
 
 fn main(){
     let source = "
-    struct Wrapper {
-        int value;
-        int age;
-    };
-    struct Wrapper* test() {
-        struct Wrapper a;
-        return &a;
-    }
     int main() {
-        test()->age;
+        int array[3] = {1,2,34};
         return 0;
     }
     ";

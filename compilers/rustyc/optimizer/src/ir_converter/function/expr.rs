@@ -8,7 +8,7 @@ use rustyc_frontend::ast::declar::*;
 use rustyc_frontend::token::{IntLiteralBase, FloatLiteralBase};
 
 #[derive(Debug, Clone)]
-enum CallSequnceType {
+enum ChainSequnceType {
     Member(String),
     Derefer(String),
     Subscript((Vec<Value>, usize)), // (offset of linear array format, access level)
@@ -680,7 +680,7 @@ impl<'a> FunctionCoverter<'a> {
         let mut is_end_of_array_access = false;
         for item in callseqnce {
             // if access by array subscription.
-            if let CallSequnceType::Subscript((values, level)) = item {
+            if let ChainSequnceType::Subscript((values, level)) = item {
                 // Create now base
                 is_end_of_array_access = true;
                 let offset_value = self.function.create_i32_const(offset as i32);
@@ -754,8 +754,8 @@ impl<'a> FunctionCoverter<'a> {
             }
             is_end_of_array_access = false;
             let (property_name, is_pointer) = match item {
-                CallSequnceType::Derefer(name) => (name, true),
-                CallSequnceType::Member(name) => (name, false),
+                ChainSequnceType::Derefer(name) => (name, true),
+                ChainSequnceType::Member(name) => (name, false),
                 _ => unreachable!(),
             };
             let entry = symbol_layout.get(&property_name).unwrap();
@@ -785,18 +785,18 @@ impl<'a> FunctionCoverter<'a> {
     /// There we do not using recursion visitor to unwind a chain expression to build the instructions, instead
     /// we frist iterative over chain expression to find how this expression is access memory, this by member 
     /// select (both dot operator and dereference member select) or subscription access.
-    fn get_access_sequnce_from_chain_expr(&mut self, expr: &Expression) -> (ChainBase, Vec<CallSequnceType>) {
+    fn get_access_sequnce_from_chain_expr(&mut self, expr: &Expression) -> (ChainBase, Vec<ChainSequnceType>) {
         let mut cur = expr;
         let mut sequence = Vec::new();
         loop {
             match cur {
                 Expression::DereferenceExpr(derefer_expr) => {
                     cur = derefer_expr.pointer.as_ref();
-                    sequence.push(CallSequnceType::Derefer(derefer_expr.property.name.to_string()));
+                    sequence.push(ChainSequnceType::Derefer(derefer_expr.property.name.to_string()));
                 },
                 Expression::MemberExpr(member_expr) => {
                     cur = member_expr.object.as_ref();
-                    sequence.push(CallSequnceType::Member(member_expr.property.name.to_string()))
+                    sequence.push(ChainSequnceType::Member(member_expr.property.name.to_string()))
                 },
                 Expression::SubscriptExpr(ref subscript_expr_base) => { 
                     let mut subscript_expr = subscript_expr_base;
@@ -812,7 +812,7 @@ impl<'a> FunctionCoverter<'a> {
                         }
                     }
                     values.reverse();
-                    sequence.push(CallSequnceType::Subscript((values, level)));
+                    sequence.push(ChainSequnceType::Subscript((values, level)));
                     cur = subscript_expr.object.as_ref()
                 }
                 Expression::Identifier(identifier) => {

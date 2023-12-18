@@ -26,6 +26,8 @@ pub struct FunctionCoverter<'a> {
     pub error_map: IrFunctionConvertErrorMap,
 }
 impl<'a> FunctionCoverter<'a> {
+    /// ## Create a function converter
+    /// constructor for create a new function converter.
     pub fn new(
         signature_table: &'a mut FunctionSignatureTable, 
         global_struct_layout_table: Option<&'a StructLayoutTable>,
@@ -45,6 +47,8 @@ impl<'a> FunctionCoverter<'a> {
             error_map: IrFunctionConvertErrorMap::new(),
         }
     }
+    /// ## Convert function to IR
+    /// convert a ast function to a function ir instance
     pub fn convert(&mut self, func_def: &FunctionDefinition) -> Function {
         // init function name, param, return_type
         self.function.name = func_def.id.name.to_string();
@@ -61,6 +65,10 @@ impl<'a> FunctionCoverter<'a> {
         // return function ir instance
         replace(&mut self.function, Function::new(String::new()))
     }
+    /// ## Accept function param 
+    /// This function shell not perform type checker because that stage should be done
+    /// by type checker, this function only perform generate instruction and record
+    /// all this value 
     pub fn accept_function_param(&mut self, params: &Vec<ParamDeclar>) {
         for param in params {
             let name = param.id.name.to_string();
@@ -70,12 +78,10 @@ impl<'a> FunctionCoverter<'a> {
                     self.function.add_register(ir_type)
                 }
                 SymbolType::ArrayType(_array_type) => {
-                    let reg = self.function.add_register(IrValueType::Address);
-                    reg
+                    self.function.add_register(IrValueType::Address)
                 }
                 SymbolType::PointerType(_pointer_type) => {
-                    let reg = self.function.add_register(IrValueType::Address);
-                    reg
+                    self.function.add_register(IrValueType::Address)
                 }
                 SymbolType::StructalType(_) => {
                     self.function.add_register(IrValueType::Address)
@@ -85,6 +91,9 @@ impl<'a> FunctionCoverter<'a> {
             self.symbol_table.insert(name, SymbolEntry { reg, symbol_type })
         }
     }
+    /// ## Helper function when return type of is a struct type
+    /// By our IR design, we can not return a structal type in our ir function. To solve this problem
+    /// we push a extra pointer to perform copy struct.
     pub fn create_symbol_for_return_type(&mut self) {
         let signature = self.function_signature_table.get(&self.function.name).unwrap();
         let return_symbol_type = &signature.return_type;
@@ -94,6 +103,8 @@ impl<'a> FunctionCoverter<'a> {
             self.symbol_table.insert(String::from("__rustyc_return_strcut"), SymbolEntry { reg, symbol_type:return_symbol_type.clone() })
         }
     }
+    /// ## Accept function definition
+    /// Just generate function signature in symbol and insertting it into function signature table.  
     fn accept_function_def(&mut self, func_def: &FunctionDefinition) {
         self.function.name = func_def.id.name.to_string();
         let block = self.function.create_block();
@@ -101,12 +112,16 @@ impl<'a> FunctionCoverter<'a> {
         self.function.switch_to_block(block);
         self.accept_compound_stmt(&func_def.compound);
     }
+    /// ## Accept a block item
+    /// Simple match pattern function match block item as declarator or statement.
     fn accept_block_item(&mut self, block_item: &BlockItem) {
         match block_item {
             BlockItem::Declar(declar) => self.accept_declar(declar),
             BlockItem::Stmt(stmt) => self.accept_statement(stmt),
         }
     }
+    /// ## Accept a Statement
+    /// Just a Simple match pattern function for statement variants.
     fn accept_statement(&mut self, statement: &Statement ) {
         match statement {
             Statement::CompoundStmt(compound_stmt) => self.accept_compound_stmt(compound_stmt),
@@ -117,6 +132,10 @@ impl<'a> FunctionCoverter<'a> {
             _ => todo!()
         };
     }
+    /// ## Accpet a return statement
+    /// build ret instruction with value if needed. An important expection is return a struct type
+    /// since we can not return a struct type in ir, we need to push a new argument to function and 
+    /// copy return struct to that argument.
     fn accpet_return_stmt(&mut self, return_stmt: &ReturnStatement) {
         if let Some(expr) = &return_stmt.value {
             let return_value = self.accept_expr_with_value(expr);
@@ -134,6 +153,9 @@ impl<'a> FunctionCoverter<'a> {
         }
         self.function.mark_as_exit(self.function.current_block.unwrap());
     }
+    /// ## Accept a compound statement, control scope
+    /// accept a compound stmt, control leave and enter the scope, pushing 
+    /// and poping out scope-level table.
     fn accept_compound_stmt(&mut self, compound_stmt: &CompoundStatement) {
         self.enter_scope();
         for item in &compound_stmt.body {
@@ -141,16 +163,22 @@ impl<'a> FunctionCoverter<'a> {
         }
         self.exit_scope();
     }
+    /// ## Helper function called when enter scope
+    /// Poping out all tables need to pop.
     fn enter_scope(&mut self) {
         self.symbol_table.enter_scope();
         self.struct_layout_table.enter_scope();
         self.struct_size_table.enter_scope();
     }
+    /// ## Helper function called when exit scope
+    /// Poping out all tables need to pop.
     fn exit_scope(&mut self ) {
         self.symbol_table.exit_scope();
         self.struct_layout_table.exit_scope();
         self.struct_size_table.exit_scope();
     }
+    /// ## Accept a if statement
+    /// Build blocks for if statement.
     fn accept_if_stmt(&mut self, if_stmt: &IfStatement) {
         let value = self.accept_expr_with_value(&if_stmt.test);
         let last_block = self.function.current_block.unwrap().clone();
@@ -178,6 +206,8 @@ impl<'a> FunctionCoverter<'a> {
         }
         self.function.switch_to_block(end_block);
     }
+    /// ## Accpet a for statement
+    /// Create blocks for building for-loop.
     fn accpet_for_stmt(&mut self, for_stmt: &ForStatement) {
         match &for_stmt.init {
             Some(declar_for_expr) => {
@@ -215,6 +245,8 @@ impl<'a> FunctionCoverter<'a> {
 
         self.function.switch_to_block(final_block);
     }
+    /// ## Accept a declaration in function 
+    /// Just a match pattern function for declaration enum.
     fn accept_declar(&mut self, declar: &Declaration) {
         match declar {
             Declaration::DelcarList(declar_list) => self.accept_declar_list(declar_list),
@@ -223,7 +255,7 @@ impl<'a> FunctionCoverter<'a> {
         }
     }
     /// ## Accpet A declaration list
-    /// 
+    /// Mapping ast type to symbol type and insert a new symbol into symbol table.
     fn accept_declar_list(&mut self, declar_list: &DeclarationList) {
         for declarator in &declar_list.declarators {
             let symbol_type = self.map_ast_type_to_symbol_type(&declarator.value_type);
