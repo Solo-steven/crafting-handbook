@@ -942,6 +942,7 @@ impl<'a> FunctionCoverter<'a> {
     fn accept_as_lefthand_expr(&mut self, expr: &Expression) -> (Value, SymbolType) {
         match expr {
             Expression::Identifier(id) => {
+                println!("{:?}", self.symbol_table);
                 let SymbolEntry { reg, symbol_type } = self.symbol_table.get(id.name.as_ref()).unwrap();
                 (reg.clone(), symbol_type.clone())
             }

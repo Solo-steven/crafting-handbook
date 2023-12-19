@@ -2,19 +2,26 @@
 mod symbol_table;
 mod function;
 
-use crate::ir_converter::function::FunctionCoverter;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
+use std::mem::replace;
+use crate::ir::module::*;
 use crate::ir::function::*;
 use crate::ir::value::*;
+use crate::ir_converter::function::FunctionCoverter;
 use crate::ir_converter::symbol_table::*;
 use rustyc_frontend::ast::*;
 use rustyc_frontend::ast::declar::*;
 use rustyc_frontend::ast::expr::*;
 /// Convert AST to IR blocks
 pub struct Converter<'a> {
+    /// storge ir functions to create module ir
     pub functions: Vec<Function>,
-
+    /// storge global values to create module ir 
+    pub globals: GloablValueMap,
+    /// cache for storage global value symbol
+    pub global_symbol_cache: HashMap<String, SymbolType>,
+    /// symbol table for current program
     pub symbol_table: SymbolTable<'a>,
     /// storage information about struct layout 
     pub struct_layout_table: StructLayoutTable<'a>,
@@ -27,14 +34,21 @@ impl<'a> Converter<'a> {
     pub fn new() -> Self {
         Self {
             functions: Vec::new(),
+            globals: HashMap::new(),
+            global_symbol_cache: HashMap::new(),
             struct_layout_table: StructLayoutTable::new(None),
             symbol_table: SymbolTable::new(None),
             struct_size_table: StructSizeTable::new(None),
             function_signature_table: HashMap::new(),
         }
     }
-    pub fn convert(&mut self, program: &Program) {
+    pub fn convert(&mut self, program: &Program) -> Module {
         self.accept_program(program);
+        
+        Module { 
+            functions: replace(&mut self.functions, Default::default()), 
+            globals: replace(&mut self.globals, Default::default()),
+        }
     }
     fn accept_program(&mut self, program: &Program) {
         for item in &program.body {
@@ -65,8 +79,21 @@ impl<'a> Converter<'a> {
             _ => {}
         }
     }
-    fn accept_declar_list(&mut self, _declar_list: &DeclarationList) {
-
+    fn accept_declar_list(&mut self, declar_list: &DeclarationList) {
+        for declarator in &declar_list.declarators {
+            let name = declarator.id.name.to_string();
+            let symbol_type = self.map_ast_type_to_symbol_type(&declarator.value_type);
+            let size = self.get_size_form_ast_type(&declarator.value_type);
+            let ir_type = match symbol_type {
+                SymbolType::BasicType(ref basic_ir_type) => Some(basic_ir_type.clone()),
+                SymbolType::PointerType(_) => Some(IrValueType::Address),
+                _ => None
+            };
+            self.globals.insert(name.clone(), GloablValue { size, align: 8, ir_type });
+            self.global_symbol_cache.insert(name, symbol_type);
+            // self.symbol_table.insert(declarator.id.name.to_string(), SymbolEntry { reg: pointer, symbol_type: symbol_type.clone() });
+            // TODO: init
+        }
     }
     fn accept_function_type(&mut self, func_type: &FunctionType) {
         match func_type {
@@ -97,13 +124,23 @@ impl<'a> Converter<'a> {
             func_def.id.name.to_string(), 
             FunctionSignature { return_type: return_symbol_type, params: params_symbol_type}
         );
-        self.functions.push(
-            FunctionCoverter::new(
-                &mut self.function_signature_table,
-                Some(&self.struct_layout_table),
-                Some(&self.struct_size_table),
-                Some(&self.symbol_table)
-            ).convert(func_def));
+        let mut func_convert = FunctionCoverter::new(
+            &mut self.function_signature_table,
+            Some(&self.struct_layout_table),
+            Some(&self.struct_size_table),
+            None,
+        );
+        // insert global value as symbol
+        for (name, _data) in &self.globals {
+            let pointer =func_convert.function.create_global_variable_ref(name.clone());
+            let symbol_type = self.global_symbol_cache.get(name).unwrap().clone();
+            self.symbol_table.insert(name.clone(), SymbolEntry { reg: pointer, symbol_type });
+        }
+        func_convert.symbol_table = SymbolTable {  table_list: Default::default(), root_table: Some(&self.symbol_table) };
+        // convert with global value
+        self.functions.push(func_convert.convert(func_def));
+        // clear global value from symbol
+        self.symbol_table.clear();
     }
     fn map_ast_type_to_symbol_type(&mut self, value_type: &ValueType) -> SymbolType {
        let mut symbol_type = map_ast_type_to_symbol_type(value_type, &mut self.struct_layout_table, &mut self.struct_size_table);

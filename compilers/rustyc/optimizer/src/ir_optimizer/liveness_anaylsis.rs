@@ -28,6 +28,7 @@ pub fn print_set(set: &HashSet<Value>, function: &Function, title: &str) {
         let data = function.values.get(value).unwrap();
         match data {
             ValueData::VirRegister(name) => print!("{:?} ", name),
+            ValueData::GlobalRef(name) => print!("{:?}",name),
             ValueData::Immi(_) => {}
         }
     }
@@ -238,7 +239,7 @@ impl LivenessAnaylsier {
             Some(data) => {
                 match data {
                     ValueData::Immi(_) => false,
-                    ValueData::VirRegister(_) => true,
+                    _ => true,
                 }
             }
             None => panic!(),

@@ -4,7 +4,14 @@ use crate::ir::function::*;
 use crate::ir::value::*;
 
 impl Function {
-    /// Private method of add a register value
+    pub fn create_global_variable_ref(&mut self, global_name: String) -> Value {
+        let value_id = Value(self.next_value_index);
+        self.values.insert(value_id, ValueData::GlobalRef(global_name));
+        self.value_types.insert(value_id, IrValueType::Address);
+        self.next_value_index += 1;
+        value_id
+    }
+    /// Create a register and adding a register value
     pub fn add_register(&mut self, value_type: IrValueType) -> Value {
         let value_id = Value(self.next_value_index);
         self.values.insert(value_id, ValueData::VirRegister(format!("t{}", self.next_temp_register_index)));
@@ -178,7 +185,7 @@ impl Function {
                             Immi::F64(_) => IrValueType::F64,
                         }
                     }
-                    ValueData::VirRegister(_) => {
+                    _ => {
                         self.value_types.get(&src).unwrap().clone()
                     }
                 }

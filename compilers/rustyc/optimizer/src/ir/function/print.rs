@@ -15,7 +15,7 @@ impl Function {
         for value in &self.params_value {
             let is_end = index == self.params_value.len() - 1;
             match self.values.get(value).unwrap() {
-                ValueData::VirRegister(register) => {
+                ValueData::VirRegister(register) | ValueData::GlobalRef(register) => {
                     output_code.push_str(&register);
                     output_code.push_str(" ");
                     let value_type = self.value_types.get(value).unwrap();
@@ -36,7 +36,19 @@ impl Function {
         output_code.push(' ');
         output_code.push_str("{\n");
         // blocks
-        for (_ ,block) in &self.blocks {
+        let mut blocks_id_sort: Vec<&BasicBlock> = self.blocks.keys().collect();
+        let len = blocks_id_sort.len();
+        for i in 0..len {
+            for j in 0..(len-i-1) {
+                if blocks_id_sort[j].0 > blocks_id_sort[j+1].0 {
+                    let temp = blocks_id_sort[j+1];
+                    blocks_id_sort[j+1] = blocks_id_sort[j];
+                    blocks_id_sort[j] = temp;
+                }
+            }
+        }
+        for block_id in blocks_id_sort {
+            let block = self.blocks.get(block_id).unwrap();
             output_code.push_str(&block.name);
             output_code.push_str(":\n");
             for inst_id in &block.instructions {
@@ -64,7 +76,7 @@ impl Function {
         // 
         for value in sorted_value_key {
             match self.values.get(value).unwrap() {
-                ValueData::VirRegister(register) => {
+                ValueData::VirRegister(register) | ValueData::GlobalRef(register)=> {
                     output_code.push_str(";;  ");
                     output_code.push_str(&register);
                     output_code.push_str(" -> ");
@@ -350,7 +362,7 @@ pub fn get_text_format_of_value(value: &ValueData) -> String {
                 Immi::F64(data) => format!("{}", data),
             }
         }
-        ValueData::VirRegister(register) => {
+        ValueData::VirRegister(register) | ValueData::GlobalRef(register) => {
             register.clone()
         }
     }

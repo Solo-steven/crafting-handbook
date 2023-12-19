@@ -8,8 +8,8 @@ use crate::ir::value::{Value, IrValueType};
 /// for current symbol table.
 #[derive(Debug, Clone)]
 pub struct SymbolTable<'a> {
-    table_list: Vec<HashMap<String, SymbolEntry>>,
-    root_table: Option<&'a SymbolTable<'a>>,
+    pub table_list: Vec<HashMap<String, SymbolEntry>>,
+    pub root_table: Option<&'a SymbolTable<'a>>,
 }
 impl<'a> SymbolTable<'a> {
     pub fn new(root_table: Option<&'a SymbolTable<'a>>) -> Self {
@@ -37,6 +37,10 @@ impl<'a> SymbolTable<'a> {
             }
             None => None
         }
+    }
+    pub fn clear(&mut self) {
+        let len = self.table_list.len()-1;
+        self.table_list[len].clear();
     }
     // enter a scope, create a new table.
     pub fn enter_scope(&mut self) {

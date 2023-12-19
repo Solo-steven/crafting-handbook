@@ -3,15 +3,20 @@ use std::mem::replace;
 use crate::ir::value::*;
 use crate::ir::instructions::*;
 use crate::ir::function::*;
-use crate::ir::function::print::get_text_format_of_value;
 
 pub type ValueTuple = (BasicBlock, Instruction, Value);
 /// Def table, mapping a Value in right hand side of three-address code 
 /// to a definition (a instruction assign a value).
-pub type DefTable = HashMap<Value, Instruction>;
+pub type DefTable = HashMap<Value, DefKind>;
 /// Use table, mapping the Value in left hand side of three-address code
 /// to a series of use (instruction use value in right hand side).
 pub type UseTable = HashMap<Value, HashSet<Instruction>>;
+/// Use 
+#[derive(Debug, Clone, PartialEq)]
+pub enum DefKind {
+    InternalDef(Instruction),
+    ExternalDef
+}
 /// A struct for a basic block, contain information that every value in 
 /// this basic block's use and def relationship.
 #[derive(Debug, Clone, PartialEq)]
@@ -31,38 +36,6 @@ pub struct UseDefAnaylsier {
     use_def_table: UseDefTable,
 }
 
-/// helper function to print out all the 
-pub fn print_use_def_table(function: &Function, table: &UseDefTable) {
-    for entry in table {
-        println!("==== {} ====", entry.0.0);
-        println!("use table:");
-        for use_entry in &entry.1.use_table {
-            let mut is_start_inner = true;
-            let start_str = format!("{} --->", get_text_format_of_value(function.values.get(use_entry.0).unwrap()));
-            for use_inst in use_entry.1 {
-                let mut inst_text = String::new();
-                function.print_inst(&mut inst_text, function.instructions.get(use_inst).unwrap());
-                if is_start_inner {
-                    print!("{} {}", start_str, inst_text);
-                }else {
-                    is_start_inner = false;
-                    print!("{} {}", start_str, get_text_format_of_value(function.values.get(use_entry.0).unwrap()));
-                }
-            }
-        }
-        println!("def table:");
-        for def_entry in &entry.1.def_table {
-            let mut inst_text = String::new();
-            function.print_inst(&mut inst_text, function.instructions.get(def_entry.1).unwrap());
-            print!(
-                "{} ---> {}", 
-                get_text_format_of_value(function.values.get(def_entry.0).unwrap()),
-                inst_text,
-            )
-        }
-        
-    }
-}
 
 impl UseDefAnaylsier {
     /// Create a new use-def anayliser.
@@ -196,19 +169,24 @@ impl UseDefAnaylsier {
     }
     fn fill_table_with_cache(&mut self) {
         for (use_value, use_blocks_and_insts) in &self.use_cache {
-            let (def_block_id, def_inst_id) = self.def_cache.get(use_value).unwrap();
-            for (use_block_id, use_inst_id) in use_blocks_and_insts {
-                let used_entry = self.use_def_table.get_mut(use_block_id).unwrap();
-                let def_table = &mut used_entry.def_table;
-                def_table.insert(use_value.clone(), def_inst_id.clone());
-
-                let def_entry = self.use_def_table.get_mut(def_block_id).unwrap();
-                let use_table = &mut def_entry.use_table;
-                if use_table.contains_key(use_value) {
-                    use_table.get_mut(use_value).unwrap().insert(use_inst_id.clone());
-                }else {
-                    use_table.insert(use_value.clone(), HashSet::from([use_inst_id.clone()]));
+            match self.def_cache.get(use_value) {
+                Some(def) => {
+                    let (def_block_id, def_inst_id) = def;
+                    for (use_block_id, use_inst_id) in use_blocks_and_insts {
+                        let used_entry = self.use_def_table.get_mut(use_block_id).unwrap();
+                        let def_table = &mut used_entry.def_table;
+                        def_table.insert(use_value.clone(), DefKind::InternalDef(def_inst_id.clone()));
+        
+                        let def_entry = self.use_def_table.get_mut(def_block_id).unwrap();
+                        let use_table = &mut def_entry.use_table;
+                        if use_table.contains_key(use_value) {
+                            use_table.get_mut(use_value).unwrap().insert(use_inst_id.clone());
+                        }else {
+                            use_table.insert(use_value.clone(), HashSet::from([use_inst_id.clone()]));
+                        }
+                    }
                 }
+                None => todo!(),
             }
         }
     }
@@ -231,7 +209,7 @@ impl UseDefAnaylsier {
             Some(data) => {
                 match data {
                     ValueData::Immi(_) => false,
-                    ValueData::VirRegister(_) => true,
+                    _ => true,
                 }
             }
             None => panic!(),

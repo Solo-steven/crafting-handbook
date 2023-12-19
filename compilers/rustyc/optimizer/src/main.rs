@@ -8,7 +8,6 @@ use rustyc_frontend::parser::Parser;
 use crate::ir::function::Function;
 use crate::ir_converter::Converter;
 use std::fs::File;
-use std::fs::OpenOptions;
 use std::io::Write;
 
 
@@ -18,22 +17,18 @@ fn main() {
         int value;
         int age;
     };
-    struct Wrapper** test() {
-        struct Wrapper a;
-        struct Wrapper *p = &a;
-        return &p;
+    struct Wrapper a;
+    int test() {
+        return a.value;
     }
     int main() {
-        struct Wrapper a;
-        struct Wrapper *p = &a;
-        struct Wrapper **pp = &p;
-        test()[0]->age;
+        test() + a.age;
         return 0;
     }
     ").parse().unwrap();
     // println!("{:#?}", program);
     let mut converter = Converter::new();
-    converter.convert(&program);
+    let module = converter.convert(&program);
     // let mut dom = DomAnaylsier::new();
     // let dom_table = dom.anaylsis(func);
 
@@ -43,21 +38,8 @@ fn main() {
     // println!("{:#?}",func.print_to_string().as_str());
     // pass.anaylsis(func, &use_def_table, &dom_table);
     // println!("{:#?}",func.print_to_string().as_str());
-    let mut is_start = true;
-    for func in &mut converter.functions {
-        if is_start {
-            let mut file = File::create("./test.txt").unwrap();
-            write!(file, "{}", func.print_to_string().as_str()).unwrap();
-            is_start = false;
-        }else {
-            let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open("./test.txt")
-            .unwrap();
-            write!(file, "{}", func.print_to_string().as_str()).unwrap();
-        }
-    }
+    let mut file = File::create("./test.txt").unwrap();
+    write!(file, "{}", module.print_to_string().as_str()).unwrap();
     // let mut liveness = LivenessAnaylsier::new();
     // let func =create_use_def_graph();
     // println!("{:?}", func.print_to_string());
