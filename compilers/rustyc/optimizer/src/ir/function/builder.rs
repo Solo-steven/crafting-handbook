@@ -134,10 +134,13 @@ impl Function {
         dst
     }
     /// make convert instruction base on opcode
-    fn make_convert_inst(&mut self, opecode: OpCode, src: Value) -> Value {
+    fn make_convert_inst(&mut self, opcode: OpCode, src: Value) -> Value {
+        if let ValueData::Immi(immi) = self.values.get(&src).unwrap() {
+            return self.make_const_convert(opcode, immi.clone())
+        } 
         let inst_id = Instruction(self.next_inst_index);
         self.next_inst_index += 1;
-        let target_type = match opecode.clone() {
+        let target_type = match opcode.clone() {
             OpCode::ToU8 => IrValueType::U8,
             OpCode::ToU16 => IrValueType::I16,
             OpCode::ToU32 => IrValueType::U32,
@@ -151,7 +154,7 @@ impl Function {
             _ => {unreachable!()}
         };
         let dst = self.add_register(target_type.clone());
-        let inst = match opecode {
+        let inst = match opcode {
             OpCode::ToU8 => InstructionData::ToU8 { opcode: OpCode::ToU8, src, dst },
             OpCode::ToU16 => InstructionData::ToU16 { opcode: OpCode::ToU16, src, dst },
             OpCode::ToU32 => InstructionData::ToU32 { opcode: OpCode::ToU32, src, dst },
@@ -191,6 +194,119 @@ impl Function {
                 }
             }
             None => {unreachable!()}
+        }
+    }
+    fn make_const_convert(&mut self, opcode: OpCode, immi: Immi) -> Value {
+        match opcode {
+            OpCode::ToU8 => {
+                match immi.clone() {
+                    Immi::F32(_) | Immi::F64(_) => {
+                        let data = immi.get_data_as_f64();
+                        self.create_u8_const(data as u8)
+                    }
+                    _ => {
+                        let data = immi.get_data_as_i128();
+                        self.create_u8_const(data as u8)
+                    }  
+                }
+            },
+            OpCode::ToU16 => {
+                match immi.clone() {
+                    Immi::F32(_) | Immi::F64(_) => {
+                        let data = immi.get_data_as_f64();
+                        self.create_u16_const(data as u16)
+                    }
+                    _ => {
+                        let data = immi.get_data_as_i128();
+                        self.create_u16_const(data as u16)
+                    }  
+                }
+            },
+            OpCode::ToU32 => {
+                match immi.clone() {
+                    Immi::F32(_) | Immi::F64(_) => {
+                        let data = immi.get_data_as_f64();
+                        self.create_u32_const(data as u32)
+                    }
+                    _ => {
+                        let data = immi.get_data_as_i128();
+                        self.create_u32_const(data as u32)
+                    }  
+                }
+            },
+            OpCode::ToU64 => {
+                match immi.clone() {
+                    Immi::F32(_) | Immi::F64(_) => {
+                        let data = immi.get_data_as_f64();
+                        self.create_u64_const(data as u64)
+                    }
+                    _ => {
+                        let data = immi.get_data_as_i128();
+                        self.create_u64_const(data as u64)
+                    }  
+                }
+            },
+            OpCode::ToI16 => {
+                match immi.clone() {
+                    Immi::F32(_) | Immi::F64(_) => {
+                        let data = immi.get_data_as_f64();
+                        self.create_i16_const(data as i16)
+                    }
+                    _ => {
+                        let data = immi.get_data_as_i128();
+                        self.create_i16_const(data as i16)
+                    }  
+                }
+            },
+            OpCode::ToI32 => {
+                match immi.clone() {
+                    Immi::F32(_) | Immi::F64(_) => {
+                        let data = immi.get_data_as_f64();
+                        self.create_i32_const(data as i32)
+                    }
+                    _ => {
+                        let data = immi.get_data_as_i128();
+                        self.create_i32_const(data as i32)
+                    }  
+                }
+            },
+            OpCode::ToI64 => {
+                match immi.clone() {
+                    Immi::F32(_) | Immi::F64(_) => {
+                        let data = immi.get_data_as_f64();
+                        self.create_i64_const(data as i64)
+                    }
+                    _ => {
+                        let data = immi.get_data_as_i128();
+                        self.create_i64_const(data as i64)
+                    }  
+                }
+            },
+            OpCode::ToF32 => {
+                match immi.clone() {
+                    Immi::F32(_) | Immi::F64(_) => {
+                        let data = immi.get_data_as_f64();
+                        self.create_f32_const(data as f32)
+                    }
+                    _ => {
+                        let data = immi.get_data_as_i128();
+                        self.create_f32_const(data as f32)
+                    }  
+                }
+            },
+            OpCode::ToF64 => {
+                match immi.clone() {
+                    Immi::F32(_) | Immi::F64(_) => {
+                        let data = immi.get_data_as_f64();
+                        self.create_f64_const(data as f64)
+                    }
+                    _ => {
+                        let data = immi.get_data_as_i128();
+                        self.create_f64_const(data as f64)
+                    }  
+                }
+            },
+            _ => {unreachable!()}
         }
     }
     /// Create u8 const and insert into value list.

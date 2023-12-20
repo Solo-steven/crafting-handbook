@@ -119,4 +119,69 @@ impl Function {
         self.instructions.remove(inst);
         self.instructions.insert(inst.clone(), inst_data);
     }
+    pub fn insert_value_data_and_type(&mut self, value_data: ValueData, ir_type: Option<IrValueType>) -> Value {
+        if let ValueData::Immi(_) = &value_data {
+            let value_id = Value(self.next_value_index);
+            self.values.insert(value_id, value_data);
+            self.next_value_index += 1;
+            value_id
+        }else {
+            let value_id = Value(self.next_value_index);
+            self.values.insert(value_id, value_data);
+            self.value_types.insert(value_id, ir_type.unwrap());
+            self.next_value_index += 1;
+            value_id
+        }
+    }
+    /// ## Helper function to Align two value with same type.
+    /// when performance some instuction, we maybe need to prompt or narrow data type for instruction.
+    /// so we this helper function will generate convert instruction if need, you can givn this `target_type`
+    /// or pass `None` to make prompt to highest type of two value.
+    pub fn align_two_base_type_value_to_same_type(&mut self, mut left_value: Value, mut right_value: Value, target_type: Option<IrValueType>) -> (Value, Value, IrValueType) {
+        let left_type = self.get_value_ir_type(left_value);
+        let right_type = self.get_value_ir_type(right_value);
+        match target_type {
+            Some(target) => {
+                if left_type != target {
+                    left_value = self.generate_type_convert(left_value, &target);
+                }
+                if right_type != target {
+                    right_value = self.generate_type_convert(right_value, &target);
+                }
+                (left_value, right_value, target)
+            },
+            None => {
+                let target;
+                // Get final type. Generate promot type if need, 
+                if left_type > right_type {
+                    right_value = self.generate_type_convert(right_value, &left_type);
+                    target = &left_type;
+                }else if left_type < right_type {
+                    left_value = self.generate_type_convert(left_value, &right_type);
+                    target = &right_type;
+                }else {
+                    target = &left_type
+                }
+                (left_value, right_value, target.clone())
+            }
+        }
+    }
+    /// ## Helper functin to generate type convert
+    /// this function will generate type convert instruction to target ir type.
+    /// this function will not check is src value and target type is same.
+    pub fn generate_type_convert(&mut self, src: Value, ir_type: &IrValueType) -> Value {
+        match ir_type {
+            IrValueType::Void => panic!(),
+            IrValueType::U8 => self.build_to_u8_inst(src),
+            IrValueType::U16 => self.build_to_u16_inst(src),
+            IrValueType::U32 => self.build_to_u32_inst(src),
+            IrValueType::U64 => self.build_to_u64_inst(src),
+            IrValueType::I16 => self.build_to_i16_inst(src),
+            IrValueType::I32 => self.build_to_i32_inst(src),
+            IrValueType::I64 => self.build_to_i64_inst(src),
+            IrValueType::F32 => self.build_to_f32_inst(src),
+            IrValueType::F64 => self.build_to_f64_inst(src),
+            IrValueType::Address => self.build_to_address_inst(src),
+        }
+    }
 }

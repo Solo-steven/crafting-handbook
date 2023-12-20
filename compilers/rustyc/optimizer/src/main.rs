@@ -13,16 +13,9 @@ use std::io::Write;
 
 fn main() {
     let program = Parser::new("
-    struct Wrapper {
-        int value;
-        int age;
-    };
-    struct Wrapper a;
-    int test() {
-        return a.value;
-    }
+    int array[10][10];
     int main() {
-        test() + a.age;
+        array[0][2] = 10;
         return 0;
     }
     ").parse().unwrap();

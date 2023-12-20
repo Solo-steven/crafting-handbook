@@ -21,11 +21,8 @@ fn test_file_name(name: &'static str)  {
             let mut parser = Parser::new(code.as_str());
             let ast = parser.parse().unwrap();
             let mut convert = Converter::new();
-            convert.convert(&ast);
-            let mut result_string = String::new();
-            for fun in convert.functions {
-                result_string.push_str(fun.print_to_string().as_str());
-            }
+            let module = convert.convert(&ast);
+            let result_string = module.print_to_string();
             let mut ir_path = get_ir_result_dir_path();
             ir_path.push_str(name);
             ir_path.push_str(".ir");

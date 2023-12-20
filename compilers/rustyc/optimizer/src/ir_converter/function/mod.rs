@@ -328,11 +328,12 @@ impl<'a> FunctionCoverter<'a> {
                     let mut size = self.function.create_u32_const(const_size);
                     for index in 0..values.len() {
                         let value = values[values.len() - index -1];
-                        let (next_size, next_value, _) = self.align_two_base_type_value_to_same_type(size, value, Some(IrValueType::U32));
+                        let (next_size, next_value, _) = self.function.align_two_base_type_value_to_same_type(size, value, Some(IrValueType::U32));
                         size = self.function.build_mul_inst(next_size, next_value);
                     }
                     return size;
                 }else {
+                    // if symbol type is array type, ast type must be an array type ast
                     unreachable!()
                 }
             }
@@ -340,55 +341,16 @@ impl<'a> FunctionCoverter<'a> {
         let size_usize = get_size_form_ast_type(&value_type, &mut self.struct_size_table);
         self.function.create_u32_const(size_usize as u32)
     }
-    /// ## Helper function to Align two value with same type.
-    /// when performance some instuction, we maybe need to prompt or narrow data type for instruction.
-    /// so we this helper function will generate convert instruction if need, you can givn this `target_type`
-    /// or pass `None` to make prompt to highest type of two value.
-    fn align_two_base_type_value_to_same_type(&mut self, mut left_value: Value, mut right_value: Value, target_type: Option<IrValueType>) -> (Value, Value, IrValueType) {
-        let left_type = self.function.get_value_ir_type(left_value);
-        let right_type = self.function.get_value_ir_type(right_value);
-        match target_type {
-            Some(target) => {
-                if left_type != target {
-                    left_value = self.generate_type_convert(left_value, &target);
-                }
-                if right_type != target {
-                    right_value = self.generate_type_convert(right_value, &target);
-                }
-                (left_value, right_value, target)
-            },
-            None => {
-                let target;
-                // Get final type. Generate promot type if need, 
-                if left_type > right_type {
-                    right_value = self.generate_type_convert(right_value, &left_type);
-                    target = &left_type;
-                }else if left_type < right_type {
-                    left_value = self.generate_type_convert(left_value, &right_type);
-                    target = &right_type;
-                }else {
-                    target = &left_type
-                }
-                (left_value, right_value, target.clone())
-            }
-        }
-    }
-    /// ## Helper functin to generate type convert
-    /// this function will generate type convert instruction to target ir type.
-    /// this function will not check is src value and target type is same.
-    fn generate_type_convert(&mut self, src: Value, ir_type: &IrValueType) -> Value {
+    fn create_int_const_by_type(&mut self, ir_type: IrValueType, data: i128 ) -> Value {
         match ir_type {
-            IrValueType::Void => panic!(),
-            IrValueType::U8 => self.function.build_to_u8_inst(src),
-            IrValueType::U16 => self.function.build_to_u16_inst(src),
-            IrValueType::U32 => self.function.build_to_u32_inst(src),
-            IrValueType::U64 => self.function.build_to_u64_inst(src),
-            IrValueType::I16 => self.function.build_to_i16_inst(src),
-            IrValueType::I32 => self.function.build_to_i32_inst(src),
-            IrValueType::I64 => self.function.build_to_i64_inst(src),
-            IrValueType::F32 => self.function.build_to_f32_inst(src),
-            IrValueType::F64 => self.function.build_to_f64_inst(src),
-            IrValueType::Address => self.function.build_to_address_inst(src),
+            IrValueType::U8 => self.function.create_u8_const(data as u8),
+            IrValueType::U16 => self.function.create_u16_const(data as u16),
+            IrValueType::U32 => self.function.create_u32_const(data as u32),
+            IrValueType::U64 => self.function.create_u64_const(data as u64),
+            IrValueType::I16 => self.function.create_i16_const(data as i16),
+            IrValueType::I32 => self.function.create_i32_const(data as i32),
+            IrValueType::I64 => self.function.create_i64_const(data as i64),
+            _ => panic!()
         }
     }
 }

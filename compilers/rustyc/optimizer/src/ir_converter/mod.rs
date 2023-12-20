@@ -13,12 +13,11 @@ use crate::ir_converter::symbol_table::*;
 use rustyc_frontend::ast::*;
 use rustyc_frontend::ast::declar::*;
 use rustyc_frontend::ast::expr::*;
+use rustyc_frontend::token::*;
 /// Convert AST to IR blocks
 pub struct Converter<'a> {
-    /// storge ir functions to create module ir
-    pub functions: Vec<Function>,
-    /// storge global values to create module ir 
-    pub globals: GloablValueMap,
+    /// module ir
+    pub module: Module,
     /// cache for storage global value symbol
     pub global_symbol_cache: HashMap<String, SymbolType>,
     /// symbol table for current program
@@ -33,8 +32,7 @@ pub struct Converter<'a> {
 impl<'a> Converter<'a> {
     pub fn new() -> Self {
         Self {
-            functions: Vec::new(),
-            globals: HashMap::new(),
+            module: Module::new(),
             global_symbol_cache: HashMap::new(),
             struct_layout_table: StructLayoutTable::new(None),
             symbol_table: SymbolTable::new(None),
@@ -44,11 +42,7 @@ impl<'a> Converter<'a> {
     }
     pub fn convert(&mut self, program: &Program) -> Module {
         self.accept_program(program);
-        
-        Module { 
-            functions: replace(&mut self.functions, Default::default()), 
-            globals: replace(&mut self.globals, Default::default()),
-        }
+        replace(&mut self.module, Module::new())
     }
     fn accept_program(&mut self, program: &Program) {
         for item in &program.body {
@@ -89,7 +83,7 @@ impl<'a> Converter<'a> {
                 SymbolType::PointerType(_) => Some(IrValueType::Address),
                 _ => None
             };
-            self.globals.insert(name.clone(), GloablValue { size, align: 8, ir_type });
+            self.module.globals.insert(name.clone(), GloablValue { size, align: 8, ir_type });
             self.global_symbol_cache.insert(name, symbol_type);
             // self.symbol_table.insert(declarator.id.name.to_string(), SymbolEntry { reg: pointer, symbol_type: symbol_type.clone() });
             // TODO: init
@@ -131,15 +125,23 @@ impl<'a> Converter<'a> {
             None,
         );
         // insert global value as symbol
-        for (name, _data) in &self.globals {
+        for (name, _data) in &self.module.globals {
             let pointer =func_convert.function.create_global_variable_ref(name.clone());
-            let symbol_type = self.global_symbol_cache.get(name).unwrap().clone();
+            let mut symbol_type = self.global_symbol_cache.get(name).unwrap().clone();
+            if let SymbolType::ArrayType(array_symbol_type) = &mut symbol_type {
+                let mut next_value_of_dims: Vec<Value> = Vec::with_capacity(array_symbol_type.value_of_dims.len());
+                for value in &array_symbol_type.value_of_dims {
+                   let next_value = func_convert.function.insert_value_data_and_type(self.module.values.get(value).unwrap().clone(), None);
+                   next_value_of_dims.push(next_value);
+                }
+                array_symbol_type.value_of_dims = next_value_of_dims;
+            }
             self.symbol_table.insert(name.clone(), SymbolEntry { reg: pointer, symbol_type });
         }
-        func_convert.symbol_table = SymbolTable {  table_list: Default::default(), root_table: Some(&self.symbol_table) };
+        func_convert.symbol_table = SymbolTable { table_list: vec![Default::default()], root_table: Some(&self.symbol_table) };
         // convert with global value
-        self.functions.push(func_convert.convert(func_def));
-        // clear global value from symbol
+        self.module.functions.push(func_convert.convert(func_def));
+        // clear global value from symbol table
         self.symbol_table.clear();
     }
     fn map_ast_type_to_symbol_type(&mut self, value_type: &ValueType) -> SymbolType {
@@ -153,11 +155,48 @@ impl<'a> Converter<'a> {
        }
        symbol_type
     }
+    /// ## Helper Function for getting size of a ast type
+    /// 
     fn get_size_form_ast_type(&mut self, value_type: &ValueType) -> usize {
         get_size_form_ast_type(value_type, &mut self.struct_size_table)
     }
-    fn accpet_expr_const(&mut self, _expr: &Expression) -> Value {
-        todo!();
+    fn accpet_expr_const(&mut self, expr: &Expression) -> Value {
+        match expr {
+            Expression::IntLiteral(int_literal) => self.accept_int_literal(int_literal),
+            _ => todo!()
+        }
+    }
+     /// ## Accept a Int literal
+    /// Just create const for literal.
+    fn accept_int_literal(&mut self, int_literal: &IntLiteral) -> Value {
+        let value = match int_literal.base {
+            IntLiteralBase::Decimal => {
+                int_literal.raw_value.parse::<i128>().unwrap()
+            }
+            _ => todo!()
+        };
+        let ir_type =  match int_literal.value_type {
+            ValueType::Char => IrValueType::U8,
+            ValueType::Shorted => IrValueType::I16,
+            ValueType::UnsignedShort => IrValueType::U16,
+            ValueType::Int => IrValueType::I32,
+            ValueType::Unsigned => IrValueType::U32,
+            ValueType::Long => IrValueType::I64,
+            ValueType::UnsignedLong => IrValueType::U64,
+            ValueType::LongLong => IrValueType::I64,
+            ValueType::UnsignedLongLong => IrValueType::U64,
+            _ => unreachable!(),
+        };
+        match ir_type {
+            IrValueType::U8 => self.module.create_u8_const(value as u8),
+            IrValueType::U16 => self.module.create_u16_const(value as u16),
+            IrValueType::U32 => self.module.create_u32_const(value as u32),
+            IrValueType::U64 => self.module.create_u64_const(value as u64),
+            IrValueType::I16 => self.module.create_i16_const(value as i16),
+            IrValueType::I32 => self.module.create_i32_const(value as i32),
+            IrValueType::I64 => self.module.create_i64_const(value as i64),
+            _ => unreachable!(),
+        }
     }
 }
 

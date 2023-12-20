@@ -264,7 +264,7 @@ impl<'a> FunctionCoverter<'a> {
     fn accept_binary_expr(&mut self, binary_expr: &BinaryExpression) -> Value {
         let left_value = self.accept_expr_with_value(&binary_expr.left);
         let right_value = self.accept_expr_with_value(&binary_expr.right);
-        let (left_value, right_value, target_type) = self.align_two_base_type_value_to_same_type(left_value, right_value, None);
+        let (left_value, right_value, target_type) = self.function.align_two_base_type_value_to_same_type(left_value, right_value, None);
         let is_float = match target_type {
             IrValueType::F32 | IrValueType::F64 => true,
             _ => false
@@ -342,10 +342,10 @@ impl<'a> FunctionCoverter<'a> {
         let src = self.accept_expr_with_value(&cast_expr.expr);
         match to_symbol_type {
             SymbolType::BasicType(ir_type) => {
-                self.generate_type_convert(src, &ir_type)
+                self.function.generate_type_convert(src, &ir_type)
             }   
             SymbolType::PointerType(_pointer_type) => {
-                let cast_value = self.generate_type_convert(src, &IrValueType::Address);
+                let cast_value = self.function.generate_type_convert(src, &IrValueType::Address);
                 cast_value
             }
             SymbolType::StructalType(_) => {
@@ -493,7 +493,7 @@ impl<'a> FunctionCoverter<'a> {
             let offset_0 = self.function.create_u32_const(0);
             let value = self.function.build_load_register_inst(reg, offset_0,ir_type.clone());
             let const_one = self.function.create_u32_const(1);
-            let (next_value, next_const, target_type) = self.align_two_base_type_value_to_same_type(value, const_one, None);
+            let (next_value, next_const, target_type) = self.function.align_two_base_type_value_to_same_type(value, const_one, None);
             let is_float = match target_type {
                 IrValueType::F32 | IrValueType::F64 => true,
                 _ => false,
@@ -692,7 +692,13 @@ impl<'a> FunctionCoverter<'a> {
                     for value in values {
                         let mut cur_row_base = self.function.create_i32_const(1); 
                         for i in 0..(array_symbol_type.value_of_dims.len() - index - 1) {
-                            cur_row_base = self.function.build_mul_inst(cur_row_base, array_symbol_type.value_of_dims[i]);
+                            let (next_base, next_dim, _ ) = self.function.align_two_base_type_value_to_same_type(
+                                cur_row_base, 
+                                array_symbol_type.value_of_dims[i], 
+                                Some(IrValueType::I32)
+                            );
+                            cur_row_base = self.function.build_mul_inst(next_base, next_dim);
+                            println!("done");
                         }
                         let cur_row_index = self.function.build_mul_inst(value, cur_row_base);
                         array_access_index = self.function.build_add_inst(array_access_index, cur_row_index);
@@ -700,7 +706,12 @@ impl<'a> FunctionCoverter<'a> {
                     }
                     // mul access index by the size of array type
                     let value_of_array_element = get_size_from_symbol_type!(self, array_symbol_type.array_of.as_ref());
-                    let mul_value = self.function.build_mul_inst(array_access_index, value_of_array_element);
+                    let (next_index, next_value, _) = self.function.align_two_base_type_value_to_same_type(
+                        array_access_index, 
+                        value_of_array_element, 
+                        None
+                    );
+                    let mul_value = self.function.build_mul_inst(next_index, next_value);
                     base = self.function.build_add_inst(base, mul_value);
                     offset = 0;
                     // if access to end, we maybe need to change strucy layout if array of type is struct 
@@ -942,13 +953,23 @@ impl<'a> FunctionCoverter<'a> {
     fn accept_as_lefthand_expr(&mut self, expr: &Expression) -> (Value, SymbolType) {
         match expr {
             Expression::Identifier(id) => {
-                println!("{:?}", self.symbol_table);
                 let SymbolEntry { reg, symbol_type } = self.symbol_table.get(id.name.as_ref()).unwrap();
                 (reg.clone(), symbol_type.clone())
             }
+            Expression::CallExpr(call_expr) => {
+                let base = self.accept_call_expr(call_expr).unwrap();
+                let callee_name = match call_expr.callee.as_ref() {
+                    Expression::Identifier(id) => id.name.to_string(),
+                    _ => todo!(),
+                };
+                let return_symbol_type = self.function_signature_table.get(&callee_name).unwrap().return_type.clone();
+                (base, return_symbol_type)
+            }
             Expression::DereferenceExpr(_) | Expression::MemberExpr(_) | Expression::SubscriptExpr(_) => self.accept_chain_expr_as_leftvalue(expr),
             Expression::UnaryExpr(unary_expr) => self.accept_deference_unary_expr_as_leftvalue(unary_expr),
-            _ => panic!(),
+            _ => {
+                unreachable!();
+            },
         }
     }
     /// ## Accpet a deference unary expression as left hand side value
@@ -994,12 +1015,8 @@ impl<'a> FunctionCoverter<'a> {
             SymbolType::PointerType(pointer_type) => {
                 let offset_const = self.function.create_i32_const(offset as i32);
                 let pointer_value = self.function.build_add_inst(base, offset_const);
-                if access_level > 0 {
-                    if access_level == pointer_type.level {
-                        (pointer_value, *pointer_type.pointer_to)
-                    }else {
-                        (pointer_value,SymbolType::PointerType(pointer_type))
-                    }
+                if access_level > 0 && access_level == pointer_type.level {
+                    (pointer_value, *pointer_type.pointer_to)
                 }else {
                     (pointer_value, SymbolType::PointerType(pointer_type))
                 }
