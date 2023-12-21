@@ -4,9 +4,8 @@ mod function;
 
 use std::collections::BTreeMap;
 use std::collections::HashMap;
-use std::mem::replace;
+use std::mem::{replace, take};
 use crate::ir::module::*;
-use crate::ir::function::*;
 use crate::ir::value::*;
 use crate::ir_converter::function::FunctionCoverter;
 use crate::ir_converter::symbol_table::*;
@@ -83,8 +82,13 @@ impl<'a> Converter<'a> {
                 SymbolType::PointerType(_) => Some(IrValueType::Address),
                 _ => None
             };
-            self.module.globals.insert(name.clone(), GloablValue { size, align: 8, ir_type });
-            self.global_symbol_cache.insert(name, symbol_type);
+            self.global_symbol_cache.insert(name.clone(), symbol_type);
+            if let Some(init_expr) = &declarator.init_value {
+                let value = self.accpet_expr_const(init_expr);
+                self.module.globals.insert(name, GloablValue { size, align: 8, ir_type, init_value: Some(value) });
+            }else {
+                self.module.globals.insert(name, GloablValue { size, align: 8, ir_type, init_value: None });
+            }
             // self.symbol_table.insert(declarator.id.name.to_string(), SymbolEntry { reg: pointer, symbol_type: symbol_type.clone() });
             // TODO: init
         }
@@ -118,11 +122,13 @@ impl<'a> Converter<'a> {
             func_def.id.name.to_string(), 
             FunctionSignature { return_type: return_symbol_type, params: params_symbol_type}
         );
+        let const_strings = std::mem::take(&mut self.module.const_string);
         let mut func_convert = FunctionCoverter::new(
             &mut self.function_signature_table,
             Some(&self.struct_layout_table),
             Some(&self.struct_size_table),
             None,
+            const_strings,
         );
         // insert global value as symbol
         for (name, _data) in &self.module.globals {
@@ -140,7 +146,10 @@ impl<'a> Converter<'a> {
         }
         func_convert.symbol_table = SymbolTable { table_list: vec![Default::default()], root_table: Some(&self.symbol_table) };
         // convert with global value
-        self.module.functions.push(func_convert.convert(func_def));
+        let mut func_ir = func_convert.convert(func_def);
+        let const_string = take(&mut func_ir.const_string);
+        self.module.const_string = const_string;
+        self.module.functions.push(func_ir);
         // clear global value from symbol table
         self.symbol_table.clear();
     }
@@ -163,10 +172,11 @@ impl<'a> Converter<'a> {
     fn accpet_expr_const(&mut self, expr: &Expression) -> Value {
         match expr {
             Expression::IntLiteral(int_literal) => self.accept_int_literal(int_literal),
+            Expression::StringLiteral(string_literal) => self.accept_string_literal(string_literal),
             _ => todo!()
         }
     }
-     /// ## Accept a Int literal
+    /// ## Accept a Int literal
     /// Just create const for literal.
     fn accept_int_literal(&mut self, int_literal: &IntLiteral) -> Value {
         let value = match int_literal.base {
@@ -196,6 +206,19 @@ impl<'a> Converter<'a> {
             IrValueType::I32 => self.module.create_i32_const(value as i32),
             IrValueType::I64 => self.module.create_i64_const(value as i64),
             _ => unreachable!(),
+        }
+    }
+    fn accept_string_literal(&mut self, string_literal: &StringLiteral) -> Value {
+        let index = self.module.const_string.get(string_literal.raw_value.as_ref());
+        match index {
+            Some(i) => {
+                self.module.create_global_variable_ref(format!("str{}", i))
+            }
+            None => {
+                let len_index = self.module.const_string.len() + 1;
+                self.module.const_string.insert(string_literal.raw_value.to_string(), len_index);
+                self.module.create_global_variable_ref(format!("str{}", len_index))
+            }
         }
     }
 }

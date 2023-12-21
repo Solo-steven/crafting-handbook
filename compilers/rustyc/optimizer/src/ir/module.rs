@@ -9,6 +9,7 @@ pub struct GloablValue {
     pub size: usize,
     pub align: usize,
     pub ir_type: Option<IrValueType>,
+    pub init_value: Option<Value>
 }
 
 pub type GloablValueMap = HashMap<String, GloablValue>;
@@ -18,8 +19,9 @@ pub struct Module {
     pub globals: GloablValueMap,
     pub values: ValueMap,
     pub value_types: TypeMap,
-    pub (super) next_value_index: usize,
-    pub (super) next_temp_register_index: usize,
+    pub const_string: HashMap<String, usize>,
+    pub next_value_index: usize,
+    pub next_temp_register_index: usize,
 }
 
 impl Module {
@@ -31,13 +33,14 @@ impl Module {
             values: Default::default(),
             next_temp_register_index: 1,
             next_value_index: 1,
+            const_string: Default::default(),
         }
     }
     pub fn print_to_string(&self) -> String {
         let mut output_code = String::new();
         for (global, data) in &self.globals {
             output_code.push_str(format!(
-                "{} =  global {}  size {}, align {}\n", 
+                "{} =  global {}  size {}, align {} {}\n", 
                 global,
                 match &data.ir_type {
                     Some(ir) => get_text_format_of_datatype(ir),
@@ -45,12 +48,32 @@ impl Module {
                 },
                 data.size,
                 data.align,
+                match &data.init_value {
+                    Some(value) => format!("= {}",get_text_format_of_value(self.values.get(value).unwrap()).as_str()),
+                    None => String::from(""),
+                }
             ).as_str())
+        }
+        for (const_string, index) in &self.const_string {
+            output_code.push_str(
+                format!(
+                    "str{} = {}\n",
+                    index,
+                    const_string
+                ).as_str())
         }
         for fun in &self.functions {
             output_code.push_str(fun.print_to_string().as_ref());
         }
         output_code
+    }
+    pub fn create_global_variable_ref(&mut self, global_name: String) -> Value {
+        println!("{:?}", global_name);
+        let value_id = Value(self.next_value_index);
+        self.values.insert(value_id, ValueData::GlobalRef(global_name));
+        self.value_types.insert(value_id, IrValueType::Address);
+        self.next_value_index += 1;
+        value_id
     }
     /// Create u8 const and insert into value list.
     pub fn create_u8_const(&mut self, data: u8) -> Value {
@@ -114,5 +137,26 @@ impl Module {
         self.next_temp_register_index += 1;
         self.values.insert(value_id, ValueData::Immi(Immi::F64(data)));
         value_id
+    }
+}
+/// Get the text format of a ValueData
+pub fn get_text_format_of_value(value: &ValueData) -> String {
+    match value {
+        ValueData::Immi(immi) => {
+            match immi {
+                Immi::U8(data) => format!("{}",data),
+                Immi::U16(data) => format!("{}", data),
+                Immi::I16(data) => format!("{}", data),
+                Immi::I32(data) => format!("{}", data),
+                Immi::I64(data) => format!("{}", data),
+                Immi::U32(data) => format!("{}", data),
+                Immi::U64(data) => format!("{}", data),
+                Immi::F32(data) => format!("{}", data),
+                Immi::F64(data) => format!("{}", data),
+            }
+        }
+        ValueData::VirRegister(register) | ValueData::GlobalRef(register) => {
+            register.clone()
+        }
     }
 }

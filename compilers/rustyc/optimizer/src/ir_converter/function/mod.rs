@@ -1,6 +1,7 @@
 mod expr;
 mod error_map;
 
+use std::collections::HashMap;
 use std::mem::replace;
 use crate::ir::function::*;
 use crate::ir::value::*;
@@ -10,6 +11,66 @@ use crate::ir_converter::function::error_map::IrFunctionConvertErrorMap;
 use rustyc_frontend::ast::*;
 use rustyc_frontend::ast::declar::*;
 use rustyc_frontend::ast::stmt::*;
+
+/// ## Helper Marco for getting a size from a symbol type.
+/// Using a marco instead of function for avoid some borrowing problem. and this marco 
+/// will return a value as the size of symbol type
+#[macro_export]
+macro_rules! get_size_from_symbol_type {
+    ($converter: expr, $symbol_type: expr) => {
+        match $symbol_type {
+            SymbolType::BasicType(ir_type) => {
+                match ir_type {
+                    IrValueType::Void => $converter.function.create_u8_const(0),
+                    IrValueType::U8 => $converter.function.create_u8_const(1),
+                    IrValueType::U16 => $converter.function.create_u8_const(2),
+                    IrValueType::U32 => $converter.function.create_u8_const(4),
+                    IrValueType::U64 => $converter.function.create_u8_const(8),
+                    IrValueType::I16 => $converter.function.create_u8_const(2),
+                    IrValueType::I32 => $converter.function.create_u8_const(4),
+                    IrValueType::I64 => $converter.function.create_u8_const(8),
+                    IrValueType::Address => $converter.function.create_u8_const(4),
+                    IrValueType::F32 => $converter.function.create_u8_const(4),
+                    IrValueType::F64 => $converter.function.create_u8_const(8),
+                }
+            }
+            SymbolType::PointerType(_) => $converter.function.create_u8_const(4),
+            SymbolType::StructalType(struct_name) => {
+                let size_usize =$converter.struct_size_table.get(struct_name).unwrap().clone();
+                $converter.function.create_u8_const(size_usize as u8)
+            }
+            SymbolType::ArrayType(array_symbol_type) => {
+                let mut array_size_value = match array_symbol_type.array_of.as_ref() {
+                    SymbolType::BasicType(ir_type) => {
+                        match ir_type {
+                            IrValueType::Void => $converter.function.create_u8_const(0),
+                            IrValueType::U8 => $converter.function.create_u8_const(1),
+                            IrValueType::U16 => $converter.function.create_u8_const(2),
+                            IrValueType::U32 => $converter.function.create_u8_const(4),
+                            IrValueType::U64 => $converter.function.create_u8_const(8),
+                            IrValueType::I16 => $converter.function.create_u8_const(2),
+                            IrValueType::I32 => $converter.function.create_u8_const(4),
+                            IrValueType::I64 => $converter.function.create_u8_const(8),
+                            IrValueType::Address => $converter.function.create_u8_const(4),
+                            IrValueType::F32 => $converter.function.create_u8_const(4),
+                            IrValueType::F64 => $converter.function.create_u8_const(8),
+                        }
+                    }
+                    SymbolType::PointerType(_) => $converter.function.create_u8_const(4),
+                    SymbolType::StructalType(struct_name) => {
+                        let size_usize =$converter.struct_size_table.get(struct_name).unwrap().clone();
+                        $converter.function.create_u8_const(size_usize as u8)
+                    }
+                    _ => unreachable!(),
+                };
+                for val in &array_symbol_type.value_of_dims {
+                    array_size_value = $converter.function.build_mul_inst(array_size_value, val.clone());
+                }
+                array_size_value  
+            }
+        }  
+    };
+}
 /// Convert function ast into function ir instance
 pub struct FunctionCoverter<'a> {
     /// signature of outer function, type of function signature has been
@@ -33,11 +94,12 @@ impl<'a> FunctionCoverter<'a> {
         global_struct_layout_table: Option<&'a StructLayoutTable>,
         global_struct_size_table:Option<&'a StructSizeTable>,
         global_symbol_table: Option<&'a SymbolTable<'a>>, 
+        const_strings: HashMap<String, usize>,
     ) -> Self {
         Self {
             // function info
             function_signature_table: signature_table,
-            function: Function::new(String::from("")),
+            function: Function::new(String::from(""), const_strings),
             // struct info
             struct_layout_table: StructLayoutTable::new(global_struct_layout_table),
             struct_size_table: StructSizeTable::new(global_struct_size_table),
@@ -63,7 +125,7 @@ impl<'a> FunctionCoverter<'a> {
         // start convert by visitor pattern.
         self.accept_function_def(func_def);
         // return function ir instance
-        replace(&mut self.function, Function::new(String::new()))
+        replace(&mut self.function, Function::new(String::new(), Default::default()))
     }
     /// ## Accept function param 
     /// This function shell not perform type checker because that stage should be done
@@ -143,7 +205,8 @@ impl<'a> FunctionCoverter<'a> {
             let return_symbol_type = &self_signature.return_type;
             if let SymbolType::StructalType(struct_name) = &return_symbol_type {
                 let dst = self.symbol_table.get("__rustyc_return_strcut").unwrap();
-                self.copy_struct_layout(dst.reg, return_value, struct_name);
+                let size = self.struct_size_table.get(struct_name).unwrap().clone();
+                self.copy_memory(dst.reg, return_value, size, 4);
                 self.function.build_ret_inst(None);
                 return;
             }
@@ -280,8 +343,31 @@ impl<'a> FunctionCoverter<'a> {
                         let offset = self.function.create_u8_const(0);
                         self.function.build_store_register_inst(init_value, pointer, offset, IrValueType::Address);
                     }
+                    SymbolType::ArrayType(array_symbol_type) => {
+                        let src = self.accept_expr_with_value(expr);
+                        let mut usize_of_dims = Vec::new();
+                        for value in &array_symbol_type.value_of_dims {
+                            if let ValueData::Immi(immi) = self.function.values.get(value).unwrap() {
+                                let usize_dim = immi.get_data_as_i128() as usize;
+                                usize_of_dims.push(usize_dim);
+                            }else {
+                                unreachable!();
+                            }
+                        }
+                        let size = get_size_from_symbol_type!(self, array_symbol_type.array_of.as_ref());
+                        if let ValueData::Immi(immi) = self.function.values.get(&size).unwrap() {
+                            let base = immi.get_data_as_i128() as usize;
+                            let mut total = base ;
+                            for usize_val in usize_of_dims {
+                                total *= usize_val;
+                            };
+                            self.copy_memory(pointer, src, total, 4);
+                        }else {
+                            unreachable!();
+                        }
+                    }
                     // TODO: if symbol table is structral type, init must handle extra.
-                    _ => todo!()
+                    _ => todo!(),
                 }
             }
         }
@@ -340,18 +426,6 @@ impl<'a> FunctionCoverter<'a> {
         }
         let size_usize = get_size_form_ast_type(&value_type, &mut self.struct_size_table);
         self.function.create_u32_const(size_usize as u32)
-    }
-    fn create_int_const_by_type(&mut self, ir_type: IrValueType, data: i128 ) -> Value {
-        match ir_type {
-            IrValueType::U8 => self.function.create_u8_const(data as u8),
-            IrValueType::U16 => self.function.create_u16_const(data as u16),
-            IrValueType::U32 => self.function.create_u32_const(data as u32),
-            IrValueType::U64 => self.function.create_u64_const(data as u64),
-            IrValueType::I16 => self.function.create_i16_const(data as i16),
-            IrValueType::I32 => self.function.create_i32_const(data as i32),
-            IrValueType::I64 => self.function.create_i64_const(data as i64),
-            _ => panic!()
-        }
     }
 }
 

@@ -1,7 +1,8 @@
 use std::collections::BTreeMap;
-use crate::ir_converter::function::FunctionCoverter;
 use crate::ir::instructions::CmpFlag;
 use crate::ir::value::*;
+use crate::ir_converter::function::FunctionCoverter;
+use crate::get_size_from_symbol_type;
 use crate::ir_converter::symbol_table::*;
 use rustyc_frontend::ast::expr::*;
 use rustyc_frontend::ast::declar::*;
@@ -20,64 +21,6 @@ enum ChainBase {
     CallExprReturnPointer(Value, PointerSymbolType),
 }
 
-/// ## Helper Marco for getting a size from a symbol type.
-/// Using a marco instead of function for avoid some borrowing problem. and this marco 
-/// will return a value as the size of symbol type
-macro_rules! get_size_from_symbol_type {
-    ($converter: expr, $symbol_type: expr) => {
-        match $symbol_type {
-            SymbolType::BasicType(ir_type) => {
-                match ir_type {
-                    IrValueType::Void => $converter.function.create_u8_const(0),
-                    IrValueType::U8 => $converter.function.create_u8_const(1),
-                    IrValueType::U16 => $converter.function.create_u8_const(2),
-                    IrValueType::U32 => $converter.function.create_u8_const(4),
-                    IrValueType::U64 => $converter.function.create_u8_const(8),
-                    IrValueType::I16 => $converter.function.create_u8_const(2),
-                    IrValueType::I32 => $converter.function.create_u8_const(4),
-                    IrValueType::I64 => $converter.function.create_u8_const(8),
-                    IrValueType::Address => $converter.function.create_u8_const(4),
-                    IrValueType::F32 => $converter.function.create_u8_const(4),
-                    IrValueType::F64 => $converter.function.create_u8_const(8),
-                }
-            }
-            SymbolType::PointerType(_) => $converter.function.create_u8_const(4),
-            SymbolType::StructalType(struct_name) => {
-                let size_usize =$converter.struct_size_table.get(struct_name).unwrap().clone();
-                $converter.function.create_u8_const(size_usize as u8)
-            }
-            SymbolType::ArrayType(array_symbol_type) => {
-                let mut array_size_value = match array_symbol_type.array_of.as_ref() {
-                    SymbolType::BasicType(ir_type) => {
-                        match ir_type {
-                            IrValueType::Void => $converter.function.create_u8_const(0),
-                            IrValueType::U8 => $converter.function.create_u8_const(1),
-                            IrValueType::U16 => $converter.function.create_u8_const(2),
-                            IrValueType::U32 => $converter.function.create_u8_const(4),
-                            IrValueType::U64 => $converter.function.create_u8_const(8),
-                            IrValueType::I16 => $converter.function.create_u8_const(2),
-                            IrValueType::I32 => $converter.function.create_u8_const(4),
-                            IrValueType::I64 => $converter.function.create_u8_const(8),
-                            IrValueType::Address => $converter.function.create_u8_const(4),
-                            IrValueType::F32 => $converter.function.create_u8_const(4),
-                            IrValueType::F64 => $converter.function.create_u8_const(8),
-                        }
-                    }
-                    SymbolType::PointerType(_) => $converter.function.create_u8_const(4),
-                    SymbolType::StructalType(struct_name) => {
-                        let size_usize =$converter.struct_size_table.get(struct_name).unwrap().clone();
-                        $converter.function.create_u8_const(size_usize as u8)
-                    }
-                    _ => unreachable!(),
-                };
-                for val in &array_symbol_type.value_of_dims {
-                    array_size_value = $converter.function.build_mul_inst(array_size_value, val.clone());
-                }
-                array_size_value  
-            }
-        }  
-    };
-}
 /// ## Helper marco for unreachable error
 /// By typecheck, we can ensure that some sematic error, will not be happend, so
 /// those sematic error case.
@@ -99,16 +42,17 @@ impl<'a> FunctionCoverter<'a> {
             Expression::ConditionalExpr(condition_expr) => Some(self.accept_condition_expr(condition_expr)),
             Expression::BinaryExpr(binary_expr) => Some(self.accept_binary_expr(binary_expr)),
             Expression::UnaryExpr(unary_expr) => Some(self.accept_unary_expr(unary_expr)),
+            Expression::SizeOfTypeExpr(size_of_type_expr) => Some(self.accept_size_of_type_expr(size_of_type_expr)),
+            Expression::CastExpr(cast_expr) => Some(self.accpet_cast_expr(cast_expr)),
+            Expression::SizeOfValueExpr(size_of_value_expr) => Some(self.accept_size_of_value_expr(size_of_value_expr)),
             Expression::UpdateExpr(update_expr) => Some(self.accept_update_expr(update_expr)),
             Expression::MemberExpr(_) | Expression::DereferenceExpr(_) | Expression::SubscriptExpr(_) => Some(self.accept_chain_expr(expr)),
             Expression::CallExpr(call_expr) => self.accept_call_expr(call_expr),
             Expression::Identifier(id) => Some(self.accept_identifier(id)),
             Expression::IntLiteral(int_literal) => Some(self.accept_int_literal(int_literal)),
             Expression::FloatLiteral(float_literal) => Some(self.accept_float_literal(float_literal)),
+            Expression::StringLiteral(string_literal) => Some(self.accept_string_literal(string_literal)),
             Expression::ParenthesesExpr(para_expr) => self.accept_expr(&para_expr.expr),
-            Expression::CastExpr(cast_expr) => Some(self.accpet_cast_expr(cast_expr)),
-            Expression::SizeOfTypeExpr(size_of_type_expr) => Some(self.accept_size_of_type_expr(size_of_type_expr)),
-            Expression::SizeOfValueExpr(size_of_value_expr) => Some(self.accept_size_of_value_expr(size_of_value_expr)),
             _ => {
                 println!("{:?}", expr);
                 todo!()
@@ -163,7 +107,9 @@ impl<'a> FunctionCoverter<'a> {
                 right_value
             }
             SymbolType::StructalType(struct_type_name) => {
-                self.copy_struct_layout(left_value, right_value, struct_type_name);
+                // size in byte
+                let size = self.struct_size_table.get(struct_type_name).unwrap().clone();
+                self.copy_memory(left_value, right_value, size, 4);
                 right_value
             }
             SymbolType::ArrayType(_) => {
@@ -172,64 +118,12 @@ impl<'a> FunctionCoverter<'a> {
             }
         }
     }
-    /// Helper function for `accept_assignment_expr`
-    /// when assign a struct data type, we need to copy the memory from src to dst (right hand side to 
-    /// left hand side). this function implement copy struct by struct layout.
-    /// ### Memory copy
-    /// memory copy is a big issue, since i can not find there is any memory copy instruction in assembly 
-    /// level, and llvm just using memcpy of c standard lib to performance the memory copy.
-    /// 
-    /// The implementation of memcpy seems using a `word` to copy memory no matter what type the memory 
-    /// address is point to. So there we follow the footstep of gcc lib, just copy size of memory by 
-    /// unsigned int.
-    pub (super) fn copy_struct_layout(&mut self, dst: Value, src: Value, name: &String) {
-        let layout = self.struct_layout_table.get(name).unwrap();
-        let mut index: usize = 0;
-        for layout_entry in layout.values() {
-            match &layout_entry.data_type {
-                SymbolType::BasicType(ir_type) => {
-                    let offset_value = self.function.create_u32_const(layout_entry.offset as u32);
-                    let register_value = self.function.build_load_register_inst(src, offset_value, ir_type.clone());
-                    self.function.build_store_register_inst(register_value, dst, offset_value, ir_type.clone());
-                }
-                SymbolType::PointerType(_) => {
-                    let offset_value = self.function.create_u32_const(layout_entry.offset as u32);
-                    let register_value = self.function.build_load_register_inst(src, offset_value, IrValueType::U32);
-                    self.function.build_store_register_inst(register_value, dst, offset_value, IrValueType::U32);
-                }
-                SymbolType::StructalType(next_name) => {
-                    let struct_size = self.struct_size_table.get(next_name).unwrap().clone();
-                    let mut offset = layout_entry.offset;
-                    // TODO: size of word might not be 32bit
-                    for _i in 0..struct_size / 4  {
-                        let offset_value = self.function.create_u32_const(offset as u32);
-                        let register_value = self.function.build_load_register_inst(src, offset_value, IrValueType::U32);
-                        self.function.build_store_register_inst(register_value, dst, offset_value, IrValueType::U32);
-                        offset += 4;
-                    }
-                }
-                SymbolType::ArrayType(_array_symbol_type) => {
-                    // NOTE: by C99 spec, array in a struct type and only be const expression, so we know 
-                    // exactly how length this array is. we can just using loop to copy memory
-                    let array_size = if index == layout.len() -1 {
-                        let struc_size = self.struct_size_table.get(name).unwrap().clone();
-                        struc_size - layout_entry.offset
-                    }else {
-                        let layout_values_vec: Vec<_> = layout.values().collect();
-                        let next_entry_offset = layout_values_vec[index+1].offset;
-                        next_entry_offset - layout_entry.offset
-                    };
-                    let mut offset = layout_entry.offset;
-                    // TODO: size of word might not be 32bit (4 byte)
-                    for _i in 0..array_size/4  {
-                        let offset_value = self.function.create_u32_const(offset as u32);
-                        let register_value = self.function.build_load_register_inst(src, offset_value, IrValueType::U32);
-                        self.function.build_store_register_inst(register_value, dst, offset_value, IrValueType::U32);
-                        offset += 4;
-                    }
-                }
-            }
-            index += 1;
+    /// ## Helper function for copy memory
+    pub fn copy_memory(&mut self, dst: Value, src: Value, size: usize, _aligen: usize) {
+        for i in 0..size {
+            let offset = self.function.create_u8_const(i as u8);
+            let value = self.function.build_load_register_inst(src, offset, IrValueType::U8);
+            self.function.build_store_register_inst(value, dst, offset, IrValueType::U8);
         }
     }
     /// ## Accept a condition expression in right hand side
@@ -937,6 +831,16 @@ impl<'a> FunctionCoverter<'a> {
             IrValueType::F32 => self.function.create_f32_const(value as f32),
             IrValueType::F64 => self.function.create_f64_const(value as f64),
             _ => unreachable!(),
+        }
+    }
+    fn accept_string_literal(&mut self, string_literal: &StringLiteral) -> Value {
+        let index = self.function.const_string.get(string_literal.raw_value.as_ref());
+        if let Some(i) = index {
+            self.function.create_global_variable_ref(format!("str{}", i))
+        }else {
+            let len_index = self.function.const_string.len() + 1;
+            self.function.const_string.insert(string_literal.raw_value.to_string(), len_index);
+            self.function.create_global_variable_ref(format!("str{}", len_index))
         }
     }
     /// ## Accept a expression that treat as left value.

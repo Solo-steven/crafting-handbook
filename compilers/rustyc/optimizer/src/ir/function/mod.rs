@@ -27,6 +27,8 @@ pub struct Function {
     pub exit_block: Vec<BasicBlock>,
 
     pub current_block: Option<BasicBlock>,
+
+    pub const_string: HashMap<String, usize>
 }
 #[derive(Debug, PartialEq, Clone, Hash, Eq, Copy)]
 pub struct BasicBlock(pub usize);
@@ -42,7 +44,7 @@ pub type BasicBlockMap = HashMap<BasicBlock, BasicBlockData>;
 
 impl Function {
     /// Create a new function with's name and param and return type
-    pub fn new(name: String) -> Self {
+    pub fn new(name: String, const_strings: HashMap<String, usize>) -> Self {
         Function {
             name,
             return_type: None,
@@ -58,7 +60,8 @@ impl Function {
             next_temp_register_index: 1,
             entry_block: Vec::new(),
             exit_block: Vec::new(),
-            current_block: None
+            current_block: None,
+            const_string: const_strings,
         }
     }
     /// Create a basic block, and this block is not conncet yet.
