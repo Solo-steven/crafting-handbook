@@ -72,8 +72,24 @@ pub enum SymbolType {
 #[derive(Debug, Clone)]
 pub struct PointerSymbolType {
     pub level: usize,
-    pub pointer_to: Box<SymbolType>
+    pub pointer_to: PointerToSymbolType
 }
+#[derive(Debug, Clone)]
+pub enum PointerToSymbolType {
+    BasicType(IrValueType),
+    StructalType(String),
+    ArrayType(ArraySymbolType),
+    FunctionType(String),
+}
+pub fn map_pointer_to_symbol_to_symbol_type(pointer_to_symbol: PointerToSymbolType) -> SymbolType {
+    match pointer_to_symbol {
+        PointerToSymbolType::ArrayType(array_sumbol_type) => SymbolType::ArrayType(array_sumbol_type),
+        PointerToSymbolType::BasicType(ir_type) => SymbolType::BasicType(ir_type),
+        PointerToSymbolType::StructalType(struct_name) => SymbolType::StructalType(struct_name),
+        PointerToSymbolType::FunctionType(_) => panic!(),
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct  ArraySymbolType {
     pub array_of: Box<SymbolType>,

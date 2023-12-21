@@ -253,7 +253,12 @@ fn map_ast_type_to_symbol_type(value_type: &ValueType, struct_layout_table: &mut
         ValueType::PointerType(pointer_type) => {
             SymbolType::PointerType(PointerSymbolType { 
                 level: pointer_type.level, 
-                pointer_to: Box::new(map_ast_type_to_symbol_type(&pointer_type.pointer_to, struct_layout_table, struct_size_table))
+                pointer_to: match map_ast_type_to_symbol_type(&pointer_type.pointer_to, struct_layout_table, struct_size_table) {
+                    SymbolType::BasicType(basic_type) => PointerToSymbolType::BasicType(basic_type),
+                    SymbolType::ArrayType(array_type) => PointerToSymbolType::ArrayType(array_type),
+                    SymbolType::StructalType(struct_name) => PointerToSymbolType::StructalType(struct_name),
+                    _ => unreachable!()
+                }
             })
         }
         ValueType::ArrayType(array_type) => {

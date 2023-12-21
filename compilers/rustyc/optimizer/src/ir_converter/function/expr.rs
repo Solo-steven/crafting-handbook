@@ -365,8 +365,8 @@ impl<'a> FunctionCoverter<'a> {
             SymbolType::PointerType(pointer_type) => {
                 let offset_0 = self.function.create_u8_const(0);
                 let address = self.function.build_load_register_inst(value, offset_0, IrValueType::Address);
-                let pointer_to_type = match *pointer_type.pointer_to {
-                    SymbolType::BasicType(basic_type) => basic_type, 
+                let pointer_to_type = match pointer_type.pointer_to {
+                    PointerToSymbolType::BasicType(basic_type) => basic_type, 
                     _ => unreachable!(),
                 };
                 self.function.build_load_register_inst(address, offset_0, pointer_to_type)
@@ -417,7 +417,23 @@ impl<'a> FunctionCoverter<'a> {
             Expression::Identifier(id) => id.name.to_string(),
             _ => todo!(),
         };
-        let signature = self.function_signature_table.get(&callee_name).unwrap();
+        let signature = match self.function_signature_table.get(&callee_name) {
+            Some(sig) => sig,
+            None => {
+                let SymbolEntry{ reg, symbol_type}  = self.symbol_table.get(&callee_name).unwrap();
+                if let SymbolType::PointerType(pointer_symbol_type) = symbol_type {
+                    if let PointerToSymbolType::FunctionType(function_name) = &pointer_symbol_type.pointer_to {
+                        let offset = self.function.create_u8_const(0);
+                        self.function.build_load_register_inst(reg.clone(), offset, IrValueType::Address);
+                        self.function_signature_table.get(function_name).unwrap()
+                    }else {
+                        unreachable!()
+                    }
+                }else {
+                    unreachable!();
+                }
+            }
+        };
         let mut arugments: Vec<Value> = call_expr
             .arguments
             .iter()
@@ -510,9 +526,8 @@ impl<'a> FunctionCoverter<'a> {
         let (chain_base, callseqnce) = self.get_access_sequnce_from_chain_expr(expr);
         let mut base: Value;
         let mut symbol_layout: &BTreeMap<String, StructLayoutEntry>;
-        let mut current_data_type: &SymbolType;
+        let mut current_data_type: SymbolType;
         let empty_map = BTreeMap::new();
-        let empty_symbol: SymbolType;
         match chain_base {
             ChainBase::Identifier(name) => {
                 let (base_reg, symbol_layout_ref) = match self.symbol_table.get(&name) {
@@ -522,11 +537,11 @@ impl<'a> FunctionCoverter<'a> {
                                 (entry.reg, self.struct_layout_table.get(struct_type_name).unwrap())
                             }
                             SymbolType::PointerType(pointer_type) => {
-                                match pointer_type.pointer_to.as_ref() {
-                                    SymbolType::StructalType(name) => {
+                                match &pointer_type.pointer_to {
+                                    PointerToSymbolType::StructalType(name) => {
                                         (entry.reg, self.struct_layout_table.get(name).unwrap())
                                     }
-                                    SymbolType::BasicType(_) => {
+                                    &PointerToSymbolType::BasicType(_) => {
                                         (entry.reg, &empty_map)
                                     }
                                     _ => unreachable!("{}", self.error_map.unreach_in_accpet_chain_expr_base_identifier_is_not_strutual_type),
@@ -542,29 +557,25 @@ impl<'a> FunctionCoverter<'a> {
                 };
                 base = base_reg;
                 symbol_layout = symbol_layout_ref;
-                current_data_type = &self.symbol_table.get(&name).unwrap().symbol_type;
-
+                current_data_type = self.symbol_table.get(&name).unwrap().symbol_type.clone();
             }
             ChainBase::CallExprReturnStruct(base_reg, struct_name) => {
                 base = base_reg;
                 symbol_layout = self.struct_layout_table.get(&struct_name).unwrap();
-                empty_symbol = SymbolType::StructalType(struct_name);
-                current_data_type = &empty_symbol;
+                current_data_type = SymbolType::StructalType(struct_name);
             }
             ChainBase::CallExprReturnPointer(base_reg,pointer_symbol_type) => {
                 base = base_reg;
-                match pointer_symbol_type.pointer_to.as_ref() {
-                    SymbolType::BasicType(_) => {
+                match &pointer_symbol_type.pointer_to {
+                    PointerToSymbolType::BasicType(_) => {
                         symbol_layout = &empty_map;
                     }
-                    SymbolType::StructalType(struct_name) => {
+                    PointerToSymbolType::StructalType(struct_name) => {
                         symbol_layout = self.struct_layout_table.get(struct_name).unwrap();
                     }
-                    SymbolType::ArrayType(_) => todo!(),
-                    SymbolType::PointerType(_) => unimplemented!(),
+                    PointerToSymbolType::ArrayType(_) | PointerToSymbolType::FunctionType(_) => todo!(),
                 }
-                empty_symbol = SymbolType::PointerType(pointer_symbol_type);
-                current_data_type = &empty_symbol;
+                current_data_type = SymbolType::PointerType(pointer_symbol_type);
             }
         }
         // Get base virtual register and layout of struct if possible.
@@ -579,7 +590,7 @@ impl<'a> FunctionCoverter<'a> {
                 is_end_of_array_access = true;
                 let offset_value = self.function.create_i32_const(offset as i32);
                 base = self.function.build_add_inst(base, offset_value);
-                if let SymbolType::ArrayType(array_symbol_type) = current_data_type {
+                if let SymbolType::ArrayType(array_symbol_type) = &current_data_type {
                     // access_index = sum ( n_i * (h_(i-1) *.. (h_0)) )
                     let mut index: usize = 0;
                     let mut array_access_index = self.function.create_i32_const(0);
@@ -592,7 +603,6 @@ impl<'a> FunctionCoverter<'a> {
                                 Some(IrValueType::I32)
                             );
                             cur_row_base = self.function.build_mul_inst(next_base, next_dim);
-                            println!("done");
                         }
                         let cur_row_index = self.function.build_mul_inst(value, cur_row_base);
                         array_access_index = self.function.build_add_inst(array_access_index, cur_row_index);
@@ -612,25 +622,25 @@ impl<'a> FunctionCoverter<'a> {
                     if array_symbol_type.value_of_dims.len() == level {
                         match array_symbol_type.array_of.as_ref() {
                             SymbolType::StructalType(struct_type_name) => {
-                                current_data_type = array_symbol_type.array_of.as_ref();
-                                symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap()
+                                symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
+                                current_data_type = *array_symbol_type.array_of.clone();
                             }
                             SymbolType::PointerType(pointer_type) => {
-                                current_data_type = array_symbol_type.array_of.as_ref();
-                                let struct_type_name = match pointer_type.pointer_to.as_ref() {
-                                    SymbolType::StructalType(name) => name,
+                                let struct_type_name = match &pointer_type.pointer_to {
+                                    PointerToSymbolType::StructalType(name) => name,
                                     _ => unreachable!()
                                 };
-                                symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap()
+                                symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
+                                current_data_type = *array_symbol_type.array_of.clone();
                             }
                             SymbolType::BasicType(_) | SymbolType::ArrayType(_)  => {
-                                current_data_type =  array_symbol_type.array_of.as_ref();
+                                current_data_type = *array_symbol_type.array_of.clone();
                             }
                         }
                     }
                     array_access_level = level;
                     continue;
-                }else if let SymbolType::PointerType(pointer_symbol_type) = current_data_type  {
+                }else if let SymbolType::PointerType(pointer_symbol_type) = &current_data_type  {
                     for value in &values {
                         let value_of_size_of_array_element = self.function.create_i32_const(4 as i32);
                         let value_offset = self.function.build_mul_inst(value.clone(), value_of_size_of_array_element);
@@ -638,15 +648,19 @@ impl<'a> FunctionCoverter<'a> {
                     }
                     offset = 0;
                     if pointer_symbol_type.level == level  {
-                        match pointer_symbol_type.pointer_to.as_ref() {
-                            SymbolType::StructalType(struct_type_name) => {
-                                current_data_type = pointer_symbol_type.pointer_to.as_ref();
-                                symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap()
+                        match &pointer_symbol_type.pointer_to {
+                            PointerToSymbolType::StructalType(struct_type_name) => {
+                                symbol_layout = self.struct_layout_table.get(&struct_type_name).unwrap();
+                                current_data_type = SymbolType::StructalType(struct_type_name.clone());
                             },
-                            SymbolType::BasicType(_) | SymbolType::ArrayType(_)  => {
-                                current_data_type = pointer_symbol_type.pointer_to.as_ref();
+                            PointerToSymbolType::BasicType(ir_type)  => {
+                                current_data_type = SymbolType::BasicType(ir_type.clone());
+                            
+                            }
+                            PointerToSymbolType::ArrayType(array_symbol_type)  => {
+                                current_data_type = SymbolType::ArrayType(array_symbol_type.clone());
                             },
-                            SymbolType::PointerType(_) => {
+                            PointerToSymbolType::FunctionType(_) => {
                                 unreachable!();
                             }
                         }
@@ -671,20 +685,20 @@ impl<'a> FunctionCoverter<'a> {
             }else {
                 offset += entry.offset;
             }
-            current_data_type = &entry.data_type;
+            current_data_type = entry.data_type.clone();
             match &entry.data_type {
                 SymbolType::StructalType(struct_type_name) => {
                     symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
                 }
                 SymbolType::PointerType(pointer_type) => {
-                    if let SymbolType::StructalType(name) = pointer_type.pointer_to.as_ref() {
+                    if let PointerToSymbolType::StructalType(name) = &pointer_type.pointer_to {
                         symbol_layout = self.struct_layout_table.get(name).unwrap();
                     }
                 }
                 SymbolType::BasicType(_)| SymbolType::ArrayType(_) => {},
             }
         }
-        (base, offset, current_data_type.clone(), if is_end_of_array_access { 0 } else  {array_access_level})
+        (base, offset, current_data_type, if is_end_of_array_access { 0 } else  {array_access_level})
     }
     /// ## Helper function for `accept_chain_expr_base`
     /// There we do not using recursion visitor to unwind a chain expression to build the instructions, instead
@@ -857,8 +871,20 @@ impl<'a> FunctionCoverter<'a> {
     fn accept_as_lefthand_expr(&mut self, expr: &Expression) -> (Value, SymbolType) {
         match expr {
             Expression::Identifier(id) => {
-                let SymbolEntry { reg, symbol_type } = self.symbol_table.get(id.name.as_ref()).unwrap();
-                (reg.clone(), symbol_type.clone())
+                if let Some(SymbolEntry { 
+                    reg, 
+                    symbol_type 
+                }) = self.symbol_table.get(id.name.as_ref()){
+                    (reg.clone(), symbol_type.clone())
+                }else {
+                    self.function_signature_table.get(id.name.as_ref()).unwrap();
+                    let global_ref = self.function.create_global_variable_ref(id.name.to_string());
+                    let func_pointer = PointerSymbolType {
+                        level: 1,
+                        pointer_to: PointerToSymbolType::FunctionType(id.name.to_string())
+                    };
+                    (global_ref, SymbolType::PointerType(func_pointer))
+                }
             }
             Expression::CallExpr(call_expr) => {
                 let base = self.accept_call_expr(call_expr).unwrap();
@@ -891,7 +917,10 @@ impl<'a> FunctionCoverter<'a> {
                         let offset_0 = self.function.create_u8_const(0);
                         let next_value = self.function.build_load_register_inst(value, offset_0, IrValueType::Address);
                         if pointer_symbol_type.level == 1 {
-                            (next_value, *pointer_symbol_type.pointer_to)
+                            (
+                                next_value,
+                                 map_pointer_to_symbol_to_symbol_type(pointer_symbol_type.pointer_to)
+                            )
                         }else {
                             pointer_symbol_type.level -= 1;
                             (next_value, SymbolType::PointerType(pointer_symbol_type))
@@ -920,7 +949,10 @@ impl<'a> FunctionCoverter<'a> {
                 let offset_const = self.function.create_i32_const(offset as i32);
                 let pointer_value = self.function.build_add_inst(base, offset_const);
                 if access_level > 0 && access_level == pointer_type.level {
-                    (pointer_value, *pointer_type.pointer_to)
+                    (
+                        pointer_value,
+                        map_pointer_to_symbol_to_symbol_type(pointer_type.pointer_to)
+                    )
                 }else {
                     (pointer_value, SymbolType::PointerType(pointer_type))
                 }

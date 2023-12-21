@@ -13,12 +13,12 @@ use std::io::Write;
 
 fn main() {
     let program = Parser::new("
-    int array[10][10];
-    char *s = \"test-const\";
+    void test() {
+
+    }
     int main() {
-        char str[20] = \"testa-const\";
-        char *ss = s;
-        int a = s[0] + 10;
+        void* t = &test;
+        t();
         return 0;
     }
     ").parse().unwrap();
