@@ -139,7 +139,7 @@ pub enum InstructionData {
     Call {
         opcode: OpCode,
         dst: Option<Value>,
-        name: String,
+        name: CalleeKind,
         params: Vec<Value>
     },
     Ret {
@@ -239,6 +239,12 @@ pub enum InstructionData {
     },
     // comment,
     Comment(String)
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum CalleeKind {
+    Id(String),
+    Reg(Value)
 }
 
 pub type InstructionMap = HashMap<Instruction, InstructionData>;

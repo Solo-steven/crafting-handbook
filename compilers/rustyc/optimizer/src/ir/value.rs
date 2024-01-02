@@ -4,6 +4,7 @@ pub struct  Value(pub usize);
 #[derive(Debug, PartialEq, Clone)]
 pub enum ValueData {
     GlobalRef(String),
+    FunctionRef(String),
     VirRegister(String),
     Immi(Immi)
 }

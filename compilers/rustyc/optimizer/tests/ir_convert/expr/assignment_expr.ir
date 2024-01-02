@@ -13,14 +13,38 @@ block1:
 	store i32 100 [t6, 0]
 	t7 = add t5 0
 	store i32 1000 [t7, 0]
-	load i32 t8 [t5, 4]
-	store i32 t8 [t4, 4]
-	load i32 t9 [t5, 0]
-	store i32 t9 [t4, 0]
-	load i32 t10 [t5, 4]
-	store i32 t10 [t3, 4]
-	load i32 t11 [t5, 0]
-	store i32 t11 [t3, 0]
+	load u8 t8 [t5, 0]
+	store u8 t8 [t4, 0]
+	load u8 t9 [t5, 1]
+	store u8 t9 [t4, 1]
+	load u8 t10 [t5, 2]
+	store u8 t10 [t4, 2]
+	load u8 t11 [t5, 3]
+	store u8 t11 [t4, 3]
+	load u8 t12 [t5, 4]
+	store u8 t12 [t4, 4]
+	load u8 t13 [t5, 5]
+	store u8 t13 [t4, 5]
+	load u8 t14 [t5, 6]
+	store u8 t14 [t4, 6]
+	load u8 t15 [t5, 7]
+	store u8 t15 [t4, 7]
+	load u8 t16 [t5, 0]
+	store u8 t16 [t3, 0]
+	load u8 t17 [t5, 1]
+	store u8 t17 [t3, 1]
+	load u8 t18 [t5, 2]
+	store u8 t18 [t3, 2]
+	load u8 t19 [t5, 3]
+	store u8 t19 [t3, 3]
+	load u8 t20 [t5, 4]
+	store u8 t20 [t3, 4]
+	load u8 t21 [t5, 5]
+	store u8 t21 [t3, 5]
+	load u8 t22 [t5, 6]
+	store u8 t22 [t3, 6]
+	load u8 t23 [t5, 7]
+	store u8 t23 [t3, 7]
 	ret 0
 }
 ;;  t1 -> address
@@ -30,7 +54,19 @@ block1:
 ;;  t5 -> address
 ;;  t6 -> address
 ;;  t7 -> address
-;;  t8 -> i32
-;;  t9 -> i32
-;;  t10 -> i32
-;;  t11 -> i32
+;;  t8 -> u8
+;;  t9 -> u8
+;;  t10 -> u8
+;;  t11 -> u8
+;;  t12 -> u8
+;;  t13 -> u8
+;;  t14 -> u8
+;;  t15 -> u8
+;;  t16 -> u8
+;;  t17 -> u8
+;;  t18 -> u8
+;;  t19 -> u8
+;;  t20 -> u8
+;;  t21 -> u8
+;;  t22 -> u8
+;;  t23 -> u8

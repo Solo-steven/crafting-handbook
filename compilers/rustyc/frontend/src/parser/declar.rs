@@ -32,12 +32,30 @@ impl<'a> Parser<'a> {
     /// - long, char, int, float, double, unsigned, signed
     /// - struct, union, enum
     pub (super) fn parse_declaration(&mut self) -> ParserResult<Declaration<'a>> {
-        let value_type = self.parse_value_type(None)?;
+        let mut value_type = self.parse_value_type(None)?;
+
+        let is_function_pointer = match value_type {
+            ValueType::FunctionPointer { .. } => true,
+            _ => false,
+        };
         match self.get_token() {
-            TokenKind::Multiplication | TokenKind::Identifier  => {
+            TokenKind::Multiplication | TokenKind::Identifier | 
+            TokenKind::Semi | TokenKind::Assignment | TokenKind::Comma
+             => {
+                if self.get_token() == TokenKind::Semi && !is_function_pointer {
+                    println!("{:?}", value_type);
+                    expect_token!(TokenKind::Semi, self);
+                    return ParserResult::Ok(Declaration::ValueType(value_type))
+                }
                 let is_identifier = self.get_token() == TokenKind::Identifier;
                 let mut pointer_type = self.parse_type_with_pointer_type(value_type.clone());
-                let id = self.parse_identifier()?;
+                let id = match &pointer_type {
+                    ValueType::FunctionPointer { id, return_type, .. } => {
+                        value_type = return_type.as_ref().clone();
+                        id.clone()
+                    },
+                    _ => self.parse_identifier()?
+                };
                 if is_token!(TokenKind::BracketLeft, self) {
                     pointer_type = self.parse_type_with_array_type(pointer_type)?;
                 }
@@ -70,6 +88,7 @@ impl<'a> Parser<'a> {
                 }
             }
             _ => {
+                println!("{:?}, {:?}", value_type, self.get_token());
                 expect_token!(TokenKind::Semi, self);
                 ParserResult::Ok(Declaration::ValueType(value_type))
             }
@@ -83,53 +102,80 @@ impl<'a> Parser<'a> {
     /// - `parse_double_value_type`
     /// ### Wht signed need to be option bool, not just bool
     pub (super) fn parse_value_type(&mut self, signed: Option<bool>)  -> ParserResult<ValueType<'a>>{
-        match self.get_token() {
+        let start_type = match self.get_token() {
             TokenKind::Char => {
                 self.next_token();
-                ParserResult::Ok(ValueType::Char)
+                ValueType::Char
             }
             TokenKind::Void => {
-                println!("void type");
                 self.next_token();
-                ParserResult::Ok(ValueType::Void)
+                ValueType::Void
             }
             TokenKind::Int => {
                 self.next_token();
-                ParserResult::Ok(ValueType::Int)
+                ValueType::Int
             }
             TokenKind::Signed => {
                 self.next_token();
-                self.parse_value_type(Some(true))
+                self.parse_value_type(Some(true))?
             }
             TokenKind::Unsigned => {
                 self.next_token();
-                self.parse_value_type(Some(false))
+                self.parse_value_type(Some(false))?
             }
             TokenKind::Long => {
-                self.parse_long_value_type(signed)
+                self.parse_long_value_type(signed)?
             }
             TokenKind::Short => {
-                self.parse_short_value_type(signed)
+                self.parse_short_value_type(signed)?
             }
             TokenKind::Float => {
-                self.parse_float_value_type()
+                self.parse_float_value_type()?
             }
             TokenKind::Double => {
-                self.parse_double_value_type()
+                self.parse_double_value_type()?
             }
             TokenKind::Struct => {
-                Ok(ValueType::Struct(Box::new(self.parse_struct_type()?)))
+                ValueType::Struct(Box::new(self.parse_struct_type()?))
             }
             TokenKind::Enum => {
-                Ok(ValueType::Enum(Box::new(self.parse_enum_type()?)))
+                ValueType::Enum(Box::new(self.parse_enum_type()?))
             }
             TokenKind::Union => {
-                Ok(ValueType::Union(Box::new(self.parse_union_type()?)))
+                ValueType::Union(Box::new(self.parse_union_type()?))
             }
             _ => {
-                ParserResult::Err(String::from("expect token"))
+                return ParserResult::Err(String::from("expect token"))
             }
+        };
+        if is_token!(TokenKind::ParenthesesLeft, self) {
+            self.next_token();
+            expect_token!(TokenKind::Multiplication, self);
+            let id = self.parse_identifier()?;
+            expect_token!(TokenKind::ParenthesesRight, self);
+            expect_token!(TokenKind::ParenthesesLeft, self);
+            let mut params = Vec::new();
+            let mut is_start = true;
+            loop {
+                if is_token!(TokenKind::ParenthesesRight, self) {
+                    break;
+                }
+                if is_start {
+                    is_start = false;
+                }else {
+                    expect_token!(TokenKind::Comma, self);
+                }
+                if is_token!(TokenKind::ParenthesesRight, self) {
+                    break;
+                }
+                params.push(self.parse_value_type(None)?);
+            }
+            expect_token!(TokenKind::ParenthesesRight, self);
+            ParserResult::Ok(ValueType::FunctionPointer { id, return_type: Box::new(start_type), param_types: params })
+        }else {
+            ParserResult::Ok(start_type)
         }
+
     }
     /// Parse type specifier with 'float' keyword start, is possbible can be 
     /// - float

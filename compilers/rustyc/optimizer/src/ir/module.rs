@@ -155,7 +155,7 @@ pub fn get_text_format_of_value(value: &ValueData) -> String {
                 Immi::F64(data) => format!("{}", data),
             }
         }
-        ValueData::VirRegister(register) | ValueData::GlobalRef(register) => {
+        ValueData::VirRegister(register) | ValueData::GlobalRef(register) | ValueData::FunctionRef(register) => {
             register.clone()
         }
     }

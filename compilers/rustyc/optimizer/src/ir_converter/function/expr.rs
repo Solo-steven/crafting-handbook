@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use crate::ir::instructions::CmpFlag;
 use crate::ir::value::*;
+use crate::ir::instructions::CalleeKind;
 use crate::ir_converter::function::FunctionCoverter;
 use crate::get_size_from_symbol_type;
 use crate::ir_converter::symbol_table::*;
@@ -413,19 +414,31 @@ impl<'a> FunctionCoverter<'a> {
     /// alloc a struct in current scope and pass to function, and callee function will perform copy by value to
     /// the pointer we passed into.
     fn accept_call_expr(&mut self, call_expr: &CallExpression) -> Option<Value> {
+        let mut is_value_call = None;
         let callee_name = match call_expr.callee.as_ref() {
             Expression::Identifier(id) => id.name.to_string(),
             _ => todo!(),
         };
+        let mut arugments: Vec<Value> = call_expr
+            .arguments
+            .iter()
+            .map(|argu_expr| self.accept_expr_with_value(argu_expr))
+            .collect();
+        let empty_sign: FunctionSignature;
         let signature = match self.function_signature_table.get(&callee_name) {
             Some(sig) => sig,
             None => {
                 let SymbolEntry{ reg, symbol_type}  = self.symbol_table.get(&callee_name).unwrap();
                 if let SymbolType::PointerType(pointer_symbol_type) = symbol_type {
-                    if let PointerToSymbolType::FunctionType(function_name) = &pointer_symbol_type.pointer_to {
+                    if let PointerToSymbolType::FunctionType{id: _, return_type, params_type} = &pointer_symbol_type.pointer_to {
                         let offset = self.function.create_u8_const(0);
-                        self.function.build_load_register_inst(reg.clone(), offset, IrValueType::Address);
-                        self.function_signature_table.get(function_name).unwrap()
+                        let value = self.function.build_load_register_inst(reg.clone(), offset, IrValueType::Address);
+                        is_value_call = Some(value);
+                        empty_sign = FunctionSignature {
+                            return_type: *return_type.clone(),
+                            params: params_type.clone(),
+                        };
+                        &empty_sign
                     }else {
                         unreachable!()
                     }
@@ -434,14 +447,8 @@ impl<'a> FunctionCoverter<'a> {
                 }
             }
         };
-        let mut arugments: Vec<Value> = call_expr
-            .arguments
-            .iter()
-            .map(|argu_expr| self.accept_expr_with_value(argu_expr))
-            .collect();
         let mut ret_value: Option<Value> = None;
-        let return_symbol_type = &signature.return_type;
-        if let SymbolType::StructalType(struct_name) = return_symbol_type {
+        if let SymbolType::StructalType(struct_name) = &signature.return_type {
             let struct_size = self.struct_size_table.get(struct_name).unwrap().clone();
             let struct_size_value = self.function.create_u32_const(struct_size as u32);
             ret_value = Some(self.function.build_stack_alloc_inst(struct_size_value, 8, None));
@@ -453,7 +460,11 @@ impl<'a> FunctionCoverter<'a> {
                 SymbolType::StructalType(_) => None,
                 SymbolType::ArrayType(_) => unreachable!(),
         };
-        let call_inst_value = self.function.build_call_inst(callee_name, arugments, ir_return_type);
+        let callee = match is_value_call {
+            Some(reg) => CalleeKind::Reg(reg),
+            None => CalleeKind::Id(callee_name)
+        };
+        let call_inst_value = self.function.build_call_inst(callee, arugments, ir_return_type);
         if let Some(ret_val) = ret_value {
             if let Some(_call_inst_val) = call_inst_value.clone() {
                 unreachable!();
@@ -573,7 +584,7 @@ impl<'a> FunctionCoverter<'a> {
                     PointerToSymbolType::StructalType(struct_name) => {
                         symbol_layout = self.struct_layout_table.get(struct_name).unwrap();
                     }
-                    PointerToSymbolType::ArrayType(_) | PointerToSymbolType::FunctionType(_) => todo!(),
+                    PointerToSymbolType::ArrayType(_) | PointerToSymbolType::FunctionType{..} => todo!(),
                 }
                 current_data_type = SymbolType::PointerType(pointer_symbol_type);
             }
@@ -660,7 +671,7 @@ impl<'a> FunctionCoverter<'a> {
                             PointerToSymbolType::ArrayType(array_symbol_type)  => {
                                 current_data_type = SymbolType::ArrayType(array_symbol_type.clone());
                             },
-                            PointerToSymbolType::FunctionType(_) => {
+                            PointerToSymbolType::FunctionType{..} => {
                                 unreachable!();
                             }
                         }
@@ -848,12 +859,12 @@ impl<'a> FunctionCoverter<'a> {
         }
     }
     fn accept_string_literal(&mut self, string_literal: &StringLiteral) -> Value {
-        let index = self.function.const_string.get(string_literal.raw_value.as_ref());
+        let index = self.const_strings.get(string_literal.raw_value.as_ref());
         if let Some(i) = index {
             self.function.create_global_variable_ref(format!("str{}", i))
         }else {
-            let len_index = self.function.const_string.len() + 1;
-            self.function.const_string.insert(string_literal.raw_value.to_string(), len_index);
+            let len_index = self.const_strings.len() + 1;
+            self.const_strings.insert(string_literal.raw_value.to_string(), len_index);
             self.function.create_global_variable_ref(format!("str{}", len_index))
         }
     }
@@ -877,11 +888,15 @@ impl<'a> FunctionCoverter<'a> {
                 }) = self.symbol_table.get(id.name.as_ref()){
                     (reg.clone(), symbol_type.clone())
                 }else {
-                    self.function_signature_table.get(id.name.as_ref()).unwrap();
-                    let global_ref = self.function.create_global_variable_ref(id.name.to_string());
+                    let sig =self.function_signature_table.get(id.name.as_ref()).unwrap();
+                    let global_ref = self.function.create_function_ref(id.name.to_string());
                     let func_pointer = PointerSymbolType {
                         level: 1,
-                        pointer_to: PointerToSymbolType::FunctionType(id.name.to_string())
+                        pointer_to: PointerToSymbolType::FunctionType{
+                            id: id.name.to_string(),
+                            return_type: Box::new(sig.return_type.clone()),
+                            params_type: sig.params.clone()
+                        }
                     };
                     (global_ref, SymbolType::PointerType(func_pointer))
                 }

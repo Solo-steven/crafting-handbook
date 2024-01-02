@@ -15,7 +15,10 @@ impl Function {
         for value in &self.params_value {
             let is_end = index == self.params_value.len() - 1;
             match self.values.get(value).unwrap() {
-                ValueData::VirRegister(register) | ValueData::GlobalRef(register) => {
+                ValueData::VirRegister(register) | 
+                ValueData::GlobalRef(register) | 
+                ValueData::FunctionRef(register) 
+                => {
                     output_code.push_str(&register);
                     output_code.push_str(" ");
                     let value_type = self.value_types.get(value).unwrap();
@@ -76,7 +79,9 @@ impl Function {
         // 
         for value in sorted_value_key {
             match self.values.get(value).unwrap() {
-                ValueData::VirRegister(register) | ValueData::GlobalRef(register)=> {
+                ValueData::VirRegister(register) |
+                ValueData::GlobalRef(register) |
+                ValueData::FunctionRef(register) => {
                     output_code.push_str(";;  ");
                     output_code.push_str(&register);
                     output_code.push_str(" -> ");
@@ -316,7 +321,10 @@ impl Function {
                     let dst_str = get_text_format_of_value(self.values.get(value).unwrap());
                     output_code.push_str(format!("{} = ", dst_str).as_str());
                 }
-                let mut param_string = String::from(name);
+                let mut param_string = match name {
+                    CalleeKind::Id(n) => n.clone(),
+                    CalleeKind::Reg(reg) => get_text_format_of_value(self.values.get(reg).unwrap())
+                };
                 param_string.push('(');
                 let mut index = 0;
                 for param in params {
@@ -362,7 +370,7 @@ pub fn get_text_format_of_value(value: &ValueData) -> String {
                 Immi::F64(data) => format!("{}", data),
             }
         }
-        ValueData::VirRegister(register) | ValueData::GlobalRef(register) => {
+        ValueData::VirRegister(register) | ValueData::GlobalRef(register)| ValueData::FunctionRef(register) => {
             register.clone()
         }
     }

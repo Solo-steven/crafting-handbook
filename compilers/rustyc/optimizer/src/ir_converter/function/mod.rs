@@ -75,7 +75,9 @@ macro_rules! get_size_from_symbol_type {
 pub struct FunctionCoverter<'a> {
     /// signature of outer function, type of function signature has been
     /// converted into Symbol Type.
-    pub function_signature_table: &'a FunctionSignatureTable,
+    pub function_signature_table: &'a mut  FunctionSignatureTable,
+    /// temp const string source
+    pub const_strings: &'a mut HashMap<String, usize>,
     /// function ir instance of this function convert
     pub function: Function,
     /// for store struct-related info 
@@ -91,15 +93,16 @@ impl<'a> FunctionCoverter<'a> {
     /// constructor for create a new function converter.
     pub fn new(
         signature_table: &'a mut FunctionSignatureTable, 
+        const_strings: &'a mut HashMap<String, usize>,
         global_struct_layout_table: Option<&'a StructLayoutTable>,
         global_struct_size_table:Option<&'a StructSizeTable>,
         global_symbol_table: Option<&'a SymbolTable<'a>>, 
-        const_strings: HashMap<String, usize>,
     ) -> Self {
         Self {
             // function info
             function_signature_table: signature_table,
-            function: Function::new(String::from(""), const_strings),
+            const_strings,
+            function: Function::new(String::from("")),
             // struct info
             struct_layout_table: StructLayoutTable::new(global_struct_layout_table),
             struct_size_table: StructSizeTable::new(global_struct_size_table),
@@ -125,7 +128,7 @@ impl<'a> FunctionCoverter<'a> {
         // start convert by visitor pattern.
         self.accept_function_def(func_def);
         // return function ir instance
-        replace(&mut self.function, Function::new(String::new(), Default::default()))
+        replace(&mut self.function, Function::new(String::new()))
     }
     /// ## Accept function param 
     /// This function shell not perform type checker because that stage should be done

@@ -13,13 +13,9 @@ use std::io::Write;
 
 fn main() {
     let program = Parser::new("
-    void test() {
-
-    }
     int main() {
-        void* t = &test;
-        t();
-        return 0;
+        int a;
+        int *p = &a;
     }
     ").parse().unwrap();
     // println!("{:#?}", program);
@@ -49,7 +45,7 @@ fn main() {
 }
 
 pub fn create_reducnt_expr_graph() -> Function {
-    let mut func = Function::new(String::from("test_fun"), Default::default());
+    let mut func = Function::new(String::from("test_fun"));
     let b0 = func.create_block();
     func.switch_to_block(b0);
     let mut size_const = func.create_u32_const(32 as u32);
@@ -86,7 +82,7 @@ pub fn create_reducnt_expr_graph() -> Function {
 /// t4 = t1 + t3;
 /// ```
 pub fn create_use_def_graph() -> Function {
-    let mut func = Function::new(String::from("test_fun"), Default::default());
+    let mut func = Function::new(String::from("test_fun"));
     // block 0
     let b0 = func.create_block();
     func.switch_to_block(b0);
@@ -109,7 +105,7 @@ pub fn create_use_def_graph() -> Function {
 /// Create simple graph for test dom data flow anaylsis.
 /// struct of graph please reference to 
 pub fn create_dom_graph() -> Function {
-    let mut function = Function::new(String::from("test_fun"), Default::default());
+    let mut function = Function::new(String::from("test_fun"));
     let b0 = function.create_block();
     let b1 = function.create_block();
     let b2 = function.create_block();

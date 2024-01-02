@@ -4,7 +4,7 @@ mod function;
 
 use std::collections::BTreeMap;
 use std::collections::HashMap;
-use std::mem::{replace, take};
+use std::mem::replace;
 use crate::ir::module::*;
 use crate::ir::value::*;
 use crate::ir_converter::function::FunctionCoverter;
@@ -122,13 +122,12 @@ impl<'a> Converter<'a> {
             func_def.id.name.to_string(), 
             FunctionSignature { return_type: return_symbol_type, params: params_symbol_type}
         );
-        let const_strings = std::mem::take(&mut self.module.const_string);
         let mut func_convert = FunctionCoverter::new(
             &mut self.function_signature_table,
+            &mut self.module.const_string,
             Some(&self.struct_layout_table),
             Some(&self.struct_size_table),
             None,
-            const_strings,
         );
         // insert global value as symbol
         for (name, _data) in &self.module.globals {
@@ -146,9 +145,7 @@ impl<'a> Converter<'a> {
         }
         func_convert.symbol_table = SymbolTable { table_list: vec![Default::default()], root_table: Some(&self.symbol_table) };
         // convert with global value
-        let mut func_ir = func_convert.convert(func_def);
-        let const_string = take(&mut func_ir.const_string);
-        self.module.const_string = const_string;
+        let func_ir = func_convert.convert(func_def);
         self.module.functions.push(func_ir);
         // clear global value from symbol table
         self.symbol_table.clear();
@@ -253,12 +250,14 @@ fn map_ast_type_to_symbol_type(value_type: &ValueType, struct_layout_table: &mut
         ValueType::PointerType(pointer_type) => {
             SymbolType::PointerType(PointerSymbolType { 
                 level: pointer_type.level, 
-                pointer_to: match map_ast_type_to_symbol_type(&pointer_type.pointer_to, struct_layout_table, struct_size_table) {
-                    SymbolType::BasicType(basic_type) => PointerToSymbolType::BasicType(basic_type),
-                    SymbolType::ArrayType(array_type) => PointerToSymbolType::ArrayType(array_type),
-                    SymbolType::StructalType(struct_name) => PointerToSymbolType::StructalType(struct_name),
-                    _ => unreachable!()
-                }
+                pointer_to: 
+                    match map_ast_type_to_symbol_type(&pointer_type.pointer_to, struct_layout_table, struct_size_table) {
+                        SymbolType::BasicType(basic_type) => PointerToSymbolType::BasicType(basic_type),
+                        SymbolType::ArrayType(array_type) => PointerToSymbolType::ArrayType(array_type),
+                        SymbolType::StructalType(struct_name) => PointerToSymbolType::StructalType(struct_name),
+                        
+                        _ => unreachable!()
+                    }
             })
         }
         ValueType::ArrayType(array_type) => {
@@ -300,6 +299,22 @@ fn map_ast_type_to_symbol_type(value_type: &ValueType, struct_layout_table: &mut
         ValueType::Void => SymbolType::BasicType(IrValueType::Void),
         ValueType::Union(_) => todo!(),
         ValueType::Enum(_) => todo!(),
+        ValueType::FunctionPointer { id, return_type, param_types } => {
+            SymbolType::PointerType(
+                PointerSymbolType { 
+                    level: 1,
+                    pointer_to: PointerToSymbolType::FunctionType{
+                        id: id.name.to_string(),
+                        return_type: Box::new(map_ast_type_to_symbol_type(return_type.as_ref(), struct_layout_table, struct_size_table)),
+                        params_type: param_types.iter()
+                        .map(
+                            |param_type | 
+                            map_ast_type_to_symbol_type(param_type, struct_layout_table, struct_size_table)
+                        ).collect()
+                        
+                    }
+                })
+        }
         // not gonna to implement
         ValueType::LongDoubleComplex => todo!(),
         ValueType::FloatComplex => todo!(),
@@ -325,6 +340,7 @@ fn get_size_form_ast_type(value_type: &ValueType, struct_size_table: &mut Struct
         ValueType::Double => 8,
         ValueType::LongDouble => 8,
         ValueType::PointerType(_) => 4,
+        ValueType::FunctionPointer { .. } => 4,
         ValueType::ArrayType(array_type) => {
             let mut size = get_size_form_ast_type(array_type.array_of.as_ref(), struct_size_table);
             for dim in &array_type.dims {

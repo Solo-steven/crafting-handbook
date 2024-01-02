@@ -11,6 +11,13 @@ impl Function {
         self.next_value_index += 1;
         value_id
     }
+    pub fn create_function_ref(&mut self, function_name: String) -> Value {
+        let value_id = Value(self.next_value_index);
+        self.values.insert(value_id, ValueData::FunctionRef(function_name));
+        self.value_types.insert(value_id, IrValueType::Address);
+        self.next_value_index += 1;
+        value_id
+    }
     /// Create a register and adding a register value
     pub fn add_register(&mut self, value_type: IrValueType) -> Value {
         let value_id = Value(self.next_value_index);
@@ -555,7 +562,7 @@ impl Function {
         self.add_inst_id_to_current_block(inst_id);
         dst
     }
-    pub fn build_call_inst(&mut self, name: String, params: Vec<Value>, return_type: Option<IrValueType>) -> Option<Value> {
+    pub fn build_call_inst(&mut self, name: CalleeKind, params: Vec<Value>, return_type: Option<IrValueType>) -> Option<Value> {
         let dst = match return_type {
             Some(ir_type) => Some(self.add_register(ir_type)),
             None => None

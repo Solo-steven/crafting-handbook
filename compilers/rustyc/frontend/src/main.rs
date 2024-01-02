@@ -14,8 +14,11 @@ use std::fs;
 
 fn main(){
     let source = "
+    void test() {
+
+    }
     int main() {
-        int array[3] = {1,2,34};
+        void (*t)() = &test;
         return 0;
     }
     ";

@@ -29,6 +29,7 @@ pub fn print_set(set: &HashSet<Value>, function: &Function, title: &str) {
         match data {
             ValueData::VirRegister(name) => print!("{:?} ", name),
             ValueData::GlobalRef(name) => print!("{:?}",name),
+            ValueData::FunctionRef(name) => println!("{:?}", name),
             ValueData::Immi(_) => {}
         }
     }

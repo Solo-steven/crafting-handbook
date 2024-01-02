@@ -1,11 +1,13 @@
 [workspace]
 members = [
+    # Fpr web-backend
+    "website/backend",
     # For rustyc
     "compilers/rustyc/frontend",
     "compilers/rustyc/backend",
     "compilers/rustyc/interpreter",
     "compilers/rustyc/optimizer",
-    # For Calculator toy lanf
+    # For Calculator toy lang
     "compilers/calculator",
     # For jsbridge
     "others/js-bridge",

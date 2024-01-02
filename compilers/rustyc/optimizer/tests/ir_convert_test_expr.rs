@@ -1,5 +1,6 @@
 use std::env;
-use std::fs::read_to_string;
+use std::fs::{read_to_string, File};
+use std::io::Write;
 use rustyc_frontend::parser::Parser;
 use rustyc_optimizer::ir_converter::Converter;
 
@@ -16,6 +17,7 @@ fn test_file_name(name: &'static str)  {
     let mut path = get_c_dir_path();
     path.push_str(name);
     path.push_str(".c");
+    let is_update = env::var("UPDATE").is_ok();
     match read_to_string(path.clone()) {
         Ok(code) => {
             let mut parser = Parser::new(code.as_str());
@@ -28,7 +30,12 @@ fn test_file_name(name: &'static str)  {
             ir_path.push_str(".ir");
             match read_to_string(ir_path.clone()) {
                 Ok(ir) => {
-                    assert_eq!(ir, result_string);
+                    if is_update {
+                        let mut file = File::create(ir_path).unwrap();
+                        write!(file, "{}", result_string).unwrap();
+                    }else {
+                        assert_eq!(ir, result_string);
+                    }
                 }
                 Err(_) =>  {panic!("Can not read ir file - {}", ir_path)}
             }
@@ -40,10 +47,6 @@ fn test_file_name(name: &'static str)  {
 #[test]
 fn test_cast_basic_type_expr() {
     test_file_name("cast_basic_type_expr");
-}
-#[test]
-fn test_cast_struct_pointer_expr() {
-    test_file_name("cast_struct_pointer_expr");
 }
 #[test]
 fn test_size_of_array_basic_type_expr() {

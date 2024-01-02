@@ -113,7 +113,12 @@ pub enum ValueType<'a> {
     ArrayType(Box<ArrayType<'a>>),
     Struct(Box<StructType<'a>>),
     Enum(Box<EnumType<'a>>),
-    Union(Box<UnionType<'a>>)
+    Union(Box<UnionType<'a>>),
+    FunctionPointer {
+        id: Identifier<'a>,
+        return_type: Box<ValueType<'a>>,
+        param_types: Vec<ValueType<'a>>,
+    }
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum StorageClassSpecifier {

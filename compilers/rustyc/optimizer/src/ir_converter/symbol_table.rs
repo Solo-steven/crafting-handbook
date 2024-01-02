@@ -79,14 +79,18 @@ pub enum PointerToSymbolType {
     BasicType(IrValueType),
     StructalType(String),
     ArrayType(ArraySymbolType),
-    FunctionType(String),
+    FunctionType {
+        id: String,
+        return_type: Box<SymbolType>,
+        params_type: Vec<SymbolType>,
+    },
 }
 pub fn map_pointer_to_symbol_to_symbol_type(pointer_to_symbol: PointerToSymbolType) -> SymbolType {
     match pointer_to_symbol {
         PointerToSymbolType::ArrayType(array_sumbol_type) => SymbolType::ArrayType(array_sumbol_type),
         PointerToSymbolType::BasicType(ir_type) => SymbolType::BasicType(ir_type),
         PointerToSymbolType::StructalType(struct_name) => SymbolType::StructalType(struct_name),
-        PointerToSymbolType::FunctionType(_) => panic!(),
+        PointerToSymbolType::FunctionType{..} => panic!(),
     }
 }
 
