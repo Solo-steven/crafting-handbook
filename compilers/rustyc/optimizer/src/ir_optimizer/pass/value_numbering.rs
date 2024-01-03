@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 use crate::ir::function::*;
 use crate::ir::value::*;
@@ -12,8 +12,55 @@ pub enum InstOpKey {
 }
 pub type NumberingTable = HashMap<Value, usize>;
 pub type CacheTable = HashMap<InstOpKey, Value>;
+
+pub struct ValueNumberingPass {
+    marks: Vec<bool>,
+    work_list: VecDeque<BasicBlock>,
+}
+
+impl ValueNumberingPass {
+    pub fn new() -> Self {
+        Self {
+            marks: Default::default(),
+            work_list: Default::default(),
+        }
+    }
+    pub fn process(&mut self, function: &mut Function) {
+        self.marks = vec![false ; function.blocks.len()];
+        self.work_list = VecDeque::with_capacity(function.blocks.len());
+        for entry in &function.entry_block {
+            self.work_list.push_back(entry.clone());
+        }
+        loop {
+            if self.work_list.len() == 0 {
+                break;
+            }
+            let frist_block = self.work_list.pop_front().unwrap();
+            self.super_value_numbering(frist_block, function, &mut HashMap::new(), &mut HashMap::new());
+
+        }
+    }
+    fn super_value_numbering(&mut self, block_id: BasicBlock, function: &mut Function, numbering_table: &mut NumberingTable, cache_table: &mut CacheTable) {
+        self.marks[block_id.0-1] = true;
+        local_value_numbering(block_id, function, numbering_table, cache_table);
+        let mut super_local_numbering_vec = Vec::new();
+        for successor in &function.blocks.get(&block_id).unwrap().successor {
+            let successor_block = function.blocks.get(&successor).unwrap();
+            if successor_block.predecessor.len() == 1 {
+                super_local_numbering_vec.push(successor.clone());
+            }else {
+                self.work_list.push_back(successor.clone());
+            }
+        }
+        for block_id in super_local_numbering_vec {
+            self.super_value_numbering(block_id, function, numbering_table, cache_table);
+        }
+    }
+}
+
+
 /// Performance local value numbering for a basic block in a function
-pub fn local_value_numbering(block_id: BasicBlock, function: &mut Function, numbering_table: &mut NumberingTable, cache_table: &mut CacheTable) {
+fn local_value_numbering(block_id: BasicBlock, function: &mut Function, numbering_table: &mut NumberingTable, cache_table: &mut CacheTable) {
     let block_data = function.blocks.get(&block_id).unwrap();
     for inst_id in  &block_data.instructions {
         let inst = function.instructions.get_mut(inst_id).unwrap();

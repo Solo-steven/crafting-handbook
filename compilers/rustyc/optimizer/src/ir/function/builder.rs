@@ -97,8 +97,7 @@ impl Function {
     #[inline]
     /// make binary instruction base on given opcode
     fn make_binary_inst(&mut self, opecode: OpCode, left: Value, right: Value) -> Value {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         let value_type = self.check_value_pair_type_equal(left, right, &opecode);
         let dst = self.add_register(value_type);
         let inst = match opecode {
@@ -127,8 +126,7 @@ impl Function {
     #[inline]
     /// make a unary instruction based on unary opcode.
     fn make_unary_inst(&mut self, opecode: OpCode, src: Value) -> Value {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         let dst = self.add_register(self.get_value_ir_type(src));
         let inst =match opecode {
             OpCode::Neg => InstructionData::Neg { opcode: OpCode::Neg, src, dst },
@@ -145,8 +143,7 @@ impl Function {
         if let ValueData::Immi(immi) = self.values.get(&src).unwrap() {
             return self.make_const_convert(opcode, immi.clone())
         } 
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         let target_type = match opcode.clone() {
             OpCode::ToU8 => IrValueType::U8,
             OpCode::ToU16 => IrValueType::I16,
@@ -477,8 +474,7 @@ impl Function {
         self.make_convert_inst(OpCode::ToAddress, src)
     }
     pub fn build_mov_inst(&mut self, src: Value) -> Value  {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         // TODO, dst can not be immi
         let dst = self.add_register(self.get_value_ir_type(src.clone()));
         self.instructions.insert(inst_id, InstructionData::Move { opcode: OpCode::Mov, src , dst  });
@@ -486,8 +482,7 @@ impl Function {
         dst 
     }
     pub fn build_icmp_inst(&mut self, src1: Value, src2: Value, flag: CmpFlag) -> Value {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         let value_type = self.check_value_pair_type_equal(src1, src2, &OpCode::Icmp);
         let dst = self.add_register(value_type);
         self.instructions.insert(inst_id, InstructionData::Icmp { opcode: OpCode::Icmp, flag, src1, src2, dst});
@@ -495,8 +490,7 @@ impl Function {
         dst
     }
     pub fn build_fcmp_inst(&mut self, src1: Value, src2: Value, flag: CmpFlag) -> Value {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         let value_type = self.check_value_pair_type_equal(src1, src2, &OpCode::Fcmp);
         let dst = self.add_register(value_type);
         self.instructions.insert(inst_id, InstructionData::Fcmp { opcode: OpCode::Fcmp, flag, src1, src2, dst});
@@ -504,8 +498,7 @@ impl Function {
         dst
     }
     pub fn build_stack_alloc_inst(&mut self, size: Value, align: usize, ir_type: Option<IrValueType>) -> Value {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         let dst = self.add_register(IrValueType::Address);
         self.instructions.insert(
             inst_id, 
@@ -520,8 +513,7 @@ impl Function {
         dst
     }
     pub fn build_load_register_inst(&mut self, base: Value, offset: Value, data_type: IrValueType) -> Value {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         let dst = self.add_register(data_type.clone());
         // TODO: check if base and offset is int type
         self.instructions.insert(
@@ -532,8 +524,7 @@ impl Function {
         dst
     }
     pub fn build_store_register_inst(&mut self, src: Value, base: Value, offset: Value, data_type: IrValueType) {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         // TODO: check if base and offset is int type
         self.instructions.insert(
             inst_id, 
@@ -542,20 +533,17 @@ impl Function {
         self.add_inst_id_to_current_block(inst_id);
     }
     pub fn build_brif_inst(&mut self, test: Value, conseq: BasicBlock, alter: BasicBlock) {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         self.instructions.insert(inst_id, InstructionData::BrIf { opcode: OpCode::BrIf, test, conseq, alter });
         self.add_inst_id_to_current_block(inst_id);
     }
     pub fn build_jump_inst(&mut self, dst: BasicBlock) {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         self.instructions.insert(inst_id, InstructionData::Jump { opcode: OpCode::Jump, dst });
         self.add_inst_id_to_current_block(inst_id);
     }
     pub fn build_phi_inst(&mut self, pairs: Vec<(BasicBlock, Value)>) -> Value {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         let value_type = self.get_value_ir_type(pairs[0].1.clone());
         let dst = self.add_register(value_type.clone());
         self.instructions.insert(inst_id, InstructionData::Phi { opcode: OpCode::Phi, dst, from: pairs });
@@ -567,8 +555,7 @@ impl Function {
             Some(ir_type) => Some(self.add_register(ir_type)),
             None => None
         };
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         self.instructions.insert(inst_id, 
             InstructionData::Call { 
                 dst, name, params,
@@ -579,16 +566,14 @@ impl Function {
         dst
     }
     pub fn build_ret_inst(&mut self, src: Option<Value>) {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         self.instructions.insert(inst_id, 
             InstructionData::Ret { opcode: OpCode::Ret, value: src }
         );
         self.add_inst_id_to_current_block(inst_id);
     }
     pub fn build_comment(&mut self, comment: &str) {
-        let inst_id = Instruction(self.next_inst_index);
-        self.next_inst_index += 1;
+        let inst_id = self.get_next_inst_id();
         self.instructions.insert(inst_id, InstructionData::Comment(String::from(comment)));
         self.add_inst_id_to_current_block(inst_id);
     }

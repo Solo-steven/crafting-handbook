@@ -62,6 +62,11 @@ impl Function {
             current_block: None
         }
     }
+    fn get_next_inst_id(&mut self) -> Instruction {
+        let id = self.next_inst_index;
+        self.next_inst_index += 1;
+        Instruction(id)
+    }
     /// Create a basic block, and this block is not conncet yet.
     pub fn create_block(&mut self) -> BasicBlock {
         let block_id = BasicBlock(self.next_block_index);
@@ -107,7 +112,7 @@ impl Function {
         self.inst_map_block.get(&inst)
     }
     pub fn insert_inst_to_block_front(&mut self, block: &BasicBlock, inst_data: InstructionData) -> Instruction {
-        let inst_id = Instruction(self.instructions.len());
+        let inst_id = self.get_next_inst_id();
         self.blocks.get_mut(block).unwrap().instructions.push_front(inst_id.clone());
         self.instructions.insert(inst_id.clone(), inst_data);
         inst_id

@@ -2,14 +2,14 @@ use std::collections::HashMap;
 use crate::ir::function::*;
 use crate::ir::instructions::*;
 
-pub struct CopyPropagation;
+pub struct CopyPropagationPass;
 
-impl CopyPropagation {
+impl CopyPropagationPass {
     pub fn new() -> Self {
         Self {}
     }
 
-    pub fn anaylsis(function: &mut Function) {
+    pub fn process(&mut self, function: &mut Function) {
         let mut copy_insts = Vec::new();
         let mut replace_value_map = HashMap::new();
         for (block_id, block) in function.blocks.iter() {
@@ -17,7 +17,7 @@ impl CopyPropagation {
                 let inst = function.instructions.get(inst_id).unwrap();
                 if let InstructionData::Move { dst, src, .. } = inst {
                     replace_value_map.insert(dst.clone(), src.clone());
-                    copy_insts.push((block_id.clone(), inst_id.clone(),))
+                    copy_insts.push((block_id.clone(), inst_id.clone(),));
                 }
             }
         }

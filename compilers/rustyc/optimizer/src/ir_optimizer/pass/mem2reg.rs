@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use crate::ir_optimizer::domtree::*;
-use crate::ir_optimizer::use_def_chain::*;
+use crate::ir_optimizer::anaylsis::domtree::*;
+use crate::ir_optimizer::anaylsis::use_def_chain::*;
 use crate::ir::function::*;
 use crate::ir::value::*;
 use crate::ir::instructions::*;
@@ -15,20 +15,74 @@ impl Mem2RegPass {
         Self {}
     }
     /// Mutate the function and promte the usage of memory to just register.
-    pub fn anaylsis(&mut self, function: &mut Function, use_def_table: &UseDefTable, dom_table: &DomTable) {
+    pub fn process(&mut self, function: &mut Function, use_def_table: &UseDefTable, dom_table: &DomTable) {
         // find all alloc pointer
         let alloc_pointers_and_bb_ids =self.find_all_alloc_inst_from_entry_block(function);
         // insert phi is df of store inst of alloc use.
-        for (alloc_pointer, bb_id) in &alloc_pointers_and_bb_ids {
+        for (alloc_pointer, inst_id, bb_id) in &alloc_pointers_and_bb_ids {
+            // TODO: if have pointer access, skip
             let use_def_entry = use_def_table.get(bb_id).unwrap();
             let use_table = &use_def_entry.use_table;
-            let rename_phis = self.insert_phi_node_in_df_of_store_inst(alloc_pointer, function, use_table, dom_table);
             let use_set = use_table.get(alloc_pointer).unwrap();
-            self.rename_load_and_store_inst(bb_id.clone(), function, &rename_phis, use_set, &mut Vec::new(), &mut HashSet::new());
+            if self.is_use_in_same_block(function,bb_id, use_set) {
+               if !self.simple_traversal_for_same_block(function, bb_id, use_set) {
+                   function.remove_inst_from_block(bb_id, &inst_id);
+               }
+            }else {
+                let rename_phis = self.insert_phi_node_in_df_of_store_inst(alloc_pointer, function, use_table, dom_table);
+                if !self.rename_load_and_store_inst(bb_id.clone(), function, &rename_phis, use_set, &mut Vec::new(), &mut HashSet::new()) {
+                    function.remove_inst_from_block(bb_id, &inst_id);
+                }
+            }
         }
     }
+    fn is_use_in_same_block(&mut self, function: &Function, alloc_block: &BasicBlock, use_set: &HashSet<Instruction>) -> bool {
+        for inst in use_set {
+            if function.get_block_from_inst(inst).unwrap() != alloc_block {
+                return false
+            }
+        }
+        true
+    }
+    fn simple_traversal_for_same_block(&mut self, function: &mut Function, block_id: &BasicBlock, use_set: &HashSet<Instruction>) -> bool {
+        let mut remove_insts = Vec::new();
+        let mut change_to_mov_insts = Vec::new();
+        let mut stack: Vec<Value> = Vec::new();
+        let mut uninit_variable = false;
+        for inst in &function.blocks.get(block_id).unwrap().instructions {
+            if use_set.contains(inst) {
+                match function.instructions.get(inst).unwrap() {
+                    InstructionData::LoadRegister { dst, ..} => {
+                        // if there is no assignment value before use. we can not replace the value.
+                        if let Some(new_src) = stack.last() {
+                            change_to_mov_insts.push((inst.clone(), dst.clone(), new_src.clone()));
+                            uninit_variable = true;
+                        }
+                    }
+                    InstructionData::StoreRegister { src, ..} => {
+                        stack.push(src.clone());
+                        remove_insts.push(inst.clone());
+                    }
+                    InstructionData::Phi { opcode: _, dst, from: _1 } => {
+                        stack.push(dst.clone());
+                    }
+                    _ => {}
+                }
+            }
+        }
+        // remove all store instruction
+        for remove_inst in remove_insts {
+            function.remove_inst_from_block(&block_id, &remove_inst);
+        }
+        // change all load instruction to simple mov instructiom
+        for (change_inst, dst, src) in change_to_mov_insts {
+            function.change_inst(&change_inst, InstructionData::Move { opcode: OpCode::Mov, src , dst })
+        }
+        uninit_variable
+
+    }
     /// Find All alloc instruction that can be prompted into memory
-    fn find_all_alloc_inst_from_entry_block(&mut self, function: &mut Function) -> Vec<(Value, BasicBlock)> {
+    fn find_all_alloc_inst_from_entry_block(&mut self, function: &mut Function) -> Vec<(Value, Instruction, BasicBlock)> {
         let mut alloc_pointers_and_bb_ids = Vec::new();
         for entry_block_id in &function.entry_block {
             let block_data = function.blocks.get(entry_block_id).unwrap();
@@ -40,7 +94,7 @@ impl Mem2RegPass {
                     dst,
                     ir_type: _3,
                 }  = function.instructions.get(inst_id).unwrap() {
-                    alloc_pointers_and_bb_ids.push((dst.clone(), entry_block_id.clone()));
+                    alloc_pointers_and_bb_ids.push((dst.clone(), inst_id.clone(), entry_block_id.clone()));
                 }
             }
         }
@@ -103,7 +157,7 @@ impl Mem2RegPass {
         use_set: &HashSet<Instruction>, 
         stack: &mut Vec<(Value, BasicBlock)>,
         visit_marks: &mut HashSet<BasicBlock>,
-     ) {
+     ) -> bool {
         // if a block have N predecessor, it would be visited n time, and every time is from a different predecessor
         // so we can insert the source of predecessor every time we visit to the phi instruction we create earlier.
         for inst_id in &function.blocks.get(&block).unwrap().instructions {
@@ -120,7 +174,7 @@ impl Mem2RegPass {
         }
         // if this block already been visit, do not need to rename it, only need to insert source for phi insertion
         if visit_marks.contains(&block) {
-            return;
+            return false;
         }
         // if this block is not visit, rename all load, store instruction relate the alloc instruction we need.
         // we using use_set argument to test if load and store is belong to alloc command we target to.
@@ -130,12 +184,16 @@ impl Mem2RegPass {
         let mut remove_insts = Vec::new();
         let mut change_to_mov_insts = Vec::new();
         let mut add_stack_count = 0;
+        let mut uninit_variable = false;
         for inst_id in &function.blocks.get(&block).unwrap().instructions {
             if use_set.contains(inst_id) || rename_phis.contains(inst_id) {
                 match function.instructions.get(inst_id).unwrap() {
                     InstructionData::LoadRegister { opcode: _, base: _1, offset: _2, dst, data_type: _3 } => {
-                        let new_src = stack.last().unwrap();
-                        change_to_mov_insts.push((inst_id.clone(), dst.clone(), new_src.clone()));
+                        // if there is no assignment value before use. we can not replace the value.
+                        if let Some(new_src) = stack.last() {
+                            uninit_variable = true;
+                            change_to_mov_insts.push((inst_id.clone(), dst.clone(), new_src.clone()));
+                        }
                     }
                     InstructionData::StoreRegister { opcode: _, base: _1, offset: _2, src, data_type: _3 } => {
                         stack.push((src.clone(), block.clone()));
@@ -160,12 +218,13 @@ impl Mem2RegPass {
         }
         // DFS traveral all sucessor with same argument
         for sucessor in function.blocks.get(&block).unwrap().successor.clone() {
-            self.rename_load_and_store_inst(sucessor.clone(), function, rename_phis, use_set, stack, visit_marks);
+            uninit_variable = self.rename_load_and_store_inst(sucessor.clone(), function, rename_phis, use_set, stack, visit_marks) && uninit_variable;
         }
         // recover the stack by poping out the value insert in this basic block.
         for _i in 0..add_stack_count {
             stack.pop();
         }
+        uninit_variable
     }
 }
 
