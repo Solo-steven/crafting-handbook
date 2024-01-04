@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::mem::replace;
 use crate::ir::function::*;
+use crate::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
 /// Table for record every block's dom and idom and dom-frontier
 pub type DomTable = HashMap<BasicBlock, DomTableEntry>;
 /// Entry for record dom, idom and dom-frontier for a bb.
@@ -9,15 +10,6 @@ pub struct DomTableEntry {
     pub dom: HashSet<BasicBlock>,
     pub idom: BasicBlock,
     pub dom_frontier: HashSet<BasicBlock>,
-}
-/// pretty print out the dom related info for a control flow graph.
-pub fn print_dom_table(table: &DomTable) {
-    println!("");
-    let mut dom_text = String::from("| ");
-    for (block_id , block_entry) in table {
-        
-        dom_text.push_str(" | ");
-    }
 }
 /// Struct for anaylsis dom related info for a control flow graph
 pub struct DomAnaylsier {
@@ -58,9 +50,12 @@ impl DomAnaylsier {
         }
         // iterative algorithm for dom data flow analysis
         let mut is_change = true;
+        let mut dfs_ordering_anaylsiser = DFSOrdering::new();
+        let ordering = dfs_ordering_anaylsiser.get_order(function.entry_block[0], &function.blocks);
         while is_change {
             is_change = false;
-            for (block_id, bb) in &function.blocks {
+            for block_id in &ordering{
+                let bb = function.blocks.get(block_id).unwrap();
                 let mut next_set = HashSet::new();
                 for pre in &bb.predecessor {
                     let pre_dom_entry = self.dom_table.get(pre).unwrap();

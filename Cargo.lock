@@ -511,23 +511,6 @@ name = "js-bridge"
 version = "0.1.0"
 
 [[package]]
-name = "lab-shared-data-structure"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "lab-value-numbering"
-version = "0.1.0"
-dependencies = [
- "lab-shared-data-structure",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

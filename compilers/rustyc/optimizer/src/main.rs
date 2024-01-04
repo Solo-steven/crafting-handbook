@@ -19,7 +19,9 @@ use crate::ir_optimizer::pass::value_numbering::ValueNumberingPass;
 fn main() {
     let program = Parser::new("
     int main() {
-        int a = 10;
+        int a;
+        a = 10;
+        int *cc = &a;
         int b = 100;
         int c = a + b;
         b = a + b;

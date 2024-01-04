@@ -20,15 +20,29 @@ impl Mem2RegPass {
         let alloc_pointers_and_bb_ids =self.find_all_alloc_inst_from_entry_block(function);
         // insert phi is df of store inst of alloc use.
         for (alloc_pointer, inst_id, bb_id) in &alloc_pointers_and_bb_ids {
-            // TODO: if have pointer access, skip
             let use_def_entry = use_def_table.get(bb_id).unwrap();
             let use_table = &use_def_entry.use_table;
             let use_set = use_table.get(alloc_pointer).unwrap();
+            // if have pointer access, skip
+            let mut is_pointer_access = false;
+            for use_inst_id in use_set {
+                let inst = function.instructions.get(use_inst_id).unwrap();
+                if let InstructionData::StoreRegister { src, .. } = inst {
+                    if src == alloc_pointer {
+                        is_pointer_access = true;
+                    }
+                }
+            }
+            if is_pointer_access {
+                continue;
+            }
+            // if in same block, just perform a simple walk
             if self.is_use_in_same_block(function,bb_id, use_set) {
                if !self.simple_traversal_for_same_block(function, bb_id, use_set) {
                    function.remove_inst_from_block(bb_id, &inst_id);
                }
             }else {
+                // if there is no pointer access and use is in multiple block, perform ssa construct algorithm for phi inst.
                 let rename_phis = self.insert_phi_node_in_df_of_store_inst(alloc_pointer, function, use_table, dom_table);
                 if !self.rename_load_and_store_inst(bb_id.clone(), function, &rename_phis, use_set, &mut Vec::new(), &mut HashSet::new()) {
                     function.remove_inst_from_block(bb_id, &inst_id);
@@ -36,6 +50,7 @@ impl Mem2RegPass {
             }
         }
     }
+    /// check is all use of alloc pointer in a same block or not
     fn is_use_in_same_block(&mut self, function: &Function, alloc_block: &BasicBlock, use_set: &HashSet<Instruction>) -> bool {
         for inst in use_set {
             if function.get_block_from_inst(inst).unwrap() != alloc_block {
@@ -44,6 +59,8 @@ impl Mem2RegPass {
         }
         true
     }
+    /// perform simple iterative walk though to a basic block when every use of alloc pointer is in same block.
+    /// return value indict is this alloc pointer have use before def.
     fn simple_traversal_for_same_block(&mut self, function: &mut Function, block_id: &BasicBlock, use_set: &HashSet<Instruction>) -> bool {
         let mut remove_insts = Vec::new();
         let mut change_to_mov_insts = Vec::new();

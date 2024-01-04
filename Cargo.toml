@@ -9,15 +9,8 @@ members = [
     "compilers/rustyc/optimizer",
     # For Calculator toy lang
     "compilers/calculator",
+    # For rustypy
     # For jsbridge
     "others/js-bridge",
-    # For souring rs
-
-    # For all labs
-    ## for lab of compiler
-    "labs/compiler/value-numbering",
-    "labs/compiler/shared-data-structure"
-    ## for js-brige label
-
 ]
 resolver = "2"
