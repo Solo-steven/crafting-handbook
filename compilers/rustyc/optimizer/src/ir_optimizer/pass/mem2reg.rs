@@ -66,6 +66,7 @@ impl Mem2RegPass {
         let mut change_to_mov_insts = Vec::new();
         let mut stack: Vec<Value> = Vec::new();
         let mut uninit_variable = false;
+        let mut index = 0;
         for inst in &function.blocks.get(block_id).unwrap().instructions {
             if use_set.contains(inst) {
                 match function.instructions.get(inst).unwrap() {
@@ -73,7 +74,9 @@ impl Mem2RegPass {
                         // if there is no assignment value before use. we can not replace the value.
                         if let Some(new_src) = stack.last() {
                             change_to_mov_insts.push((inst.clone(), dst.clone(), new_src.clone()));
-                            uninit_variable = true;
+                            if index == 0 {
+                                uninit_variable = true;
+                            }
                         }
                     }
                     InstructionData::StoreRegister { src, ..} => {
@@ -86,6 +89,7 @@ impl Mem2RegPass {
                     _ => {}
                 }
             }
+            index += 1;
         }
         // remove all store instruction
         for remove_inst in remove_insts {

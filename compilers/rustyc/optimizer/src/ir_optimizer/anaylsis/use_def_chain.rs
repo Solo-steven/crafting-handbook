@@ -15,6 +15,7 @@ pub type UseTable = HashMap<Value, HashSet<Instruction>>;
 #[derive(Debug, Clone, PartialEq)]
 pub enum DefKind {
     InternalDef(Instruction),
+    ParamDef(Value),
     ExternalDef
 }
 /// A struct for a basic block, contain information that every value in 
@@ -52,7 +53,7 @@ impl UseDefAnaylsier {
         // - frist iterate find all def and use as a tuple mapping 
         // - second iterate fill all relation aoccroding to cache.
         self.find_all_use_def_tuple(function);
-        self.fill_table_with_cache();
+        self.fill_table_with_cache(function);
         self.def_cache.clear();
         self.use_cache.clear();
         replace(&mut self.use_def_table, HashMap::new())
@@ -143,7 +144,7 @@ impl UseDefAnaylsier {
                             if self.is_value_register(value, function) { self.add_to_use_cache(value.clone(), block_id.clone(), inst_id.clone())}
                         }
                         match dst {
-                            Some(value) => {self.add_to_def_cache(value.clone(), block_id.clone(), inst_id.clone());},
+                            Some(value) => { self.add_to_def_cache(value.clone(), block_id.clone(), inst_id.clone());},
                             None => {},
                         };
                     }
@@ -167,16 +168,17 @@ impl UseDefAnaylsier {
             }
         }
     }
-    fn fill_table_with_cache(&mut self) {
+    fn fill_table_with_cache(&mut self, function: &Function) {
         for (use_value, use_blocks_and_insts) in &self.use_cache {
             match self.def_cache.get(use_value) {
                 Some(def) => {
                     let (def_block_id, def_inst_id) = def;
                     for (use_block_id, use_inst_id) in use_blocks_and_insts {
+                        // add use to def
                         let used_entry = self.use_def_table.get_mut(use_block_id).unwrap();
                         let def_table = &mut used_entry.def_table;
                         def_table.insert(use_value.clone(), DefKind::InternalDef(def_inst_id.clone()));
-        
+                        // get table of def block id, and insert use value to that table.
                         let def_entry = self.use_def_table.get_mut(def_block_id).unwrap();
                         let use_table = &mut def_entry.use_table;
                         if use_table.contains_key(use_value) {
@@ -186,8 +188,31 @@ impl UseDefAnaylsier {
                         }
                     }
                 }
-                None => todo!(),
+                None => {
+                    if function.params_value.contains(use_value) {
+                        let entry_id = function.entry_block[0].clone();
+                        for (use_block_id, use_inst_id) in use_blocks_and_insts {
+                            // add def-relation to use
+                            let used_entry = self.use_def_table.get_mut(use_block_id).unwrap();
+                            let def_table = &mut used_entry.def_table;
+                            def_table.insert(use_value.clone(), DefKind::ParamDef(use_value.clone()));
+                            // get use-relation to def
+                            let def_entry = self.use_def_table.get_mut(&entry_id).unwrap();
+                            let use_table = &mut def_entry.use_table;
+                            if use_table.contains_key(use_value) {
+                                use_table.get_mut(use_value).unwrap().insert(use_inst_id.clone());
+                            }else {
+                                use_table.insert(use_value.clone(), HashSet::from([use_inst_id.clone()]));
+                            }
+                        }
+
+                    }else {
+                        // reference to global value
+                        todo!()
+                    }
+                }
             }
+    
         }
     }
     /// add value and related info to def cache

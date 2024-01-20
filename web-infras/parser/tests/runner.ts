@@ -64,11 +64,11 @@ async function recursivelyFindTestCase(jsRoot: string, jsonRoot: string, testCas
  */
 async function findAllTestCase(): Promise<Array<TestCase>> {
     const modelCheckingJsonRoot = path.join(__dirname, "model-checking");
-    const modelCheckingJsRoot = path.join(__dirname, "../../../assets/parse/model-checking");
+    const modelCheckingJsRoot = path.join(__dirname, "../../../assets/js/parse/model-checking");
     const esprimaJsonRoot = path.join(__dirname, "esprima");
-    const esprimaJsRoot = path.join(__dirname, "../../../assets/parse/esprima");
+    const esprimaJsRoot = path.join(__dirname, "../../../assets/js/parse/esprima");
     const uncategoryJsonRoot = path.join(__dirname, "uncategory");
-    const uncategoryJsRoot = path.join(__dirname, "../../../assets/parse/uncategory");
+    const uncategoryJsRoot = path.join(__dirname, "../../../assets/js/parse/uncategory");
     const testCases: Array<TestCase> = []
     await Promise.all(
         [

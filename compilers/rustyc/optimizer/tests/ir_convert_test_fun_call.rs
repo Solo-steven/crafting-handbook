@@ -6,11 +6,11 @@ use rustyc_optimizer::ir_converter::Converter;
 
 /// Get a path to `assets/c` in the repo
 fn get_c_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("../../../assets/c/ir_convert/expr/").as_os_str().to_str().unwrap())
+    String::from(env::current_dir().unwrap().join("../../../assets/c/ir_covert/fun-call/").as_os_str().to_str().unwrap())
 }
 /// Gte a path the ir result `./test/ir_convert`.
 fn get_ir_result_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("tests/ir_convert/expr/").as_os_str().to_str().unwrap())
+    String::from(env::current_dir().unwrap().join("tests/ir_convert/fun-call/").as_os_str().to_str().unwrap())
 }
 /// Test helper, test is c code ouput ir match as expect.
 fn test_file_name(name: &'static str)  {
@@ -28,14 +28,15 @@ fn test_file_name(name: &'static str)  {
             let mut ir_path = get_ir_result_dir_path();
             ir_path.push_str(name);
             ir_path.push_str(".ir");
+            if is_update {
+                let mut file = File::create(ir_path).unwrap();
+                write!(file, "{}", result_string).unwrap();
+                return;
+            }
             match read_to_string(ir_path.clone()) {
                 Ok(ir) => {
-                    if is_update {
-                        let mut file = File::create(ir_path).unwrap();
-                        write!(file, "{}", result_string).unwrap();
-                    }else {
-                        assert_eq!(ir, result_string);
-                    }
+                    println!("{}", is_update);
+                    assert_eq!(ir, result_string);
                 }
                 Err(_) =>  {panic!("Can not read ir file - {}", ir_path)}
             }
@@ -45,18 +46,34 @@ fn test_file_name(name: &'static str)  {
 }
 
 #[test]
-fn test_cast_basic_type_expr() {
-    test_file_name("cast_basic_type_expr");
+fn test_basic_type_return_expr() {
+    test_file_name("basic_type_return_expr");
 }
 #[test]
-fn test_size_of_array_basic_type_expr() {
-    test_file_name("sizeof_array_basic_type_expr");
+fn test_fib_array_dp() {
+    test_file_name("fib_array_dp");
 }
 #[test]
-fn test_should_cast_basic_type_implicitly() {
-    test_file_name("should_cast_basic_type_implicitly");
+fn test_fib_tail_call() {
+    test_file_name("fib_tail_call")
 }
 #[test]
-fn test_assignment_expr() {
-    test_file_name("assignment_expr");
+fn test_pointer_to_pointer_basic_type_return() {
+    //test_file_name("pointer_to_pointer_basic_type_return")
+}
+#[test]
+fn test_pointer_type_basic_type_return() {
+    test_file_name("pointer_type_basic_type_return_expr")
+}
+#[test]
+fn test_struct_type_return_expr() {
+    test_file_name("struct_type_return_expr")
+}
+#[test]
+fn test_struct_type_return_with_pointer() {
+    // test_file_name("struct_type_return_with_pointer")
+}
+#[test]
+fn test_void_return_expr() {
+    test_file_name("void_return_expr")
 }

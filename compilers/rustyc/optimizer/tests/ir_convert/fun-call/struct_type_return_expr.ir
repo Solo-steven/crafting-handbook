@@ -1,0 +1,176 @@
+function test (t1 address) -> void {
+block1:
+	t2 = stackalloc aggregate, size 8, align 8
+	load u8 t3 [t2, 0]
+	store u8 t3 [t1, 0]
+	load u8 t4 [t2, 1]
+	store u8 t4 [t1, 1]
+	load u8 t5 [t2, 2]
+	store u8 t5 [t1, 2]
+	load u8 t6 [t2, 3]
+	store u8 t6 [t1, 3]
+	load u8 t7 [t2, 4]
+	store u8 t7 [t1, 4]
+	load u8 t8 [t2, 5]
+	store u8 t8 [t1, 5]
+	load u8 t9 [t2, 6]
+	store u8 t9 [t1, 6]
+	load u8 t10 [t2, 7]
+	store u8 t10 [t1, 7]
+	ret void
+}
+;;  t1 -> address
+;;  t2 -> address
+;;  t3 -> u8
+;;  t4 -> u8
+;;  t5 -> u8
+;;  t6 -> u8
+;;  t7 -> u8
+;;  t8 -> u8
+;;  t9 -> u8
+;;  t10 -> u8
+function with_argu (t1 i32, t2 i32, t3 address) -> void {
+block1:
+	t4 = stackalloc aggregate, size 8, align 8
+	t5 = add t4 4
+	load i32 t6 [t1, 0]
+	store i32 t6 [t5, 0]
+	t7 = add t4 0
+	load i32 t8 [t2, 0]
+	store i32 t8 [t7, 0]
+	load u8 t9 [t4, 0]
+	store u8 t9 [t3, 0]
+	load u8 t10 [t4, 1]
+	store u8 t10 [t3, 1]
+	load u8 t11 [t4, 2]
+	store u8 t11 [t3, 2]
+	load u8 t12 [t4, 3]
+	store u8 t12 [t3, 3]
+	load u8 t13 [t4, 4]
+	store u8 t13 [t3, 4]
+	load u8 t14 [t4, 5]
+	store u8 t14 [t3, 5]
+	load u8 t15 [t4, 6]
+	store u8 t15 [t3, 6]
+	load u8 t16 [t4, 7]
+	store u8 t16 [t3, 7]
+	ret void
+}
+;;  t1 -> i32
+;;  t2 -> i32
+;;  t3 -> address
+;;  t4 -> address
+;;  t5 -> address
+;;  t6 -> i32
+;;  t7 -> address
+;;  t8 -> i32
+;;  t9 -> u8
+;;  t10 -> u8
+;;  t11 -> u8
+;;  t12 -> u8
+;;  t13 -> u8
+;;  t14 -> u8
+;;  t15 -> u8
+;;  t16 -> u8
+function main () -> i32 {
+block1:
+	t1 = stackalloc aggregate, size 8, align 8
+	t2 = stackalloc aggregate, size 8, align 8
+	test(t2)
+	load u8 t3 [t2, 0]
+	store u8 t3 [t1, 0]
+	load u8 t4 [t2, 1]
+	store u8 t4 [t1, 1]
+	load u8 t5 [t2, 2]
+	store u8 t5 [t1, 2]
+	load u8 t6 [t2, 3]
+	store u8 t6 [t1, 3]
+	load u8 t7 [t2, 4]
+	store u8 t7 [t1, 4]
+	load u8 t8 [t2, 5]
+	store u8 t8 [t1, 5]
+	load u8 t9 [t2, 6]
+	store u8 t9 [t1, 6]
+	load u8 t10 [t2, 7]
+	store u8 t10 [t1, 7]
+	t11 = stackalloc aggregate, size 8, align 8
+	test(t11)
+	t12 = stackalloc aggregate, size 8, align 8
+	with_argu(10, 100, t12)
+	t13 = stackalloc i32, size 4, align 8
+	store i32 10 [t13, 0]
+	load i32 t14 [t13, 0]
+	t15 = stackalloc aggregate, size 8, align 8
+	with_argu(10, t14, t15)
+	t16 = stackalloc aggregate, size 8, align 8
+	load i32 t17 [t13, 0]
+	t18 = stackalloc aggregate, size 8, align 8
+	with_argu(t17, 100, t18)
+	load u8 t19 [t18, 0]
+	store u8 t19 [t16, 0]
+	load u8 t20 [t18, 1]
+	store u8 t20 [t16, 1]
+	load u8 t21 [t18, 2]
+	store u8 t21 [t16, 2]
+	load u8 t22 [t18, 3]
+	store u8 t22 [t16, 3]
+	load u8 t23 [t18, 4]
+	store u8 t23 [t16, 4]
+	load u8 t24 [t18, 5]
+	store u8 t24 [t16, 5]
+	load u8 t25 [t18, 6]
+	store u8 t25 [t16, 6]
+	load u8 t26 [t18, 7]
+	store u8 t26 [t16, 7]
+	t27 = stackalloc i32, size 4, align 8
+	load i32 t28 [t13, 0]
+	t29 = stackalloc aggregate, size 8, align 8
+	with_argu(10, t28, t29)
+	load i32 t30 [t29, 4]
+	t31 = add t30 10
+	store i32 t31 [t27, 0]
+	load i32 t32 [t27, 0]
+	load i32 t33 [t13, 0]
+	t34 = stackalloc aggregate, size 8, align 8
+	with_argu(t32, t33, t34)
+	load i32 t35 [t34, 0]
+	t36 = add t35 20
+	store i32 t36 [t27, 0]
+	ret 0
+}
+;;  t1 -> address
+;;  t2 -> address
+;;  t3 -> u8
+;;  t4 -> u8
+;;  t5 -> u8
+;;  t6 -> u8
+;;  t7 -> u8
+;;  t8 -> u8
+;;  t9 -> u8
+;;  t10 -> u8
+;;  t11 -> address
+;;  t12 -> address
+;;  t13 -> address
+;;  t14 -> i32
+;;  t15 -> address
+;;  t16 -> address
+;;  t17 -> i32
+;;  t18 -> address
+;;  t19 -> u8
+;;  t20 -> u8
+;;  t21 -> u8
+;;  t22 -> u8
+;;  t23 -> u8
+;;  t24 -> u8
+;;  t25 -> u8
+;;  t26 -> u8
+;;  t27 -> address
+;;  t28 -> i32
+;;  t29 -> address
+;;  t30 -> i32
+;;  t31 -> i32
+;;  t32 -> i32
+;;  t33 -> i32
+;;  t34 -> address
+;;  t35 -> i32
+;;  t36 -> i32

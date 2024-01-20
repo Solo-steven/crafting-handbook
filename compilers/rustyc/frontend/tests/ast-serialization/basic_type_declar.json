@@ -1,0 +1,187 @@
+{
+    "body": [
+      {
+        "type": "FuncDef",
+        "return_type": {
+          "type": "Int"
+        },
+        "id": {
+          "name": "main"
+        },
+        "params": [],
+        "compound": {
+          "body": [
+            {
+              "type": "DelcarList",
+              "value_type": {
+                "type": "Int"
+              },
+              "declarators": [
+                {
+                  "value_type": {
+                    "type": "Int"
+                  },
+                  "id": {
+                    "name": "a"
+                  },
+                  "init_value": null
+                }
+              ]
+            },
+            {
+              "type": "DelcarList",
+              "value_type": {
+                "type": "Int"
+              },
+              "declarators": [
+                {
+                  "value_type": {
+                    "type": "Int"
+                  },
+                  "id": {
+                    "name": "b"
+                  },
+                  "init_value": null
+                },
+                {
+                  "value_type": {
+                    "type": "Int"
+                  },
+                  "id": {
+                    "name": "d"
+                  },
+                  "init_value": null
+                },
+                {
+                  "value_type": {
+                    "type": "Int"
+                  },
+                  "id": {
+                    "name": "e"
+                  },
+                  "init_value": null
+                }
+              ]
+            },
+            {
+              "type": "DelcarList",
+              "value_type": {
+                "type": "Int"
+              },
+              "declarators": [
+                {
+                  "value_type": {
+                    "type": "Int"
+                  },
+                  "id": {
+                    "name": "f"
+                  },
+                  "init_value": {
+                    "type": "IntLiteral",
+                    "raw_value": "10",
+                    "value_type": {
+                      "type": "Int"
+                    },
+                    "base": "Decimal"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "DelcarList",
+              "value_type": {
+                "type": "Int"
+              },
+              "declarators": [
+                {
+                  "value_type": {
+                    "type": "Int"
+                  },
+                  "id": {
+                    "name": "g"
+                  },
+                  "init_value": {
+                    "type": "Identifier",
+                    "name": "a"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "DelcarList",
+              "value_type": {
+                "type": "Int"
+              },
+              "declarators": [
+                {
+                  "value_type": {
+                    "type": "Int"
+                  },
+                  "id": {
+                    "name": "h"
+                  },
+                  "init_value": {
+                    "type": "Identifier",
+                    "name": "g"
+                  }
+                },
+                {
+                  "value_type": {
+                    "type": "Int"
+                  },
+                  "id": {
+                    "name": "i"
+                  },
+                  "init_value": {
+                    "type": "IntLiteral",
+                    "raw_value": "100",
+                    "value_type": {
+                      "type": "Int"
+                    },
+                    "base": "Decimal"
+                  }
+                },
+                {
+                  "value_type": {
+                    "type": "Int"
+                  },
+                  "id": {
+                    "name": "j"
+                  },
+                  "init_value": {
+                    "type": "BinaryExpr",
+                    "left": {
+                      "type": "Identifier",
+                      "name": "e"
+                    },
+                    "right": {
+                      "type": "IntLiteral",
+                      "raw_value": "10",
+                      "value_type": {
+                        "type": "Int"
+                      },
+                      "base": "Decimal"
+                    },
+                    "ops": {
+                      "type": "Plus"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "ReturnStmt",
+              "value": {
+                "type": "IntLiteral",
+                "raw_value": "0",
+                "value_type": {
+                  "type": "Int"
+                },
+                "base": "Decimal"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }

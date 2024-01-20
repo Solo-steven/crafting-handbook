@@ -2,15 +2,20 @@
 members = [
     # Fpr web-backend
     "website/backend",
+    ##########################
+    ####  Compiler Handbook
+    ##########################
+    # For Calculator toy lang
+    "compilers/calculator",
     # For rustyc
     "compilers/rustyc/frontend",
     "compilers/rustyc/backend",
     "compilers/rustyc/interpreter",
     "compilers/rustyc/optimizer",
-    # For Calculator toy lang
-    "compilers/calculator",
-    # For rustypy
-    # For jsbridge
-    "others/js-bridge",
+    # For rjs
+    "compilers/rjs/parser",
+    "compilers/rjs/bytecode",
+    # For Rredis
+
 ]
 resolver = "2"

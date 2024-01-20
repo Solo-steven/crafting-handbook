@@ -109,16 +109,19 @@ pub enum ValueType<'a> {
     // long double Complex
     LongDoubleComplex,
     // other (struct, enum, union, pointer, array)
-    PointerType(Box<PointerType<'a>>),
-    ArrayType(Box<ArrayType<'a>>),
-    Struct(Box<StructType<'a>>),
-    Enum(Box<EnumType<'a>>),
-    Union(Box<UnionType<'a>>),
     FunctionPointer {
         id: Identifier<'a>,
         return_type: Box<ValueType<'a>>,
         param_types: Vec<ValueType<'a>>,
-    }
+    },
+    PointerType(Box<PointerType<'a>>),
+    ArrayType(Box<ArrayType<'a>>),
+    #[serde(untagged)]
+    Struct(Box<StructType<'a>>),
+    #[serde(untagged)]
+    Enum(Box<EnumType<'a>>),
+    #[serde(untagged)]
+    Union(Box<UnionType<'a>>),
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum StorageClassSpecifier {

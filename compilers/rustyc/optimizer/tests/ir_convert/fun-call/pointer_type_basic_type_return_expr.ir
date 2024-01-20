@@ -1,0 +1,57 @@
+a =  global i32  size 4, align 8 = 10
+function return_pointer () -> address {
+block1:
+	ret a
+}
+;;  a -> address
+function main () -> i32 {
+block1:
+	t1 = return_pointer()
+	t2 = return_pointer()
+	load address t3 [t2, 0]
+	store i32 10 [t3, 0]
+	t4 = return_pointer()
+	load address t5 [t4, 0]
+	load i32 t6 [t5, 0]
+	t7 = add t6 10
+	t8 = return_pointer()
+	load address t9 [t8, 0]
+	t10 = return_pointer()
+	load address t11 [t10, 0]
+	load i32 t12 [t11, 0]
+	t13 = add t12 100
+	store i32 t13 [t9, 0]
+	t14 = stackalloc i32, size 4, align 8
+	store i32 10 [t14, 0]
+	t15 = return_pointer()
+	load address t16 [t15, 0]
+	t17 = return_pointer()
+	load address t18 [t17, 0]
+	load i32 t19 [t18, 0]
+	load i32 t20 [t14, 0]
+	t21 = add t19 t20
+	store i32 t21 [t16, 0]
+	ret 0
+}
+;;  a -> address
+;;  t1 -> address
+;;  t2 -> address
+;;  t3 -> address
+;;  t4 -> address
+;;  t5 -> address
+;;  t6 -> i32
+;;  t7 -> i32
+;;  t8 -> address
+;;  t9 -> address
+;;  t10 -> address
+;;  t11 -> address
+;;  t12 -> i32
+;;  t13 -> i32
+;;  t14 -> address
+;;  t15 -> address
+;;  t16 -> address
+;;  t17 -> address
+;;  t18 -> address
+;;  t19 -> i32
+;;  t20 -> i32
+;;  t21 -> i32

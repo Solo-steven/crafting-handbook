@@ -6,7 +6,7 @@ use rustyc_optimizer::ir_converter::Converter;
 
 /// Get a path to `assets/c` in the repo
 fn get_c_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("../../../assets/c/assignment-and-access/").as_os_str().to_str().unwrap())
+    String::from(env::current_dir().unwrap().join("../../../assets/c/ir_convert/assignment-and-access/").as_os_str().to_str().unwrap())
 }
 /// Gte a path the ir result `./test/ir_convert`.
 fn get_ir_result_dir_path() -> String {

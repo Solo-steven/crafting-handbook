@@ -19,18 +19,9 @@ use crate::ir_optimizer::pass::value_numbering::ValueNumberingPass;
 fn main() {
     let program = Parser::new("
     int main() {
-        int a;
-        a = 10;
-        int *cc = &a;
-        int b = 100;
-        int c = a + b;
-        b = a + b;
+        int a = 10, b = 10;
+        int c = a + b ;
         int d = a + b;
-        if (d > 0) {
-            d = a +b;
-        } else {
-            d = a + b + a;
-        }
         return 0;
     }
     ").parse().unwrap();
@@ -38,22 +29,22 @@ fn main() {
     let mut converter = Converter::new();
     let module = converter.convert(&program);
     let mut func = module.functions[0].clone();
+
     let mut dom = DomAnaylsier::new();
     let dom_table = dom.anaylsis(&mut func);
 
     let mut use_def = UseDefAnaylsier::new();
     let use_def_table =  use_def.anaylsis(&mut func);
     let mut pass = Mem2RegPass::new();
-    println!("{:#?}",func.print_to_string().as_str());
     pass.process(&mut func, &use_def_table, &dom_table);
-    println!("{:#?}",func.print_to_string().as_str());
     let mut copy_pass = CopyPropagationPass::new();
     copy_pass.process(&mut func);
     let mut value_numbering_pass = ValueNumberingPass::new();
     value_numbering_pass.process(&mut func);
     copy_pass.process(&mut func);
+
     let mut file = File::create("./test.txt").unwrap();
-    write!(file, "{}", func.print_to_string().as_str()).unwrap();
+    write!(file, "{}", func.print_to_string()).unwrap();
     // let mut liveness = LivenessAnaylsier::new();
     // let func =create_use_def_graph();
     // println!("{:?}", func.print_to_string());

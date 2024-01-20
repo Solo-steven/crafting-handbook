@@ -1,0 +1,130 @@
+function f (t1 i32) -> i32 {
+block1:
+	load i32 t2 [t1, 0]
+	t3 = toU32 t2
+	t4 = mul 4 t3
+	t5 = stackalloc aggregate, size t4, align 8
+	t6 = add t5 0
+	t7 = mul 0 1
+	t8 = add 0 t7
+	t9 = mul t8 4
+	t10 = add t6 t9
+	t11 = add t10 0
+	store i32 0 [t11, 0]
+	t12 = add t5 0
+	t13 = mul 1 1
+	t14 = add 0 t13
+	t15 = mul t14 4
+	t16 = add t12 t15
+	t17 = add t16 0
+	store i32 1 [t17, 0]
+	t18 = stackalloc i32, size 4, align 8
+	store i32 2 [t18, 0]
+	jump 2
+block2:
+	load i32 t19 [t18, 0]
+	load i32 t20 [t1, 0]
+	t21 = icmp t19 t20 Lt
+	brif t21, block3, block4
+block3:
+	load i32 t22 [t1, 0]
+	t23 = add t5 0
+	t24 = mul t22 1
+	t25 = add 0 t24
+	t26 = mul t25 4
+	t27 = add t23 t26
+	t28 = add t27 0
+	load i32 t29 [t1, 0]
+	t30 = sub t29 1
+	t31 = add t5 0
+	t32 = mul t30 1
+	t33 = add 0 t32
+	t34 = mul t33 4
+	t35 = add t31 t34
+	load i32 t36 [t35, 0]
+	load i32 t37 [t1, 0]
+	t38 = sub t37 2
+	t39 = add t5 0
+	t40 = mul t38 1
+	t41 = add 0 t40
+	t42 = mul t41 4
+	t43 = add t39 t42
+	load i32 t44 [t43, 0]
+	t45 = add t36 t44
+	store i32 t45 [t28, 0]
+	load i32 t46 [t18, 0]
+	t47 = add t46 1
+	store i32 t47 [t18, 1]
+	jump 2
+block4:
+	load i32 t48 [t1, 0]
+	t49 = sub t48 1
+	t50 = add t5 0
+	t51 = mul t49 1
+	t52 = add 0 t51
+	t53 = mul t52 4
+	t54 = add t50 t53
+	load i32 t55 [t54, 0]
+	ret t55
+}
+;;  t1 -> i32
+;;  t2 -> i32
+;;  t3 -> u32
+;;  t4 -> u32
+;;  t5 -> address
+;;  t6 -> address
+;;  t7 -> i32
+;;  t8 -> i32
+;;  t9 -> i32
+;;  t10 -> address
+;;  t11 -> address
+;;  t12 -> address
+;;  t13 -> i32
+;;  t14 -> i32
+;;  t15 -> i32
+;;  t16 -> address
+;;  t17 -> address
+;;  t18 -> address
+;;  t19 -> i32
+;;  t20 -> i32
+;;  t21 -> i32
+;;  t22 -> i32
+;;  t23 -> address
+;;  t24 -> i32
+;;  t25 -> i32
+;;  t26 -> i32
+;;  t27 -> address
+;;  t28 -> address
+;;  t29 -> i32
+;;  t30 -> i32
+;;  t31 -> address
+;;  t32 -> i32
+;;  t33 -> i32
+;;  t34 -> i32
+;;  t35 -> address
+;;  t36 -> i32
+;;  t37 -> i32
+;;  t38 -> i32
+;;  t39 -> address
+;;  t40 -> i32
+;;  t41 -> i32
+;;  t42 -> i32
+;;  t43 -> address
+;;  t44 -> i32
+;;  t45 -> i32
+;;  t46 -> i32
+;;  t47 -> i32
+;;  t48 -> i32
+;;  t49 -> i32
+;;  t50 -> address
+;;  t51 -> i32
+;;  t52 -> i32
+;;  t53 -> i32
+;;  t54 -> address
+;;  t55 -> i32
+function main () -> i32 {
+block1:
+	t1 = f(10)
+	ret 0
+}
+;;  t1 -> i32

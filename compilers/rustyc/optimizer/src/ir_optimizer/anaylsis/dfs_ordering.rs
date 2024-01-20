@@ -25,8 +25,7 @@ impl DFSOrdering {
     pub fn get_order(&mut self, entry_id: BasicBlock,  blocks: &BasicBlockMap) -> Vec<BasicBlock> {
         // init data
         self.index = blocks.len(); 
-        self.marks = Vec::with_capacity(blocks.len());
-        self.marks.fill(false);
+        self.marks = vec![false ; blocks.len()];
         // dfs ordering
         self.dfs_visit(entry_id, blocks);
         // take ownership of orders.
@@ -35,10 +34,10 @@ impl DFSOrdering {
         orders
     }
     fn dfs_visit(&mut self, block: BasicBlock, blocks: &BasicBlockMap,) {
-        if self.marks[block.0] == true {
+        if self.marks[block.0-1] == true {
             return
         }
-        self.marks[block.0] = true;
+        self.marks[block.0-1] = true;
         for sucessor in &blocks.get(&block).unwrap().successor {
             self.dfs_visit(sucessor.clone(), blocks);
         }
@@ -48,8 +47,7 @@ impl DFSOrdering {
         let mut map = HashMap::new();
         // init data
         self.index = blocks.len(); 
-        self.marks = Vec::with_capacity(blocks.len());
-        self.marks.fill(false);
+        self.marks = vec![false ; blocks.len()];
         // dfs ordering
         self.dfs_visit_with_map(entry_id, blocks, &mut map);
         // take ownership of orders.
@@ -58,10 +56,10 @@ impl DFSOrdering {
         (orders, map)
     }
     fn dfs_visit_with_map(&mut self, block: BasicBlock, blocks: &BasicBlockMap, map: &mut HashMap<BasicBlock, usize>) {
-        if self.marks[block.0] == true {
+        if self.marks[block.0-1] == true {
             return
         }
-        self.marks[block.0] = true;
+        self.marks[block.0-1] = true;
         for sucessor in &blocks.get(&block).unwrap().successor {
             self.dfs_visit_with_map(sucessor.clone(), blocks, map);
         }
