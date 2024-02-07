@@ -15,6 +15,7 @@ use crate::ir_optimizer::anaylsis::use_def_chain::*;
 use crate::ir_optimizer::pass::mem2reg::Mem2RegPass;
 use crate::ir_optimizer::pass::copy_propagation::CopyPropagationPass;
 use crate::ir_optimizer::pass::value_numbering::ValueNumberingPass;
+use crate::ir_optimizer::pass::lazy_code_motion::{LazyCodeMotionPass, print_lazy_code_motion_table};
 
 fn main() {
     let program = Parser::new("
@@ -28,20 +29,23 @@ fn main() {
     // println!("{:#?}", program);
     let mut converter = Converter::new();
     let module = converter.convert(&program);
-    let mut func = module.functions[0].clone();
+    let mut func = create_lazy_code_motion_graph();
 
     let mut dom = DomAnaylsier::new();
     let dom_table = dom.anaylsis(&mut func);
 
-    let mut use_def = UseDefAnaylsier::new();
-    let use_def_table =  use_def.anaylsis(&mut func);
-    let mut pass = Mem2RegPass::new();
-    pass.process(&mut func, &use_def_table, &dom_table);
-    let mut copy_pass = CopyPropagationPass::new();
-    copy_pass.process(&mut func);
-    let mut value_numbering_pass = ValueNumberingPass::new();
-    value_numbering_pass.process(&mut func);
-    copy_pass.process(&mut func);
+    // let mut use_def = UseDefAnaylsier::new();
+    // let use_def_table =  use_def.anaylsis(&mut func);
+    // let mut pass = Mem2RegPass::new();
+    // pass.process(&mut func, &use_def_table, &dom_table);
+    // let mut copy_pass = CopyPropagationPass::new();
+    // copy_pass.process(&mut func);
+    // let mut value_numbering_pass = ValueNumberingPass::new();
+    // value_numbering_pass.process(&mut func);
+    // copy_pass.process(&mut func);
+    let mut lazey_code_motion = LazyCodeMotionPass::new();
+    lazey_code_motion.process(&mut func, &dom_table);
+    print_lazy_code_motion_table(&lazey_code_motion, &func);
 
     let mut file = File::create("./test.txt").unwrap();
     write!(file, "{}", func.print_to_string()).unwrap();
@@ -141,5 +145,47 @@ pub fn create_dom_graph() -> Function {
     function.connect_block(b6, b7);
     function.connect_block(b8, b7);
     function.connect_block(b7, b3);
+    function
+}
+
+/// Create simple graph for  
+/// 
+fn create_lazy_code_motion_graph() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    let b0 = function.create_block();
+    function.mark_as_entry(b0);
+    let b1 = function.create_block();
+    let b2 = function.create_block();
+    let b3 = function.create_block();
+    let b4 = function.create_block();
+    let b5 = function.create_block();
+    let b6 = function.create_block();
+    let b7 = function.create_block();
+    function.mark_as_exit(b7);
+    
+    function.connect_block(b0, b1);
+
+    function.connect_block(b1, b2);
+    function.connect_block(b2, b3);
+    function.connect_block(b3, b4);
+    function.connect_block(b3, b2);
+    function.connect_block(b4, b7);
+
+    function.connect_block(b1, b5);
+    function.connect_block(b5, b6);
+    function.connect_block(b6, b7);
+
+    function.switch_to_block(b0);
+    let u8_const = function.create_u8_const(1);
+    let b = function.build_mov_inst(u8_const);
+    let u8_const_1 = function.create_u8_const(1);
+    let c =function.build_mov_inst(u8_const_1);
+
+    function.switch_to_block(b5);
+    function.build_add_inst(b, c);
+
+    function.switch_to_block(b7);
+    function.build_add_inst(b, c);
+
     function
 }

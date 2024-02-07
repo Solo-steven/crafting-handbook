@@ -1,6 +1,7 @@
 /// This module implement the print method  for function ir to 
 /// print out basic-blocks and instructions.
 use crate::ir::function::*;
+use crate::ir::value;
 use crate::ir::value::*;
 use crate::ir::instructions::*;
 
@@ -312,9 +313,12 @@ impl Function {
             }
             InstructionData::Phi { opcode: _, dst, from } => {
                 let dst_str = get_text_format_of_value(self.values.get(dst).unwrap());
-                let src1_str = get_text_format_of_value(self.values.get(&from[0].1).unwrap());
-                let src2_str = get_text_format_of_value(self.values.get(&from[1].1).unwrap());
-                output_code.push_str(format!("phi {}, block{} {}, block{} {}\n", dst_str,from[0].0.0, src1_str, from[1].0.0, src2_str).as_str());
+                let mut src_string = String::new();
+                for (block_id, value) in from {
+                    src_string.push_str(format!(", block{} {}", block_id.0,get_text_format_of_value(self.values.get(value).unwrap()) ).as_str());
+                }
+                src_string.push_str("\n");
+                output_code.push_str(format!("phi {}{}\n", dst_str, src_string).as_str());
             }
             InstructionData::Call { opcode: _, dst, name, params } => {
                 if let Some(value) = dst  {

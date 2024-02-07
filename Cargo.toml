@@ -12,9 +12,8 @@ members = [
     "compilers/rustyc/backend",
     "compilers/rustyc/interpreter",
     "compilers/rustyc/optimizer",
-    # For rjs
-    "compilers/rjs/parser",
-    "compilers/rjs/bytecode",
+    # For rjs, runtime and transpiler
+    "compilers/rjs/transpiler/parser",
     # For Rredis
 
 ]

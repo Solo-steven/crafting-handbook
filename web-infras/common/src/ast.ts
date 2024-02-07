@@ -45,7 +45,6 @@ export interface MethodDefinition extends ModuleItem {
  *  JSX Element or JSX fragment
  * =====================================
  */
-
 export interface JSXElement extends ExpressionModuleItem {
     kind: SyntaxKinds.JSXElement;
     openingElement: JSXOpeningElement;
