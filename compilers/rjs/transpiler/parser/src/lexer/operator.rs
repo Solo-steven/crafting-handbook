@@ -110,7 +110,7 @@ impl <'a> Lexer<'a> {
         }
         finish_token!(TokenKind::Comment, self);
     }
-    /// ### Sub function of 
+    /// ### Sub function of `read_divide`, read block comment
     fn read_block_comment(&mut self) -> LexerResult {
         loop {
             if let Some(ch) = self.get_char() {
