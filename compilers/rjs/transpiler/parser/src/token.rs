@@ -1,4 +1,5 @@
-#[derive(Debug, Clone, PartialEq)]
+use serde::{Deserialize, Serialize};
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TokenKind {
     // ============ Start State =======
     Start,

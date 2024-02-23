@@ -610,6 +610,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "mscript-optimizer"
+version = "0.1.0"
+
+[[package]]
+name = "mscript-vm"
+version = "0.1.0"
+
+[[package]]
 name = "multer"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

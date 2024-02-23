@@ -1,4 +1,5 @@
-#[derive(Debug, Clone, PartialEq)]
+use serde::{Deserialize, Serialize};
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct Span{
     pub offset: usize,
     pub line: usize,

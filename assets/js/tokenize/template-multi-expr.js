@@ -1,0 +1,1 @@
+`head ${var1 + var2} middle ${call()} tail`;

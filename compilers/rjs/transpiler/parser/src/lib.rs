@@ -5,10 +5,6 @@ pub mod lexer;
 pub mod parser;
 pub mod marco;
 
-use serde_json::to_string_pretty;
-use std::fs::{read_to_string, File};
-use std::io::Write;
-
 use lexer::{Lexer, TokenWithSpanAndValue};
 use token::TokenKind;
 
@@ -32,16 +28,7 @@ pub fn to_tokens<'a>(code: &'a str) -> Vec<TokenWithSpanAndValue> {
             break;
         }
         lexer.next_token()
+        
     }
     tokens
-}
-
-
-fn main() {
-    let code = read_to_string("./test.js").unwrap();
-    let tokens = to_tokens(code.as_str());
-    println!("{:?}", to_string_pretty(&tokens).unwrap().as_str());
-    let mut file = File::create("./test.json").unwrap();
-    let result_string = to_string_pretty(&tokens).unwrap();
-    write!(file, "{}", result_string).unwrap();
 }

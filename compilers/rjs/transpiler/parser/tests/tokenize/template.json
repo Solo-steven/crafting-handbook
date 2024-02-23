@@ -1,0 +1,100 @@
+[
+    {
+      "token": "TemplateHead",
+      "raw_value": "`test${",
+      "start_span": {
+        "offset": 0,
+        "line": 0,
+        "col": 0
+      },
+      "finish_span": {
+        "offset": 7,
+        "line": 0,
+        "col": 7
+      }
+    },
+    {
+      "token": "Identifier",
+      "raw_value": "test",
+      "start_span": {
+        "offset": 7,
+        "line": 0,
+        "col": 7
+      },
+      "finish_span": {
+        "offset": 11,
+        "line": 0,
+        "col": 11
+      }
+    },
+    {
+      "token": "PlusOperator",
+      "raw_value": "+",
+      "start_span": {
+        "offset": 11,
+        "line": 0,
+        "col": 11
+      },
+      "finish_span": {
+        "offset": 12,
+        "line": 0,
+        "col": 12
+      }
+    },
+    {
+      "token": "Identifier",
+      "raw_value": "all",
+      "start_span": {
+        "offset": 12,
+        "line": 0,
+        "col": 12
+      },
+      "finish_span": {
+        "offset": 15,
+        "line": 0,
+        "col": 15
+      }
+    },
+    {
+      "token": "TemplateTail",
+      "raw_value": "}`",
+      "start_span": {
+        "offset": 15,
+        "line": 0,
+        "col": 15
+      },
+      "finish_span": {
+        "offset": 17,
+        "line": 0,
+        "col": 17
+      }
+    },
+    {
+      "token": "SemiPunctuator",
+      "raw_value": ";",
+      "start_span": {
+        "offset": 17,
+        "line": 0,
+        "col": 17
+      },
+      "finish_span": {
+        "offset": 18,
+        "line": 0,
+        "col": 18
+      }
+    },
+    {
+      "token": "EOFToken",
+      "raw_value": "",
+      "start_span": {
+        "offset": 18,
+        "line": 0,
+        "col": 18
+      },
+      "finish_span": {
+        "offset": 18,
+        "line": 0,
+        "col": 18
+      }
+    }
+]

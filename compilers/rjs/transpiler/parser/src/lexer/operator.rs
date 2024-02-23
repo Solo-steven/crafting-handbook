@@ -330,4 +330,27 @@ impl <'a> Lexer<'a> {
         }
         finish_token!(TokenKind::BitwiseNOTOperator, self);
     }
+    /// ### Read operator Start with '.' 
+    pub (super) fn read_dot(&mut self) -> LexerResult {
+        self.eat_char();
+        if let Some(ch) = self.get_char() {
+            match ch {
+                '.' => {
+                    self.eat_char();
+                    if Some('.') == self.get_char() {
+                        finish_token_with_eat!(TokenKind::SpreadOperator, self);
+                    }else {
+                        panic!();
+                    }
+                },
+                '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
+                    self.eat_char();
+                    self.read_digital_string();
+                    finish_token!(TokenKind::NumberLiteral, self);
+                }
+                _ => {}
+            }
+        }
+        finish_token!(TokenKind::DotOperator, self);
+    }
 }

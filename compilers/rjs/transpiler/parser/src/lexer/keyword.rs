@@ -20,6 +20,8 @@ impl<'a> Lexer<'a> {
                         self.eat_char()
                     }
                 }
+            }else {
+                break;
             }
         }
         let word = &self.source[start..self.cur_offset];

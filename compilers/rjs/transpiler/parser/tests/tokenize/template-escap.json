@@ -1,0 +1,44 @@
+[
+    {
+      "token": "TemplateNoSubstitution",
+      "raw_value": "`template\\``",
+      "start_span": {
+        "offset": 0,
+        "line": 0,
+        "col": 0
+      },
+      "finish_span": {
+        "offset": 12,
+        "line": 0,
+        "col": 12
+      }
+    },
+    {
+      "token": "SemiPunctuator",
+      "raw_value": ";",
+      "start_span": {
+        "offset": 12,
+        "line": 0,
+        "col": 12
+      },
+      "finish_span": {
+        "offset": 13,
+        "line": 0,
+        "col": 13
+      }
+    },
+    {
+      "token": "EOFToken",
+      "raw_value": "",
+      "start_span": {
+        "offset": 13,
+        "line": 0,
+        "col": 13
+      },
+      "finish_span": {
+        "offset": 13,
+        "line": 0,
+        "col": 13
+      }
+    }
+]

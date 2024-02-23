@@ -12,9 +12,11 @@ members = [
     "compilers/rustyc/backend",
     "compilers/rustyc/interpreter",
     "compilers/rustyc/optimizer",
-    # For rjs, runtime and transpiler
+    # For rjs transpiler
     "compilers/rjs/transpiler/parser",
-    # For Rredis
+    # For mscript
+    "compilers/mscript/vm",
+    "compilers/mscript/optimizer"
 
 ]
 resolver = "2"
