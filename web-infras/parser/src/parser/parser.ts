@@ -1810,10 +1810,7 @@ export function createParser(code: string) {
         }
         nextToken();
         const conseq = parseAssigmentExpression();
-        if(!match(SyntaxKinds.ColonPunctuator)) {
-            throw createUnexpectError(SyntaxKinds.ColonPunctuator, "conditional operator must and conseq and alter case");
-        }
-        nextToken();
+        expect(SyntaxKinds.ColonPunctuator);
         const alter = parseAssigmentExpression();
         return Factory.createConditionalExpression(test, conseq, alter, cloneSourcePosition(test.start), cloneSourcePosition(alter.end));
     }
@@ -2052,11 +2049,10 @@ export function createParser(code: string) {
     function parseArguments(): ASTArrayWithMetaData<Expression> & { trailingComma: boolean }  {
         const { start } = expect(SyntaxKinds.ParenthesesLeftPunctuator);
         let isStart = true;
-        let shouldStop = false;
         // TODO: refactor logic to remove shoulStop
         const callerArguments: Array<Expression> = [];
         let trailingComma = false
-        while(!shouldStop && !match(SyntaxKinds.ParenthesesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
+        while(!match(SyntaxKinds.ParenthesesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
             if(isStart) {
                 isStart = false
                 if(match(SyntaxKinds.CommaToken)) {
@@ -2068,8 +2064,7 @@ export function createParser(code: string) {
             }
             // case 1: ',' following by ')'
             if(match(SyntaxKinds.ParenthesesRightPunctuator)) {
-                shouldStop = true;
-                continue;
+                break
             }
             trailingComma = false;
             // case 2: ',' following by SpreadElement, maybe follwed by ','

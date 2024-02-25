@@ -1,5 +1,6 @@
 use std::str::CharIndices;
 use std::borrow::Cow;
+use std::mem::replace;
 use serde::{Deserialize, Serialize};
 use crate::token::TokenKind;
 use crate::{finish_token, finish_token_with_eat};
@@ -45,10 +46,12 @@ pub struct Lexer<'a> {
     finish_span: Span,
     /// lookahead buffer
     lookahead_buffer: Vec<TokenWithSpan>,
-    /// is current lexer in template string state
+    /// (special purpose) is current lexer in template string state
     is_in_template_literal_stack_counter: usize,
-    /// if current lexer in template string state, record the stack of bracs
+    /// (special purpose) if current lexer in template string state, record the stack of bracs
     template_liter_braces_stack: Vec<i8>,
+    /// (special purpose) 
+    last_finish_span: Span,
 }
 
 pub type LexerResult = Result<(), ()>;
@@ -72,6 +75,7 @@ impl<'a> Lexer<'a> {
                     lookahead_buffer: Vec::with_capacity(4),
                     is_in_template_literal_stack_counter: 0,
                     template_liter_braces_stack: Vec::new(),
+                    last_finish_span: Span::new(0, 0, 0),
                 }
             }
             None => {
@@ -86,6 +90,7 @@ impl<'a> Lexer<'a> {
                     lookahead_buffer: Vec::with_capacity(4),
                     is_in_template_literal_stack_counter: 0,
                     template_liter_braces_stack: Vec::new(),
+                    last_finish_span: Span::new(0, 0, 0),
                 }
             }
         };
@@ -118,7 +123,7 @@ impl<'a> Lexer<'a> {
         self.start_span = Span::new(self.cur_offset, self.cur_line, self.cur_offset - self.cur_line_start);
     }
     fn finish_token(&mut self) {
-        self.finish_span = Span::new(self.cur_offset, self.cur_line, self.cur_offset - self.cur_line_start);
+        self.last_finish_span = replace(&mut self.finish_span, Span::new(self.cur_offset, self.cur_line, self.cur_offset - self.cur_line_start));
     }
     /// Move to next token
     pub fn next_token(&mut self) {
@@ -146,7 +151,7 @@ impl<'a> Lexer<'a> {
     pub fn get_start_span(&self) -> Span {
         self.start_span.clone()
     }
-    /// Get start span ref 
+    /// Get start span immutable reference
     pub fn get_start_span_ref(&self) -> &Span {
         &self.start_span
     }
@@ -154,9 +159,11 @@ impl<'a> Lexer<'a> {
     pub fn get_finish_span(&self) -> Span {
         self.finish_span.clone()
     }
+    /// Get finish span immutable reference
     pub fn get_finish_span_ref(&self) -> &Span {
         &self.finish_span
     }
+    /// Lookahead next token
     pub fn lookahead(&mut self) -> TokenWithSpan {
         if self.lookahead_buffer.len() != 0 {
             self.lookahead_buffer.last().unwrap().clone()
@@ -166,6 +173,7 @@ impl<'a> Lexer<'a> {
                 start_span: self.get_start_span(),
                 finish_span: self.get_finish_span(),
             };
+            let cur_last_span = self.last_finish_span.clone();
             self.next_token();
             let next_token_with_span =  TokenWithSpan {
                 token: self.get_token(),
@@ -176,11 +184,28 @@ impl<'a> Lexer<'a> {
             self.cur_token = cur_token_with_span.token;
             self.start_span = cur_token_with_span.start_span;
             self.finish_span = cur_token_with_span.finish_span;
+            self.last_finish_span = cur_last_span;
             next_token_with_span
         }
     }
     pub fn get_value(&self, start_offset: usize, finish_offset: usize) -> Cow<'a, str> {
         Cow::Borrowed(&self.source[start_offset..finish_offset])
+    }
+    pub fn get_line_terminator_flag(&self) -> bool {
+        let last_offset = self.last_finish_span.offset;
+        let cur_start_offset = self.start_span.offset;
+        let mut chars = self.source[cur_start_offset..last_offset].chars();
+        loop {
+            let ch_opt = chars.next();
+            if let Some(ch) = ch_opt {
+                if ch == '\n' {
+                    return true;
+                }
+            }else {
+                break;
+            }
+        }
+        false
     }
     /// ## Skip all space and change line 
     /// Private method for lexer, when start scan a token, we need to 

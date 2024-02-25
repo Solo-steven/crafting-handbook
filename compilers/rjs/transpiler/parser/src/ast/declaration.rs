@@ -8,40 +8,40 @@ use crate::ast::expression::{
     PropertyName
 };
 use crate::ast::StatementListItem;
-
 use super::expression::FunctionExpression;
-#[derive(Debug, Clone, PartialEq)]
+use serde::{Deserialize, Serialize};
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct VariableDeclaration<'a> {
     pub variant: DeclarationKind,
     pub declarators: Vec<VariableDeclarator<'a>>,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum DeclarationKind {
     Let,
     Const,
     Var,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct VariableDeclarator<'a> {
     pub id: Pattern<'a>,
     pub init: Option<Expression<'a>>
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct FunctionBody<'a> {
     pub body: Vec<StatementListItem<'a>>,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct FunctionDeclaration<'a> {
     pub name: Identifier<'a>,
     pub body: FunctionBody<'a>,
     pub generator: bool,
     pub is_async: bool,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ClassBody<'a> {
     pub body: Vec<ClassElement<'a>>,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ClassProperty<'a> {
     pub key: PrivateNameOrPropertyName<'a>,
     pub value: Option<Expression<'a>>,
@@ -49,7 +49,7 @@ pub struct ClassProperty<'a> {
     pub short: bool,
     pub is_static: bool,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ClassMethodDefinition<'a> {
     pub key: PrivateNameOrPropertyName<'a>,
     pub body: FunctionBody<'a>,
@@ -58,7 +58,7 @@ pub struct ClassMethodDefinition<'a> {
     pub generator: bool,
     pub is_async: bool,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ClassAccessor<'a> {
     pub key: PrivateNameOrPropertyName<'a>,
     pub accessor_type: AccessorType,
@@ -66,83 +66,83 @@ pub struct ClassAccessor<'a> {
     pub params: Vec<Pattern<'a>>,
     pub computed: bool,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ClassConstructor<'a> {
     pub key: PrivateNameOrPropertyName<'a>,
     pub body: FunctionBody<'a>,
     pub params: Vec<Pattern<'a>>,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum PrivateNameOrPropertyName<'a> {
     Prop(PropertyName<'a>),
     Private(PrivateName<'a>),
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum ClassElement<'a> {
     ClassProp(ClassProperty<'a>),
     ClassMethodDef(ClassMethodDefinition<'a>),
     ClassAccessor(ClassAccessor<'a>),
     ClassCtor(ClassConstructor<'a>)
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ClassDeclaration<'a> {
     pub id: Identifier<'a>,
     pub super_class: Expression<'a>,
     pub body: ClassBody<'a>
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum Declaration<'a> {
     FunDeclar(FunctionDeclaration<'a>),
     VarDeclar(VariableDeclaration<'a>),
     ClassDeclar(ClassDeclaration<'a>)
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ImportDeclaration<'a> {
     pub specifiers: Vec<ImportSpecifierKind<'a>>,
     pub source: StringLiteral<'a>
-}#[derive(Debug, Clone, PartialEq)]
+}#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum ImportSpecifierKind<'a> {
     Default(ImportDefaultSpecifier<'a>),
     Namespace(ImportNamespaceSpecifier<'a>),
     Specifier(ImportSpecifier<'a>),
-}#[derive(Debug, Clone, PartialEq)]
+}#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ImportDefaultSpecifier<'a> {
     pub imported: Identifier<'a>
-}#[derive(Debug, Clone, PartialEq)]
+}#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ImportNamespaceSpecifier<'a> {
     pub imported: Identifier<'a>
-}#[derive(Debug, Clone, PartialEq)]
+}#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ImportSpecifier<'a> {
     pub imported: ModuleName<'a>,
     pub local: Option<Identifier<'a>>
-}#[derive(Debug, Clone, PartialEq)]
+}#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum ModuleName<'a> {
     Ident(Identifier<'a>),
     String(StringLiteral<'a>),
-}#[derive(Debug, Clone, PartialEq)]
+}#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ExportNameDeclaration<'a> {
     pub specifiers: Vec<ExportSpecifier<'a>>,
     pub declaration: Option<Declaration<'a>>,
     pub source: Option<StringLiteral<'a>>,
-}#[derive(Debug, Clone, PartialEq)]
+}#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ExportSpecifier<'a> {
    pub exported: ModuleName<'a>,
    pub local: Option<ModuleName<'a>>,
-}#[derive(Debug, Clone, PartialEq)]
+}#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ExportDefaultDeclaration<'a> {
     pub declaration: DefaultDeclaration<'a>,
-}#[derive(Debug, Clone, PartialEq)]
+}#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum DefaultDeclaration<'a> {
     FunctionDeclar(FunctionDeclaration<'a>),
     FunctionExpr(FunctionExpression<'a>),
     ClassDeclar(ClassDeclaration<'a>),
     Expr(Expression<'a>),
-}#[derive(Debug, Clone, PartialEq)]
+}#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ExportAllDeclaration<'a> {
     pub exported: Option<Identifier<'a>>,
     pub source: StringLiteral<'a>,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum ExportDeclaration<'a> {
     Name(ExportNameDeclaration<'a>),
     Default(ExportDefaultDeclaration<'a>),
