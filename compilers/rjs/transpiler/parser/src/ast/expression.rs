@@ -1,6 +1,10 @@
 use std::borrow::Cow;
-use crate::ast::declaration::{ClassBody, FunctionBody};
 use serde::{Deserialize, Serialize};
+use crate::ast::declaration::{ClassBody, FunctionBody};
+use crate::span::Span;
+use rjs_attribute_marco::js_expr_node;
+
+use super::declaration::{ClassAccessor, ClassConstructor, ClassMethodDefinition};
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct SuperExpression;
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -22,7 +26,7 @@ pub struct StringLiteral<'a> {
     pub raw_val: Cow<'a, str>
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct BooleanLiteral<'a> {
+pub struct BoolLiteral<'a> {
     pub raw_val: Cow<'a, str>,
     pub value: bool,
 }
@@ -53,17 +57,25 @@ pub struct ObjectExpression<'a> {
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(tag="type")]
 pub enum PropertyName<'a> {
+    #[serde(rename="Identifier")]
     Ident(Identifier<'a>),
+    #[serde(rename="StringLiteral")]
     String(StringLiteral<'a>),
+    #[serde(rename="NumberLiteral")]
     Number(NumberLiteral<'a>),
+    #[serde(untagged)]
     Expr(Expression<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(tag="type")]
 pub enum PropertyDefinition<'a> {
+    #[serde(rename="ObjectProperty")]
     ObjProp(ObjectProperty<'a>),
+    #[serde(rename="ObjectMethodDefinition")]
     ObjMethodDef(ObjectMethodDefinition<'a>),
+    #[serde(rename="SpreadElement")]
     Spread(SpreadElement<'a>),
+    #[serde(rename="ObjectAccessor")]
     ObjAccessor(ObjectAccessor<'a>)
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -81,6 +93,14 @@ pub struct ObjectMethodDefinition<'a> {
     pub computed: bool,
     pub generator: bool,
     pub is_async: bool,
+}
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub enum MethodDefinition<'a> {
+    ObjMethod(ObjectMethodDefinition<'a>),
+    ClassMethod(ClassMethodDefinition<'a>),
+    ObjAccessor(ObjectAccessor<'a>),
+    ClassCtor(ClassConstructor<'a>),
+    ClassAccessor(ClassAccessor<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ObjectAccessor<'a> {
@@ -110,7 +130,7 @@ pub struct ArrayExpression<'a> {
     pub elements: Vec<Option<Expression<'a>>>,
     pub trailing_comma: bool,
 }
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[js_expr_node]
 pub struct FunctionExpression<'a> {
     pub id: Option<Identifier<'a>>,
     pub params: Vec<Pattern<'a>>,
@@ -132,6 +152,7 @@ pub enum ExpressionOrFunctionBody<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct MetaPropery<'a> {
+    pub meta: Identifier<'a>,
     pub property: Identifier<'a>
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -199,7 +220,6 @@ pub struct BinaryExpression<'a> {
     pub operator: BinaryOperatorKinds
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-#[serde(tag="type")]
 pub enum BinaryOperatorKinds {
     PlusOperator,       // +
     MinusOperator,      // -
@@ -240,12 +260,11 @@ pub struct YieldExpression<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct AssignmentExpression<'a> {
-    pub left: Box<ExprORPat<'a>>,
+    pub left: Box<Pattern<'a>>,
     pub right: Box<Expression<'a>>,
     pub operator: AssignmentOperatorKinds
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-#[serde(tag="type")]
 pub enum AssignmentOperatorKinds {
    AssginOperator,
    PlusAssignOperator,
@@ -272,62 +291,103 @@ pub struct SequenceExpression<'a> {
 #[serde(tag="type")]
 pub enum Expression<'a> {
     // idents
+    #[serde(rename="SuperExpression")]
     Super(SuperExpression),
+    #[serde(rename="ThisExpression")]
     This(ThisExpression),
+    #[serde(rename="Identifier")]
     Ident(Identifier<'a>),
+    #[serde(rename="PrivateName")]
     Private(PrivateName<'a>),
     // literals
+    #[serde(rename="NumberLiteral")]
     Number(NumberLiteral<'a>),
+    #[serde(rename="StringLiteral")]
     String(StringLiteral<'a>),
-    Bool(BooleanLiteral<'a>),
+    #[serde(rename="BoolLiteral")]
+    Bool(BoolLiteral<'a>),
+    #[serde(rename="TemplateLiteral")]
     Template(TemplateLiteral<'a>),
+    #[serde(rename="UndefinedLiteral")]
     Undefined(UndefinedLiteral),
+    #[serde(rename="NullLiteral")]
     Null(NullLiteral),
+    #[serde(rename="ObjectExpression")]
     ObjectExpr(ObjectExpression<'a>), 
+    #[serde(rename="ArrayExpression")]
     ArrayExpr(ArrayExpression<'a>),
+    #[serde(rename="ArrowFunctionExpression")]
     ArrorFunctionExpr(ArrowFunctionExpression<'a>),
+    #[serde(rename="FunctionExpression")]
     FunctionExpr(FunctionExpression<'a>),
+    #[serde(rename="ClassExpression")]
     ClassExpr(ClassExpression<'a>),
     // meta
+    #[serde(rename="SpreadElement")]
     Spread(SpreadElement<'a>),
+    #[serde(rename="MetaProperty")]
     Meta(MetaPropery<'a>),
     // exprs
+    #[serde(rename="CallExpression")]
     CallExpr(CallExpression<'a>),
+    #[serde(rename="MemberExpression")]
     MemberExpr(MemberExpression<'a>),
+    #[serde(rename="TaggedTemplateExpression")]
     TaggedTemplateExpr(TaggedTemplateExpression<'a>),
+    #[serde(rename="NewExpression")]
     NewExpr(NewExpression<'a>),
+    #[serde(rename="ChainExpression")]
     ChainExpr(ChainExpression<'a>),
+    #[serde(rename="UpdateExpression")]
     UpdateExpr(UpdateExpression<'a>),
+    #[serde(rename="UnaryExpression")]
     UnaryExpr(UnaryExpression<'a>),
+    #[serde(rename="AwaitExpression")]
     AwaitExpr(AwaitExpression<'a>),
+    #[serde(rename="BinaryExpression")]
     BinaryExpr(BinaryExpression<'a>),
+    #[serde(rename="ConditionalExpression")]
     ConditionalExpr(ConditionalExpression<'a>),
+    #[serde(rename="YieldExpression")]
     YieldExpr(YieldExpression<'a>),
+    #[serde(rename="AssignmentExpression")]
     AssigmentExpr(AssignmentExpression<'a>),
+    #[serde(rename="SequenceExpression")]
     SequenceExpr(SequenceExpression<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(tag="type")]
 pub enum Pattern<'a> {
+    #[serde(rename="Identifier")]
     Ident(Identifier<'a>),
+    #[serde(rename="AssignmentPattern")]
     Assgin(AssignmentPattern<'a>),
+    #[serde(rename="ObjectPattern")]
     Obj(ObjectPattern<'a>),
+    #[serde(rename="ArrayPattern")]
     Array(ArrayPattern<'a>),
+    #[serde(rename="RestElement")]
     Rest(RestElement<'a>),
+    #[serde(rename="MemberExpression")]
+    MemberExpr(MemberExpression<'a>)
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ObjectPattern<'a> {
     pub properties: Vec<ObjectPatternProperty<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(tag="type")]
 pub enum  ObjectPatternProperty<'a> {
+    #[serde(rename="ObjectProperty")]
     Property {
         key: PropertyName<'a>,
         value: Option<Box<Pattern<'a>>>,
         computed: bool,
         shorted: bool,
     },
+    #[serde(rename="AssignmentPattern")]
     Assign(AssignmentPattern<'a>),
+    #[serde(rename="RestElement")]
     Rest(RestElement<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -343,8 +403,7 @@ pub struct ArrayPattern<'a> {
 pub struct RestElement<'a> {
     pub argument: Box<Pattern<'a>>,
 }
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub enum ExprORPat<'a> {
-    Expr(Expression<'a>),
-    Pat(Pattern<'a>)
+
+pub trait ExprNodeParan {
+    fn set_paran(&mut self, is_paran: bool);
 }

@@ -4,7 +4,7 @@ pub enum TokenKind {
     // ============ Start State =======
     Start,
     // ============= Keyword ===========
-    AwaitKeyword = 10010,
+    AwaitKeyword,
     BreakKeyword,
     CaseKeyword,
     CatchKeyword,

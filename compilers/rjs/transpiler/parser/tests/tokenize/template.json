@@ -1,100 +1,142 @@
 [
-    {
-      "token": "TemplateHead",
-      "raw_value": "`test${",
-      "start_span": {
-        "offset": 0,
-        "line": 0,
-        "col": 0
-      },
-      "finish_span": {
-        "offset": 7,
-        "line": 0,
-        "col": 7
-      }
+  {
+    "token": "TemplateHead",
+    "raw_value": "`test${",
+    "start_span": {
+      "offset": 0,
+      "line": 0,
+      "col": 0
     },
-    {
-      "token": "Identifier",
-      "raw_value": "test",
-      "start_span": {
-        "offset": 7,
-        "line": 0,
-        "col": 7
-      },
-      "finish_span": {
-        "offset": 11,
-        "line": 0,
-        "col": 11
-      }
+    "finish_span": {
+      "offset": 7,
+      "line": 0,
+      "col": 7
     },
-    {
-      "token": "PlusOperator",
-      "raw_value": "+",
-      "start_span": {
-        "offset": 11,
-        "line": 0,
-        "col": 11
-      },
-      "finish_span": {
-        "offset": 12,
-        "line": 0,
-        "col": 12
-      }
+    "last_finish_span": {
+      "offset": 0,
+      "line": 0,
+      "col": 0
     },
-    {
-      "token": "Identifier",
-      "raw_value": "all",
-      "start_span": {
-        "offset": 12,
-        "line": 0,
-        "col": 12
-      },
-      "finish_span": {
-        "offset": 15,
-        "line": 0,
-        "col": 15
-      }
+    "line_terminator_flag": false
+  },
+  {
+    "token": "Identifier",
+    "raw_value": "test",
+    "start_span": {
+      "offset": 7,
+      "line": 0,
+      "col": 7
     },
-    {
-      "token": "TemplateTail",
-      "raw_value": "}`",
-      "start_span": {
-        "offset": 15,
-        "line": 0,
-        "col": 15
-      },
-      "finish_span": {
-        "offset": 17,
-        "line": 0,
-        "col": 17
-      }
+    "finish_span": {
+      "offset": 11,
+      "line": 0,
+      "col": 11
     },
-    {
-      "token": "SemiPunctuator",
-      "raw_value": ";",
-      "start_span": {
-        "offset": 17,
-        "line": 0,
-        "col": 17
-      },
-      "finish_span": {
-        "offset": 18,
-        "line": 0,
-        "col": 18
-      }
+    "last_finish_span": {
+      "offset": 7,
+      "line": 0,
+      "col": 7
     },
-    {
-      "token": "EOFToken",
-      "raw_value": "",
-      "start_span": {
-        "offset": 18,
-        "line": 0,
-        "col": 18
-      },
-      "finish_span": {
-        "offset": 18,
-        "line": 0,
-        "col": 18
-      }
-    }
+    "line_terminator_flag": false
+  },
+  {
+    "token": "PlusOperator",
+    "raw_value": "+",
+    "start_span": {
+      "offset": 11,
+      "line": 0,
+      "col": 11
+    },
+    "finish_span": {
+      "offset": 12,
+      "line": 0,
+      "col": 12
+    },
+    "last_finish_span": {
+      "offset": 11,
+      "line": 0,
+      "col": 11
+    },
+    "line_terminator_flag": false
+  },
+  {
+    "token": "Identifier",
+    "raw_value": "all",
+    "start_span": {
+      "offset": 12,
+      "line": 0,
+      "col": 12
+    },
+    "finish_span": {
+      "offset": 15,
+      "line": 0,
+      "col": 15
+    },
+    "last_finish_span": {
+      "offset": 12,
+      "line": 0,
+      "col": 12
+    },
+    "line_terminator_flag": false
+  },
+  {
+    "token": "TemplateTail",
+    "raw_value": "}`",
+    "start_span": {
+      "offset": 15,
+      "line": 0,
+      "col": 15
+    },
+    "finish_span": {
+      "offset": 17,
+      "line": 0,
+      "col": 17
+    },
+    "last_finish_span": {
+      "offset": 15,
+      "line": 0,
+      "col": 15
+    },
+    "line_terminator_flag": false
+  },
+  {
+    "token": "SemiPunctuator",
+    "raw_value": ";",
+    "start_span": {
+      "offset": 17,
+      "line": 0,
+      "col": 17
+    },
+    "finish_span": {
+      "offset": 18,
+      "line": 0,
+      "col": 18
+    },
+    "last_finish_span": {
+      "offset": 17,
+      "line": 0,
+      "col": 17
+    },
+    "line_terminator_flag": false
+  },
+  {
+    "token": "EOFToken",
+    "raw_value": "",
+    "start_span": {
+      "offset": 18,
+      "line": 0,
+      "col": 18
+    },
+    "finish_span": {
+      "offset": 18,
+      "line": 0,
+      "col": 18
+    },
+    "last_finish_span": {
+      "offset": 18,
+      "line": 0,
+      "col": 18
+    },
+    "line_terminator_flag": false
+  }
 ]

@@ -1,16 +1,16 @@
 [
   {
-    "token": "TemplateHead",
-    "raw_value": "`${",
+    "token": "ParenthesesLeftPunctuator",
+    "raw_value": "(",
     "start_span": {
       "offset": 0,
       "line": 0,
       "col": 0
     },
     "finish_span": {
-      "offset": 3,
+      "offset": 1,
       "line": 0,
-      "col": 3
+      "col": 1
     },
     "last_finish_span": {
       "offset": 0,
@@ -20,82 +20,82 @@
     "line_terminator_flag": false
   },
   {
-    "token": "Identifier",
-    "raw_value": "test",
+    "token": "ParenthesesRightPunctuator",
+    "raw_value": ")",
+    "start_span": {
+      "offset": 1,
+      "line": 0,
+      "col": 1
+    },
+    "finish_span": {
+      "offset": 2,
+      "line": 0,
+      "col": 2
+    },
+    "last_finish_span": {
+      "offset": 1,
+      "line": 0,
+      "col": 1
+    },
+    "line_terminator_flag": false
+  },
+  {
+    "token": "ArrowOperator",
+    "raw_value": "=>",
     "start_span": {
       "offset": 3,
       "line": 0,
       "col": 3
     },
     "finish_span": {
+      "offset": 5,
+      "line": 0,
+      "col": 5
+    },
+    "last_finish_span": {
+      "offset": 2,
+      "line": 0,
+      "col": 2
+    },
+    "line_terminator_flag": false
+  },
+  {
+    "token": "BracesLeftPunctuator",
+    "raw_value": "{",
+    "start_span": {
       "offset": 7,
-      "line": 0,
-      "col": 7
+      "line": 1,
+      "col": 0
+    },
+    "finish_span": {
+      "offset": 8,
+      "line": 1,
+      "col": 1
     },
     "last_finish_span": {
-      "offset": 3,
+      "offset": 5,
       "line": 0,
-      "col": 3
+      "col": 5
     },
-    "line_terminator_flag": false
+    "line_terminator_flag": true
   },
   {
-    "token": "PlusOperator",
-    "raw_value": "+",
+    "token": "BracesRightPunctuator",
+    "raw_value": "}",
     "start_span": {
       "offset": 8,
-      "line": 0,
-      "col": 8
+      "line": 1,
+      "col": 1
     },
     "finish_span": {
       "offset": 9,
-      "line": 0,
-      "col": 9
+      "line": 1,
+      "col": 2
     },
     "last_finish_span": {
-      "offset": 7,
-      "line": 0,
-      "col": 7
-    },
-    "line_terminator_flag": false
-  },
-  {
-    "token": "TemplateNoSubstitution",
-    "raw_value": "`{}`",
-    "start_span": {
-      "offset": 10,
-      "line": 0,
-      "col": 10
-    },
-    "finish_span": {
-      "offset": 14,
-      "line": 0,
-      "col": 14
-    },
-    "last_finish_span": {
-      "offset": 9,
-      "line": 0,
-      "col": 9
-    },
-    "line_terminator_flag": false
-  },
-  {
-    "token": "TemplateTail",
-    "raw_value": "}`",
-    "start_span": {
-      "offset": 15,
-      "line": 0,
-      "col": 15
-    },
-    "finish_span": {
-      "offset": 17,
-      "line": 0,
-      "col": 17
-    },
-    "last_finish_span": {
-      "offset": 14,
-      "line": 0,
-      "col": 14
+      "offset": 8,
+      "line": 1,
+      "col": 1
     },
     "line_terminator_flag": false
   },
@@ -103,19 +103,19 @@
     "token": "EOFToken",
     "raw_value": "",
     "start_span": {
-      "offset": 17,
-      "line": 0,
-      "col": 17
+      "offset": 9,
+      "line": 1,
+      "col": 2
     },
     "finish_span": {
-      "offset": 17,
-      "line": 0,
-      "col": 17
+      "offset": 9,
+      "line": 1,
+      "col": 2
     },
     "last_finish_span": {
-      "offset": 17,
-      "line": 0,
-      "col": 17
+      "offset": 9,
+      "line": 1,
+      "col": 2
     },
     "line_terminator_flag": false
   }

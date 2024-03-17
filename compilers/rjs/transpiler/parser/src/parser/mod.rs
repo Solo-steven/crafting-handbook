@@ -1,13 +1,12 @@
 use std::borrow::Cow;
 use crate::token::TokenKind;
 use crate::span::Span;
-use crate::lexer::{TokenWithSpan, Lexer};
+use crate::lexer::Lexer;
 use crate::ast::{Program, StatementListItem, ModuleItem};
-use crate::{expect, match_token};
 use crate::ast::declaration::*;
 use crate::ast::expression::*;
-use crate::ast::statement::*;
 use crate::parser::context::{ScopeContext, FunctionContext};
+use crate::parser::error::ErrorMap;
 
 mod declaration;
 mod statement;
@@ -19,16 +18,28 @@ mod error;
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
     scope_context: Vec<ScopeContext>,
+    class_context: Vec<bool>,
     in_operator_stack: Vec<bool>,
     maybe_arrow: bool,
+    error_map: ErrorMap,
 }
 
-pub type ParserResult<T> = Result<T, ()>;
+pub type ParserResult<T> = Result<T, &'static str>;
 
 impl <'a> Parser<'a> {
-    /// Compsition method of lexer `lookahead`
-    fn lookahead(&mut self) -> TokenWithSpan {
-        self.lexer.lookahead()
+    pub fn new(code: &'a str) -> Self {
+        Self {
+            lexer: Lexer::new(code),
+            scope_context: Vec::with_capacity(10),
+            class_context: Vec::with_capacity(10),
+            in_operator_stack: Vec::with_capacity(10),
+            maybe_arrow: false,
+            error_map: ErrorMap::new(),
+        }
+    }
+    /// Compsition method of lexer `lookahead_token`
+    fn lookahead_token(&mut self) -> TokenKind {
+        self.lexer.lookahead_token()
     }
     /// Composition method od lexer `next_token`
     fn next_token(&mut self) {
@@ -58,7 +69,13 @@ impl <'a> Parser<'a> {
     fn get_value(&self, start_offset: usize, finish_offset: usize) -> Cow<'a, str> {
         self.lexer.get_value(start_offset, finish_offset)
     }
-    fn parse(&mut self) -> ParserResult<Program<'a>> {
+    fn get_current_value(&self) -> Cow<'a, str> {
+        self.lexer.get_current_value()
+    }
+    fn get_last_finish_span(&self) -> Span {
+        self.lexer.get_last_token_finish_span()
+    }
+    pub fn parse(&mut self) -> ParserResult<Program<'a>> {
         self.parse_program()
     }
     fn parse_program(&mut self) -> ParserResult<Program<'a>>  {
@@ -89,11 +106,9 @@ impl <'a> Parser<'a> {
             TokenKind::ConstKeyword | TokenKind::FunctionKeyword | TokenKind::ClassKeyword | TokenKind::VarKeyword => {
                StatementListItem::Declar(self.parse_declaration()?)
             }
-            &TokenKind::Identifier => {
-                let start_offset = self.get_start_span_ref().offset;
-                let finish_offset = self.get_finish_span_ref().offset;
-                if self.lexer.get_value(start_offset, finish_offset) == "async" {
-                    let token = self.lookahead().token;
+            TokenKind::Identifier => {
+                if self.get_current_value() == "async" {
+                    let token = self.lookahead_token();
                     if token == TokenKind::FunctionKeyword {
                         // TODO: line terminator case
                         StatementListItem::Declar(self.parse_declaration()?)
@@ -104,7 +119,7 @@ impl <'a> Parser<'a> {
                     StatementListItem::Stmt(self.parse_stmt()?)
                 }
             }
-            &TokenKind::LetKeyword => {
+            TokenKind::LetKeyword => {
                 if self.is_let_keyword_possible_be_identifier() {
                     StatementListItem::Stmt(self.parse_stmt()?)
                 }else {
@@ -115,16 +130,16 @@ impl <'a> Parser<'a> {
         })
     }
     fn is_let_keyword_possible_be_identifier(&mut self) -> bool {
-        let token= self.lookahead().token;
+        let token= self.lookahead_token();
         match token {
             TokenKind::BracesLeftPunctuator | 
             TokenKind::BracesRightPunctuator |
             TokenKind::Identifier | 
             TokenKind::AwaitKeyword | 
             TokenKind::YieldKeyword  => {
-                true
+                false
             }
-            _ => false
+            _ => true
         }
     }
     fn enter_function_scope(&mut self, is_async: bool, is_generator: bool) {
@@ -167,9 +182,9 @@ impl <'a> Parser<'a> {
             context_ref.in_strict = true;
         }
     }
-    fn set_current_function_parameter_is_simple(&mut self) {
+    fn set_current_function_parameter_is_not_simple(&mut self) {
         if let Some(context_ref) = self.get_last_function_context_ref_mut() {
-            context_ref.is_simple_parameter = true;
+            context_ref.is_simple_parameter = false;
         }    
     }
     fn is_top_level(&mut self) -> bool {
@@ -234,6 +249,22 @@ impl <'a> Parser<'a> {
         }
         unreachable!();
     }
+    fn enter_class_scope(&mut self, is_extend: bool) {
+        self.class_context.push(is_extend);
+    }
+    fn exist_class_scope(&mut self) {
+        self.class_context.pop();
+    }
+    fn is_in_class_context(&self) -> bool {
+        self.class_context.last().is_some()
+    }
+    fn is_current_class_extend(&self) -> bool {
+        if let Some(context) = self.class_context.last() {
+            context.clone()
+        }else {
+            false
+        }
+    }
     fn semi(&mut self) -> ParserResult<()> {
         match self.get_token_ref() {
             TokenKind::SemiPunctuator => {
@@ -247,7 +278,7 @@ impl <'a> Parser<'a> {
                 if self.lexer.get_line_terminator_flag() {
                     Ok(())
                 }else {
-                    Err(())
+                    Err(self.error_map.missing_semicolon)
                 }
             }
         }
@@ -268,9 +299,9 @@ impl <'a> Parser<'a> {
                     Ok(true)
                 }else {
                     if can_ignore {
-                        Ok(true)
+                        Ok(false)
                     }else {
-                        Err(())
+                        Err(self.error_map.unexpect_token)
                     }
                 }
             }
@@ -280,7 +311,7 @@ impl <'a> Parser<'a> {
         self.in_operator_stack.last().unwrap_or(&true).clone()
     }
     fn get_parent_function_context_ref(&self) -> Option<&FunctionContext> {
-        let mut len = self.scope_context.len();
+        let mut len =  if self.scope_context.len() == 0 { return None } else { self.scope_context.len() - 1 };
         let mut flag = false;
         loop {
             if let ScopeContext::FunctionContext(fun_context) = &self.scope_context[len] {
@@ -297,7 +328,7 @@ impl <'a> Parser<'a> {
         None
     }
     fn get_last_function_context_ref(&self) -> Option<&FunctionContext> {
-        let mut len = self.scope_context.len();
+        let mut len =  if self.scope_context.len() == 0 { return None } else { self.scope_context.len() - 1 };
         loop {
             if let ScopeContext::FunctionContext(fun_context) = &self.scope_context[len] {
                 return Some(fun_context);
@@ -310,7 +341,7 @@ impl <'a> Parser<'a> {
         None
     }
     fn get_last_function_context_ref_mut(&mut self) -> Option<&mut FunctionContext> {
-        let mut len = self.scope_context.len();
+        let mut len =  if self.scope_context.len() == 0 { return None } else { self.scope_context.len() - 1 };
         let mut index = 0;
         let mut is_find = false;
         loop {
@@ -324,6 +355,7 @@ impl <'a> Parser<'a> {
             }
             len -= 1;
         }
+
         if is_find {
             Some(match &mut self.scope_context[index] {
                 ScopeContext::FunctionContext(context_ref) => context_ref,

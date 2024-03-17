@@ -21,15 +21,27 @@ macro_rules! expect {
         if($parser.get_token_ref() == &$item) {
             $parser.next_token();
         }else {
-            return Err(())
+            return Err($parser.error_map.unexpect_token);
         }
     }
+}
+#[macro_export]
+macro_rules! syntax_error {
+    ($msg: expr) => {
+       return Err($msg);
+    };
+}
+#[macro_export]
+macro_rules! sematic_error {
+    ($msg: expr) => {
+        return Err($msg);
+    };
 }
 #[macro_export]
 macro_rules! expect_but_not_eat {
     ($item: expr, $parser: expr) => {
         if($parser.get_token_ref() != &$item) {
-            return Err(())
+            return Err($parser.error_map.unexpect_token);
         }
     }
 }
@@ -41,7 +53,7 @@ macro_rules! expect_with_start_span {
             $parser.next_token();
             start_span
         }else {
-            return Err(())
+            return Err($parser.error_map.unexpect_token);
         }
     }
 }
@@ -53,7 +65,36 @@ macro_rules! expect_with_finish_span {
             $parser.next_token();
             finish_span
         }else {
-            return Err(())
+            return Err($parser.error_map.unexpect_token);
+        }
+    }
+}
+#[macro_export]
+macro_rules! expect_with_token_and_span {
+    ($item: expr, $parser: expr) => {
+        if($parser.get_token_ref() == &$item) {
+            let start_span = $parser.get_start_span();
+            let finish_span = $parser.get_finish_span();
+            let token = $parser.get_token();
+            $parser.next_token();
+            TokenWithSpan {
+                token, start_span, finish_span,
+            }
+        }else {
+            return Err($parser.error_map.unexpect_token);
+        }
+    }
+}
+#[macro_export]
+macro_rules! expect_with_start_and_finish_span {
+    ($item: expr, $parser: expr) => {
+        if($parser.get_token_ref() == &$item) {
+            let start_span = $parser.get_start_span();
+            let finish_span = $parser.get_finish_span();
+            $parser.next_token();
+            (start_span, finish_span)
+        }else {
+            return Err($parser.error_map.unexpect_token);
         }
     }
 }
@@ -256,6 +297,55 @@ macro_rules! map_token_to_update_op {
             TokenKind::DecreOperator => UpdateOperatorKinds::DecreOperator,  // !
             TokenKind::IncreOperator => UpdateOperatorKinds::IncreOperator,
             _ => unreachable!()
+        }
+    };
+}
+#[macro_export]
+macro_rules! is_lookahead_validate_property_name_start {
+    ($token: expr) => {
+        match $token {
+            TokenKind::Identifier | 
+            TokenKind::NumberLiteral |
+            TokenKind::StringLiteral | 
+            TokenKind::BracketLeftPunctuator | 
+            TokenKind::MultiplyOperator |
+            TokenKind::AwaitKeyword |
+            TokenKind::BreakKeyword |
+            TokenKind::CaseKeyword |
+            TokenKind::CatchKeyword |
+            TokenKind::ClassKeyword |
+            TokenKind::ConstKeyword |
+            TokenKind::ContinueKeyword |
+            TokenKind::DebuggerKeyword |
+            TokenKind::DefaultKeyword |
+            TokenKind::DoKeyword |
+            TokenKind::ElseKeyword |
+            TokenKind::EnumKeyword |
+            TokenKind::ExportKeyword |
+            TokenKind::ExtendsKeyword |
+            TokenKind::FinallyKeyword |
+            TokenKind::ForKeyword |
+            TokenKind::FunctionKeyword |
+            TokenKind::IfKeyword |
+            TokenKind::ImportKeyword |
+            TokenKind::LetKeyword |
+            TokenKind::NewKeyword |
+            TokenKind::ReturnKeyword |
+            TokenKind::SuperKeyword |
+            TokenKind::SwitchKeyword |
+            TokenKind::ThisKeyword |
+            TokenKind::ThrowKeyword |
+            TokenKind::TryKeyword |
+            TokenKind::VarKeyword |
+            TokenKind::WithKeyword |
+            TokenKind::WhileKeyword |
+            TokenKind::YieldKeyword |
+            TokenKind::DeleteKeyword |
+            TokenKind::VoidKeyword |
+            TokenKind::TypeofKeyword |
+            TokenKind::InKeyword |
+            TokenKind::InstanceofKeyword => true,
+            _ => false
         }
     };
 }

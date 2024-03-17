@@ -18,11 +18,13 @@ pub struct TokenWithSpan {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct TokenWithSpanAndValue<'a> {
+pub struct LexerStateCache<'a> {
     pub token: TokenKind,
     pub raw_value: Cow<'a, str>,
     pub start_span: Span,
     pub finish_span: Span,
+    pub last_finish_span: Span,
+    pub line_terminator_flag: bool,
 }
 /// ## JavaScript Lexer Structure
 pub struct Lexer<'a> {
@@ -131,7 +133,7 @@ impl<'a> Lexer<'a> {
             let next_token_with_span = self.lookahead_buffer.pop().unwrap();
             self.cur_token = next_token_with_span.token;
             self.start_span = next_token_with_span.start_span;
-            self.finish_span = next_token_with_span.finish_span;
+            self.last_finish_span =  replace(&mut self.finish_span, next_token_with_span.finish_span);
             return;
         }
         match self.scan() {
@@ -164,9 +166,9 @@ impl<'a> Lexer<'a> {
         &self.finish_span
     }
     /// Lookahead next token
-    pub fn lookahead(&mut self) -> TokenWithSpan {
+    pub fn lookahead_token(&mut self) -> TokenKind {
         if self.lookahead_buffer.len() != 0 {
-            self.lookahead_buffer.last().unwrap().clone()
+            self.lookahead_buffer.last().unwrap().token.clone()
         }else {
             let cur_token_with_span = TokenWithSpan {
                 token: self.get_token(),
@@ -180,21 +182,127 @@ impl<'a> Lexer<'a> {
                 start_span: self.get_start_span(),
                 finish_span: self.get_finish_span(),
             };
+            let return_token = next_token_with_span.token.clone();
+            self.lookahead_buffer.push(next_token_with_span);
+            self.cur_token = cur_token_with_span.token;
+            self.start_span = cur_token_with_span.start_span;
+            self.finish_span = cur_token_with_span.finish_span;
+            self.last_finish_span = cur_last_span;
+            return_token
+        }
+    }
+    pub fn lookahead_token_and_flag(&mut self) -> (TokenKind, bool) {
+        if self.lookahead_buffer.len() != 0 {
+            let lookahead = self.lookahead_buffer.last().unwrap();
+            let token = lookahead.token.clone();
+            let mut flag = false;
+            let last_offset = lookahead.start_span.offset;
+            let cur_start_offset = self.finish_span.offset;
+            let mut chars = self.source[cur_start_offset..last_offset].chars();
+            loop {
+                let ch_opt = chars.next();
+                if let Some(ch) = ch_opt {
+                    if ch == '\n' {
+                        flag = true;
+                        break;
+                    }
+                }else {
+                    break;
+                }
+            }
+            (token, flag)
+        }else {
+            let cur_token_with_span = TokenWithSpan {
+                token: self.get_token(),
+                start_span: self.get_start_span(),
+                finish_span: self.get_finish_span(),
+            };
+            let cur_last_span = self.last_finish_span.clone();
+            self.next_token();
+            let next_token_with_span =  TokenWithSpan {
+                token: self.get_token(),
+                start_span: self.get_start_span(),
+                finish_span: self.get_finish_span(),
+            };
+            let token = self.get_token();
+            let flag = self.get_line_terminator_flag();
+            self.lookahead_buffer.push(next_token_with_span);
+            self.cur_token = cur_token_with_span.token;
+            self.start_span = cur_token_with_span.start_span;
+            self.finish_span = cur_token_with_span.finish_span;
+            self.last_finish_span = cur_last_span;
+           (token, flag)
+        }
+    }
+    pub fn lookahead_lexer_state(&mut self) -> LexerStateCache<'a> {
+        if self.lookahead_buffer.len() != 0 {
+            let lookahead = self.lookahead_buffer.last().unwrap().clone();
+            let mut flag = false;
+            let last_offset = lookahead.start_span.offset;
+            let cur_start_offset = self.finish_span.offset;
+            let mut chars = self.source[cur_start_offset..last_offset].chars();
+            loop {
+                let ch_opt = chars.next();
+                if let Some(ch) = ch_opt {
+                    if ch == '\n' {
+                        flag = true;
+                        break;
+                    }
+                }else {
+                    break;
+                }
+            }
+            let value = self.get_value(lookahead.start_span.offset, lookahead.finish_span.offset);
+            LexerStateCache {
+                token: lookahead.token,
+                start_span: lookahead.start_span,
+                finish_span: lookahead.finish_span,
+                last_finish_span: self.get_finish_span(),
+                line_terminator_flag: flag,
+                raw_value: value
+            }
+        }else {
+            let cur_token_with_span = TokenWithSpan {
+                token: self.get_token(),
+                start_span: self.get_start_span(),
+                finish_span: self.get_finish_span(),
+            };
+            let cur_last_span = self.last_finish_span.clone();
+            self.next_token();
+            let next_token_with_span =  TokenWithSpan {
+                token: self.get_token(),
+                start_span: self.get_start_span(),
+                finish_span: self.get_finish_span(),
+            };
+            let value = self.get_value(self.get_start_span_ref().offset,  self.get_finish_span_ref().offset);
+            let flag = self.get_line_terminator_flag();
             self.lookahead_buffer.push(next_token_with_span.clone());
             self.cur_token = cur_token_with_span.token;
             self.start_span = cur_token_with_span.start_span;
             self.finish_span = cur_token_with_span.finish_span;
             self.last_finish_span = cur_last_span;
-            next_token_with_span
+            LexerStateCache {
+                token: next_token_with_span.token,
+                start_span: next_token_with_span.start_span,
+                finish_span: next_token_with_span.finish_span,
+                last_finish_span: self.finish_span.clone(),
+                line_terminator_flag: flag,
+                raw_value: value
+            }
         }
     }
     pub fn get_value(&self, start_offset: usize, finish_offset: usize) -> Cow<'a, str> {
         Cow::Borrowed(&self.source[start_offset..finish_offset])
     }
+    pub fn get_current_value(&self) -> Cow<'a, str> {
+        let start_offset = self.start_span.offset;
+        let finish_offset = self.finish_span.offset;
+        Cow::Borrowed(&self.source[start_offset..finish_offset])
+    }
     pub fn get_line_terminator_flag(&self) -> bool {
         let last_offset = self.last_finish_span.offset;
         let cur_start_offset = self.start_span.offset;
-        let mut chars = self.source[cur_start_offset..last_offset].chars();
+        let mut chars = self.source[last_offset..cur_start_offset].chars();
         loop {
             let ch_opt = chars.next();
             if let Some(ch) = ch_opt {
@@ -206,6 +314,37 @@ impl<'a> Lexer<'a> {
             }
         }
         false
+    }
+    /// ## Get Span of last finish token
+    /// Expose this api for parser needed. for example, think about parse a expression statement.
+    /// ```test
+    /// fn parse_expr_stmt(&mut self) -> ParserResult<ExpressionStatement<'a>> {
+    ///     let expr = self.parse_expr()?;
+    ///     self.check_strict_mode(&expr)?;
+    ///     self.semi()?;
+    ///     Ok(ExpressionStatement { expr })
+    /// }
+    /// ```
+    /// if we wanna to get a finish span of expression statement, we need to check the semi exist or not, 
+    /// if not exsit, we will need to clone the finish span of expression statement, otherwise, get the
+    /// finish span of semi.
+    /// ```test
+    /// let option_span = self.semi()?;
+    /// let finish_sapn = if let Some(span) = option_span {
+    ///     span
+    /// }else {
+    ///     expr.finish_span.clone()
+    /// }
+    /// ```
+    /// Just for getting the finish span, we need to add more the 5 line of code with a if statement. 
+    /// but actually, no matter semi exsit or not, the `last_finish_span` will storage the correct info
+    /// about last token, just might be semi or finish span of expression, so with this api. we can get
+    /// finish span with just one line of code, which is more concise and reduce the cost of if statement.
+    /// ```test
+    /// let finish_span = self.get_last_token_finish_span();
+    /// ```
+    pub fn get_last_token_finish_span(&self) -> Span {
+        self.last_finish_span.clone()
     }
     /// ## Skip all space and change line 
     /// Private method for lexer, when start scan a token, we need to 

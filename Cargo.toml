@@ -14,6 +14,7 @@ members = [
     "compilers/rustyc/optimizer",
     # For rjs transpiler
     "compilers/rjs/transpiler/parser",
+    "compilers/rjs/transpiler/attribute_marco",
     # For mscript
     "compilers/mscript/vm",
     "compilers/mscript/optimizer"

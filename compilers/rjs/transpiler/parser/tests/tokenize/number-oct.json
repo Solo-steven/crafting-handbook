@@ -1,30 +1,42 @@
 [
-    {
-      "token": "NumberLiteral",
-      "raw_value": "0x010080",
-      "start_span": {
-        "offset": 0,
-        "line": 0,
-        "col": 0
-      },
-      "finish_span": {
-        "offset": 8,
-        "line": 0,
-        "col": 8
-      }
+  {
+    "token": "NumberLiteral",
+    "raw_value": "0x010080",
+    "start_span": {
+      "offset": 0,
+      "line": 0,
+      "col": 0
     },
-    {
-      "token": "EOFToken",
-      "raw_value": "",
-      "start_span": {
-        "offset": 8,
-        "line": 0,
-        "col": 8
-      },
-      "finish_span": {
-        "offset": 8,
-        "line": 0,
-        "col": 8
-      }
-    }
+    "finish_span": {
+      "offset": 8,
+      "line": 0,
+      "col": 8
+    },
+    "last_finish_span": {
+      "offset": 0,
+      "line": 0,
+      "col": 0
+    },
+    "line_terminator_flag": false
+  },
+  {
+    "token": "EOFToken",
+    "raw_value": "",
+    "start_span": {
+      "offset": 8,
+      "line": 0,
+      "col": 8
+    },
+    "finish_span": {
+      "offset": 8,
+      "line": 0,
+      "col": 8
+    },
+    "last_finish_span": {
+      "offset": 8,
+      "line": 0,
+      "col": 8
+    },
+    "line_terminator_flag": false
+  }
 ]

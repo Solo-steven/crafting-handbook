@@ -1,0 +1,122 @@
+[
+  {
+    "token": "ParenthesesLeftPunctuator",
+    "raw_value": "(",
+    "start_span": {
+      "offset": 0,
+      "line": 0,
+      "col": 0
+    },
+    "finish_span": {
+      "offset": 1,
+      "line": 0,
+      "col": 1
+    },
+    "last_finish_span": {
+      "offset": 0,
+      "line": 0,
+      "col": 0
+    },
+    "line_terminator_flag": false
+  },
+  {
+    "token": "ParenthesesRightPunctuator",
+    "raw_value": ")",
+    "start_span": {
+      "offset": 1,
+      "line": 0,
+      "col": 1
+    },
+    "finish_span": {
+      "offset": 2,
+      "line": 0,
+      "col": 2
+    },
+    "last_finish_span": {
+      "offset": 1,
+      "line": 0,
+      "col": 1
+    },
+    "line_terminator_flag": false
+  },
+  {
+    "token": "ArrowOperator",
+    "raw_value": "=>",
+    "start_span": {
+      "offset": 4,
+      "line": 1,
+      "col": 0
+    },
+    "finish_span": {
+      "offset": 6,
+      "line": 1,
+      "col": 2
+    },
+    "last_finish_span": {
+      "offset": 2,
+      "line": 0,
+      "col": 2
+    },
+    "line_terminator_flag": true
+  },
+  {
+    "token": "BracesLeftPunctuator",
+    "raw_value": "{",
+    "start_span": {
+      "offset": 7,
+      "line": 1,
+      "col": 3
+    },
+    "finish_span": {
+      "offset": 8,
+      "line": 1,
+      "col": 4
+    },
+    "last_finish_span": {
+      "offset": 6,
+      "line": 1,
+      "col": 2
+    },
+    "line_terminator_flag": false
+  },
+  {
+    "token": "BracesRightPunctuator",
+    "raw_value": "}",
+    "start_span": {
+      "offset": 8,
+      "line": 1,
+      "col": 4
+    },
+    "finish_span": {
+      "offset": 9,
+      "line": 1,
+      "col": 5
+    },
+    "last_finish_span": {
+      "offset": 8,
+      "line": 1,
+      "col": 4
+    },
+    "line_terminator_flag": false
+  },
+  {
+    "token": "EOFToken",
+    "raw_value": "",
+    "start_span": {
+      "offset": 9,
+      "line": 1,
+      "col": 5
+    },
+    "finish_span": {
+      "offset": 9,
+      "line": 1,
+      "col": 5
+    },
+    "last_finish_span": {
+      "offset": 9,
+      "line": 1,
+      "col": 5
+    },
+    "line_terminator_flag": false
+  }
+]
