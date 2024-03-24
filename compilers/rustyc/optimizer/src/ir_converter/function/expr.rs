@@ -414,55 +414,67 @@ impl<'a> FunctionCoverter<'a> {
     /// alloc a struct in current scope and pass to function, and callee function will perform copy by value to
     /// the pointer we passed into.
     fn accept_call_expr(&mut self, call_expr: &CallExpression) -> Option<Value> {
-        let mut is_value_call = None;
-        let callee_name = match call_expr.callee.as_ref() {
-            Expression::Identifier(id) => id.name.to_string(),
-            _ => todo!(),
-        };
         let mut arugments: Vec<Value> = call_expr
             .arguments
             .iter()
             .map(|argu_expr| self.accept_expr_with_value(argu_expr))
             .collect();
-        let empty_sign: FunctionSignature;
-        let signature = match self.function_signature_table.get(&callee_name) {
-            Some(sig) => sig,
-            None => {
-                let SymbolEntry{ reg, symbol_type}  = self.symbol_table.get(&callee_name).unwrap();
-                if let SymbolType::PointerType(pointer_symbol_type) = symbol_type {
-                    if let PointerToSymbolType::FunctionType{id: _, return_type, params_type} = &pointer_symbol_type.pointer_to {
-                        let offset = self.function.create_u8_const(0);
-                        let value = self.function.build_load_register_inst(reg.clone(), offset, IrValueType::Address);
-                        is_value_call = Some(value);
-                        empty_sign = FunctionSignature {
-                            return_type: *return_type.clone(),
-                            params: params_type.clone(),
-                        };
-                        &empty_sign
+        let callee;
+        let return_type = match call_expr.callee.as_ref() {
+            Expression::Identifier(id) => {
+                let callee_name =  id.name.to_string();
+                match self.function_signature_table.get(&callee_name) {
+                    Some(sig) => {
+                        callee = CalleeKind::Id(callee_name);
+                        sig.return_type.clone()
+                    },
+                    None => {
+                        let SymbolEntry{ reg, symbol_type}  = self.symbol_table.get(&callee_name).unwrap();
+                        if let SymbolType::PointerType(pointer_symbol_type) = symbol_type {
+                            if let PointerToSymbolType::FunctionType{ return_type, .. } = &pointer_symbol_type.pointer_to {
+                                let offset = self.function.create_u8_const(0);
+                                let value = self.function.build_load_register_inst(reg.clone(), offset, IrValueType::Address);
+                                callee = CalleeKind::Reg(value);
+                                *return_type.clone()
+                            }else {
+                                unreachable!()
+                            }
+                        }else {
+                            unreachable!();
+                        }
+                    }
+                }
+            },
+            Expression::MemberExpr(_)| Expression::CallExpr(_) | Expression::DereferenceExpr(_) => {
+                let (value, function_type) =  self.accept_as_lefthand_expr(call_expr.callee.as_ref());
+                let return_type = if let SymbolType::PointerType(PointerSymbolType { pointer_to: pointer_to_type, .. }) = function_type {
+                    if let PointerToSymbolType::FunctionType {  return_type, .. } = pointer_to_type {
+                        *return_type
                     }else {
                         unreachable!()
                     }
                 }else {
-                    unreachable!();
-                }
+                    unreachable!()
+                };
+                callee = CalleeKind::Reg(value);
+                return_type
             }
+            _ => {
+                panic!("todo: {:?}", call_expr.callee);
+            },
         };
         let mut ret_value: Option<Value> = None;
-        if let SymbolType::StructalType(struct_name) = &signature.return_type {
+        if let SymbolType::StructalType(struct_name) = &return_type {
             let struct_size = self.struct_size_table.get(struct_name).unwrap().clone();
             let struct_size_value = self.function.create_u32_const(struct_size as u32);
             ret_value = Some(self.function.build_stack_alloc_inst(struct_size_value, 8, None));
             arugments.push(ret_value.as_ref().unwrap().clone());
         };
-        let ir_return_type = match &signature.return_type {
+        let ir_return_type = match &return_type {
                 SymbolType::BasicType(ir_type) => Some(ir_type.clone()),
                 SymbolType::PointerType(_) => Some(IrValueType::Address),
                 SymbolType::StructalType(_) => None,
                 SymbolType::ArrayType(_) => unreachable!(),
-        };
-        let callee = match is_value_call {
-            Some(reg) => CalleeKind::Reg(reg),
-            None => CalleeKind::Id(callee_name)
         };
         let call_inst_value = self.function.build_call_inst(callee, arugments, ir_return_type);
         if let Some(ret_val) = ret_value {
@@ -555,7 +567,10 @@ impl<'a> FunctionCoverter<'a> {
                                     &PointerToSymbolType::BasicType(_) => {
                                         (entry.reg, &empty_map)
                                     }
-                                    _ => unreachable!("{}", self.error_map.unreach_in_accpet_chain_expr_base_identifier_is_not_strutual_type),
+                                    _ => {
+                                        println!("{:?}", pointer_type);
+                                        unreachable!("{}", self.error_map.unreach_in_accpet_chain_expr_base_identifier_is_not_strutual_type)
+                                    },
                                 }
                             }
                             SymbolType::ArrayType(_) => {
@@ -713,8 +728,8 @@ impl<'a> FunctionCoverter<'a> {
     }
     /// ## Helper function for `accept_chain_expr_base`
     /// There we do not using recursion visitor to unwind a chain expression to build the instructions, instead
-    /// we frist iterative over chain expression to find how this expression is access memory, this by member 
-    /// select (both dot operator and dereference member select) or subscription access.
+    /// we frist iterative over chain expression to find how this expression is access memory, Is this access  
+    /// by member select (both dot operator and dereference member select) or subscription access.
     fn get_access_sequnce_from_chain_expr(&mut self, expr: &Expression) -> (ChainBase, Vec<ChainSequnceType>) {
         let mut cur = expr;
         let mut sequence = Vec::new();
@@ -802,7 +817,7 @@ impl<'a> FunctionCoverter<'a> {
                 },
             }
         }else {
-            unreachable!("the identifier should exised in symbol table");
+            unreachable!("the identifier should exised in symbol table ({})", id.name);
         }
     }
     /// ## Accept a Int literal

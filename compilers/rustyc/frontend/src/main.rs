@@ -14,12 +14,19 @@ use std::fs;
 
 fn main(){
     let source = "
+    struct Test {
+        int value;
+        int (*getter)();
+    };
+    
+    int mock() {
+        return 11;
+    }
+    
     int main() {
-        int a;
-        int b, d, e;
-        int f = 10;
-        int g = a;
-        int h = g, i = 100, j = e + 10;
+        struct Test test;
+        test.getter = mock;
+        test.getter();
         return 0;
     }
     ";

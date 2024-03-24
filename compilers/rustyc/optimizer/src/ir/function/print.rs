@@ -1,7 +1,6 @@
 /// This module implement the print method  for function ir to 
 /// print out basic-blocks and instructions.
 use crate::ir::function::*;
-use crate::ir::value;
 use crate::ir::value::*;
 use crate::ir::instructions::*;
 

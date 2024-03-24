@@ -32,9 +32,9 @@ impl<'a> Converter<'a> {
     pub fn new() -> Self {
         Self {
             module: Module::new(),
+            symbol_table: SymbolTable::new(None),
             global_symbol_cache: HashMap::new(),
             struct_layout_table: StructLayoutTable::new(None),
-            symbol_table: SymbolTable::new(None),
             struct_size_table: StructSizeTable::new(None),
             function_signature_table: HashMap::new(),
         }
@@ -110,6 +110,7 @@ impl<'a> Converter<'a> {
             func_declar.id.name.to_string(), 
             FunctionSignature { return_type: return_symbol_type, params: params_symbol_type}
         );
+        self.add_function_as_function_pointer_to_symbol_cache(func_declar.id.name.as_ref());
     }
     fn accept_function_def(&mut self, func_def: &FunctionDefinition) {
         let return_symbol_type = self.map_ast_type_to_symbol_type(&func_def.return_type);
@@ -122,6 +123,7 @@ impl<'a> Converter<'a> {
             func_def.id.name.to_string(), 
             FunctionSignature { return_type: return_symbol_type, params: params_symbol_type}
         );
+        self.add_function_as_function_pointer_to_symbol_cache(func_def.id.name.as_ref());
         let mut func_convert = FunctionCoverter::new(
             &mut self.function_signature_table,
             &mut self.module.const_string,
@@ -130,7 +132,11 @@ impl<'a> Converter<'a> {
             None,
         );
         // insert global value as symbol
-        for (name, _data) in &self.module.globals {
+        let mut global_symbol: Vec<&String> = self.module.globals.keys().collect();
+        for func in &self.module.functions {
+            global_symbol.push(&func.name);
+        }
+        for name in global_symbol {
             let pointer =func_convert.function.create_global_variable_ref(name.clone());
             let mut symbol_type = self.global_symbol_cache.get(name).unwrap().clone();
             if let SymbolType::ArrayType(array_symbol_type) = &mut symbol_type {
@@ -149,6 +155,20 @@ impl<'a> Converter<'a> {
         self.module.functions.push(func_ir);
         // clear global value from symbol table
         self.symbol_table.clear();
+    }
+    fn add_function_as_function_pointer_to_symbol_cache(&mut self, function_name: &str) {
+        if !self.global_symbol_cache.contains_key(function_name) {
+            let function_sing = self.function_signature_table.get(function_name).unwrap();
+            self.global_symbol_cache.insert(
+                String::from(function_name), 
+                SymbolType::PointerType(PointerSymbolType { 
+                    level: 1, pointer_to: PointerToSymbolType::FunctionType { 
+                    id: String::from(function_name), 
+                    return_type: Box::new(function_sing.return_type.clone()),
+                    params_type: function_sing.params.clone()
+                }})
+            );
+        }
     }
     fn map_ast_type_to_symbol_type(&mut self, value_type: &ValueType) -> SymbolType {
        let mut symbol_type = map_ast_type_to_symbol_type(value_type, &mut self.struct_layout_table, &mut self.struct_size_table);
