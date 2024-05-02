@@ -188,6 +188,7 @@ impl Function {
             IrValueType::F32 => self.build_to_f32_inst(src),
             IrValueType::F64 => self.build_to_f64_inst(src),
             IrValueType::Address => self.build_to_address_inst(src),
+            _ => todo!(),
         }
     }
 }

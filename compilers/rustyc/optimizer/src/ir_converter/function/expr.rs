@@ -48,7 +48,7 @@ impl<'a> FunctionCoverter<'a> {
             Expression::SizeOfValueExpr(size_of_value_expr) => Some(self.accept_size_of_value_expr(size_of_value_expr)),
             Expression::UpdateExpr(update_expr) => Some(self.accept_update_expr(update_expr)),
             Expression::MemberExpr(_) | Expression::DereferenceExpr(_) | Expression::SubscriptExpr(_) => Some(self.accept_chain_expr(expr)),
-            Expression::CallExpr(call_expr) => self.accept_call_expr(call_expr),
+            Expression::CallExpr(call_expr) => self.accept_call_expr_as_leftvalue(call_expr).0,
             Expression::Identifier(id) => Some(self.accept_identifier(id)),
             Expression::IntLiteral(int_literal) => Some(self.accept_int_literal(int_literal)),
             Expression::FloatLiteral(float_literal) => Some(self.accept_float_literal(float_literal)),
@@ -285,6 +285,7 @@ impl<'a> FunctionCoverter<'a> {
                         IrValueType::Address => 4,
                         IrValueType::F32 => 4,
                         IrValueType::F64 => 8,
+                        _ => unreachable!(),
                     };
                     self.function.create_u8_const(size_usize as u8)
                 }
@@ -413,7 +414,7 @@ impl<'a> FunctionCoverter<'a> {
     /// build proper call instruction for function call, when callee return type is a struct type, we need to 
     /// alloc a struct in current scope and pass to function, and callee function will perform copy by value to
     /// the pointer we passed into.
-    fn accept_call_expr(&mut self, call_expr: &CallExpression) -> Option<Value> {
+    fn accept_call_expr_as_leftvalue(&mut self, call_expr: &CallExpression) -> (Option<Value>, SymbolType) {
         let mut arugments: Vec<Value> = call_expr
             .arguments
             .iter()
@@ -467,7 +468,7 @@ impl<'a> FunctionCoverter<'a> {
         if let SymbolType::StructalType(struct_name) = &return_type {
             let struct_size = self.struct_size_table.get(struct_name).unwrap().clone();
             let struct_size_value = self.function.create_u32_const(struct_size as u32);
-            ret_value = Some(self.function.build_stack_alloc_inst(struct_size_value, 8, None));
+            ret_value = Some(self.function.build_stack_alloc_inst(struct_size_value, 8, IrValueType::Aggregate));
             arugments.push(ret_value.as_ref().unwrap().clone());
         };
         let ir_return_type = match &return_type {
@@ -481,10 +482,10 @@ impl<'a> FunctionCoverter<'a> {
             if let Some(_call_inst_val) = call_inst_value.clone() {
                 unreachable!();
             }else {
-                return Some(ret_val);
+                return (Some(ret_val), return_type);
             }
         }
-        return call_inst_value;
+        return (call_inst_value, return_type);
     }
     /// ## Accept a chain expr, in right hand side
     /// this function this just a simple extenstion of `accept_chain_expr_base`, just thr base and offset returned
@@ -768,14 +769,10 @@ impl<'a> FunctionCoverter<'a> {
                     )
                 }
                 Expression::CallExpr(call_expr) => {
-                    let base = self.accept_call_expr(call_expr).unwrap();
-                    let callee_name = match call_expr.callee.as_ref() {
-                        Expression::Identifier(id) => id.name.to_string(),
-                        _ => todo!(),
-                    };
-                    let signature = self.function_signature_table.get(&callee_name).unwrap();
+                    let (option_base, return_type )= self.accept_call_expr_as_leftvalue(call_expr);
+                    let base = option_base.unwrap();
                     sequence.reverse();
-                    match &signature.return_type {
+                    match return_type {
                         SymbolType::StructalType(struct_name) => {
                             return (
                                 ChainBase::CallExprReturnStruct(base, struct_name.clone()),
@@ -917,13 +914,9 @@ impl<'a> FunctionCoverter<'a> {
                 }
             }
             Expression::CallExpr(call_expr) => {
-                let base = self.accept_call_expr(call_expr).unwrap();
-                let callee_name = match call_expr.callee.as_ref() {
-                    Expression::Identifier(id) => id.name.to_string(),
-                    _ => todo!(),
-                };
-                let return_symbol_type = self.function_signature_table.get(&callee_name).unwrap().return_type.clone();
-                (base, return_symbol_type)
+                let (option_base, return_type )= self.accept_call_expr_as_leftvalue(call_expr);
+                let base = option_base.unwrap();
+                (base, return_type)
             }
             Expression::DereferenceExpr(_) | Expression::MemberExpr(_) | Expression::SubscriptExpr(_) => self.accept_chain_expr_as_leftvalue(expr),
             Expression::UnaryExpr(unary_expr) => self.accept_deference_unary_expr_as_leftvalue(unary_expr),

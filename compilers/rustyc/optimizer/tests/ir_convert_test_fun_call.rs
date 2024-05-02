@@ -6,7 +6,7 @@ use rustyc_optimizer::ir_converter::Converter;
 
 /// Get a path to `assets/c` in the repo
 fn get_c_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("../../../assets/c/ir_covert/fun-call/").as_os_str().to_str().unwrap())
+    String::from(env::current_dir().unwrap().join("../../../assets/c/ir_convert/fun-call/").as_os_str().to_str().unwrap())
 }
 /// Gte a path the ir result `./test/ir_convert`.
 fn get_ir_result_dir_path() -> String {
@@ -76,4 +76,12 @@ fn test_struct_type_return_with_pointer() {
 #[test]
 fn test_void_return_expr() {
     test_file_name("void_return_expr")
+}
+#[test]
+fn test_call_by_function_pointer_in_structure() {
+    test_file_name("call_by_function_pointer_in_structure");
+}
+#[test]
+fn test_call_by_function_pointer() {
+    test_file_name("call_by_function_pointer");
 }

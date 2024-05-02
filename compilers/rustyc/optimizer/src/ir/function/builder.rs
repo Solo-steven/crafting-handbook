@@ -497,7 +497,7 @@ impl Function {
         self.add_inst_id_to_current_block(inst_id);
         dst
     }
-    pub fn build_stack_alloc_inst(&mut self, size: Value, align: usize, ir_type: Option<IrValueType>) -> Value {
+    pub fn build_stack_alloc_inst(&mut self, size: Value, align: usize, ir_type: IrValueType) -> Value {
         let inst_id = self.get_next_inst_id();
         let dst = self.add_register(IrValueType::Address);
         self.instructions.insert(

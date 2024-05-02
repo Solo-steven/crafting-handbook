@@ -34,6 +34,7 @@ block1:
 	ret 0
 }
 ;;  a -> address
+;;  return_pointer -> address
 ;;  t1 -> address
 ;;  t2 -> address
 ;;  t3 -> address

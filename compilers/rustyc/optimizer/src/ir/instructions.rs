@@ -203,7 +203,7 @@ pub enum InstructionData {
         size: Value,
         align: usize,
         dst: Value,
-        ir_type: Option<IrValueType>,
+        ir_type: IrValueType,
     },
     // memory instruction
     LoadRegister {

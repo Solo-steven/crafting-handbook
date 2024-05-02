@@ -311,6 +311,7 @@ impl<'a> Parser<'a> {
                     self.parse_assignment_expr()?
                 }
             );
+            println!(":::");
         }
         let finish = expect_with_finish_span!(TokenKind::ParenthesesRightPunctuator, self);
         Ok(ArgumentMeta { start, finish, nodes: arguments, traling_comma,} )

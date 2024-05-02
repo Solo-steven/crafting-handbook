@@ -47,7 +47,9 @@ impl<'a> Parser<'a> {
         }
         let id = self.parse_function_name(is_expr)?;
         let params = self.parse_function_params()?;
+        println!("There");
         let body = self.parse_function_body()?;
+        println!("There22");
         let finish_span = self.get_last_finish_span();
         self.check_strict_mode_rules_for_function_name_and_params_in_current_function_scope(&id, &params)?;
         self.exit_scope();

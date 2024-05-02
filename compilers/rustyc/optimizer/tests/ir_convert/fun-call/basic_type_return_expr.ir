@@ -8,6 +8,7 @@ block1:
 	t3 = add 10 t2
 	ret t3
 }
+;;  test -> address
 ;;  t1 -> i32
 ;;  t2 -> i32
 ;;  t3 -> i32
@@ -51,6 +52,8 @@ block1:
 	store i32 t28 [t15, 0]
 	ret 0
 }
+;;  test -> address
+;;  with_argu -> address
 ;;  t1 -> i32
 ;;  t2 -> address
 ;;  t3 -> i32

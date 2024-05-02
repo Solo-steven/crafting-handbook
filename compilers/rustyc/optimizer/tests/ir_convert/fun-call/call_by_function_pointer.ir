@@ -1,0 +1,21 @@
+call_function =  global address  size 4, align 8 
+function mock () -> void {
+block1:
+	ret void
+}
+;;  call_function -> address
+function main () -> i32 {
+block1:
+	load address t1 [mock, 0]
+	store address t1 [call_function, 0]
+	load address t2 [call_function, 0]
+	t3 = t2()
+	t4 = mock()
+	ret 0
+}
+;;  call_function -> address
+;;  mock -> address
+;;  t1 -> address
+;;  t2 -> address
+;;  t3 -> void
+;;  t4 -> void

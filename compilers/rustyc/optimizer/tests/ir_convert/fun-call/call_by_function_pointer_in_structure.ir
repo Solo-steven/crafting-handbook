@@ -1,0 +1,31 @@
+function mock () -> i32 {
+block1:
+	ret 100
+}
+function main () -> i32 {
+block1:
+	t1 = stackalloc aggregate, size 8, align 8
+	t2 = stackalloc address, size 4, align 8
+	store address t1 [t2, 0]
+	t3 = add t1 4
+	load address t4 [mock, 0]
+	store address t4 [t3, 0]
+	t5 = mock()
+	t6 = add t1 4
+	t7 = t6()
+	load address t8 [t2, 0]
+	t9 = add t8 4
+	t10 = t9()
+	ret 0
+}
+;;  mock -> address
+;;  t1 -> address
+;;  t2 -> address
+;;  t3 -> address
+;;  t4 -> address
+;;  t5 -> i32
+;;  t6 -> address
+;;  t7 -> i32
+;;  t8 -> address
+;;  t9 -> address
+;;  t10 -> i32

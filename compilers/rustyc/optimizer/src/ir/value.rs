@@ -62,6 +62,7 @@ pub enum IrValueType {
     F32,
     F64,
     Address,
+    Aggregate
 }
 pub type ValueMap = HashMap<Value, ValueData>;
 pub type TypeMap = HashMap<Value, IrValueType>;

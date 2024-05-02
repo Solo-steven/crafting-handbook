@@ -13,4 +13,5 @@ block1:
 	t1 = test()
 	ret 0
 }
+;;  test -> address
 ;;  t1 -> void

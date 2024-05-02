@@ -40,4 +40,5 @@ block1:
 	t1 = f(10)
 	ret 0
 }
+;;  f -> address
 ;;  t1 -> i32

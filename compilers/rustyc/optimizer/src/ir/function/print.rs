@@ -296,10 +296,7 @@ impl Function {
                 output_code.push_str(format!(
                     "{} = stackalloc {}, size {}, align {}\n", 
                     dst_str,
-                    match ir_type {
-                        Some(ir) => get_text_format_of_datatype(ir),
-                        None => "aggregate",
-                    }
+                    get_text_format_of_datatype(ir_type)
                     , size_str, align, 
                 ).as_str());
             }
@@ -392,5 +389,6 @@ pub fn get_text_format_of_datatype(data_type: &IrValueType) -> &'static str {
         IrValueType::U32 => "u32",
         IrValueType::U64 => "u64",
         IrValueType::Address => "address",
+        IrValueType::Aggregate => "aggregate",
     }
 }

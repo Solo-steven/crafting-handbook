@@ -56,6 +56,7 @@ block1:
 	store u8 t16 [t3, 7]
 	ret void
 }
+;;  test -> address
 ;;  t1 -> i32
 ;;  t2 -> i32
 ;;  t3 -> address
@@ -138,6 +139,8 @@ block1:
 	store i32 t36 [t27, 0]
 	ret 0
 }
+;;  test -> address
+;;  with_argu -> address
 ;;  t1 -> address
 ;;  t2 -> address
 ;;  t3 -> u8

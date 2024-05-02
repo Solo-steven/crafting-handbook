@@ -19,27 +19,20 @@ use crate::ir_optimizer::pass::lazy_code_motion::{LazyCodeMotionPass, print_lazy
 
 fn main() {
     let program = Parser::new("
-    struct Test {
-        int value;
-        void (*getter)();
-    };
-    
-    void empty() {
-    
-    }
-    struct Test g;
 
-    struct Test* take() {
-        return &g;
+    int a = 10;
+    int *p = &a;
+    int** return_pointer() {
+        return &p;
     }
-
-    void (*global)();
+    
     int main() {
-        struct Test a;
-        a.getter = empty;
-        a.getter();
-        empty();
-        take()->getter();
+        return_pointer();
+        **return_pointer() = 10;
+        **return_pointer() + 10;
+        **return_pointer() = **return_pointer() + 100;
+        int c = 10;
+        **return_pointer() = **return_pointer() + c;
         return 0;
     }
     ").parse().unwrap();
@@ -83,14 +76,14 @@ pub fn create_reducnt_expr_graph() -> Function {
     let b0 = func.create_block();
     func.switch_to_block(b0);
     let mut size_const = func.create_u32_const(32 as u32);
-    let t1 = func.build_stack_alloc_inst(size_const, 8, Some(IrValueType::U32));
+    let t1 = func.build_stack_alloc_inst(size_const, 8, IrValueType::U32);
     {
         let const10 = func.create_i32_const(10);
         let offset = func.create_u32_const(0);
         func.build_store_register_inst(const10, t1, offset, IrValueType::I32);
     }
     size_const = func.create_u32_const(32 as u32);
-    let t2 = func.build_stack_alloc_inst(size_const, 8, Some(IrValueType::U32));
+    let t2 = func.build_stack_alloc_inst(size_const, 8, IrValueType::U32);
     {
         let const10 = func.create_i32_const(10);
         let offset = func.create_u32_const(0);

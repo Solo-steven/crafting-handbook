@@ -32,6 +32,7 @@ macro_rules! get_size_from_symbol_type {
                     IrValueType::Address => $converter.function.create_u8_const(4),
                     IrValueType::F32 => $converter.function.create_u8_const(4),
                     IrValueType::F64 => $converter.function.create_u8_const(8),
+                    _ => unreachable!(),
                 }
             }
             SymbolType::PointerType(_) => $converter.function.create_u8_const(4),
@@ -54,6 +55,7 @@ macro_rules! get_size_from_symbol_type {
                             IrValueType::Address => $converter.function.create_u8_const(4),
                             IrValueType::F32 => $converter.function.create_u8_const(4),
                             IrValueType::F64 => $converter.function.create_u8_const(8),
+                            _ => unreachable!(),
                         }
                     }
                     SymbolType::PointerType(_) => $converter.function.create_u8_const(4),
@@ -327,9 +329,9 @@ impl<'a> FunctionCoverter<'a> {
             let symbol_type = self.map_ast_type_to_symbol_type(&declarator.value_type);
             let size = self.get_size_form_ast_type(&declarator.value_type, Some(&symbol_type));
             let ir_type = match symbol_type {
-                SymbolType::BasicType(ref basic_ir_type) => Some(basic_ir_type.clone()),
-                SymbolType::PointerType(_) => Some(IrValueType::Address),
-                _ => None
+                SymbolType::BasicType(ref basic_ir_type) => basic_ir_type.clone(),
+                SymbolType::PointerType(_) => IrValueType::Address,
+                _ => IrValueType::Aggregate
             };
             let pointer = self.function.build_stack_alloc_inst(size, 8,ir_type);
             self.symbol_table.insert(declarator.id.name.to_string(), SymbolEntry { reg: pointer, symbol_type: symbol_type.clone() });
