@@ -610,17 +610,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "mscript-optimizer"
-version = "0.1.0"
-
-[[package]]
-name = "mscript-vm"
-version = "0.1.0"
-dependencies = [
- "rjs-parser",
-]
-
-[[package]]
 name = "multer"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -890,26 +879,6 @@ name = "regex-syntax"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
-
-[[package]]
-name = "rjs-attribute-marco"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "serde",
- "serde_json",
- "syn 2.0.39",
-]
-
-[[package]]
-name = "rjs-parser"
-version = "0.1.0"
-dependencies = [
- "rjs-attribute-marco",
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "rocket"
