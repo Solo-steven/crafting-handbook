@@ -1,23 +1,19 @@
-mod expr_key;
-mod pre_proc;
-mod earliest;
-mod latest;
-mod rewrite;
 mod debugger;
+mod earliest;
+mod expr_key;
+mod latest;
+mod pre_proc;
+mod rewrite;
 
-use std::collections::{HashMap, HashSet};
 use crate::ir::function::{BasicBlock, Function};
-use crate::ir::instructions::Instruction;
-use expr_key::{ExpreKey, ExprValueNumberSet};
+use expr_key::{ExprKeyManager, ExprValueNumberSet};
+use std::collections::HashMap;
 
 pub struct LCMPass {
-    all_expr_value_number: HashSet<u64>,
-    // 1 to 1 mapping
-    value_number_map_expr_key: HashMap<u64, ExpreKey>,
-    // 1 to many mapping ( 1 more inst might have same key)
-    inst_map_value_number: HashMap<Instruction, u64>,
+    // manage key and inst, value mapping
+    key_manager: ExprKeyManager,
     // Pre-procrss pass
-    expression_use: HashMap<BasicBlock,ExprValueNumberSet>,
+    expression_use: HashMap<BasicBlock, ExprValueNumberSet>,
     expression_kill: HashMap<BasicBlock, ExprValueNumberSet>,
     dfs_order: Vec<BasicBlock>,
     reverse_dfs_order: Vec<BasicBlock>,
@@ -35,12 +31,10 @@ pub struct LCMPass {
     // Rewrite pass
 }
 
-impl LCMPass {    
+impl LCMPass {
     pub fn new() -> Self {
         Self {
-            all_expr_value_number: Default::default(),
-            value_number_map_expr_key: Default::default(),
-            inst_map_value_number: Default::default(),
+            key_manager: ExprKeyManager::new(),
 
             expression_use: Default::default(),
             expression_kill: Default::default(),
@@ -59,7 +53,7 @@ impl LCMPass {
             used_expr_in: Default::default(),
         }
     }
-    pub fn process(&mut self, function: &mut Function,) {
+    pub fn process(&mut self, function: &mut Function) {
         // pre process pass
         self.pre_proc_pass(function);
         // earliest pass
@@ -70,6 +64,5 @@ impl LCMPass {
         self.postponable_pass(function);
         self.latest_pass(function);
         self.used_expr_pass(function);
-
     }
 }

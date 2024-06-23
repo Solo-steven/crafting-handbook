@@ -1,19 +1,33 @@
+use rustyc_frontend::parser::Parser;
+use rustyc_optimizer::ir_converter::Converter;
 use std::env;
 use std::fs::{read_to_string, File};
 use std::io::Write;
-use rustyc_frontend::parser::Parser;
-use rustyc_optimizer::ir_converter::Converter;
 
 /// Get a path to `assets/c` in the repo
 fn get_c_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("../../../assets/c/ir_convert/fun-call/").as_os_str().to_str().unwrap())
+    String::from(
+        env::current_dir()
+            .unwrap()
+            .join("../../../assets/c/ir_convert/fun-call/")
+            .as_os_str()
+            .to_str()
+            .unwrap(),
+    )
 }
 /// Gte a path the ir result `./test/ir_convert`.
 fn get_ir_result_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("tests/ir_convert/fun-call/").as_os_str().to_str().unwrap())
+    String::from(
+        env::current_dir()
+            .unwrap()
+            .join("tests/ir_convert/fun-call/")
+            .as_os_str()
+            .to_str()
+            .unwrap(),
+    )
 }
 /// Test helper, test is c code ouput ir match as expect.
-fn test_file_name(name: &'static str)  {
+fn test_file_name(name: &'static str) {
     let mut path = get_c_dir_path();
     path.push_str(name);
     path.push_str(".c");
@@ -38,7 +52,9 @@ fn test_file_name(name: &'static str)  {
                     println!("{}", is_update);
                     assert_eq!(ir, result_string);
                 }
-                Err(_) =>  {panic!("Can not read ir file - {}", ir_path)}
+                Err(_) => {
+                    panic!("Can not read ir file - {}", ir_path)
+                }
             }
         }
         Err(_) => panic!("Can not read c code - {}", path),

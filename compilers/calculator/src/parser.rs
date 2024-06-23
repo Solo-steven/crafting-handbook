@@ -1,17 +1,17 @@
-use crate::lexer::{Lexer, LexerResult };
-use crate::token::{Token, get_pre_of_binary_op, is_binary_op};
 use crate::ast::*;
+use crate::lexer::{Lexer, LexerResult};
+use crate::token::{get_pre_of_binary_op, is_binary_op, Token};
 use crate::{syntax_error, unreach_error};
 
-pub type  ParserResult<T> = Result<T, String>;
+pub type ParserResult<T> = Result<T, String>;
 
-pub struct  Parser {
+pub struct Parser {
     tokenizer: Lexer,
 }
 impl Parser {
     pub fn new(code: String) -> Parser {
         Parser {
-            tokenizer: Lexer::new(code)
+            tokenizer: Lexer::new(code),
         }
     }
     // public api for parse given string
@@ -28,9 +28,7 @@ impl Parser {
         let mut body = Vec::<ProgramItem>::new();
         loop {
             match self.get_token()? {
-                Token::EOF => {
-                    return Ok(Program { body })
-                }
+                Token::EOF => return Ok(Program { body }),
                 _ => {
                     let ast = self.parse_program_item()?;
                     body.push(ast);
@@ -40,27 +38,13 @@ impl Parser {
     }
     fn parse_program_item(&mut self) -> ParserResult<ProgramItem> {
         let ast = match self.get_token()? {
-            Token::VarKeyword => {
-                ProgramItem::Decl(self.parse_variable_declaration()?)
-            }
-            Token::FunctionKeyword => {
-                ProgramItem::Decl(self.parse_function_declaration()?)
-            }
-            Token::BracesLeft => {
-                ProgramItem::Stmt(self.parse_block_statement()?)
-            }
-            Token::WhileKeyword => {
-                ProgramItem::Stmt(self.parse_while_statement()?)
-            }
-            Token::IfKeyword => {
-                ProgramItem::Stmt(self.parse_if_statement()?)
-            }
-            Token::ReturnKeyword => {
-                ProgramItem::Stmt(self.parse_return_statement()?)
-            }
-            _ => {
-                ProgramItem::Expr(self.parse_expression()?)
-            }
+            Token::VarKeyword => ProgramItem::Decl(self.parse_variable_declaration()?),
+            Token::FunctionKeyword => ProgramItem::Decl(self.parse_function_declaration()?),
+            Token::BracesLeft => ProgramItem::Stmt(self.parse_block_statement()?),
+            Token::WhileKeyword => ProgramItem::Stmt(self.parse_while_statement()?),
+            Token::IfKeyword => ProgramItem::Stmt(self.parse_if_statement()?),
+            Token::ReturnKeyword => ProgramItem::Stmt(self.parse_return_statement()?),
+            _ => ProgramItem::Expr(self.parse_expression()?),
         };
         match self.get_token()? {
             Token::Semi => {
@@ -70,44 +54,43 @@ impl Parser {
         }
         return Ok(ast);
     }
-/** =========================================
- *  Parse Statements
- * ==========================================
- */
+    /** =========================================
+     *  Parse Statements
+     * ==========================================
+     */
     fn parse_while_statement(&mut self) -> ParserResult<Stmt> {
         let test: Expr;
         match self.get_token()? {
-             Token::WhileKeyword  => {
+            Token::WhileKeyword => {
                 self.next_token()?;
-             }
-             _ => {
+            }
+            _ => {
                 unreach_error!("While statement should be start with `while` keyword");
-             }
+            }
         }
         match self.get_token()? {
-            Token::ParenthesesLeft  => {
+            Token::ParenthesesLeft => {
                 self.next_token()?;
                 test = self.parse_expression()?;
             }
             _ => {
                 syntax_error!("While Statement's Condition Should be Wrapped By ParentheseLeft");
             }
-       }
-       match self.get_token()? {
+        }
+        match self.get_token()? {
             Token::ParenthesesRight => {
                 self.next_token()?;
             }
             _ => {
                 syntax_error!("While Statement's Condition Should be Wrapper By ParentheseRight");
             }
-       }
-       return Ok(Stmt::WhileStmt(WhileStatement{
+        }
+        return Ok(Stmt::WhileStmt(WhileStatement {
             test,
-            body: Box::new(self.parse_block_statement()?)
-       }))
-
+            body: Box::new(self.parse_block_statement()?),
+        }));
     }
-    fn parse_block_statement(&mut self) ->ParserResult<Stmt> {
+    fn parse_block_statement(&mut self) -> ParserResult<Stmt> {
         match self.get_token()? {
             Token::BracesLeft => {
                 self.next_token()?;
@@ -124,9 +107,7 @@ impl Parser {
                 }
                 Token::BracesRight => {
                     self.next_token()?;
-                    return Ok(Stmt::BlockStmt(BlockStatement{
-                        body
-                    }))
+                    return Ok(Stmt::BlockStmt(BlockStatement { body }));
                 }
                 _ => {
                     body.push(self.parse_program_item()?);
@@ -143,44 +124,52 @@ impl Parser {
                 unreach_error!("If Statement Should Start With `if` keyword.");
             }
         }
-        let test:Expr;
+        let test: Expr;
         match self.get_token()? {
-            Token::ParenthesesLeft  => {
+            Token::ParenthesesLeft => {
                 self.next_token()?;
                 test = self.parse_expression()?;
             }
             _ => {
                 syntax_error!("Condition Of If Statement Should be Wrapper In Parentheses, Lock of ParentheseLeft");
             }
-       }
-       match self.get_token()? {
+        }
+        match self.get_token()? {
             Token::ParenthesesRight => {
                 self.next_token()?;
             }
             _ => {
                 syntax_error!("Condition Of If Statement Should be Wrapper In Parentheses, Lock of ParentheseRight");
             }
-       }
-       let consequence = self.parse_block_statement()?;
-       match self.get_token()? {
-           Token::ElesKeyword => {
-             self.next_token()?;
-             match self.get_token()? {
-                Token::BracesLeft => {
-                    Ok(Stmt::IfStmt(IfStatement { test, consequent: Box::new(consequence), alter:Some(Box::new(self.parse_block_statement()?)) }))
+        }
+        let consequence = self.parse_block_statement()?;
+        match self.get_token()? {
+            Token::ElesKeyword => {
+                self.next_token()?;
+                match self.get_token()? {
+                    Token::BracesLeft => Ok(Stmt::IfStmt(IfStatement {
+                        test,
+                        consequent: Box::new(consequence),
+                        alter: Some(Box::new(self.parse_block_statement()?)),
+                    })),
+                    Token::IfKeyword => Ok(Stmt::IfStmt(IfStatement {
+                        test,
+                        consequent: Box::new(consequence),
+                        alter: Some(Box::new(self.parse_if_statement()?)),
+                    })),
+                    _ => {
+                        syntax_error!(
+                            "Else Keyword Must Concat With Block Statement Or If Statement"
+                        );
+                    }
                 }
-                Token::IfKeyword => {
-                    Ok(Stmt::IfStmt(IfStatement { test, consequent: Box::new(consequence), alter:Some(Box::new(self.parse_if_statement()?)) }))
-                }
-                _ => {
-                    syntax_error!("Else Keyword Must Concat With Block Statement Or If Statement");
-                }
-             }
-           }
-           _ => {
-            Ok(Stmt::IfStmt(IfStatement { test, consequent: Box::new(consequence), alter: None }))
-           }
-       }
+            }
+            _ => Ok(Stmt::IfStmt(IfStatement {
+                test,
+                consequent: Box::new(consequence),
+                alter: None,
+            })),
+        }
     }
     fn parse_return_statement(&mut self) -> ParserResult<Stmt> {
         match self.get_token()? {
@@ -193,21 +182,17 @@ impl Parser {
         }
         match self.get_token()? {
             Token::Semi | Token::BracesRight => {
-                Ok(Stmt::ReturnStmt(ReturnStatement {
-                    argument: None
-                }))  
+                Ok(Stmt::ReturnStmt(ReturnStatement { argument: None }))
             }
-            _  =>  {
-                Ok(Stmt::ReturnStmt(ReturnStatement {
-                    argument: Some(self.parse_expression()?)
-                }))
-            }
+            _ => Ok(Stmt::ReturnStmt(ReturnStatement {
+                argument: Some(self.parse_expression()?),
+            })),
         }
     }
-/** ===========================================
- *  Parse Declaration
- * ============================================
- */
+    /** ===========================================
+     *  Parse Declaration
+     * ============================================
+     */
     fn parse_variable_declaration(&mut self) -> ParserResult<Decl> {
         let identifier_name: String;
         match self.get_token()? {
@@ -231,18 +216,16 @@ impl Parser {
             Token::Assign => {
                 self.next_token()?;
                 let init_expression = self.parse_expression()?;
-                Ok(Decl::VariableDecl(VariableDeclaration { 
-                    name: identifier_name, 
-                    init: Some(init_expression)
+                Ok(Decl::VariableDecl(VariableDeclaration {
+                    name: identifier_name,
+                    init: Some(init_expression),
                 }))
             }
-            _ => {
-                Ok(Decl::VariableDecl(VariableDeclaration { 
-                    name: identifier_name, 
-                    init: None
-                }))
-            }
-        }
+            _ => Ok(Decl::VariableDecl(VariableDeclaration {
+                name: identifier_name,
+                init: None,
+            })),
+        };
     }
     fn parse_function_declaration(&mut self) -> ParserResult<Decl> {
         let function_name: String;
@@ -274,26 +257,25 @@ impl Parser {
             }
         }
         match self.get_token()? {
-            Token::NumberKeyword  => {
+            Token::NumberKeyword => {
                 self.next_token()?;
-                function_type  = Type::Number;
-             } 
-             Token::VoidKeyword => {
+                function_type = Type::Number;
+            }
+            Token::VoidKeyword => {
                 self.next_token()?;
                 function_type = Type::Void;
-             }
+            }
             _ => {
                 syntax_error!("Function Declaration Must Has Return Type");
             }
         }
         let body = self.parse_block_statement()?;
-        Ok(Decl::FunctionDecl(FunctionDeclaration { 
-            name:function_name , 
-            return_type: function_type, 
-            arguments , 
-            body
+        Ok(Decl::FunctionDecl(FunctionDeclaration {
+            name: function_name,
+            return_type: function_type,
+            arguments,
+            body,
         }))
-
     }
     // argument -> identifier [',' identifier]
     fn parse_function_declaration_aruguments(&mut self) -> ParserResult<Vec<String>> {
@@ -317,7 +299,9 @@ impl Parser {
                         self.next_token()?;
                     }
                     _ => {
-                        syntax_error!("Function Declaration Params Must Be Wrapped In ParenthesesRight");
+                        syntax_error!(
+                            "Function Declaration Params Must Be Wrapped In ParenthesesRight"
+                        );
                     }
                 }
                 return Ok(params);
@@ -328,9 +312,7 @@ impl Parser {
                 Token::Comma => {
                     self.next_token()?;
                 }
-                _ => {
-                    break
-                }
+                _ => break,
             }
             match self.get_token()? {
                 Token::Identifier(name) => {
@@ -352,10 +334,10 @@ impl Parser {
         }
         return Ok(params);
     }
-/** ===================================================
- *  Parse Expression
- * ====================================================
- */
+    /** ===================================================
+     *  Parse Expression
+     * ====================================================
+     */
     fn parse_expression(&mut self) -> ParserResult<Expr> {
         let mut expressions = vec![self.parse_assignment_expression()?];
         loop {
@@ -372,10 +354,8 @@ impl Parser {
         if expressions.len() == 1 {
             // TODO: take ownership, not clone it.
             Ok(expressions[0].clone())
-        }else {
-            Ok(Expr::SequnceExpr(SequnceExpression {
-                expressions
-            }))
+        } else {
+            Ok(Expr::SequnceExpr(SequnceExpression { expressions }))
         }
     }
     fn parse_assignment_expression(&mut self) -> ParserResult<Expr> {
@@ -383,14 +363,12 @@ impl Parser {
         match self.get_token()? {
             Token::Assign => {
                 self.next_token()?;
-                Ok(Expr::AssigmentExpr(AssigmentExpression { 
-                    left: Box::<Expr>::new(left), 
-                    right: Box::<Expr>::new(self.parse_condition_expression()?), 
+                Ok(Expr::AssigmentExpr(AssigmentExpression {
+                    left: Box::<Expr>::new(left),
+                    right: Box::<Expr>::new(self.parse_condition_expression()?),
                 }))
             }
-            _ => {
-                Ok(left)
-            }
+            _ => Ok(left),
         }
     }
     fn parse_condition_expression(&mut self) -> ParserResult<Expr> {
@@ -403,27 +381,27 @@ impl Parser {
                 return Ok(test);
             }
         }
-        let consequence =  self.parse_binary_expression()?;
+        let consequence = self.parse_binary_expression()?;
         match self.get_token()? {
             Token::Colon => {
                 self.next_token()?;
                 return Ok(Expr::ConditionExpr(ConditionExpression {
                     test: Box::<Expr>::new(test),
                     consequnce: Box::<Expr>::new(consequence),
-                    alter:Box::<Expr>::new(self.parse_binary_expression()?)
-                }))
+                    alter: Box::<Expr>::new(self.parse_binary_expression()?),
+                }));
             }
             _ => {
                 syntax_error!("Conditional Expression Should Have Consequnce And Alter Expression");
             }
         }
     }
-    fn parse_binary_expression(&mut self)-> ParserResult<Expr> {
+    fn parse_binary_expression(&mut self) -> ParserResult<Expr> {
         let atom = self.parse_unary_expression()?;
         let op = self.get_token()?;
         if is_binary_op(&op) {
             self.parse_binary_ops(atom, -1)
-        }else {
+        } else {
             Ok(atom)
         }
     }
@@ -436,18 +414,16 @@ impl Parser {
             self.next_token()?;
             let mut right = self.parse_unary_expression()?;
             let next_op = self.get_token()?;
-            if  
-                is_binary_op(&next_op) && 
-                (get_pre_of_binary_op(&next_op) > get_pre_of_binary_op(&current_op)) 
+            if is_binary_op(&next_op)
+                && (get_pre_of_binary_op(&next_op) > get_pre_of_binary_op(&current_op))
             {
-                
                 right = self.parse_binary_ops(right, get_pre_of_binary_op(&next_op))?
             }
-            left = Expr::BinaryExpr(BinaryExpression { 
-                left: Box::<Expr>::new(left), 
+            left = Expr::BinaryExpr(BinaryExpression {
+                left: Box::<Expr>::new(left),
                 right: Box::<Expr>::new(right),
-                operator: get_ast_type_of_binary_op_token(current_op)
-            } );
+                operator: get_ast_type_of_binary_op_token(current_op),
+            });
         }
         Ok(left)
     }
@@ -457,19 +433,17 @@ impl Parser {
                 self.next_token()?;
                 Ok(Expr::UnaryExpr(UnaryExpression {
                     operator: Operator::Plus,
-                    argument: Box::<Expr>::new(self.parse_primary_expression()?)
+                    argument: Box::<Expr>::new(self.parse_primary_expression()?),
                 }))
             }
             Token::Minus => {
                 self.next_token()?;
                 Ok(Expr::UnaryExpr(UnaryExpression {
                     operator: Operator::Minus,
-                    argument: Box::<Expr>::new(self.parse_primary_expression()?)
+                    argument: Box::<Expr>::new(self.parse_primary_expression()?),
                 }))
             }
-            _ => {
-                self.parse_primary_expression()
-            }
+            _ => self.parse_primary_expression(),
         }
     }
     fn parse_primary_expression(&mut self) -> ParserResult<Expr> {
@@ -479,20 +453,17 @@ impl Parser {
                 match self.get_token()? {
                     Token::ParenthesesLeft => {
                         let params = self.parse_call_expression_param()?;
-                        Ok(Expr::CallExpr(CallExpression { callee_name: identifier, params }))
-                    }
-                    _ => {
-                        Ok(Expr::Ident(Identifier {
-                            name: identifier,
+                        Ok(Expr::CallExpr(CallExpression {
+                            callee_name: identifier,
+                            params,
                         }))
                     }
+                    _ => Ok(Expr::Ident(Identifier { name: identifier })),
                 }
             }
             Token::NumberLiteral(value) => {
                 self.next_token()?;
-                Ok(Expr::NumberExpr(NumberLiteral{
-                    value
-                }))
+                Ok(Expr::NumberExpr(NumberLiteral { value }))
             }
             Token::ParenthesesLeft => {
                 self.next_token()?;
@@ -503,9 +474,11 @@ impl Parser {
                         Ok(expr)
                     }
                     _ => {
-                        syntax_error!("CoverParenthesizedExpression Must End With ParentheseRight.");
+                        syntax_error!(
+                            "CoverParenthesizedExpression Must End With ParentheseRight."
+                        );
                     }
-                }
+                };
             }
             _ => {
                 syntax_error!("Failed For Get Primary Expression");
@@ -515,7 +488,7 @@ impl Parser {
     fn parse_call_expression_param(&mut self) -> ParserResult<Vec<Expr>> {
         let mut params = Vec::<Expr>::new();
         match self.get_token()? {
-            Token::ParenthesesLeft  => {
+            Token::ParenthesesLeft => {
                 self.next_token()?;
             }
             _ => {
@@ -541,7 +514,7 @@ impl Parser {
             }
         }
         match self.get_token()? {
-            Token::ParenthesesRight  => {
+            Token::ParenthesesRight => {
                 self.next_token()?;
             }
             _ => {

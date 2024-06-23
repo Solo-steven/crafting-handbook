@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-use crate::ir::value::{Value, IrValueType};
 use crate::ir::function::BasicBlock;
+use crate::ir::value::{IrValueType, Value};
+use std::collections::HashMap;
 #[derive(Debug, PartialEq, Clone, Hash, Eq, Copy)]
 pub struct Instruction(pub usize);
 #[derive(Debug, PartialEq, Clone)]
@@ -17,19 +17,19 @@ pub enum InstructionData {
         src2: Value,
         dst: Value,
     },
-    Mul  {
+    Mul {
         opcode: OpCode,
         src1: Value,
         src2: Value,
         dst: Value,
     },
-    Divide  {
+    Divide {
         opcode: OpCode,
         src1: Value,
         src2: Value,
         dst: Value,
     },
-    Reminder  {
+    Reminder {
         opcode: OpCode,
         src1: Value,
         src2: Value,
@@ -47,19 +47,19 @@ pub enum InstructionData {
         src2: Value,
         dst: Value,
     },
-    FMul  {
+    FMul {
         opcode: OpCode,
         src1: Value,
         src2: Value,
         dst: Value,
     },
-    FDivide  {
+    FDivide {
         opcode: OpCode,
         src1: Value,
         src2: Value,
         dst: Value,
     },
-    FReminder  {
+    FReminder {
         opcode: OpCode,
         src1: Value,
         src2: Value,
@@ -68,27 +68,27 @@ pub enum InstructionData {
     BitwiseNot {
         opcode: OpCode,
         src: Value,
-        dst: Value
+        dst: Value,
     },
-    BitwiseOR  {
+    BitwiseOR {
         opcode: OpCode,
         src1: Value,
         src2: Value,
         dst: Value,
     },
-    BitwiseAnd  {
+    BitwiseAnd {
         opcode: OpCode,
         src1: Value,
         src2: Value,
         dst: Value,
     },
-    ShiftLeft  {
+    ShiftLeft {
         opcode: OpCode,
         src1: Value,
         src2: Value,
         dst: Value,
     },
-    ShiftRight  {
+    ShiftRight {
         opcode: OpCode,
         src1: Value,
         src2: Value,
@@ -109,17 +109,17 @@ pub enum InstructionData {
     LogicalNot {
         opcode: OpCode,
         src: Value,
-        dst: Value
+        dst: Value,
     },
-    Move  {
+    Move {
         opcode: OpCode,
         src: Value,
-        dst: Value
+        dst: Value,
     },
-    Neg  {
+    Neg {
         opcode: OpCode,
         src: Value,
-        dst: Value
+        dst: Value,
     },
     Icmp {
         opcode: OpCode,
@@ -140,11 +140,11 @@ pub enum InstructionData {
         opcode: OpCode,
         dst: Option<Value>,
         name: CalleeKind,
-        params: Vec<Value>
+        params: Vec<Value>,
     },
     Ret {
         opcode: OpCode,
-        value: Option<Value>
+        value: Option<Value>,
     },
     // data type convert
     ToU8 {
@@ -194,7 +194,7 @@ pub enum InstructionData {
     },
     ToAddress {
         opcode: OpCode,
-        src: Value, 
+        src: Value,
         dst: Value,
     },
     // stack related
@@ -235,16 +235,16 @@ pub enum InstructionData {
     Phi {
         opcode: OpCode,
         dst: Value,
-        from: Vec<(BasicBlock, Value)>
+        from: Vec<(BasicBlock, Value)>,
     },
     // comment,
-    Comment(String)
+    Comment(String),
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum CalleeKind {
     Id(String),
-    Reg(Value)
+    Reg(Value),
 }
 
 pub type InstructionMap = HashMap<Instruction, InstructionData>;
@@ -284,7 +284,7 @@ pub enum OpCode {
     ToI32,
     ToI64,
     ToF32,
-    ToF64, 
+    ToF64,
     ToAddress,
     // stack relate
     StackAlloc,

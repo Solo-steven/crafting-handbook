@@ -1,20 +1,34 @@
+use rustyc_frontend::ast::Program;
+use rustyc_frontend::parser::Parser;
+use serde_json::{from_str, to_string_pretty};
 use std::env;
 use std::fs::{read_to_string, File};
 use std::io::Write;
-use rustyc_frontend::ast::Program;
-use serde_json::{to_string_pretty, from_str};
-use rustyc_frontend::parser::Parser;
 
 /// Get a path to `assets/c` in the repo
 fn get_c_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("../../../assets/c/parse/").as_os_str().to_str().unwrap())
+    String::from(
+        env::current_dir()
+            .unwrap()
+            .join("../../../assets/c/parse/")
+            .as_os_str()
+            .to_str()
+            .unwrap(),
+    )
 }
 /// Gte a path the ir result `./test/ir_convert`.
 fn get_json_result_dir_path() -> String {
-    String::from(env::current_dir().unwrap().join("tests/ast-serialization/").as_os_str().to_str().unwrap())
+    String::from(
+        env::current_dir()
+            .unwrap()
+            .join("tests/ast-serialization/")
+            .as_os_str()
+            .to_str()
+            .unwrap(),
+    )
 }
 /// Test helper, test is c code ouput ir match as expect.
-fn test_file_name(name: &'static str)  {
+fn test_file_name(name: &'static str) {
     let mut path = get_c_dir_path();
     path.push_str(name);
     path.push_str(".c");
@@ -37,7 +51,9 @@ fn test_file_name(name: &'static str)  {
                     let json_ast: Program = from_str(&json_string).unwrap();
                     assert_eq!(json_ast, ast);
                 }
-                Err(_) =>  {panic!("Can not read json file - {}", json_path)}
+                Err(_) => {
+                    panic!("Can not read json file - {}", json_path)
+                }
             }
         }
         Err(_) => panic!("Can not read c code - {}", path),

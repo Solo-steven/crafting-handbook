@@ -1,22 +1,23 @@
-
 pub mod ir;
 pub mod ir_converter;
 pub mod ir_optimizer;
 
-use ir::value::IrValueType;
-use rustyc_frontend::parser::Parser;
 use crate::ir::function::Function;
 use crate::ir_converter::Converter;
+use ir::value::IrValueType;
+use rustyc_frontend::parser::Parser;
 use std::fs::File;
 use std::io::Write;
 
 use crate::ir_optimizer::anaylsis::domtree::DomAnaylsier;
 use crate::ir_optimizer::anaylsis::use_def_chain::*;
-use crate::ir_optimizer::pass::mem2reg::Mem2RegPass;
 use crate::ir_optimizer::pass::copy_propagation::CopyPropagationPass;
-use crate::ir_optimizer::pass::value_numbering::ValueNumberingPass;
-use crate::ir_optimizer::pass::lazy_code_motion::{LazyCodeMotionPass, print_lazy_code_motion_table};
+use crate::ir_optimizer::pass::lazy_code_motion::{
+    print_lazy_code_motion_table, LazyCodeMotionPass,
+};
 use crate::ir_optimizer::pass::lcm::LCMPass;
+use crate::ir_optimizer::pass::mem2reg::Mem2RegPass;
+use crate::ir_optimizer::pass::value_numbering::ValueNumberingPass;
 
 fn main() {
     // let program = Parser::new("
@@ -26,7 +27,7 @@ fn main() {
     // int** return_pointer() {
     //     return &p;
     // }
-    
+
     // int main() {
     //     return_pointer();
     //     **return_pointer() = 10;
@@ -70,7 +71,6 @@ fn main() {
     // print_use_def_table(&table, &func);
     // println!("{:?}", func.print_to_string());
 
-
     // for func in &converter.functions {
     // }
 }
@@ -101,7 +101,6 @@ pub fn create_reducnt_expr_graph() -> Function {
     func
 }
 
-
 /// Create simple graph to test use-def information:
 /// ```
 /// t0 = 10;
@@ -130,11 +129,11 @@ pub fn create_use_def_graph() -> Function {
     let b2 = func.create_block();
     func.switch_to_block(b2);
     let _t4 = func.build_add_inst(t1, t3);
-    func   
+    func
 }
 
 /// Create simple graph for test dom data flow anaylsis.
-/// struct of graph please reference to 
+/// struct of graph please reference to
 pub fn create_dom_graph() -> Function {
     let mut function = Function::new(String::from("test_fun"));
     let b0 = function.create_block();
@@ -146,7 +145,7 @@ pub fn create_dom_graph() -> Function {
     let b6 = function.create_block();
     let b7 = function.create_block();
     let b8 = function.create_block();
-    
+
     function.connect_block(b0, b1);
     function.connect_block(b1, b2);
     function.connect_block(b2, b3);
@@ -161,7 +160,6 @@ pub fn create_dom_graph() -> Function {
     function.connect_block(b7, b3);
     function
 }
-
 
 fn create_lcm_test_graph() -> Function {
     let mut function = Function::new(String::from("test_lcm_from_cmu"));
@@ -204,7 +202,7 @@ fn create_lcm_test_graph() -> Function {
     let u8_const = function.create_u8_const(1);
     let b = function.build_mov_inst(u8_const);
     let u8_const_1 = function.create_u8_const(1);
-    let c =function.build_mov_inst(u8_const_1);
+    let c = function.build_mov_inst(u8_const_1);
     function.switch_to_block(b7);
     function.build_add_inst(b, c);
 
@@ -215,7 +213,7 @@ fn create_lcm_test_graph() -> Function {
 }
 
 /// Create simple graph for  
-/// 
+///
 fn create_lazy_code_motion_graph() -> Function {
     let mut function = Function::new(String::from("test_fun"));
     let b0 = function.create_block();
@@ -228,7 +226,7 @@ fn create_lazy_code_motion_graph() -> Function {
     let b6 = function.create_block();
     let b7 = function.create_block();
     function.mark_as_exit(b7);
-    
+
     function.connect_block(b0, b1);
 
     function.connect_block(b1, b2);
@@ -245,7 +243,7 @@ fn create_lazy_code_motion_graph() -> Function {
     let u8_const = function.create_u8_const(1);
     let b = function.build_mov_inst(u8_const);
     let u8_const_1 = function.create_u8_const(1);
-    let c =function.build_mov_inst(u8_const_1);
+    let c = function.build_mov_inst(u8_const_1);
 
     function.switch_to_block(b5);
     function.build_add_inst(b, c);

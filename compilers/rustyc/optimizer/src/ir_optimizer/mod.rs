@@ -1,2 +1,2 @@
-pub mod pass;
 pub mod anaylsis;
+pub mod pass;

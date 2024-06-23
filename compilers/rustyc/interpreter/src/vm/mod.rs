@@ -41,11 +41,11 @@ impl VM {
             match *instruction {
                 // Arithmetic instructions
                 Instruction::Immi(ref instruction) => self.immi_instruction(instruction),
-                Instruction::Add(ref instruction ) => self.add_instruction(instruction),
+                Instruction::Add(ref instruction) => self.add_instruction(instruction),
                 Instruction::Addi(ref instruction) => self.addi_instruction(instruction),
                 Instruction::Subi(ref instruction) => self.subi_instruction(instruction),
                 // Relation instructions.
-                Instruction::Gt(ref instruction ) => self.gt_instruction(instruction),
+                Instruction::Gt(ref instruction) => self.gt_instruction(instruction),
                 Instruction::Gti(ref instruction) => self.gti_instruction(instruction),
                 Instruction::Gq(ref instruction) => self.gq_instruction(instruction),
                 Instruction::Gqi(ref instruction) => self.gqi_instruction(instruction),
@@ -90,7 +90,8 @@ impl VM {
     }
     fn ldr_instruction(&mut self, instruction: &LoadRegisterInstruction) {
         // get address by base + offset
-        let address = (self.registers.get(instruction.base as usize) as i32 + instruction.offset) as usize;
+        let address =
+            (self.registers.get(instruction.base as usize) as i32 + instruction.offset) as usize;
         // get value by memory[address]
         let value = self.memory[address];
         // set register to value
@@ -98,7 +99,8 @@ impl VM {
     }
     fn str_instruction(&mut self, instruction: &StoreRegisterInstruction) {
         // get address by base + offset
-        let address = (self.registers.get(instruction.base as usize) as i32 + instruction.offset) as usize;
+        let address =
+            (self.registers.get(instruction.base as usize) as i32 + instruction.offset) as usize;
         // set memory by dst register
         self.memory[address] = self.registers.get(instruction.src as usize);
     }
@@ -106,9 +108,10 @@ impl VM {
     fn jump_instruction(&mut self, instruction: &JumpInstruction) {
         self.program_counter = instruction.address;
     }
-    /// Execute `IMMI` instruction 
+    /// Execute `IMMI` instruction
     fn immi_instruction(&mut self, instruction: &ImmiInstruction) {
-        self.registers.set(instruction.dst as usize,  instruction.value);
+        self.registers
+            .set(instruction.dst as usize, instruction.value);
     }
     /// Execute `ADD` instruction
     fn add_instruction(&mut self, instruction: &AddInstruction) {
@@ -116,15 +119,17 @@ impl VM {
         let src2 = self.registers.get(instruction.src2 as usize);
         self.registers.set(instruction.dst as usize, src1 + src2);
     }
-    // Execute Addi instruction. `Addi` stand for addi 
+    // Execute Addi instruction. `Addi` stand for addi
     // format: `Addi <dst> <src> <const>` (dst = src + const)
     fn addi_instruction(&mut self, instruction: &AddImmiInstruction) {
         let src_value = self.registers.get(instruction.src as usize);
-        self.registers.set(instruction.dst as usize, src_value + instruction.value);
+        self.registers
+            .set(instruction.dst as usize, src_value + instruction.value);
     }
     fn subi_instruction(&mut self, instruction: &SubiInstruction) {
         let src_value = self.registers.get(instruction.src as usize);
-        self.registers.set(instruction.dst as usize, src_value - instruction.value);
+        self.registers
+            .set(instruction.dst as usize, src_value - instruction.value);
     }
     /// Execute `GT` instruction. `GT` stand for greate then (>)
     /// format: `GT <src1> <src2>` (src1 > src2)
@@ -133,7 +138,7 @@ impl VM {
         let src2_value = self.registers.get(instruction.src2 as usize);
         if src1_value > src2_value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }
@@ -143,7 +148,7 @@ impl VM {
         let src_value = self.registers.get(instruction.src as usize);
         if src_value > instruction.value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }
@@ -154,7 +159,7 @@ impl VM {
         let src2_value = self.registers.get(instruction.src2 as usize);
         if src1_value >= src2_value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }
@@ -164,7 +169,7 @@ impl VM {
         let src_value = self.registers.get(instruction.src as usize);
         if src_value > instruction.value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }
@@ -175,7 +180,7 @@ impl VM {
         let src2_value = self.registers.get(instruction.src2 as usize);
         if src1_value < src2_value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }
@@ -185,7 +190,7 @@ impl VM {
         let src_value = self.registers.get(instruction.src as usize);
         if src_value < instruction.value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }
@@ -196,7 +201,7 @@ impl VM {
         let src2_value = self.registers.get(instruction.src2 as usize);
         if src1_value <= src2_value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }
@@ -206,7 +211,7 @@ impl VM {
         let src_value = self.registers.get(instruction.src as usize);
         if src_value < instruction.value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }
@@ -217,7 +222,7 @@ impl VM {
         let src2_value = self.registers.get(instruction.src2 as usize);
         if src1_value == src2_value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }
@@ -227,7 +232,7 @@ impl VM {
         let src_value = self.registers.get(instruction.src as usize);
         if src_value == instruction.value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }
@@ -238,7 +243,7 @@ impl VM {
         let src2_value = self.registers.get(instruction.src2 as usize);
         if src1_value <= src2_value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }
@@ -248,7 +253,7 @@ impl VM {
         let src_value = self.registers.get(instruction.src as usize);
         if src_value < instruction.value {
             self.condition_flags |= 0b10000000;
-        }else {
+        } else {
             self.condition_flags &= 0b01111111;
         }
     }

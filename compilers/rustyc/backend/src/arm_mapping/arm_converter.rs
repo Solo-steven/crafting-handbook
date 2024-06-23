@@ -1,6 +1,1 @@
-
-
-
-pub struct IRToArrch64Converter {
-
-}
+pub struct IRToArrch64Converter {}

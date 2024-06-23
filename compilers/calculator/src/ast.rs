@@ -1,22 +1,22 @@
 use crate::token::Token;
 /* =============================================
-   Entry Structures
-   =============================================
- */
+  Entry Structures
+  =============================================
+*/
 #[derive(Debug, PartialEq, Clone)]
 pub struct Program {
-    pub body: Vec<ProgramItem>
+    pub body: Vec<ProgramItem>,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub enum ProgramItem {
     Stmt(Stmt),
     Decl(Decl),
-    Expr(Expr)
+    Expr(Expr),
 }
 #[derive(Debug, PartialEq, Clone)]
 pub enum Decl {
     VariableDecl(VariableDeclaration),
-    FunctionDecl(FunctionDeclaration)
+    FunctionDecl(FunctionDeclaration),
 }
 #[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
@@ -34,15 +34,15 @@ pub enum Expr {
     ConditionExpr(ConditionExpression),
     AssigmentExpr(AssigmentExpression),
     SequnceExpr(SequnceExpression),
-    CallExpr(CallExpression)
+    CallExpr(CallExpression),
 }
 /* =============================================
-   Expression
-   =============================================
- */
+  Expression
+  =============================================
+*/
 #[derive(Debug, PartialEq, Clone)]
 pub enum Operator {
-    Plus, 
+    Plus,
     Minus,
     Multply,
     Divide,
@@ -50,31 +50,31 @@ pub enum Operator {
     Eq,
     NotEq,
     Gt,
-    Lt ,
+    Lt,
     Gteq,
-    Lteq ,
+    Lteq,
 }
-pub fn get_ast_type_of_binary_op_token(token: Token) -> Operator{
+pub fn get_ast_type_of_binary_op_token(token: Token) -> Operator {
     return match token {
-        Token::Plus=> { Operator::Plus }
-        Token::Minus => { Operator::Minus  }
-        Token::Multply => { Operator::Multply }
-        Token::Divide => {Operator::Divide }
-        Token::Mod => { Operator::Mod }
-        Token::Eq => { Operator::Eq }
-        Token::NotEq => { Operator::NotEq }
-        Token::Gt => { Operator::Gt }
-        Token::Lt => { Operator::Lt }
-        Token::Gteq => { Operator::Gteq }
-        Token::Lteq => { Operator::Lteq } 
+        Token::Plus => Operator::Plus,
+        Token::Minus => Operator::Minus,
+        Token::Multply => Operator::Multply,
+        Token::Divide => Operator::Divide,
+        Token::Mod => Operator::Mod,
+        Token::Eq => Operator::Eq,
+        Token::NotEq => Operator::NotEq,
+        Token::Gt => Operator::Gt,
+        Token::Lt => Operator::Lt,
+        Token::Gteq => Operator::Gteq,
+        Token::Lteq => Operator::Lteq,
         _ => {
             panic!("[Error]: ")
         }
-    }
+    };
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct NumberLiteral {
-    pub value: f64
+    pub value: f64,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct Identifier {
@@ -84,7 +84,7 @@ pub struct Identifier {
 pub struct BinaryExpression {
     pub left: Box<Expr>,
     pub right: Box<Expr>,
-    pub operator: Operator
+    pub operator: Operator,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct UnaryExpression {
@@ -92,58 +92,58 @@ pub struct UnaryExpression {
     pub operator: Operator,
 }
 #[derive(Debug, PartialEq, Clone)]
-pub struct  ConditionExpression {
+pub struct ConditionExpression {
     pub test: Box<Expr>,
     pub consequnce: Box<Expr>,
-    pub alter: Box<Expr>
+    pub alter: Box<Expr>,
 }
 #[derive(Debug, PartialEq, Clone)]
-pub struct  AssigmentExpression {
+pub struct AssigmentExpression {
     pub left: Box<Expr>,
     pub right: Box<Expr>,
 }
 #[derive(Debug, PartialEq, Clone)]
-pub struct  SequnceExpression {
-    pub expressions: Vec<Expr>
+pub struct SequnceExpression {
+    pub expressions: Vec<Expr>,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct CallExpression {
     pub callee_name: String,
-    pub params: Vec<Expr>, 
+    pub params: Vec<Expr>,
 }
 /* =============================================
-   Delcrations
-   =============================================
- */
+  Delcrations
+  =============================================
+*/
 #[derive(Debug, PartialEq, Clone, Copy)]
- pub enum Type {
+pub enum Type {
     Number,
     Void,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct VariableDeclaration {
     pub name: String,
-    pub init: Option<Expr>
+    pub init: Option<Expr>,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclaration {
     pub name: String,
     pub return_type: Type,
     pub arguments: Vec<String>,
-    pub body: Stmt
+    pub body: Stmt,
 }
 /* ==========================================
-   Statement
-   ==========================================
- */
+  Statement
+  ==========================================
+*/
 #[derive(Debug, PartialEq, Clone)]
 pub struct WhileStatement {
     pub test: Expr,
-    pub body: Box<Stmt>
+    pub body: Box<Stmt>,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct BlockStatement {
-   pub body: Vec<ProgramItem>
+    pub body: Vec<ProgramItem>,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct IfStatement {
@@ -152,8 +152,6 @@ pub struct IfStatement {
     pub alter: Option<Box<Stmt>>,
 }
 #[derive(Debug, PartialEq, Clone)]
-pub struct  ReturnStatement {
-    pub argument: Option<Expr>
+pub struct ReturnStatement {
+    pub argument: Option<Expr>,
 }
-
-

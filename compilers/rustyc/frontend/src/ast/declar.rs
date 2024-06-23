@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
-use crate::ast::expr::{Identifier, Expression};
+use crate::ast::expr::{Expression, Identifier};
 use crate::ast::stmt::CompoundStatement;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(tag="type")]
+#[serde(tag = "type")]
 pub enum Declaration<'a> {
     DelcarList(DeclarationList<'a>),
     #[serde(untagged)]
@@ -14,39 +14,39 @@ pub enum Declaration<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct DeclarationList<'a> {
     pub value_type: ValueType<'a>,
-    pub declarators: Vec<Declarator<'a>>
+    pub declarators: Vec<Declarator<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Declarator<'a> {
     pub value_type: ValueType<'a>,
     pub id: Identifier<'a>,
-    pub init_value: Option<Expression<'a>>
+    pub init_value: Option<Expression<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum FunctionType<'a> {
-    #[serde(rename="FuncDeclar")]
+    #[serde(rename = "FuncDeclar")]
     Declar(FunctionDeclaration<'a>),
-    #[serde(rename="FuncDef")]
+    #[serde(rename = "FuncDef")]
     Def(FunctionDefinition<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FunctionDeclaration<'a> {
     pub return_type: ValueType<'a>,
     pub id: Identifier<'a>,
-    pub params: Vec<ParamDeclar<'a>>,    
+    pub params: Vec<ParamDeclar<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FunctionDefinition<'a> {
     pub return_type: ValueType<'a>,
     pub id: Identifier<'a>,
     pub params: Vec<ParamDeclar<'a>>,
-    pub compound: CompoundStatement<'a>
+    pub compound: CompoundStatement<'a>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ParamDeclar<'a> {
     pub id: Identifier<'a>,
-    pub value_type: ValueType<'a>
+    pub value_type: ValueType<'a>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -68,15 +68,15 @@ pub enum ValueType<'a> {
     // - unsigned short int
     Shorted,
     UnsignedShort,
-    // Int type 
-    // - int 
+    // Int type
+    // - int
     // - signed
     // - signed int
     // - unsigned
     // - unsigned int
     Int,
     Unsigned,
-    // long 
+    // long
     // - long
     // - long int
     // - signed long
@@ -86,11 +86,11 @@ pub enum ValueType<'a> {
     Long,
     UnsignedLong,
     // long long
-    // - long long 
+    // - long long
     // - long long int
-    // - signed long long 
+    // - signed long long
     // - singed long long int
-    // - unsigned long long  
+    // - unsigned long long
     // - unsigned long long int
     LongLong,
     UnsignedLongLong,
@@ -102,7 +102,7 @@ pub enum ValueType<'a> {
     Double,
     // long double
     LongDouble,
-    // float _Complex 
+    // float _Complex
     FloatComplex,
     // double _Complex
     DoubleComplex,
@@ -133,31 +133,31 @@ pub enum StorageClassSpecifier {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum StructType<'a> {
-    #[serde(rename="StructDef")]
+    #[serde(rename = "StructDef")]
     Def(StructDefinition<'a>),
-    #[serde(rename="StructDeclar")]
+    #[serde(rename = "StructDeclar")]
     Declar(StructDeclaration<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StructDeclaration<'a> {
-    pub id : Identifier<'a>,
+    pub id: Identifier<'a>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StructDefinition<'a> {
     pub id: Option<Identifier<'a>>,
-    pub declarator: Vec<StructDeclarator<'a>>
+    pub declarator: Vec<StructDeclarator<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StructDeclarator<'a> {
     pub value_type: ValueType<'a>,
     pub id: Identifier<'a>,
-    pub init_value: Option<Expression<'a>>
+    pub init_value: Option<Expression<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PointerType<'a> {
     pub pointer_to: Box<ValueType<'a>>,
     pub qualifiers: Vec<Vec<Qualifiers>>,
-    pub level: usize
+    pub level: usize,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -169,19 +169,19 @@ pub enum Qualifiers {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum EnumType<'a> {
-    #[serde(rename="EnumDef")]
+    #[serde(rename = "EnumDef")]
     Declar(EnumDeclaration<'a>),
-    #[serde(rename="EnumDeclar")]
+    #[serde(rename = "EnumDeclar")]
     Def(EnumDefinition<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EnumDeclaration<'a> {
-    pub id : Identifier<'a>,
+    pub id: Identifier<'a>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EnumDefinition<'a> {
     pub id: Option<Identifier<'a>>,
-    pub enumerators: Vec<Enumerator<'a>>
+    pub enumerators: Vec<Enumerator<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Enumerator<'a> {
@@ -191,22 +191,22 @@ pub struct Enumerator<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum UnionType<'a> {
-    #[serde(rename="UnionDef")]
+    #[serde(rename = "UnionDef")]
     Declar(UnionDeclaration<'a>),
-    #[serde(rename="UnionDeclar")]
-    Def(UnionDefinition<'a>)
+    #[serde(rename = "UnionDeclar")]
+    Def(UnionDefinition<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UnionDeclaration<'a> {
-    pub id: Identifier<'a>
+    pub id: Identifier<'a>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UnionDefinition<'a> {
     pub id: Option<Identifier<'a>>,
-    pub declarator: Vec<StructDeclarator<'a>>
+    pub declarator: Vec<StructDeclarator<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ArrayType<'a> {
     pub dims: Vec<Expression<'a>>,
-    pub array_of: Box<ValueType<'a>>
+    pub array_of: Box<ValueType<'a>>,
 }

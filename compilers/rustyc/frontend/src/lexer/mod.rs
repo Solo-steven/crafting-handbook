@@ -4,9 +4,9 @@ use std::borrow::Cow;
 use std::str::CharIndices;
 
 // use crate::lexer::error::LexerPanicError;
+use crate::lexer_panic;
 use crate::span::Span;
 use crate::token::{FloatLiteralBase, IntLiteralBase, LongIntSuffix, TokenKind};
-use crate::lexer_panic;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct TokenWithSpan {
@@ -27,7 +27,7 @@ pub struct Lexer<'a> {
     current_char: Option<char>,
     current_line_start: usize, // line start offset of current index,
     current_line: usize,
-    current_offset: usize, 
+    current_offset: usize,
 
     start_span: Span,
     finish_span: Span,
@@ -37,13 +37,9 @@ impl<'a> Lexer<'a> {
     pub fn new(source: &'a str) -> Self {
         let mut iter = source.char_indices();
         let tuple = iter.next();
-        let (offset, ch, start_token) =  match tuple {
-            Some((offset, ch) ) => {
-                (offset, Some(ch), TokenKind::StartToken)
-            }
-            None => {
-                (0, None, TokenKind::EOFToken)
-            }
+        let (offset, ch, start_token) = match tuple {
+            Some((offset, ch)) => (offset, Some(ch), TokenKind::StartToken),
+            None => (0, None, TokenKind::EOFToken),
         };
         let mut lexer = Self {
             source,
@@ -70,7 +66,7 @@ impl<'a> Lexer<'a> {
             self.current_kind = tok_with_span.kind;
             self.start_span = tok_with_span.start_span;
             self.finish_span = tok_with_span.finish_span;
-        }else {
+        } else {
             self.scan();
         }
         self.get_token()
@@ -80,10 +76,10 @@ impl<'a> Lexer<'a> {
         let cache_start = self.start_span.clone();
         let cache_finish = self.finish_span.clone();
         self.scan();
-        let tok_with_span =  TokenWithSpan {
+        let tok_with_span = TokenWithSpan {
             kind: self.current_kind.clone(),
             start_span: self.start_span.clone(),
-            finish_span: self.finish_span.clone()
+            finish_span: self.finish_span.clone(),
         };
         self.lookahead_buffer.push(tok_with_span.clone());
         self.current_kind = cache_kind;
@@ -107,7 +103,7 @@ impl<'a> Lexer<'a> {
     /// Like common method `advance` in some compiler, this method move to next char
     /// please seem lexer itself as a utf-8 reader,
     fn eat_char(&mut self) {
-         match self.iter.next() {
+        match self.iter.next() {
             Some((offset, ch)) => {
                 self.current_offset = offset;
                 self.current_char = Some(ch);
@@ -116,14 +112,14 @@ impl<'a> Lexer<'a> {
                 self.current_offset = self.source.len();
                 self.current_char = None;
             }
-         }
+        }
     }
     /// Mark start token state
     fn start_token(&mut self) {
         self.start_span = Span {
             offset: self.current_offset,
             row: self.current_line,
-            col: self.current_offset - self.current_line_start
+            col: self.current_offset - self.current_line_start,
         }
     }
     /// Mark finish token state
@@ -131,17 +127,17 @@ impl<'a> Lexer<'a> {
         self.finish_span = Span {
             offset: self.current_offset,
             row: self.current_line,
-            col: self.current_offset - self.current_line_start
-        }   
+            col: self.current_offset - self.current_line_start,
+        }
     }
-    /// Skip ignoreable char for lexer. this method need to maintain the 
-    /// `current_line` and `current_line_start` property if meet change-line 
+    /// Skip ignoreable char for lexer. this method need to maintain the
+    /// `current_line` and `current_line_start` property if meet change-line
     /// char is meet.
     fn skip_changeline_and_spaces(&mut self) {
         loop {
             if let Some(ch) = self.get_char() {
                 match ch {
-                    '\t' | ' '   => {
+                    '\t' | ' ' => {
                         self.eat_char();
                     }
                     '\n' => {
@@ -149,9 +145,9 @@ impl<'a> Lexer<'a> {
                         self.current_line += 1;
                         self.current_line_start = self.current_offset;
                     }
-                    _ => break
+                    _ => break,
                 }
-            }else {
+            } else {
                 break;
             }
         }
@@ -221,7 +217,7 @@ impl<'a> Lexer<'a> {
                         self.read_multiple_start();
                     }
                     'L' => {
-                        // this is safe because 'l' and 'L' just have one byte so next utf-8 char 
+                        // this is safe because 'l' and 'L' just have one byte so next utf-8 char
                         // start must be offset +1.
                         let next_char = self.source[self.current_offset + 1..].chars().next();
                         if let Some(ch) = next_char {
@@ -245,7 +241,7 @@ impl<'a> Lexer<'a> {
                         self.eat_char();
                         if let Some(ch) = self.get_char() {
                             match ch {
-                                '/' => {},
+                                '/' => {}
                                 '*' => {}
                                 '=' => {
                                     self.eat_char();
@@ -303,9 +299,9 @@ impl<'a> Lexer<'a> {
                     '\"' => {
                         self.read_char_or_string_literal('\"');
                     }
-                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'  => {
+                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                         self.read_number();
-                    } 
+                    }
                     _ => {
                         self.read_word();
                     }
@@ -464,7 +460,7 @@ impl<'a> Lexer<'a> {
         self.finish_token();
         self.current_kind = TokenKind::Lt;
     }
-    /// Read token start with '=', it possible can be '=', '==' 
+    /// Read token start with '=', it possible can be '=', '=='
     fn read_eq_start(&mut self) {
         self.eat_char();
         if let Some(ch) = self.get_char() {
@@ -575,10 +571,10 @@ impl<'a> Lexer<'a> {
         loop {
             if let Some(ch) = self.get_char() {
                 match ch {
-                    '+' | '-' | '*' | '%' | '/' | '&' | '\'' | '"' | 
-                    '<' | '>' | '=' | '?' | '#' | '~' | '^' | '!' |
-                    '{' | '}' | '[' | ']' | '(' | ')'  | ';' | ',' | '.'=> break,
-                    '\t' | ' '| '\n' => break,
+                    '+' | '-' | '*' | '%' | '/' | '&' | '\'' | '"' | '<' | '>' | '=' | '?'
+                    | '#' | '~' | '^' | '!' | '{' | '}' | '[' | ']' | '(' | ')' | ';' | ','
+                    | '.' => break,
+                    '\t' | ' ' | '\n' => break,
                     '\\' => {
                         let next_char = self.source[self.current_offset + 1..].chars().next();
                         if let Some(ch) = next_char {
@@ -607,15 +603,15 @@ impl<'a> Lexer<'a> {
                         // TODO: should panic
                         panic!("lexical panic");
                     }
-                    _ => self.eat_char()
+                    _ => self.eat_char(),
                 }
             }
         }
         self.finish_token();
         let word = &self.source[self.start_span.offset..self.current_offset];
-        self.current_kind = match word  {
+        self.current_kind = match word {
             "auto" => TokenKind::Auto,
-            "break" => TokenKind::Break, 
+            "break" => TokenKind::Break,
             "case" => TokenKind::Case,
             "char" => TokenKind::Char,
             "const" => TokenKind::Const,
@@ -637,7 +633,7 @@ impl<'a> Lexer<'a> {
             "restrict" => TokenKind::Restrict,
             "return" => TokenKind::Return,
             "short" => TokenKind::Short,
-            "signed" => TokenKind::Signed, 
+            "signed" => TokenKind::Signed,
             "sizeof" => TokenKind::Sizeof,
             "static" => TokenKind::Static,
             "struct" => TokenKind::Struct,
@@ -662,7 +658,8 @@ impl<'a> Lexer<'a> {
             if let Some(ch) = self.get_char() {
                 if escap {
                     match ch {
-                        '\\' | 'a' | 'b' | '?' | '\'' | '\"' | 'f' | 'n' | 'r' | 't' | 'v' | '\n' => {
+                        '\\' | 'a' | 'b' | '?' | '\'' | '\"' | 'f' | 'n' | 'r' | 't' | 'v'
+                        | '\n' => {
                             self.eat_char();
                             escap = false;
                         }
@@ -684,16 +681,16 @@ impl<'a> Lexer<'a> {
                                 panic!();
                             }
                         }
-                        'x' => { 
+                        'x' => {
                             self.eat_char();
                             let start = self.current_offset;
                             self.read_hex_sequence();
                             if self.current_offset - start > 1 {
                                 panic!();
                             }
-                            escap = false; 
+                            escap = false;
                         }
-                        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8'  => {
+                        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' => {
                             let start = self.current_offset;
                             self.read_oct_sequence();
                             if self.current_offset - start > 3 {
@@ -701,17 +698,15 @@ impl<'a> Lexer<'a> {
                             }
                             escap = false;
                         }
-                        _ => {
-                            /* TODO: invalid escap */
-                        }
+                        _ => { /* TODO: invalid escap */ }
                     }
-                }else {
+                } else {
                     match ch {
                         '\'' | '\"' | '\n' => break,
                         '\\' => {
                             escap = true;
                         }
-                        _ => self.eat_char()
+                        _ => self.eat_char(),
                     }
                 }
             }
@@ -721,11 +716,10 @@ impl<'a> Lexer<'a> {
                 self.eat_char();
                 self.finish_token();
                 self.current_kind = if mode == '\'' {
-                        TokenKind::CharLiteral
-                    } else {
-                        TokenKind::StringLiteral
-                    }
-                ;
+                    TokenKind::CharLiteral
+                } else {
+                    TokenKind::StringLiteral
+                };
                 return;
             }
         }
@@ -733,22 +727,22 @@ impl<'a> Lexer<'a> {
     }
     fn read_number(&mut self) {
         match self.get_char() {
-            Some(ch) => {
-                match ch {
-                    '1' | '2' | '3' | '4' | '5' | '6' |'7' | '8' | '9' => self.read_non_zero_decimal_start_number(),
-                    '0' => {
-                        if let Some(next_char) = self.source[self.current_offset + 1 ..].chars().next() {
-                            if next_char == 'X' || next_char == 'x' {
-                                self.read_hex_prefix_start_number();
-                                return;
-                            }
-                        }
-                        self.read_zero_start_number();
-                    }
-                    '.' => self.read_dot_start_number(),
-                    _ => unreachable!(),
+            Some(ch) => match ch {
+                '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
+                    self.read_non_zero_decimal_start_number()
                 }
-            }
+                '0' => {
+                    if let Some(next_char) = self.source[self.current_offset + 1..].chars().next() {
+                        if next_char == 'X' || next_char == 'x' {
+                            self.read_hex_prefix_start_number();
+                            return;
+                        }
+                    }
+                    self.read_zero_start_number();
+                }
+                '.' => self.read_dot_start_number(),
+                _ => unreachable!(),
+            },
             None => {
                 unreachable!();
             }
@@ -794,16 +788,14 @@ impl<'a> Lexer<'a> {
         let mut have_decimal = false;
         loop {
             match self.get_char() {
-                Some(ch) => {
-                    match ch {
-                        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' => self.eat_char(),
-                        '8' | '9' => {
-                            have_decimal = true;
-                            self.eat_char();
-                        }
-                        _ => break,
+                Some(ch) => match ch {
+                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' => self.eat_char(),
+                    '8' | '9' => {
+                        have_decimal = true;
+                        self.eat_char();
                     }
-                }
+                    _ => break,
+                },
                 None => break,
             }
         }
@@ -836,12 +828,12 @@ impl<'a> Lexer<'a> {
         self.finish_token();
         if len == 0 {
             self.current_kind = TokenKind::IntLiteral(IntLiteralBase::Decimal, suffix_tuple);
-        }else {
+        } else {
             self.current_kind = TokenKind::IntLiteral(IntLiteralBase::Octal, suffix_tuple);
         }
     }
     /// Read number literal when start with hex prefix like `0x` or `0X`
-    /// 
+    ///
     fn read_hex_prefix_start_number(&mut self) {
         // eat 0x | 0X
         self.eat_char();
@@ -864,14 +856,13 @@ impl<'a> Lexer<'a> {
                 }
                 let suffix = self.read_float_suffix();
                 self.finish_token();
-                self.current_kind = TokenKind::FloatLiteral(FloatLiteralBase::Hex,suffix);
+                self.current_kind = TokenKind::FloatLiteral(FloatLiteralBase::Hex, suffix);
                 return;
             }
         }
         let suffix_tuple = self.read_int_suffix();
         self.finish_token();
         self.current_kind = TokenKind::IntLiteral(IntLiteralBase::Hex, suffix_tuple);
-
     }
     fn read_dot_start_number(&mut self) {
         self.eat_char();
@@ -895,7 +886,7 @@ impl<'a> Lexer<'a> {
         let suffix = self.read_float_suffix();
         self.finish_token();
         // decimal float literal
-        self.current_kind = TokenKind::FloatLiteral(FloatLiteralBase::Decimal,suffix);
+        self.current_kind = TokenKind::FloatLiteral(FloatLiteralBase::Decimal, suffix);
     }
     /// (Maybe) Read integer number suffix
     /// - unsigned-suffix long-suffix(opt)
@@ -920,7 +911,7 @@ impl<'a> Lexer<'a> {
     fn read_long_integer_suffix(&mut self) -> Option<LongIntSuffix> {
         if let Some(ch) = self.get_char() {
             if ch == 'l' || ch == 'L' {
-                if let Some(next_ch) = self.source[self.current_offset + 1 ..].chars().next() {
+                if let Some(next_ch) = self.source[self.current_offset + 1..].chars().next() {
                     if ch == 'l' || next_ch == 'l' {
                         self.eat_char();
                         self.eat_char();
@@ -931,7 +922,7 @@ impl<'a> Lexer<'a> {
                         self.eat_char();
                         return Some(LongIntSuffix::LongLong);
                     }
-                }else {
+                } else {
                     self.eat_char();
                     return Some(LongIntSuffix::Long);
                 }
@@ -939,7 +930,7 @@ impl<'a> Lexer<'a> {
         }
         return None;
     }
-    fn read_unsigned_integer_suffix(&mut self)-> bool {
+    fn read_unsigned_integer_suffix(&mut self) -> bool {
         if let Some(ch) = self.get_char() {
             if ch == 'u' || ch == 'U' {
                 self.eat_char();
@@ -948,7 +939,7 @@ impl<'a> Lexer<'a> {
         }
         return false;
     }
-    /// Read float suffix if possible, return a bool to 
+    /// Read float suffix if possible, return a bool to
     /// indicate is a float suffix being read or not.
     fn read_float_suffix(&mut self) -> bool {
         if let Some(ch) = self.get_char() {
@@ -964,9 +955,9 @@ impl<'a> Lexer<'a> {
             if let Some(ch) = self.get_char() {
                 match ch {
                     '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => self.eat_char(),
-                    _ => break
+                    _ => break,
                 }
-            }else {
+            } else {
                 break;
             }
         }
@@ -975,12 +966,11 @@ impl<'a> Lexer<'a> {
         loop {
             if let Some(ch) = self.get_char() {
                 match ch {
-                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 
-                    'a' | 'b' | 'c' | 'd' | 'e' | 'f' |
-                    'A' | 'B' | 'C' | 'D' | 'E' | 'F' => self.eat_char(),
-                    _ => break
+                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'a' | 'b' | 'c'
+                    | 'd' | 'e' | 'f' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' => self.eat_char(),
+                    _ => break,
                 }
-            }else {
+            } else {
                 break;
             }
         }
@@ -989,10 +979,10 @@ impl<'a> Lexer<'a> {
         loop {
             if let Some(ch) = self.get_char() {
                 match ch {
-                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8'  => self.eat_char(),
-                    _ => break
+                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' => self.eat_char(),
+                    _ => break,
                 }
-            }else {
+            } else {
                 break;
             }
         }

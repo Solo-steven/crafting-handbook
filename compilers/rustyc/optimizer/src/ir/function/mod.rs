@@ -9,17 +9,17 @@ pub struct Function {
     pub return_type: Option<IrValueType>,
 
     pub instructions: InstructionMap,
-    pub (super) next_inst_index: usize,
+    pub(super) next_inst_index: usize,
 
     pub blocks: BasicBlockMap,
-    pub (super) next_block_index: usize,
+    pub(super) next_block_index: usize,
 
     pub values: ValueMap,
     pub value_types: TypeMap,
-    pub (super) next_value_index: usize,
-    pub (super) next_temp_register_index: usize,
+    pub(super) next_value_index: usize,
+    pub(super) next_temp_register_index: usize,
     /***** relationship *****/
-    /// 
+    ///
     pub inst_map_block: HashMap<Instruction, BasicBlock>,
     pub params_value: Vec<Value>,
 
@@ -27,7 +27,6 @@ pub struct Function {
     pub exit_block: Vec<BasicBlock>,
 
     pub current_block: Option<BasicBlock>,
-
 }
 #[derive(Debug, PartialEq, Clone, Hash, Eq, Copy)]
 pub struct BasicBlock(pub usize);
@@ -59,7 +58,7 @@ impl Function {
             next_temp_register_index: 1,
             entry_block: Vec::new(),
             exit_block: Vec::new(),
-            current_block: None
+            current_block: None,
         }
     }
     fn get_next_inst_id(&mut self) -> Instruction {
@@ -71,8 +70,13 @@ impl Function {
     pub fn create_block(&mut self) -> BasicBlock {
         let block_id = BasicBlock(self.next_block_index);
         self.blocks.insert(
-            block_id, 
-            BasicBlockData {  name: format!("block{}", self.next_block_index), successor: Vec::new(), predecessor: Vec::new(), instructions: VecDeque::new() }
+            block_id,
+            BasicBlockData {
+                name: format!("block{}", self.next_block_index),
+                successor: Vec::new(),
+                predecessor: Vec::new(),
+                instructions: VecDeque::new(),
+            },
         );
         self.next_block_index += 1;
         block_id
@@ -82,13 +86,13 @@ impl Function {
         let successor_block = self.blocks.get_mut(&successor);
         if let Some(s) = successor_block {
             s.predecessor.push(predecessor);
-        }else {
+        } else {
             panic!("Block {:?} is not existed", successor);
         }
         let predecessor_block = self.blocks.get_mut(&predecessor);
         if let Some(pre) = predecessor_block {
             pre.successor.push(successor);
-        }else {
+        } else {
             panic!("Block {:?} is not existed", predecessor);
         }
     }
@@ -96,7 +100,7 @@ impl Function {
     pub fn switch_to_block(&mut self, id: BasicBlock) {
         if let Some(_) = self.blocks.get(&id) {
             self.current_block = Some(id);
-        }else {
+        } else {
             panic!("Block {:?} is not existed", id);
         }
     }
@@ -111,27 +115,43 @@ impl Function {
     pub fn get_block_from_inst(&self, inst: &Instruction) -> Option<&BasicBlock> {
         self.inst_map_block.get(&inst)
     }
-    pub fn insert_inst_to_block_front(&mut self, block: &BasicBlock, inst_data: InstructionData) -> Instruction {
+    pub fn insert_inst_to_block_front(
+        &mut self,
+        block: &BasicBlock,
+        inst_data: InstructionData,
+    ) -> Instruction {
         let inst_id = self.get_next_inst_id();
-        self.blocks.get_mut(block).unwrap().instructions.push_front(inst_id.clone());
+        self.blocks
+            .get_mut(block)
+            .unwrap()
+            .instructions
+            .push_front(inst_id.clone());
         self.instructions.insert(inst_id.clone(), inst_data);
         inst_id
     }
     pub fn remove_inst_from_block(&mut self, block: &BasicBlock, inst: &Instruction) {
-        self.blocks.get_mut(block).unwrap().instructions.retain(|inst_id| inst != inst_id );
+        self.blocks
+            .get_mut(block)
+            .unwrap()
+            .instructions
+            .retain(|inst_id| inst != inst_id);
         self.instructions.remove(inst);
     }
     pub fn change_inst(&mut self, inst: &Instruction, inst_data: InstructionData) {
         self.instructions.remove(inst);
         self.instructions.insert(inst.clone(), inst_data);
     }
-    pub fn insert_value_data_and_type(&mut self, value_data: ValueData, ir_type: Option<IrValueType>) -> Value {
+    pub fn insert_value_data_and_type(
+        &mut self,
+        value_data: ValueData,
+        ir_type: Option<IrValueType>,
+    ) -> Value {
         if let ValueData::Immi(_) = &value_data {
             let value_id = Value(self.next_value_index);
             self.values.insert(value_id, value_data);
             self.next_value_index += 1;
             value_id
-        }else {
+        } else {
             let value_id = Value(self.next_value_index);
             self.values.insert(value_id, value_data);
             self.value_types.insert(value_id, ir_type.unwrap());
@@ -143,7 +163,12 @@ impl Function {
     /// when performance some instuction, we maybe need to prompt or narrow data type for instruction.
     /// so we this helper function will generate convert instruction if need, you can givn this `target_type`
     /// or pass `None` to make prompt to highest type of two value.
-    pub fn align_two_base_type_value_to_same_type(&mut self, mut left_value: Value, mut right_value: Value, target_type: Option<IrValueType>) -> (Value, Value, IrValueType) {
+    pub fn align_two_base_type_value_to_same_type(
+        &mut self,
+        mut left_value: Value,
+        mut right_value: Value,
+        target_type: Option<IrValueType>,
+    ) -> (Value, Value, IrValueType) {
         let left_type = self.get_value_ir_type(left_value);
         let right_type = self.get_value_ir_type(right_value);
         match target_type {
@@ -155,17 +180,17 @@ impl Function {
                     right_value = self.generate_type_convert(right_value, &target);
                 }
                 (left_value, right_value, target)
-            },
+            }
             None => {
                 let target;
-                // Get final type. Generate promot type if need, 
+                // Get final type. Generate promot type if need,
                 if left_type > right_type {
                     right_value = self.generate_type_convert(right_value, &left_type);
                     target = &left_type;
-                }else if left_type < right_type {
+                } else if left_type < right_type {
                     left_value = self.generate_type_convert(left_value, &right_type);
                     target = &right_type;
-                }else {
+                } else {
                     target = &left_type
                 }
                 (left_value, right_value, target.clone())

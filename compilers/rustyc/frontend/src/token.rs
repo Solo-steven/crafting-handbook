@@ -8,7 +8,7 @@ pub enum TokenKind {
     Break,
     Case,
     Char,
-    Const,  
+    Const,
     Continue,
     Default,
     Do,
@@ -42,55 +42,55 @@ pub enum TokenKind {
     _Imaginary,
     Identifier,
     // Operators
-    Dot, // .
-    Increment, // ++
-    Decrement, // --
-    Plus,      // +
-    Minus,     // -
-    Multiplication, // *
-    Division,   // /
-    Remainder,  // %
-    LogicalNot, // !
-    LogicalAnd, // &&
-    LogicalOr, // ||
-    BitwiseNot, // ~
-    BitwiseAnd, // & (same as adress of operator)
-    BitwiseOr, // |
-    BitwiseXor, // ^
-    BitwiseLeftShift,  // <<
-    BitwiseRightShift, // >>
-    Equal,    // ==
-    NotEqual, // !=
-    Gt,     // >
-    Geqt,    // >=
-    Lt,     // <
-    Leqt,   // <=
-    Arrow, // ->
-    Qustion, // ?
-    Assignment, // =,
-    SumAssignment, // +=
-    DiffAssignment, // -=
-    ProductAssignment, // *= 
-    QuotientAssignment, // /= 
-    RemainderAssignment, // %=
-    BitwiseLeftShiftAssignment, // <<=
+    Dot,                         // .
+    Increment,                   // ++
+    Decrement,                   // --
+    Plus,                        // +
+    Minus,                       // -
+    Multiplication,              // *
+    Division,                    // /
+    Remainder,                   // %
+    LogicalNot,                  // !
+    LogicalAnd,                  // &&
+    LogicalOr,                   // ||
+    BitwiseNot,                  // ~
+    BitwiseAnd,                  // & (same as adress of operator)
+    BitwiseOr,                   // |
+    BitwiseXor,                  // ^
+    BitwiseLeftShift,            // <<
+    BitwiseRightShift,           // >>
+    Equal,                       // ==
+    NotEqual,                    // !=
+    Gt,                          // >
+    Geqt,                        // >=
+    Lt,                          // <
+    Leqt,                        // <=
+    Arrow,                       // ->
+    Qustion,                     // ?
+    Assignment,                  // =,
+    SumAssignment,               // +=
+    DiffAssignment,              // -=
+    ProductAssignment,           // *=
+    QuotientAssignment,          // /=
+    RemainderAssignment,         // %=
+    BitwiseLeftShiftAssignment,  // <<=
     BitwiseRightShiftAssignment, // >>=
-    BitwiseAndAssignment, // &=
-    BitwiseOrAssignment, // |=
-    BitwiseXorAssignment, // ^=
-    Sizeof, // sizeof
+    BitwiseAndAssignment,        // &=
+    BitwiseOrAssignment,         // |=
+    BitwiseXorAssignment,        // ^=
+    Sizeof,                      // sizeof
     // Punctuators
-    Comma,  // ,
-    Semi,   // ;
-    Colon, // :
-    BracesLeft,   // {
-    BracesRight,  // }
-    BracketLeft,  // [
-    BracketRight, // ]
+    Comma,            // ,
+    Semi,             // ;
+    Colon,            // :
+    BracesLeft,       // {
+    BracesRight,      // }
+    BracketLeft,      // [
+    BracketRight,     // ]
     ParenthesesLeft,  // (
     ParenthesesRight, // )
     // Literals
-    IntLiteral(IntLiteralBase,(Option<LongIntSuffix>, bool)),
+    IntLiteral(IntLiteralBase, (Option<LongIntSuffix>, bool)),
     FloatLiteral(FloatLiteralBase, bool),
     CharLiteral,
     StringLiteral,

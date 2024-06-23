@@ -1,5 +1,5 @@
-mod expr;
 mod declar;
+mod expr;
 mod stmt;
 
 use std::borrow::Cow;
@@ -17,7 +17,7 @@ pub struct Parser<'a> {
 pub type ParserResult<T> = Result<T, String>;
 
 impl<'a> Parser<'a> {
-    pub fn new(source: &'a str)  -> Self {
+    pub fn new(source: &'a str) -> Self {
         Self {
             lexer: Lexer::new(source),
             storage_class_specifier: None,
@@ -50,33 +50,39 @@ impl<'a> Parser<'a> {
         loop {
             match self.get_token() {
                 TokenKind::EOFToken => break,
-                _ => body.push(self.parse_block_item()?)
+                _ => body.push(self.parse_block_item()?),
             }
         }
         ParserResult::Ok(Program { body })
     }
-    /// 
+    ///
     fn parse_block_item(&mut self) -> ParserResult<BlockItem<'a>> {
         match self.get_token() {
-            TokenKind::Struct | TokenKind::Enum | TokenKind::Union | 
-            TokenKind::Char | TokenKind::Unsigned | TokenKind::Signed |
-            TokenKind::Int | TokenKind::Long | TokenKind::Short |
-            TokenKind::Float | TokenKind::Double | TokenKind::Void  => ParserResult::Ok(BlockItem::Declar(self.parse_declaration()?)),
-            TokenKind::Typedef  => {
+            TokenKind::Struct
+            | TokenKind::Enum
+            | TokenKind::Union
+            | TokenKind::Char
+            | TokenKind::Unsigned
+            | TokenKind::Signed
+            | TokenKind::Int
+            | TokenKind::Long
+            | TokenKind::Short
+            | TokenKind::Float
+            | TokenKind::Double
+            | TokenKind::Void => ParserResult::Ok(BlockItem::Declar(self.parse_declaration()?)),
+            TokenKind::Typedef => {
                 todo!();
             }
             TokenKind::Auto | TokenKind::Register | TokenKind::Extern => {
                 if self.storage_class_specifier.is_none() {
-                    self.storage_class_specifier = Some(
-                        match self.get_token() {
-                            TokenKind::Auto => StorageClassSpecifier::Auto,
-                            TokenKind::Register => StorageClassSpecifier::Register,
-                            TokenKind::Extern => StorageClassSpecifier::Extern,
-                            _ => unreachable!(),
-                        }
-                    );
+                    self.storage_class_specifier = Some(match self.get_token() {
+                        TokenKind::Auto => StorageClassSpecifier::Auto,
+                        TokenKind::Register => StorageClassSpecifier::Register,
+                        TokenKind::Extern => StorageClassSpecifier::Extern,
+                        _ => unreachable!(),
+                    });
                     Ok(BlockItem::Declar(self.parse_declaration()?))
-                }else {
+                } else {
                     panic!();
                 }
             }

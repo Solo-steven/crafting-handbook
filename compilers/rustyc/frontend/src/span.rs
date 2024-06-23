@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, PartialEq)]
-pub  struct Span {
+pub struct Span {
     pub offset: usize,
     pub col: usize,
     pub row: usize,
@@ -20,4 +20,3 @@ impl Span {
         }
     }
 }
-

@@ -1,18 +1,18 @@
 pub mod declar;
-pub mod stmt;
 pub mod expr;
+pub mod stmt;
 
-use serde::{Deserialize, Serialize};
 use crate::ast::declar::Declaration;
 use crate::ast::stmt::Statement;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Program<'a> {
-    pub body: Vec<BlockItem<'a>>
+    pub body: Vec<BlockItem<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum BlockItem<'a>{
-   Stmt(Statement<'a>),
-   Declar(Declaration<'a>),
+pub enum BlockItem<'a> {
+    Stmt(Statement<'a>),
+    Declar(Declaration<'a>),
 }

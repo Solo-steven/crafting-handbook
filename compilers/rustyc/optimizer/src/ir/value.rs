@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 #[derive(Debug, PartialEq, Clone, Hash, Eq, Copy)]
-pub struct  Value(pub usize);
+pub struct Value(pub usize);
 #[derive(Debug, PartialEq, Clone)]
 pub enum ValueData {
     GlobalRef(String),
     FunctionRef(String),
     VirRegister(String),
-    Immi(Immi)
+    Immi(Immi),
 }
 #[derive(Debug, PartialEq, Clone)]
 pub enum Immi {
@@ -24,7 +24,7 @@ pub enum Immi {
 impl Immi {
     pub fn get_data_as_i128(&self) -> i128 {
         match *self {
-            Immi::U8(data) => data as i128,   
+            Immi::U8(data) => data as i128,
             Immi::U16(data) => data as i128,
             Immi::U32(data) => data as i128,
             Immi::U64(data) => data as i128,
@@ -37,7 +37,7 @@ impl Immi {
     }
     pub fn get_data_as_f64(&self) -> f64 {
         match *self {
-            Immi::U8(data) => data as f64,   
+            Immi::U8(data) => data as f64,
             Immi::U16(data) => data as f64,
             Immi::U32(data) => data as f64,
             Immi::U64(data) => data as f64,
@@ -62,7 +62,7 @@ pub enum IrValueType {
     F32,
     F64,
     Address,
-    Aggregate
+    Aggregate,
 }
 pub type ValueMap = HashMap<Value, ValueData>;
 pub type TypeMap = HashMap<Value, IrValueType>;

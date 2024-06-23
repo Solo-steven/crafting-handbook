@@ -60,26 +60,26 @@ pub enum Instruction {
 pub struct JumpInstruction {
     pub address: u32,
 }
-/// Uncondition branch based on condition property 
+/// Uncondition branch based on condition property
 /// to determinate
 #[derive(Debug, Clone, PartialEq)]
-pub struct  BranchInstruction {
+pub struct BranchInstruction {
     pub address: u32,
     pub condition: i8,
 }
 /// `JSR` instruction, jump to some sub routine, it would store program
-/// counter to `return address` register and change program counter to 
+/// counter to `return address` register and change program counter to
 /// address that JSR point to.
 /// - format: `JSR <sub-routine>`
 #[derive(Debug, Clone, PartialEq)]
 pub struct JSRInstruction {
     pub adress: u32,
 }
-/// `RET` instruction, return from subrountine, it will get the value store 
+/// `RET` instruction, return from subrountine, it will get the value store
 /// in `return_address` register and seem it as a address of instruction.
 #[derive(Debug, Clone, PartialEq)]
-pub struct  RetInstruction;
-/// `LSR` instruction, load value from base register + offset address 
+pub struct RetInstruction;
+/// `LSR` instruction, load value from base register + offset address
 /// from memory to target register (dst) register.
 #[derive(Debug, Clone, PartialEq)]
 pub struct LoadRegisterInstruction {
@@ -116,52 +116,52 @@ pub struct AddImmiInstruction {
     pub value: u32,
 }
 #[derive(Debug, Clone, PartialEq)]
-pub struct  SubiInstruction {
+pub struct SubiInstruction {
     pub src: u32,
     pub dst: u32,
     pub value: u32,
 }
-/// `GT` instruction, compare two register and store the result in 
-/// condition flag. 
+/// `GT` instruction, compare two register and store the result in
+/// condition flag.
 /// format: `GT <src1> <src2>` (src1 > src2)
 #[derive(Debug, Clone, PartialEq)]
 pub struct GreaterThanInstruction {
     pub src1: u32,
     pub src2: u32,
 }
-/// `GTI` instruction, compare  register with const and store the result in 
-/// condition flag. 
+/// `GTI` instruction, compare  register with const and store the result in
+/// condition flag.
 /// format: `GTI <src> <const>` (src1 > const)
 #[derive(Debug, Clone, PartialEq)]
 pub struct GreaterThanImmiInstruction {
     pub src: u32,
     pub value: u32,
 }
-/// `Gq` instruction. compare two register and store the result in 
+/// `Gq` instruction. compare two register and store the result in
 /// condition flag
 /// format: `Gq <src1> <src2>` (src1 >= src2)
 #[derive(Debug, Clone, PartialEq)]
-pub struct  GreaterEqualInstruction {
+pub struct GreaterEqualInstruction {
     pub src1: u32,
     pub src2: u32,
 }
-/// `GQI` instruction. register with const and store the result in 
-/// condition flag. 
+/// `GQI` instruction. register with const and store the result in
+/// condition flag.
 /// format: `Gqi <src1> <const>` (src1 >= const)
 #[derive(Debug, Clone, PartialEq)]
-pub struct  GreaterEqualImmiInstruction {
+pub struct GreaterEqualImmiInstruction {
     pub src: u32,
     pub value: u32,
 }
-/// `LT` instruction, compare two register and store the result in 
-/// condition flag. 
+/// `LT` instruction, compare two register and store the result in
+/// condition flag.
 /// format: `LT <src1> <src2>` (src1 < src2)
 #[derive(Debug, Clone, PartialEq)]
 pub struct LessThanInstruction {
     pub src1: u32,
     pub src2: u32,
 }
-/// `LTI` instruction, compare register with const and store the 
+/// `LTI` instruction, compare register with const and store the
 /// result in conditional flag.
 /// format: `LTI <src1> <const>` (src1 < const)
 #[derive(Debug, Clone, PartialEq)]
@@ -169,31 +169,31 @@ pub struct LessThanImmiInstruction {
     pub src: u32,
     pub value: u32,
 }
-/// `Lq` instruction. compare two register and store the result in 
+/// `Lq` instruction. compare two register and store the result in
 /// condition flag
 /// format: `Lq <src1> <src2>` (src1 <= src2)
 #[derive(Debug, Clone, PartialEq)]
-pub struct  LessEqualInstruction {
+pub struct LessEqualInstruction {
     pub src1: u32,
     pub src2: u32,
 }
-/// `Lqi` instruction.  compare register with const and store the 
+/// `Lqi` instruction.  compare register with const and store the
 /// result in conditional flag.
 /// format: `Lqi <src1> <const>` (src1 <= const)
 #[derive(Debug, Clone, PartialEq)]
-pub struct  LessEqualImmiInstruction {
+pub struct LessEqualImmiInstruction {
     pub src: u32,
-    pub value: u32
+    pub value: u32,
 }
-/// `Eq` instruction, compare two register and store the result in 
-/// condition flag. 
+/// `Eq` instruction, compare two register and store the result in
+/// condition flag.
 /// format: `eq <src1> <src2>` (src1 == src2)
 #[derive(Debug, Clone, PartialEq)]
 pub struct EqualInstruction {
     pub src1: u32,
     pub src2: u32,
 }
-/// `Eqi` instruction, compare register with const and store the 
+/// `Eqi` instruction, compare register with const and store the
 /// result in condition flag.
 /// format: `eqi <src1> <const>` (src1 == const)
 #[derive(Debug, Clone, PartialEq)]
@@ -201,11 +201,11 @@ pub struct EqualImmiInstruction {
     pub src: u32,
     pub value: u32,
 }
-/// `Neq` instruction. compare two register and store the result in 
+/// `Neq` instruction. compare two register and store the result in
 /// condition flag
 /// format: `neq <src1> <src2>` (src1 != src2)
 #[derive(Debug, Clone, PartialEq)]
-pub struct  NonEqualInstruction {
+pub struct NonEqualInstruction {
     pub src1: u32,
     pub src2: u32,
 }
@@ -213,7 +213,7 @@ pub struct  NonEqualInstruction {
 /// the result in conditional flag.
 /// format: `Neqi <src1> <const>` (src != const)
 #[derive(Debug, Clone, PartialEq)]
-pub struct  NonEqualImmiInstruction {
+pub struct NonEqualImmiInstruction {
     pub src: u32,
     pub value: u32,
 }

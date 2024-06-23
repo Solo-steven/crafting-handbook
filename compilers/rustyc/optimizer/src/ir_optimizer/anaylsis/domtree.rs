@@ -1,7 +1,7 @@
-use std::collections::{HashMap, HashSet};
-use std::mem::replace;
 use crate::ir::function::*;
 use crate::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
+use std::collections::{HashMap, HashSet};
+use std::mem::replace;
 /// Table for record every block's dom and idom and dom-frontier
 pub type DomTable = HashMap<BasicBlock, DomTableEntry>;
 /// Entry for record dom, idom and dom-frontier for a bb.
@@ -34,20 +34,31 @@ impl DomAnaylsier {
     fn dom_anaylsis(&mut self, function: &Function) {
         // init dom property for every block.
         let mut index = 0;
-        let all_block_set: HashSet<BasicBlock> = function.blocks.keys().map(|key| key.clone()).collect();
-        for (block_id, _ ) in &function.blocks {
+        let all_block_set: HashSet<BasicBlock> =
+            function.blocks.keys().map(|key| key.clone()).collect();
+        for (block_id, _) in &function.blocks {
             if index == 0 {
                 self.dom_table.insert(
-                    block_id.clone(), 
-                    DomTableEntry { dom: HashSet::from([block_id.clone()]), idom: BasicBlock(0), dom_frontier: HashSet::new(), dom_tree_children: HashSet::new() }
+                    block_id.clone(),
+                    DomTableEntry {
+                        dom: HashSet::from([block_id.clone()]),
+                        idom: BasicBlock(0),
+                        dom_frontier: HashSet::new(),
+                        dom_tree_children: HashSet::new(),
+                    },
                 );
-            }else {
+            } else {
                 self.dom_table.insert(
-                    block_id.clone(), 
-                    DomTableEntry { dom: all_block_set.clone(), idom: BasicBlock(0), dom_frontier: HashSet::new(), dom_tree_children: HashSet::new() }
+                    block_id.clone(),
+                    DomTableEntry {
+                        dom: all_block_set.clone(),
+                        idom: BasicBlock(0),
+                        dom_frontier: HashSet::new(),
+                        dom_tree_children: HashSet::new(),
+                    },
                 );
             }
-            index+=1;
+            index += 1;
         }
         // iterative algorithm for dom data flow analysis
         let mut is_change = true;
@@ -55,7 +66,7 @@ impl DomAnaylsier {
         let ordering = dfs_ordering_anaylsiser.get_order(function.entry_block[0], &function.blocks);
         while is_change {
             is_change = false;
-            for block_id in &ordering{
+            for block_id in &ordering {
                 let bb = function.blocks.get(block_id).unwrap();
                 let mut next_set = HashSet::new();
                 for pre in &bb.predecessor {
@@ -63,8 +74,11 @@ impl DomAnaylsier {
                     let pre_dom = &pre_dom_entry.dom;
                     if next_set.len() == 0 {
                         next_set = pre_dom.clone();
-                    }else {
-                        next_set = next_set.intersection(pre_dom).map(|id| id.clone()).collect();
+                    } else {
+                        next_set = next_set
+                            .intersection(pre_dom)
+                            .map(|id| id.clone())
+                            .collect();
                     }
                 }
                 next_set.insert(block_id.clone());
@@ -97,7 +111,7 @@ impl DomAnaylsier {
                         entry.1.idom = pre.clone();
                         if let Some(children) = dom_tree_children_map.get_mut(pre) {
                             children.insert(entry.0.clone());
-                        }else {
+                        } else {
                             let children = HashSet::from([entry.0.clone()]);
                             dom_tree_children_map.insert(pre.clone(), children);
                         }
@@ -118,7 +132,10 @@ impl DomAnaylsier {
             }
         }
         for (block_id, entry) in &mut self.dom_table {
-            entry.dom_tree_children = replace(dom_tree_children_map.get_mut(block_id).unwrap(), Default::default());
+            entry.dom_tree_children = replace(
+                dom_tree_children_map.get_mut(block_id).unwrap(),
+                Default::default(),
+            );
         }
     }
     /// DF data flow anaylsis for a control flow graph. the function rely on `idom_anaylsis` to stpre
@@ -130,7 +147,11 @@ impl DomAnaylsier {
                     let mut runner_id = pre_id.clone();
                     let idom = self.dom_table.get(block_id).unwrap().idom.clone();
                     while runner_id != idom {
-                        self.dom_table.get_mut(&runner_id).unwrap().dom_frontier.insert(block_id.clone());
+                        self.dom_table
+                            .get_mut(&runner_id)
+                            .unwrap()
+                            .dom_frontier
+                            .insert(block_id.clone());
                         runner_id = self.dom_table.get(&runner_id).unwrap().idom.clone();
                     }
                 }

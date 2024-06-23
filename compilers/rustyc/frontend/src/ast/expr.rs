@@ -1,7 +1,7 @@
-use std::borrow::Cow;
-use serde::{Serialize, Deserialize};
 use crate::ast::declar::ValueType;
-use crate::token::{IntLiteralBase, FloatLiteralBase};
+use crate::token::{FloatLiteralBase, IntLiteralBase};
+use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -26,7 +26,7 @@ pub enum Expression<'a> {
     IntLiteral(IntLiteral<'a>),
     FloatLiteral(FloatLiteral<'a>),
     Identifier(Identifier<'a>),
-    ParenthesesExpr(ParenthesesExpression<'a>)
+    ParenthesesExpr(ParenthesesExpression<'a>),
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SequentialExpression<'a> {
@@ -41,23 +41,23 @@ pub struct AssignmentExpression<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum AssignmentOps {
-    Assignment, // =,
-    SumAssignment, // +=
-    DiffAssignment, // -=
-    ProductAssignment, // *= 
-    QuotientAssignment, // /= 
-    RemainderAssignment, // %=
-    BitwiseLeftShiftAssignment, // <<=
+    Assignment,                  // =,
+    SumAssignment,               // +=
+    DiffAssignment,              // -=
+    ProductAssignment,           // *=
+    QuotientAssignment,          // /=
+    RemainderAssignment,         // %=
+    BitwiseLeftShiftAssignment,  // <<=
     BitwiseRightShiftAssignment, // >>=
-    BitwiseAndAssignment, // &=
-    BitwiseOrAssignment, // |=
-    BitwiseXorAssignment, // ^=
+    BitwiseAndAssignment,        // &=
+    BitwiseOrAssignment,         // |=
+    BitwiseXorAssignment,        // ^=
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ConditionalExpression<'a> {
     pub condi: Box<Expression<'a>>,
     pub conseq: Box<Expression<'a>>,
-    pub alter: Box<Expression<'a>>
+    pub alter: Box<Expression<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BinaryExpression<'a> {
@@ -68,24 +68,24 @@ pub struct BinaryExpression<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum BinaryOps {
-    Plus,      // +
-    Minus,     // -
-    Multiplication, // *
-    Division,   // /
-    Remainder,  // %
-    LogicalAnd, // &&
-    LogicalOr, // ||
-    BitwiseAnd, // & (same as adress of operator)
-    BitwiseOr, // |
-    BitwiseXor, // ^
+    Plus,              // +
+    Minus,             // -
+    Multiplication,    // *
+    Division,          // /
+    Remainder,         // %
+    LogicalAnd,        // &&
+    LogicalOr,         // ||
+    BitwiseAnd,        // & (same as adress of operator)
+    BitwiseOr,         // |
+    BitwiseXor,        // ^
     BitwiseLeftShift,  // <<
     BitwiseRightShift, // >>
-    Equal,    // ==
-    NotEqual, // !=
-    Gt,     // >
-    Geqt,    // >=
-    Lt,     // <
-    Leqt,   // <=
+    Equal,             // ==
+    NotEqual,          // !=
+    Gt,                // >
+    Geqt,              // >=
+    Lt,                // <
+    Leqt,              // <=
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UnaryExpression<'a> {
@@ -98,22 +98,22 @@ pub struct SizeOfTypeExpression<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SizeOfValueExpression<'a> {
-    pub expr: Box<Expression<'a>>
+    pub expr: Box<Expression<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum UnaryOps {
-    Plus,      // +
-    Minus,     // -
-    BitwiseNot, // ~
-    LogicalNot, // !
-    Sizeof, // sizeof
-    AddressOf, // &
+    Plus,        // +
+    Minus,       // -
+    BitwiseNot,  // ~
+    LogicalNot,  // !
+    Sizeof,      // sizeof
+    AddressOf,   // &
     Dereference, // *
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CastExpression<'a> {
     pub type_name: ValueType<'a>,
-    pub expr: Box<Expression<'a>>
+    pub expr: Box<Expression<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UpdateExpression<'a> {
@@ -149,7 +149,7 @@ pub struct CallExpression<'a> {
 /// AST for pointer access, like `somePointer->someThing`
 pub struct DereferenceExpression<'a> {
     pub pointer: Box<Expression<'a>>,
-    pub property: Box<Identifier<'a>>
+    pub property: Box<Identifier<'a>>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct InitExpression<'a> {
@@ -158,12 +158,12 @@ pub struct InitExpression<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Designator<'a> {
-    pub id: Identifier<'a>, 
+    pub id: Identifier<'a>,
     pub init_value: Expression<'a>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StringLiteral<'a> {
-    pub raw_value: Cow<'a, str>
+    pub raw_value: Cow<'a, str>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct IntLiteral<'a> {
@@ -179,7 +179,7 @@ pub struct FloatLiteral<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CharLiteral<'a> {
-    pub raw_value: Cow<'a, str>
+    pub raw_value: Cow<'a, str>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Identifier<'a> {
@@ -187,5 +187,5 @@ pub struct Identifier<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ParenthesesExpression<'a> {
-    pub expr: Box<Expression<'a>>
+    pub expr: Box<Expression<'a>>,
 }

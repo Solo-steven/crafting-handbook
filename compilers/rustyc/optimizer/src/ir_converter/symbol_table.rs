@@ -1,6 +1,6 @@
+use crate::ir::value::{IrValueType, Value};
 /// This module provide four kind of table
-use std::collections::{HashMap, BTreeMap};
-use crate::ir::value::{Value, IrValueType};
+use std::collections::{BTreeMap, HashMap};
 /// ## Symbol Table For Function Scope
 /// when enter a function scope, we need to create this table and provide
 /// global table as root table. since block scope in C can only exit in
@@ -20,7 +20,7 @@ impl<'a> SymbolTable<'a> {
     }
     /// Insert a symbol in current symbol table
     pub fn insert(&mut self, name: String, entry: SymbolEntry) {
-        let len = self.table_list.len()-1; 
+        let len = self.table_list.len() - 1;
         self.table_list[len].insert(name, entry);
     }
     /// Get a symbol by looking up table
@@ -32,14 +32,12 @@ impl<'a> SymbolTable<'a> {
             }
         }
         match self.root_table {
-            Some(table) => {
-                table.get(name)
-            }
-            None => None
+            Some(table) => table.get(name),
+            None => None,
         }
     }
     pub fn clear(&mut self) {
-        let len = self.table_list.len()-1;
+        let len = self.table_list.len() - 1;
         self.table_list[len].clear();
     }
     // enter a scope, create a new table.
@@ -58,21 +56,21 @@ pub struct SymbolEntry {
     pub reg: Value,
     pub symbol_type: SymbolType,
 }
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub enum SymbolType {
     BasicType(IrValueType),
     PointerType(PointerSymbolType),
     StructalType(String),
-    ArrayType(ArraySymbolType)
+    ArrayType(ArraySymbolType),
 }
-/// level of pointer symbol mean this pointer type 
+/// level of pointer symbol mean this pointer type
 /// is how many `pointer to` anther non-pointer type
-/// ex: int**p, is pointer to pointer to int. so the 
+/// ex: int**p, is pointer to pointer to int. so the
 /// level will be 2.
 #[derive(Debug, Clone)]
 pub struct PointerSymbolType {
     pub level: usize,
-    pub pointer_to: PointerToSymbolType
+    pub pointer_to: PointerToSymbolType,
 }
 #[derive(Debug, Clone)]
 pub enum PointerToSymbolType {
@@ -87,17 +85,19 @@ pub enum PointerToSymbolType {
 }
 pub fn map_pointer_to_symbol_to_symbol_type(pointer_to_symbol: PointerToSymbolType) -> SymbolType {
     match pointer_to_symbol {
-        PointerToSymbolType::ArrayType(array_sumbol_type) => SymbolType::ArrayType(array_sumbol_type),
+        PointerToSymbolType::ArrayType(array_sumbol_type) => {
+            SymbolType::ArrayType(array_sumbol_type)
+        }
         PointerToSymbolType::BasicType(ir_type) => SymbolType::BasicType(ir_type),
         PointerToSymbolType::StructalType(struct_name) => SymbolType::StructalType(struct_name),
-        PointerToSymbolType::FunctionType{..} => panic!(),
+        PointerToSymbolType::FunctionType { .. } => panic!(),
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct  ArraySymbolType {
+pub struct ArraySymbolType {
     pub array_of: Box<SymbolType>,
-    /// for example if access `array[2][4]` then the 
+    /// for example if access `array[2][4]` then the
     /// `value_of_dims` will be `[Value(2), Value(4)]`.
     pub value_of_dims: Vec<Value>,
 }
@@ -105,13 +105,13 @@ pub struct  ArraySymbolType {
 #[derive(Debug, Clone)]
 pub struct StructLayoutTable<'a> {
     table_list: Vec<HashMap<String, StructLayout>>,
-    root_table: Option<&'a StructLayoutTable<'a>>
+    root_table: Option<&'a StructLayoutTable<'a>>,
 }
 pub type StructLayout = BTreeMap<String, StructLayoutEntry>;
 #[derive(Debug, Clone)]
 pub struct StructLayoutEntry {
     pub offset: usize,
-    pub data_type: SymbolType
+    pub data_type: SymbolType,
 }
 impl<'a> StructLayoutTable<'a> {
     pub fn new(root_table: Option<&'a StructLayoutTable<'a>>) -> Self {
@@ -121,7 +121,7 @@ impl<'a> StructLayoutTable<'a> {
         }
     }
     pub fn insert(&mut self, name: String, entry: StructLayout) {
-        let len = self.table_list.len()-1; 
+        let len = self.table_list.len() - 1;
         self.table_list[len].insert(name, entry);
     }
     pub fn get(&self, name: &str) -> Option<&StructLayout> {
@@ -132,10 +132,8 @@ impl<'a> StructLayoutTable<'a> {
             }
         }
         match self.root_table {
-            Some(table) => {
-                table.get(name)
-            }
-            None => None
+            Some(table) => table.get(name),
+            None => None,
         }
     }
     pub fn enter_scope(&mut self) {
@@ -146,11 +144,10 @@ impl<'a> StructLayoutTable<'a> {
     }
 }
 
-
 #[derive(Debug, Clone)]
 pub struct StructSizeTable<'a> {
     table_list: Vec<HashMap<String, usize>>,
-    root_table: Option<&'a StructSizeTable<'a>>
+    root_table: Option<&'a StructSizeTable<'a>>,
 }
 impl<'a> StructSizeTable<'a> {
     pub fn new(root_table: Option<&'a StructSizeTable<'a>>) -> Self {
@@ -160,7 +157,7 @@ impl<'a> StructSizeTable<'a> {
         }
     }
     pub fn insert(&mut self, name: String, entry: usize) {
-        let len = self.table_list.len()-1; 
+        let len = self.table_list.len() - 1;
         self.table_list[len].insert(name, entry);
     }
     pub fn get(&self, name: &str) -> Option<&usize> {
@@ -171,10 +168,8 @@ impl<'a> StructSizeTable<'a> {
             }
         }
         match self.root_table {
-            Some(table) => {
-                table.get(name)
-            }
-            None => None
+            Some(table) => table.get(name),
+            None => None,
         }
     }
     pub fn enter_scope(&mut self) {
@@ -189,5 +184,5 @@ pub type FunctionSignatureTable = HashMap<String, FunctionSignature>;
 #[derive(Debug, Clone)]
 pub struct FunctionSignature {
     pub return_type: SymbolType,
-    pub params: Vec<SymbolType>
+    pub params: Vec<SymbolType>,
 }

@@ -12,7 +12,7 @@ macro_rules! expect_token {
                 $parser.next_token();
             }
             _ => {
-                // should be return a Error variant of ParserrResult 
+                // should be return a Error variant of ParserrResult
                 panic!();
             }
         }
@@ -22,12 +22,8 @@ macro_rules! expect_token {
 macro_rules! is_token {
     ($token_kind: pat, $parser: expr) => {
         match $parser.get_token() {
-            $token_kind => {
-                true
-            }
-            _ => {
-                false
-            }
+            $token_kind => true,
+            _ => false,
         }
     };
 }
@@ -35,13 +31,25 @@ macro_rules! is_token {
 macro_rules! is_binary_ops_token {
     ($parser: expr) => {
         match $parser.get_token() {
-            TokenKind::Plus | TokenKind::Minus |
-            TokenKind::Multiplication |TokenKind::Division | TokenKind::Remainder |
-            TokenKind::LogicalNot | TokenKind::LogicalAnd | TokenKind::LogicalOr |
-            TokenKind::BitwiseAnd | TokenKind::BitwiseOr |
-            TokenKind::BitwiseXor | TokenKind::BitwiseLeftShift | TokenKind::BitwiseRightShift | 
-            TokenKind::Equal | TokenKind::NotEqual |
-            TokenKind::Gt | TokenKind::Geqt | TokenKind::Lt | TokenKind::Leqt => true,
+            TokenKind::Plus
+            | TokenKind::Minus
+            | TokenKind::Multiplication
+            | TokenKind::Division
+            | TokenKind::Remainder
+            | TokenKind::LogicalNot
+            | TokenKind::LogicalAnd
+            | TokenKind::LogicalOr
+            | TokenKind::BitwiseAnd
+            | TokenKind::BitwiseOr
+            | TokenKind::BitwiseXor
+            | TokenKind::BitwiseLeftShift
+            | TokenKind::BitwiseRightShift
+            | TokenKind::Equal
+            | TokenKind::NotEqual
+            | TokenKind::Gt
+            | TokenKind::Geqt
+            | TokenKind::Lt
+            | TokenKind::Leqt => true,
             _ => false,
         }
     };
@@ -50,18 +58,18 @@ macro_rules! is_binary_ops_token {
 macro_rules! is_assignment_ops_token {
     ($parser: expr) => {
         match $parser.get_token() {
-            TokenKind::Assignment | 
-            TokenKind::SumAssignment |
-            TokenKind::DiffAssignment |
-            TokenKind::ProductAssignment |
-            TokenKind::QuotientAssignment |
-            TokenKind::RemainderAssignment |
-            TokenKind::BitwiseLeftShiftAssignment |
-            TokenKind::BitwiseRightShiftAssignment |
-            TokenKind::BitwiseAndAssignment |
-            TokenKind::BitwiseOrAssignment |
-            TokenKind::BitwiseXorAssignment => true,
-            _ => false
+            TokenKind::Assignment
+            | TokenKind::SumAssignment
+            | TokenKind::DiffAssignment
+            | TokenKind::ProductAssignment
+            | TokenKind::QuotientAssignment
+            | TokenKind::RemainderAssignment
+            | TokenKind::BitwiseLeftShiftAssignment
+            | TokenKind::BitwiseRightShiftAssignment
+            | TokenKind::BitwiseAndAssignment
+            | TokenKind::BitwiseOrAssignment
+            | TokenKind::BitwiseXorAssignment => true,
+            _ => false,
         }
     };
 }
@@ -69,11 +77,14 @@ macro_rules! is_assignment_ops_token {
 macro_rules! is_unary_ops_token {
     ($parser: expr) => {
         match $parser.get_token() {
-            TokenKind::Plus | TokenKind::Minus |
-            TokenKind::BitwiseNot | TokenKind::LogicalNot |
-            TokenKind::Multiplication | TokenKind::BitwiseAnd |
-            TokenKind::Sizeof => true,
-            _ => false
+            TokenKind::Plus
+            | TokenKind::Minus
+            | TokenKind::BitwiseNot
+            | TokenKind::LogicalNot
+            | TokenKind::Multiplication
+            | TokenKind::BitwiseAnd
+            | TokenKind::Sizeof => true,
+            _ => false,
         }
     };
 }
@@ -82,7 +93,7 @@ macro_rules! is_update_ops_token {
     ($parser: expr) => {
         match $parser.get_token() {
             TokenKind::Increment | TokenKind::Decrement => true,
-            _ => false
+            _ => false,
         }
     };
 }
@@ -101,7 +112,7 @@ macro_rules! map_assignment_token_to_assignment_ops {
             TokenKind::BitwiseLeftShiftAssignment => AssignmentOps::BitwiseLeftShiftAssignment,
             TokenKind::BitwiseRightShiftAssignment => AssignmentOps::BitwiseRightShiftAssignment,
             TokenKind::BitwiseAndAssignment => AssignmentOps::BitwiseAndAssignment,
-            TokenKind::BitwiseOrAssignment  => AssignmentOps::BitwiseOrAssignment,
+            TokenKind::BitwiseOrAssignment => AssignmentOps::BitwiseOrAssignment,
             TokenKind::BitwiseXorAssignment => AssignmentOps::BitwiseXorAssignment,
             _ => panic!("unreachable code when mapping assignment token to assignment ops"),
         }
@@ -116,7 +127,7 @@ macro_rules! map_binary_token_to_binary_ops {
             TokenKind::Minus => BinaryOps::Minus,
             TokenKind::Multiplication => BinaryOps::Multiplication,
             TokenKind::Division => BinaryOps::Division,
-            TokenKind::Remainder => BinaryOps::Remainder, 
+            TokenKind::Remainder => BinaryOps::Remainder,
             TokenKind::LogicalAnd => BinaryOps::LogicalAnd,
             TokenKind::LogicalOr => BinaryOps::LogicalOr,
             TokenKind::BitwiseAnd => BinaryOps::BitwiseAnd,
@@ -128,14 +139,14 @@ macro_rules! map_binary_token_to_binary_ops {
             TokenKind::NotEqual => BinaryOps::NotEqual,
             TokenKind::Gt => BinaryOps::Gt,
             TokenKind::Geqt => BinaryOps::Geqt,
-            TokenKind::Lt => BinaryOps::Lt, 
+            TokenKind::Lt => BinaryOps::Lt,
             TokenKind::Leqt => BinaryOps::Leqt,
             _ => panic!("unreachable code when mapping binary token to binary ops"),
         }
     };
 }
 #[macro_export]
-/// Function-like macro helper for get prioroty of binary ops 
+/// Function-like macro helper for get prioroty of binary ops
 macro_rules! get_binary_op_priority {
     ($op: expr) => {
         match $op {
@@ -183,10 +194,18 @@ macro_rules! map_update_token_to_update_ops {
 macro_rules! is_looksahed_type_name_token {
     ($parser: expr) => {
         match $parser.lookahead().kind {
-            TokenKind::Struct | TokenKind::Enum | TokenKind::Union | 
-            TokenKind::Char | TokenKind::Unsigned | TokenKind::Signed |
-            TokenKind::Int | TokenKind::Long | TokenKind::Short |
-            TokenKind::Float | TokenKind::Double | TokenKind::Void => true,
+            TokenKind::Struct
+            | TokenKind::Enum
+            | TokenKind::Union
+            | TokenKind::Char
+            | TokenKind::Unsigned
+            | TokenKind::Signed
+            | TokenKind::Int
+            | TokenKind::Long
+            | TokenKind::Short
+            | TokenKind::Float
+            | TokenKind::Double
+            | TokenKind::Void => true,
             _ => false,
         }
     };
@@ -195,10 +214,18 @@ macro_rules! is_looksahed_type_name_token {
 macro_rules! is_current_type_name_token {
     ($parser: expr) => {
         match $parser.get_token() {
-            TokenKind::Struct | TokenKind::Enum | TokenKind::Union | 
-            TokenKind::Char | TokenKind::Unsigned | TokenKind::Signed |
-            TokenKind::Int | TokenKind::Long | TokenKind::Short |
-            TokenKind::Float | TokenKind::Double | TokenKind::Void => true,
+            TokenKind::Struct
+            | TokenKind::Enum
+            | TokenKind::Union
+            | TokenKind::Char
+            | TokenKind::Unsigned
+            | TokenKind::Signed
+            | TokenKind::Int
+            | TokenKind::Long
+            | TokenKind::Short
+            | TokenKind::Float
+            | TokenKind::Double
+            | TokenKind::Void => true,
             _ => false,
         }
     };
@@ -207,50 +234,51 @@ macro_rules! is_current_type_name_token {
 macro_rules! is_type_name_token {
     ($parser: expr) => {
         match $parser.get_token() {
-            TokenKind::Struct | TokenKind::Enum | TokenKind::Union | 
-            TokenKind::Char | TokenKind::Unsigned | TokenKind::Signed |
-            TokenKind::Int | TokenKind::Long | TokenKind::Short |
-            TokenKind::Float | TokenKind::Double => true,
+            TokenKind::Struct
+            | TokenKind::Enum
+            | TokenKind::Union
+            | TokenKind::Char
+            | TokenKind::Unsigned
+            | TokenKind::Signed
+            | TokenKind::Int
+            | TokenKind::Long
+            | TokenKind::Short
+            | TokenKind::Float
+            | TokenKind::Double => true,
             _ => false,
         }
     };
 }
 #[macro_export]
 macro_rules! unwind_pointer_declarator_and_id_to_pointer_type {
-    ($declarator: expr, $value_type: expr) => {
-        {
-            for i in 0..$declarator.level {
-                $value_type = ValueType::PointerType(Box::new(PointerType {
-                    pointer_to: Box::new($value_type),
-                    qualifiers: std::mem::take(&mut $declarator.qualifiers[i]),
-                }))
-            }
-            $value_type
+    ($declarator: expr, $value_type: expr) => {{
+        for i in 0..$declarator.level {
+            $value_type = ValueType::PointerType(Box::new(PointerType {
+                pointer_to: Box::new($value_type),
+                qualifiers: std::mem::take(&mut $declarator.qualifiers[i]),
+            }))
         }
-    };
+        $value_type
+    }};
 }
 #[macro_export]
 macro_rules! combine_value_type_with_signed {
     ($signed: expr, $value_type: expr) => {
         match $signed {
-            Some(value) => {
-                match value  {
-                    true => $value_type,
-                    false => {
-                        match $value_type {
-                            ValueType::Char => ValueType::UnSignedChar,
-                            ValueType::Shorted => ValueType::UnsignedShort,
-                            ValueType::Long => ValueType::UnsignedLong,
-                            ValueType::LongLong => ValueType::UnsignedLongLong,
-                            ValueType::Int => ValueType::Unsigned,
-                            _ => {
-                                panic!()
-                            }
-                        }
+            Some(value) => match value {
+                true => $value_type,
+                false => match $value_type {
+                    ValueType::Char => ValueType::UnSignedChar,
+                    ValueType::Shorted => ValueType::UnsignedShort,
+                    ValueType::Long => ValueType::UnsignedLong,
+                    ValueType::LongLong => ValueType::UnsignedLongLong,
+                    ValueType::Int => ValueType::Unsigned,
+                    _ => {
+                        panic!()
                     }
-                }
-            }
-            _  => $value_type,
+                },
+            },
+            _ => $value_type,
         }
     };
 }

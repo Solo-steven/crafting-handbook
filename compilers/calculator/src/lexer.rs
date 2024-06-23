@@ -1,7 +1,7 @@
-use std::collections::HashSet;
+use crate::syntax_error;
 use crate::token::Token;
 use crate::utils::Position;
-use crate::syntax_error;
+use std::collections::HashSet;
 pub struct Lexer {
     code: String,
     position: Position,
@@ -17,11 +17,23 @@ impl Lexer {
     pub fn new(code: String) -> Lexer {
         Lexer {
             code,
-            position: Position { row: 0, col: 0, index:0 },
+            position: Position {
+                row: 0,
+                col: 0,
+                index: 0,
+            },
             current_token: None,
 
-            start_position: Position { row: 0, col: 0, index: 0 },
-            end_position: Position { row: 0, col: 0, index: 0 },
+            start_position: Position {
+                row: 0,
+                col: 0,
+                index: 0,
+            },
+            end_position: Position {
+                row: 0,
+                col: 0,
+                index: 0,
+            },
         }
     }
     pub fn next_token(&mut self) -> LexerResult {
@@ -29,17 +41,15 @@ impl Lexer {
         self.current_token = Some(t.clone());
         Ok(t.clone())
     }
-    pub fn get_token(&mut self)-> LexerResult {
+    pub fn get_token(&mut self) -> LexerResult {
         return match self.current_token.clone() {
             None => {
                 let t = self.toknize()?;
                 self.current_token = Some(t.clone());
                 Ok(t.clone())
             }
-            Some(t) => {
-                Ok(t.clone())
-            }
-        }
+            Some(t) => Ok(t.clone()),
+        };
     }
     pub fn lookahead(&mut self) -> LexerResult {
         let last_poistion = self.get_position();
@@ -56,7 +66,7 @@ impl Lexer {
     fn get_char(&self) -> Option<char> {
         self.code[self.position.index..].chars().next()
     }
-    fn eat_char(&mut self, mut n:  usize) {
+    fn eat_char(&mut self, mut n: usize) {
         if n == 0 {
             panic!("[Error]: Eat function eat 0 char.")
         }
@@ -65,9 +75,9 @@ impl Lexer {
                 break;
             }
             if self.code[self.position.index..].chars().next().unwrap() == '\n' {
-                self.position.col = 0 ;
+                self.position.col = 0;
                 self.position.row += 1;
-            }else {
+            } else {
                 self.position.col += 1
             }
             self.position.index += 1;
@@ -82,19 +92,17 @@ impl Lexer {
     }
     fn skip_space_and_change_line(&mut self) {
         loop {
-            match self.get_char()  {
-                None => {
-                    return
-                } 
+            match self.get_char() {
+                None => return,
                 Some(ch) => {
                     if ch == '\n' || ch == ' ' || ch == '\t' {
                         self.eat_char(1)
-                    }else {
-                        return
+                    } else {
+                        return;
                     }
                 }
             }
-        }   
+        }
     }
     fn start_token(&mut self) {
         self.start_position = self.get_position()
@@ -107,9 +115,7 @@ impl Lexer {
         let current_char = self.get_char();
         self.start_token();
         return match current_char {
-            None => {
-                Ok(Token::EOF)
-            }
+            None => Ok(Token::EOF),
             Some(current_ch) => {
                 match current_ch {
                     // Punctations
@@ -171,7 +177,7 @@ impl Lexer {
                     '?' => {
                         self.eat_char(1);
                         self.end_token();
-                        Ok(Token::Qustion)  
+                        Ok(Token::Qustion)
                     }
                     '\'' => {
                         panic!();
@@ -180,15 +186,9 @@ impl Lexer {
                         panic!();
                     }
                     // Operators
-                    '+' => {
-                        self.read_plus()
-                    }
-                    '-' => {
-                        self.read_mius()
-                    }
-                    '/' => {
-                        self.read_divide()
-                    }
+                    '+' => self.read_plus(),
+                    '-' => self.read_mius(),
+                    '/' => self.read_divide(),
                     '*' => {
                         self.eat_char(1);
                         Ok(Token::Multply)
@@ -197,36 +197,21 @@ impl Lexer {
                         self.eat_char(1);
                         Ok(Token::Mod)
                     }
-                    '=' => {
-                        self.read_assign()
-                    }
-                    '>' => {
-                        self.read_gt()
-                    }
-                    '<' => {
-                        self.read_lt()
-                    }
-                    '!' => {
-                        self.read_not()
-                    }
-                    '|' => {
-                        self.read_bitwise_or()
-                    }
-                    '&' => {
-                        self.read_bitwise_and()
-                    }
+                    '=' => self.read_assign(),
+                    '>' => self.read_gt(),
+                    '<' => self.read_lt(),
+                    '!' => self.read_not(),
+                    '|' => self.read_bitwise_or(),
+                    '&' => self.read_bitwise_and(),
                     // Number Literal
-                    '0' | '1' | '2' | '3' | '4' |
-                    '5' | '6' | '7' | '8' | '9' => {
+                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                         self.read_number_literal()
                     }
                     // Fallback -> Keyword OR Literal OR Identifier
-                    _ => {
-                        self.read_keyword_or_identifier()
-                    }
+                    _ => self.read_keyword_or_identifier(),
                 }
             }
-        }
+        };
     }
     fn read_plus(&mut self) -> LexerResult {
         if self.start_with("+=") {
@@ -259,12 +244,12 @@ impl Lexer {
         if self.start_with("==") {
             self.eat_char(2);
             Ok(Token::Eq)
-        }else {
+        } else {
             self.eat_char(1);
             Ok(Token::Assign)
         }
     }
-    fn read_gt(&mut self)-> LexerResult {
+    fn read_gt(&mut self) -> LexerResult {
         if self.start_with(">=") {
             self.eat_char(2);
             return Ok(Token::Gteq);
@@ -272,7 +257,7 @@ impl Lexer {
         self.eat_char(1);
         Ok(Token::Gt)
     }
-    fn read_lt(&mut self)-> LexerResult {
+    fn read_lt(&mut self) -> LexerResult {
         if self.start_with("<=") {
             self.eat_char(2);
             return Ok(Token::Lteq);
@@ -291,23 +276,22 @@ impl Lexer {
     fn read_bitwise_or(&mut self) -> LexerResult {
         if self.start_with("||") {
             self.eat_char(2);
-            return Ok(Token::LogicalOR)
+            return Ok(Token::LogicalOR);
         }
         syntax_error!("Not Support Bitwise OR");
     }
     fn read_bitwise_and(&mut self) -> LexerResult {
         if self.start_with("&&") {
             self.eat_char(2);
-            return Ok(Token::LogicalAND)
+            return Ok(Token::LogicalAND);
         }
         syntax_error!("Not Support Bitwise AND");
     }
     fn read_number_literal(&mut self) -> LexerResult {
         // TODO
-        let number_chars: HashSet<char> = vec![
-            '0','1','2','3','4',
-            '5','6','7','8','9'
-        ].into_iter().collect();
+        let number_chars: HashSet<char> = vec!['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+            .into_iter()
+            .collect();
         let mut number_word = String::from("");
         loop {
             match self.get_char() {
@@ -325,20 +309,16 @@ impl Lexer {
         }
         Ok(Token::NumberLiteral(number_word.parse().unwrap()))
     }
-    fn read_keyword_or_identifier(&mut self) -> LexerResult{
+    fn read_keyword_or_identifier(&mut self) -> LexerResult {
         // Resevered Word Start, TODO
-       let resevered_word_start_set: HashSet<char> = vec![
+        let resevered_word_start_set: HashSet<char> = vec![
             // Puncation
-            '{', '}',
-            '[', ']',
-            '(', ')',
-            ';', '.', ':', ',',
-            // Operator
-            '+', '/', '*', '%','=', '|', '&',
-            '<', '>',
-            // Space and Change Line
+            '{', '}', '[', ']', '(', ')', ';', '.', ':', ',', // Operator
+            '+', '/', '*', '%', '=', '|', '&', '<', '>', // Space and Change Line
             '\n', '\t', ' ',
-        ].into_iter().collect();
+        ]
+        .into_iter()
+        .collect();
         // Read Word
         let mut word = String::from("");
         loop {
@@ -356,38 +336,18 @@ impl Lexer {
             }
         }
         // Match By Word's value
-        Ok(match word.as_str()  {
+        Ok(match word.as_str() {
             // Keywords
-            "while" => {
-                Token::WhileKeyword
-            }
-            "for" => {
-                Token::ForKeyword
-            }
-            "if" => {
-                Token::IfKeyword
-            }
-            "else" => {
-                Token::ElesKeyword
-            }
-            "return" => {
-                Token::ReturnKeyword
-            }
-            "var" => {
-                Token::VarKeyword
-            }
-            "function" => {
-                Token::FunctionKeyword
-            }
-            "number" => {
-                Token::NumberKeyword
-            }
-            "void" => {
-                Token::VoidKeyword
-            }
-            _ => {
-                Token::Identifier(word)
-            }
+            "while" => Token::WhileKeyword,
+            "for" => Token::ForKeyword,
+            "if" => Token::IfKeyword,
+            "else" => Token::ElesKeyword,
+            "return" => Token::ReturnKeyword,
+            "var" => Token::VarKeyword,
+            "function" => Token::FunctionKeyword,
+            "number" => Token::NumberKeyword,
+            "void" => Token::VoidKeyword,
+            _ => Token::Identifier(word),
         })
     }
 }

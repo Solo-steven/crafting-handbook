@@ -1,18 +1,18 @@
-pub mod lexer;
-pub mod parser;
-mod codegen;
 mod ast;
+mod codegen;
+pub mod lexer;
+mod marco;
+pub mod parser;
 mod token;
 mod utils;
-mod marco;
 
+use codegen::Codegen;
 use inkwell::context::Context;
 use parser::Parser;
-use codegen::Codegen;
 
-pub type ExecuteResult  = Result<(Option<String>, f64), String>;
+pub type ExecuteResult = Result<(Option<String>, f64), String>;
 
-pub fn execute_program(code_string: String, emit_llvm: bool) -> ExecuteResult{
+pub fn execute_program(code_string: String, emit_llvm: bool) -> ExecuteResult {
     let mut parser = Parser::new(code_string);
     let program_ast = parser.parse()?;
     let llvm_context = Context::create();
@@ -23,7 +23,7 @@ pub fn execute_program(code_string: String, emit_llvm: bool) -> ExecuteResult{
 
     if emit_llvm {
         Ok((Some(llvm_code_string), execute_return_value))
-    }else{
+    } else {
         Ok((None, execute_return_value))
     }
 }
