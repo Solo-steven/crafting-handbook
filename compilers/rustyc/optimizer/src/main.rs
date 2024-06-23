@@ -16,30 +16,34 @@ use crate::ir_optimizer::pass::mem2reg::Mem2RegPass;
 use crate::ir_optimizer::pass::copy_propagation::CopyPropagationPass;
 use crate::ir_optimizer::pass::value_numbering::ValueNumberingPass;
 use crate::ir_optimizer::pass::lazy_code_motion::{LazyCodeMotionPass, print_lazy_code_motion_table};
+use crate::ir_optimizer::pass::lcm::LCMPass;
 
 fn main() {
-    let program = Parser::new("
+    // let program = Parser::new("
 
-    int a = 10;
-    int *p = &a;
-    int** return_pointer() {
-        return &p;
-    }
+    // int a = 10;
+    // int *p = &a;
+    // int** return_pointer() {
+    //     return &p;
+    // }
     
-    int main() {
-        return_pointer();
-        **return_pointer() = 10;
-        **return_pointer() + 10;
-        **return_pointer() = **return_pointer() + 100;
-        int c = 10;
-        **return_pointer() = **return_pointer() + c;
-        return 0;
-    }
-    ").parse().unwrap();
+    // int main() {
+    //     return_pointer();
+    //     **return_pointer() = 10;
+    //     **return_pointer() + 10;
+    //     **return_pointer() = **return_pointer() + 100;
+    //     int c = 10;
+    //     **return_pointer() = **return_pointer() + c;
+    //     return 0;
+    // }
+    // ").parse().unwrap();
     // println!("{:#?}", program);
-    let mut converter = Converter::new();
-    let module = converter.convert(&program);
-    let mut func = create_lazy_code_motion_graph();
+    // let mut converter = Converter::new();
+    // let module = converter.convert(&program);
+    let mut func = create_lcm_test_graph();
+    let mut lcm_pass = LCMPass::new();
+    lcm_pass.process(&mut func);
+    lcm_pass.debugger(&func);
 
     // let mut dom = DomAnaylsier::new();
     // let dom_table = dom.anaylsis(&mut func);
@@ -57,8 +61,8 @@ fn main() {
     // lazey_code_motion.process(&mut func, &dom_table);
     // print_lazy_code_motion_table(&lazey_code_motion, &func);
 
-    let mut file = File::create("./test.txt").unwrap();
-    write!(file, "{}", module.print_to_string()).unwrap();
+    // let mut file = File::create("./test.txt").unwrap();
+    // write!(file, "{}", module.print_to_string()).unwrap();
     // let mut liveness = LivenessAnaylsier::new();
     // let func =create_use_def_graph();
     // println!("{:?}", func.print_to_string());
@@ -155,6 +159,58 @@ pub fn create_dom_graph() -> Function {
     function.connect_block(b6, b7);
     function.connect_block(b8, b7);
     function.connect_block(b7, b3);
+    function
+}
+
+
+fn create_lcm_test_graph() -> Function {
+    let mut function = Function::new(String::from("test_lcm_from_cmu"));
+    // create blocks
+    let entry = function.create_block();
+    function.mark_as_entry(entry);
+    let b1 = function.create_block();
+    let b2 = function.create_block();
+    let b3 = function.create_block();
+    let b4 = function.create_block();
+    let b5 = function.create_block();
+    let b6 = function.create_block();
+    let b7 = function.create_block();
+    let b8 = function.create_block();
+    let b9 = function.create_block();
+    let b10 = function.create_block();
+    let exit = function.create_block();
+    function.mark_as_exit(exit);
+
+    // connect
+    function.connect_block(entry, b1);
+    function.connect_block(b1, b2);
+
+    function.connect_block(b2, b3);
+    function.connect_block(b3, b4);
+    function.connect_block(b4, b3);
+    function.connect_block(b4, b5);
+    function.connect_block(b5, b6);
+    function.connect_block(b6, b10);
+
+    function.connect_block(b2, b7);
+    function.connect_block(b7, b8);
+    function.connect_block(b8, b9);
+    function.connect_block(b9, b10);
+
+    function.connect_block(b10, exit);
+
+    // inst
+    function.switch_to_block(b1);
+    let u8_const = function.create_u8_const(1);
+    let b = function.build_mov_inst(u8_const);
+    let u8_const_1 = function.create_u8_const(1);
+    let c =function.build_mov_inst(u8_const_1);
+    function.switch_to_block(b7);
+    function.build_add_inst(b, c);
+
+    function.switch_to_block(b10);
+    function.build_add_inst(b, c);
+
     function
 }
 

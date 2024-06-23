@@ -10,6 +10,7 @@ pub struct DomTableEntry {
     pub dom: HashSet<BasicBlock>,
     pub idom: BasicBlock,
     pub dom_frontier: HashSet<BasicBlock>,
+    pub dom_tree_children: HashSet<BasicBlock>,
 }
 /// Struct for anaylsis dom related info for a control flow graph
 pub struct DomAnaylsier {
@@ -38,12 +39,12 @@ impl DomAnaylsier {
             if index == 0 {
                 self.dom_table.insert(
                     block_id.clone(), 
-                    DomTableEntry { dom: HashSet::from([block_id.clone()]), idom: BasicBlock(0), dom_frontier: HashSet::new() }
+                    DomTableEntry { dom: HashSet::from([block_id.clone()]), idom: BasicBlock(0), dom_frontier: HashSet::new(), dom_tree_children: HashSet::new() }
                 );
             }else {
                 self.dom_table.insert(
                     block_id.clone(), 
-                    DomTableEntry { dom: all_block_set.clone(), idom: BasicBlock(0), dom_frontier: HashSet::new() }
+                    DomTableEntry { dom: all_block_set.clone(), idom: BasicBlock(0), dom_frontier: HashSet::new(), dom_tree_children: HashSet::new() }
                 );
             }
             index+=1;
@@ -79,6 +80,7 @@ impl DomAnaylsier {
     /// IDOM (immi dom) anaylsis for control flow graph, this function is based on `dom_anaylsis`,
     /// it need the dom info already store in dom table.
     fn idom_anaylsis(&mut self, function: &Function) {
+        let mut dom_tree_children_map: HashMap<BasicBlock, HashSet<BasicBlock>> = HashMap::new();
         for entry in &mut self.dom_table {
             let dom_set = &entry.1.dom;
             let block_data = function.blocks.get(entry.0).unwrap();
@@ -93,6 +95,12 @@ impl DomAnaylsier {
                 for pre in &predecessors {
                     if dom_set.contains(pre) {
                         entry.1.idom = pre.clone();
+                        if let Some(children) = dom_tree_children_map.get_mut(pre) {
+                            children.insert(entry.0.clone());
+                        }else {
+                            let children = HashSet::from([entry.0.clone()]);
+                            dom_tree_children_map.insert(pre.clone(), children);
+                        }
                         break 'find;
                     }
                 }
@@ -108,6 +116,9 @@ impl DomAnaylsier {
                 }
                 predecessors = next_predecessor;
             }
+        }
+        for (block_id, entry) in &mut self.dom_table {
+            entry.dom_tree_children = replace(dom_tree_children_map.get_mut(block_id).unwrap(), Default::default());
         }
     }
     /// DF data flow anaylsis for a control flow graph. the function rely on `idom_anaylsis` to stpre

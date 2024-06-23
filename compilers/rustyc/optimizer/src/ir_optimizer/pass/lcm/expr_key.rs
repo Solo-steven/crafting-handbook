@@ -1,90 +1,129 @@
-use std::collections::{HashMap, HashSet};
-use crate::ir::function::{BasicBlock, Function};
-use crate::ir::instructions::{Instruction, InstructionData, OpCode, CmpFlag};
-use crate::ir::module::get_text_format_of_value;
-use crate::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
+use std::collections::HashSet;
+use crate::ir::instructions::{InstructionData, OpCode, CmpFlag};
 use crate::ir::value::Value;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum RightHandSideInst {
+pub enum ExpreKey {
     Binary((Value, Value, OpCode)),
     Unary((Value, OpCode)),
     Cmp((Value, Value, CmpFlag)),
 }
 
-impl RightHandSideInst {
-    pub fn get_value_ref(&self) -> Vec<&Value> {
-        match self {
-            RightHandSideInst::Binary((src1, src2, _)) | 
-            RightHandSideInst::Cmp((src1, src2, _)) => {
-                vec![src1, src2]
-            }
-            RightHandSideInst::Unary((src, _)) => {
-                vec![src]
-            }
-        }  
+pub type ExprValueNumber = u64;
+pub type ExprValueNumberSet = HashSet<ExprValueNumber>;
+
+pub fn get_expr_key_and_values(instruction: &InstructionData) -> Option<(ExpreKey, Vec<Value>)> {
+    match instruction {
+        InstructionData::Add { opcode, src1, src2, .. } |
+        InstructionData::Sub { opcode, src1, src2, .. } |
+        InstructionData::Mul { opcode, src1, src2, .. } |
+        InstructionData::Divide { opcode, src1, src2, .. } |
+        InstructionData::Reminder { opcode , src1, src2, .. } |
+        InstructionData::FAdd { opcode , src1, src2, .. } |
+        InstructionData::FSub { opcode , src1, src2, .. } |
+        InstructionData::FMul { opcode, src1, src2, .. } |
+        InstructionData::FDivide { opcode, src1, src2, .. } |
+        InstructionData::FReminder { opcode , src1, src2, .. } |
+        InstructionData::BitwiseAnd { opcode , src1, src2, .. } |
+        InstructionData::BitwiseOR { opcode , src1, src2, .. } |
+        InstructionData::LogicalAnd { opcode , src1, src2, .. } |
+        InstructionData::LogicalOR { opcode , src1, src2, .. }  |
+        InstructionData::ShiftLeft { opcode , src1, src2, .. } |
+        InstructionData::ShiftRight { opcode , src1, src2, .. } => {
+            Some((ExpreKey::Binary((src1.clone(), src2.clone(), opcode.clone())), vec![src1.clone(), src2.clone()]))
+        },
+        InstructionData::Neg { opcode, src, .. } |
+        InstructionData::BitwiseNot { opcode , src, .. } |
+        InstructionData::LogicalNot { opcode, src, .. } |
+        InstructionData::ToU8 { opcode , src, .. } |
+        InstructionData::ToU16 { opcode , src, .. } |
+        InstructionData::ToU32 { opcode, src, .. } |
+        InstructionData::ToU64 { opcode , src, .. } |
+        InstructionData::ToI16 { opcode , src, .. } |
+        InstructionData::ToI32 { opcode , src, .. } |
+        InstructionData::ToI64 { opcode , src, .. } |
+        InstructionData::ToF32 { opcode , src, .. } |
+        InstructionData::ToF64 { opcode , src, .. } |
+        InstructionData::ToAddress { opcode, src, .. } => {
+            Some((ExpreKey::Unary((src.clone(), opcode.clone())), vec![src.clone()] ))
+        },
+        InstructionData::Icmp { opcode: _, flag, src1, src2, .. } |
+        InstructionData::Fcmp { opcode: _, flag, src1, src2, .. }=> {
+            Some((ExpreKey::Cmp((src1.clone(), src2.clone(), flag.clone())), vec![src1.clone(), src2.clone()]))
+        }
+        _ => None
     }
 }
-/// ## Right-Hand-Side-Expression Inst
-/// Right hand side expression instruction set is used to storage 
-/// hash of right hand side expression.
-pub type RightHandSideInstructionSet = HashSet<RightHandSideInst>;
+pub fn get_content_ref_of_set<'a>(hash_set: &'a ExprValueNumberSet ) -> HashSet<&'a ExprValueNumber> {
+    hash_set.into_iter().map(|key| { key }).collect()
+}
+pub fn intersection_content_ref_sets<'a>(target_set: HashSet<&'a ExprValueNumber> , other_set: HashSet<&'a ExprValueNumber> ) -> HashSet<&'a ExprValueNumber>{
+    target_set
+        .intersection(&other_set)
+        .into_iter()
+        .map(|key| { *key })
+        .collect()
+}
+pub fn union_content_ref_sets<'a>(target_set: HashSet<&'a ExprValueNumber> , other_set: HashSet<&'a ExprValueNumber> ) -> HashSet<&'a ExprValueNumber>{
+    target_set
+        .union(&other_set)
+        .into_iter()
+        .map(|key| { *key })
+        .collect()
+}
+pub fn different_content_ref_sets<'a>(target_set: HashSet<&'a ExprValueNumber> , other_set: HashSet<&'a ExprValueNumber> ) -> HashSet<&'a ExprValueNumber>{
+    target_set
+        .difference(&other_set)
+        .into_iter()
+        .map(|key| { *key })
+        .collect()
+}
 
-pub fn get_right_hand_side_inst_key(instruction: &InstructionData) -> (Option<RightHandSideInst> , Option<Value>){
+pub fn content_ref_set_to_own(hash_set: HashSet<&ExprValueNumber>) -> ExprValueNumberSet {
+    hash_set
+        .into_iter()
+        .map(|key| { key.clone() })
+        .collect()
+}
+
+pub fn get_dst_value(instruction: &InstructionData) -> Option<Value>{
     match instruction {
-        InstructionData::Add { opcode, src1, src2, dst } |
-        InstructionData::Sub { opcode, src1, src2, dst } |
-        InstructionData::Mul { opcode, src1, src2, dst } |
-        InstructionData::Divide { opcode, src1, src2, dst } |
-        InstructionData::Reminder { opcode , src1, src2, dst } |
-        InstructionData::FAdd { opcode , src1, src2, dst } |
-        InstructionData::FSub { opcode , src1, src2, dst } |
-        InstructionData::FMul { opcode, src1, src2, dst } |
-        InstructionData::FDivide { opcode, src1, src2, dst } |
-        InstructionData::FReminder { opcode , src1, src2, dst } |
-        InstructionData::BitwiseAnd { opcode , src1, src2, dst } |
-        InstructionData::BitwiseOR { opcode , src1, src2, dst } |
-        InstructionData::LogicalAnd { opcode , src1, src2, dst } |
-        InstructionData::LogicalOR { opcode , src1, src2, dst }  |
-        InstructionData::ShiftLeft { opcode , src1, src2, dst } |
-        InstructionData::ShiftRight { opcode , src1, src2, dst } => {
-            
-            (Some(RightHandSideInst::Binary((src1.clone(), src2.clone(), opcode.clone()))) , Some(dst.clone()))
-        },
-        InstructionData::Neg { opcode, src, dst } |
-        InstructionData::BitwiseNot { opcode , src, dst } |
-        InstructionData::LogicalNot { opcode, src, dst } |
-        InstructionData::ToU8 { opcode , src, dst } |
-        InstructionData::ToU16 { opcode , src, dst } |
-        InstructionData::ToU32 { opcode, src, dst } |
-        InstructionData::ToU64 { opcode , src, dst } |
-        InstructionData::ToI16 { opcode , src, dst } |
-        InstructionData::ToI32 { opcode , src, dst } |
-        InstructionData::ToI64 { opcode , src, dst } |
-        InstructionData::ToF32 { opcode , src, dst } |
-        InstructionData::ToF64 { opcode , src, dst } |
-        InstructionData::ToAddress { opcode, src, dst } => {
-            (Some(RightHandSideInst::Unary((src.clone(), opcode.clone()))), Some(dst.clone()))
-        },
-        InstructionData::Icmp { opcode: _, flag, src1, src2, dst } |
-        InstructionData::Fcmp { opcode: _, flag, src1, src2, dst }=> {
-            (Some(RightHandSideInst::Cmp((src1.clone(), src2.clone(), flag.clone()))), Some(dst.clone()))
-        }
+        InstructionData::Add { dst, .. } |
+        InstructionData::Sub {  dst, .. } |
+        InstructionData::Mul {  dst, .. } |
+        InstructionData::Divide {  dst, .. } |
+        InstructionData::Reminder { dst, .. } |
+        InstructionData::FAdd { dst ,..} |
+        InstructionData::FSub { dst ,..} |
+        InstructionData::FMul {dst ,..} |
+        InstructionData::FDivide {dst ,..} |
+        InstructionData::FReminder { dst ,..} |
+        InstructionData::BitwiseAnd { dst ,..} |
+        InstructionData::BitwiseOR { dst ,..} |
+        InstructionData::LogicalAnd { dst ,..} |
+        InstructionData::LogicalOR { dst ,..}  |
+        InstructionData::ShiftLeft { dst ,..} |
+        InstructionData::ShiftRight { dst ,..} |
+        InstructionData::Icmp { dst, .. } |
+        InstructionData::Fcmp { dst, .. } |
         InstructionData::Move {  dst, .. } | 
         InstructionData::Phi { dst, .. }  |
-        InstructionData::LoadRegister { dst, ..} => {
-            (None, Some(dst.clone()))
-        }
-        _ => (None, None)
+        InstructionData::LoadRegister { dst, ..} |
+        InstructionData::Neg { dst, .. } |
+        InstructionData::BitwiseNot {  dst, .. } |
+        InstructionData::LogicalNot { dst , ..} |
+        InstructionData::ToU8 { dst , ..} |
+        InstructionData::ToU16 { dst , ..} |
+        InstructionData::ToU32 { dst , ..} |
+        InstructionData::ToU64 { dst , ..} |
+        InstructionData::ToI16 { dst , ..} |
+        InstructionData::ToI32 { dst , ..} |
+        InstructionData::ToI64 { dst , ..} |
+        InstructionData::ToF32 { dst , ..} |
+        InstructionData::ToF64 { dst , ..} |
+        InstructionData::ToAddress { dst , ..} => {
+            Some(dst.clone())
+        },
+        _ => None
     }
-}
-pub fn get_all_right_hand_expr_set(function: &Function) -> RightHandSideInstructionSet {
-    let mut set = HashSet::new();
-    for (_, data) in &function.instructions {
-        let tuple = get_right_hand_side_inst_key(data);
-        if let Some(key) = tuple.0 {
-            set.insert(key);   
-        };
-    }
-    set
 }
