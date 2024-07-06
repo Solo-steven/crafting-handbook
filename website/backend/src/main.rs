@@ -1,4 +1,4 @@
-use rocket::{launch, routes, get};
+use rocket::{get, launch, routes};
 
 #[get("/hello")]
 fn hello() -> &'static str {
@@ -9,4 +9,3 @@ fn hello() -> &'static str {
 fn start() -> _ {
     rocket::build().mount("/", routes![hello])
 }
-

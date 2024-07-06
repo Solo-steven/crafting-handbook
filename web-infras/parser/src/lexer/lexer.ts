@@ -29,6 +29,10 @@ interface Context {
     skipTime: number;
 }
 
+type TokenContext = { 
+
+}
+
 function createContext(code: string): Context {
     return {
         code,

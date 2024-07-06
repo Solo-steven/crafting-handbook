@@ -1,7 +1,9 @@
-use crate::ir::function::*;
-use crate::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
+mod debugger;
 use std::collections::{HashMap, HashSet};
 use std::mem::replace;
+use crate::ir::function::*;
+use crate::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
+use crate::ir_optimizer::anaylsis::OptimizerAnaylsis;
 /// Table for record every block's dom and idom and dom-frontier
 pub type DomTable = HashMap<BasicBlock, DomTableEntry>;
 /// Entry for record dom, idom and dom-frontier for a bb.
@@ -17,18 +19,21 @@ pub struct DomAnaylsier {
     dom_table: DomTable,
 }
 
+impl OptimizerAnaylsis<DomTable> for DomAnaylsier {
+    /// Public api for anaylsis dom information
+    fn anaylsis(&mut self, function: &Function) -> DomTable {
+        self.dom_anaylsis(function);
+        self.idom_anaylsis(function);
+        self.dom_frontier_anaylsis(function);
+        replace(&mut self.dom_table, HashMap::new())
+    }
+}
+
 impl DomAnaylsier {
     pub fn new() -> Self {
         Self {
             dom_table: HashMap::new(),
         }
-    }
-    /// Public api for anaylsis dom information
-    pub fn anaylsis(&mut self, function: &Function) -> DomTable {
-        self.dom_anaylsis(function);
-        self.idom_anaylsis(function);
-        self.dom_frontier_anaylsis(function);
-        replace(&mut self.dom_table, HashMap::new())
     }
     /// Iterative DOM data flow anaylsis, algorithm is from the book `Engineering a Compiler`.
     fn dom_anaylsis(&mut self, function: &Function) {
@@ -133,7 +138,7 @@ impl DomAnaylsier {
         }
         for (block_id, entry) in &mut self.dom_table {
             entry.dom_tree_children = replace(
-                dom_tree_children_map.get_mut(block_id).unwrap(),
+                dom_tree_children_map.get_mut(block_id).unwrap_or(&mut HashSet::new()),
                 Default::default(),
             );
         }

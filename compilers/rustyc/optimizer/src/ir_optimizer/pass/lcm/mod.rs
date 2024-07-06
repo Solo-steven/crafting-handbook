@@ -6,6 +6,7 @@ mod pre_proc;
 mod rewrite;
 
 use crate::ir::function::{BasicBlock, Function};
+use crate::ir_optimizer::pass::OptimizerPass;
 use expr_key::{ExprKeyManager, ExprValueNumberSet};
 use std::collections::HashMap;
 
@@ -53,7 +54,10 @@ impl LCMPass {
             used_expr_in: Default::default(),
         }
     }
-    pub fn process(&mut self, function: &mut Function) {
+}
+
+impl OptimizerPass for LCMPass {
+    fn process(&mut self, function: &mut Function) {
         // pre process pass
         self.pre_proc_pass(function);
         // earliest pass

@@ -242,20 +242,13 @@ export function createParser(code: string) {
      * @param {SyntaxKinds} kind
      * @returns {boolean}
      */
-    function match(kind: SyntaxKinds): boolean {
-        return lexer.getToken() === kind;
-    }
-    /**
-     * Is current token match any of given kinds
-     * @param {Array<SyntaxKinds>} kinds 
-     * @returns {boolean}
-     */
-    function matchSet(kinds: SyntaxKinds[]): boolean {
-        const result = kinds.find(value => match(value));
-        if(result) {
-            return result > 0;
+    function match(kind: SyntaxKinds | Array<SyntaxKinds>): boolean {
+        const currentToken = lexer.getToken();
+        if(Array.isArray(kind)) {
+            const tokenSet = new Set(kind);
+            return tokenSet.has(currentToken);
         }
-        return false;
+        return currentToken === kind;
     }
     /**
      * Move to next token and return next token
@@ -318,7 +311,7 @@ export function createParser(code: string) {
      */
     function expect(kind: SyntaxKinds | Array<SyntaxKinds>, message = "")  {
         if(Array.isArray(kind)) {
-            if(matchSet(kind)) {
+            if(match(kind)) {
                 const metaData = {
                     value: getValue(),
                     start: getStartPosition(),
@@ -342,7 +335,7 @@ export function createParser(code: string) {
     }
     function expectButNotEat(kind: SyntaxKinds | Array<SyntaxKinds>, message = "") {
         if(Array.isArray(kind)) {
-            if(matchSet(kind)) {
+            if(match(kind)) {
                 return;
             }
             throw createUnexpectError(kind, message);
@@ -823,15 +816,14 @@ export function createParser(code: string) {
     function toAssignmentPattern(node: ModuleItem, isBinding: boolean = false): ModuleItem {
         switch(node.kind) {
             case SyntaxKinds.Identifier:
-            case SyntaxKinds.MemberExpression:
-            case SyntaxKinds.AssignmentPattern:
-            case SyntaxKinds.ArrayPattern:
-            case SyntaxKinds.ObjectPattern:
                 return node;
             case SyntaxKinds.AssigmentExpression: {
                 const assignmentExpressionNode = node as AssigmentExpression;
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const left = toAssignmentPattern(assignmentExpressionNode.left, isBinding);
+                const left = assignmentExpressionNode.left 
+                    // isObjectPattern(assignmentExpressionNode.left) || isArrayPattern(assignmentExpressionNode.left) 
+                    //     ? assignmentExpressionNode.left 
+                    //     : toAssignmentPattern(assignmentExpressionNode.left, isBinding);
                 if(assignmentExpressionNode.operator !== SyntaxKinds.AssginOperator) {
                     throw createMessageError(ErrorMessageMap.assigment_pattern_only_can_use_assigment_operator);
                 }
@@ -839,7 +831,11 @@ export function createParser(code: string) {
             }
             case SyntaxKinds.SpreadElement: {
                 const spreadElementNode = node as SpreadElement;
-                return Factory.createRestElement(toAssignmentPattern(spreadElementNode.argument) as Pattern, spreadElementNode.start, spreadElementNode.end);
+                return Factory.createRestElement( 
+                    (isMemberExpression(spreadElementNode.argument) ? spreadElementNode.argument : toAssignmentPattern(spreadElementNode.argument)) as Pattern, 
+                    spreadElementNode.start, 
+                    spreadElementNode.end
+                );
             }
             case SyntaxKinds.ArrayExpression: {
                 const arrayExpressionNode = node as ArrayExpression;
@@ -850,7 +846,7 @@ export function createParser(code: string) {
                         elements.push(element);
                         continue;
                     }
-                    const transformElement = toAssignmentPattern(element, isBinding);
+                    const transformElement = isMemberExpression(element) ? element : toAssignmentPattern(element, isBinding);
                     if(isRestElement(transformElement)) {
                         if(index !== arrayExpressionNode.elements.length -1 || arrayExpressionNode.trailingComma) {
                             throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
@@ -898,7 +894,11 @@ export function createParser(code: string) {
                 }
                 return Factory.createObjectPatternProperty(
                     objectPropertyNode.key, 
-                    !objectPropertyNode.value  ? objectPropertyNode.value : toAssignmentPattern(objectPropertyNode.value as ModuleItem) as unknown as any, 
+                    !objectPropertyNode.value  
+                        ? objectPropertyNode.value : 
+                        isMemberExpression(objectPropertyNode.value) 
+                        ? objectPropertyNode.value :
+                         toAssignmentPattern(objectPropertyNode.value as ModuleItem) as unknown as any, 
                     objectPropertyNode.computed, 
                     objectPropertyNode.shorted, objectPropertyNode.start, objectPropertyNode.end
                 );
@@ -911,8 +911,7 @@ export function createParser(code: string) {
      * Parse For-related Statement, include ForStatement, ForInStatement, ForOfStatement.
      * 
      * This function is pretty complex and hard to understand, some function's flag is only
-     * used in this function. ex: allowIn flag of parseExpression, parseAssignmentExpression,
-     * ignoreInit of parseVariableDeclaration.
+     * used in this function. ex: allowIn flag of parseExpression, parseAssignmentExpression.
      * @returns {ForStatement | ForInStatement | ForOfStatement}
      */
    function parseForStatement(): ForStatement | ForInStatement | ForOfStatement {
@@ -934,7 +933,7 @@ export function createParser(code: string) {
             isAwait = true;
         }
         expect(SyntaxKinds.ParenthesesLeftPunctuator);
-        if(matchSet([SyntaxKinds.LetKeyword, SyntaxKinds.ConstKeyword, SyntaxKinds.VarKeyword])) {
+        if(match([SyntaxKinds.LetKeyword, SyntaxKinds.ConstKeyword, SyntaxKinds.VarKeyword])) {
             if(match(SyntaxKinds.LetKeyword) && isLetPossibleIdentifier()) {
                 leftOrInit = parseExpression(false);
             }else {
@@ -998,7 +997,10 @@ export function createParser(code: string) {
         if(isVarDeclaration(leftOrInit)) {
             helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit);
         }else {
-            leftOrInit = toAssignmentPattern(leftOrInit) as Expression;
+            // console.log(leftOrInit);
+            if(!isMemberExpression(leftOrInit)) {
+                leftOrInit = toAssignmentPattern(leftOrInit) as Expression;
+            }
             if(isAssignmentPattern(leftOrInit)) {
                 throw createMessageError(ErrorMessageMap.invalid_left_value);
             }
@@ -1079,6 +1081,7 @@ export function createParser(code: string) {
         expect(SyntaxKinds.ParenthesesLeftPunctuator);
         const discriminant = parseExpression();
         expect(SyntaxKinds.ParenthesesRightPunctuator);
+        //TODO: should remove, duplicate check
         if(!match(SyntaxKinds.BracesLeftPunctuator)) {
             throw createUnexpectError(SyntaxKinds.BracesLeftPunctuator, "switch statement should has cases body");
         }
@@ -1100,7 +1103,7 @@ export function createParser(code: string) {
             }
             expect(SyntaxKinds.ColonPunctuator, "switch case should has colon")
             const consequence: Array<StatementListItem> = []
-            while(!matchSet([SyntaxKinds.BracesRightPunctuator, SyntaxKinds.EOFToken, SyntaxKinds.CaseKeyword, SyntaxKinds.DefaultKeyword])) {
+            while(!match([SyntaxKinds.BracesRightPunctuator, SyntaxKinds.EOFToken, SyntaxKinds.CaseKeyword, SyntaxKinds.DefaultKeyword])) {
                 consequence.push(parseStatementListItem());
             }
             if(match(SyntaxKinds.EOFToken)) {
@@ -1259,7 +1262,7 @@ export function createParser(code: string) {
             const id = parseBindingElement(false);
             const isBindingPattern = !isIdentifer(id);
             // custom logical for check is lexical binding have let identifier ?
-            if(variableKind === "lexical") {
+            if(variableKind === "lexical" || isInStrictMode()) {
                 if(checkPatternContainCertinValue(id, (value) => value === "let")) {
                     throw createMessageError(ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding)
                 }
@@ -1313,7 +1316,7 @@ export function createParser(code: string) {
         if(isObjectPattern(pattern)) {
             for(const property of pattern.properties) {
                 if(isObjectPatternProperty(property)) {
-                    if(property.value && checkPatternContainCertinValue(property.value, callback)) {
+                    if(property.value && checkPatternContainCertinValue(property.value as Pattern, callback)) {
                         return true
                     }
                     if(!property.value && isIdentifer(property.key) && checkPatternContainCertinValue(property.key, callback)) {
@@ -1370,7 +1373,7 @@ export function createParser(code: string) {
         return Factory.createFunction(name, body, params, generator, isCurrentFunctionAsync(), start, cloneSourcePosition(body.end));
     }
     /**
-     * Because we "use strict" directive is in function body, some we will not sure
+     * Because we "use strict" directive is in function body,  we will not sure
      * if this function contain stric directive or not until we enter the function body.
      * as the result, we need to check function name and function paramemter's name after
      * parseFunctionBody.
@@ -1408,7 +1411,7 @@ export function createParser(code: string) {
         let name: Identifier | null = null;
         // there we do not just using parseIdentifier function as the reason above
         // let can be function name as other place
-        if(matchSet([SyntaxKinds.Identifier, SyntaxKinds.LetKeyword])) {
+        if(match([SyntaxKinds.Identifier, SyntaxKinds.LetKeyword])) {
             name = parseIdentifer();
         }
         if(match(SyntaxKinds.AwaitKeyword)) {
@@ -1436,9 +1439,6 @@ export function createParser(code: string) {
                 throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
             }
             name = parseIdentiferWithKeyword();
-        }
-        if(name === null && !isExpression) {
-            throw createMessageError("function declaration must have name");
         }
         return name;
     }
@@ -1569,7 +1569,7 @@ export function createParser(code: string) {
                     continue;
                 }
                 if(property.value){
-                    checkParam(property.value, paramSet);
+                    checkParam(property.value as Pattern, paramSet);
                 }
             }
             return;
@@ -1604,7 +1604,7 @@ export function createParser(code: string) {
     function parseClass(): Class {
         const { start } = expect(SyntaxKinds.ClassKeyword);
         let name: Identifier | null = null;
-        if(matchSet(BindingIdentifierSyntaxKindArray)) {
+        if(match(BindingIdentifierSyntaxKindArray)) {
             name = parseIdentifer();
         }
         let superClass: Expression | null  = null;
@@ -1682,7 +1682,7 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.ParenthesesLeftPunctuator)) {
             return parseMethodDefintion(true, key, isStatic) as ClassMethodDefinition;
         }
-        if(matchSet([SyntaxKinds.AssginOperator])) {
+        if(match([SyntaxKinds.AssginOperator])) {
             nextToken();
             const value = parseAssigmentExpression();
             semi();
@@ -1756,10 +1756,10 @@ export function createParser(code: string) {
             return parseYieldExpression();
         }
         let left = parseConditionalExpression();
-        if (!matchSet(AssigmentOperators)) {
+        if (!match(AssigmentOperators)) {
            return left;
         }
-        left = toAssignmentPattern(left) as Expression;
+        left = isMemberExpression(left) ? left : toAssignmentPattern(left) as Expression;
         const operator = getToken();
         nextToken();
         const right = parseAssigmentExpressionBase();
@@ -1825,7 +1825,7 @@ export function createParser(code: string) {
         if(isArrowFunctionExpression(atom)) {
             return atom;
         }
-        if(matchSet(BinaryOperators)) {
+        if(match(BinaryOperators)) {
             return parseBinaryOps(atom);
         }
         return atom;
@@ -1938,7 +1938,7 @@ export function createParser(code: string) {
         }
     }
     function parseUnaryExpression(): Expression {
-        if(matchSet(UnaryOperators)) {
+        if(match(UnaryOperators)) {
             const operator = getToken() as UnaryOperatorKinds;
             const start = getStartPosition();
             nextToken();
@@ -1957,7 +1957,7 @@ export function createParser(code: string) {
         return parseUpdateExpression();
     }
     function parseUpdateExpression(): Expression {
-        if(matchSet(UpdateOperators)) {
+        if(match(UpdateOperators)) {
             const operator = getToken() as UpdateOperatorKinds;
             const start = getStartPosition();
             nextToken();
@@ -1965,7 +1965,7 @@ export function createParser(code: string) {
             return Factory.createUpdateExpression(argument, operator, true, start, cloneSourcePosition(argument.end));
         }
         const argument = parseLeftHandSideExpression();
-        if(matchSet(UpdateOperators)) {
+        if(match(UpdateOperators)) {
             const operator = getToken() as UpdateOperatorKinds;
             const end = getEndPosition();
             nextToken();
@@ -1999,7 +1999,7 @@ export function createParser(code: string) {
                 // callexpression
                 base = parseCallExpression(base, optional);
             }
-            else if (matchSet([SyntaxKinds.DotOperator, SyntaxKinds.BracketLeftPunctuator]) || optional) {
+            else if (match([SyntaxKinds.DotOperator, SyntaxKinds.BracketLeftPunctuator]) || optional) {
                 // memberexpression 
                 base = parseMemberExpression(base, optional);
             }
@@ -2234,6 +2234,7 @@ export function createParser(code: string) {
                     exitFunctionScope();
                     return arrowExpr;
                 }
+                // TODO: should be just default case ?
                 // case 2 `async` `?.`, in this case, must treat as call expression
                 if(getValue() === "async" &&  kind === SyntaxKinds.QustionDotOperator ) {
                     const id = parseIdentifer();
@@ -2369,7 +2370,7 @@ export function createParser(code: string) {
         return Factory.createBoolLiteral(value === "true" ? true : false, start, end);
     }
     function parseTemplateLiteral() {
-        if(!matchSet([SyntaxKinds.TemplateHead, SyntaxKinds.TemplateNoSubstitution])) {
+        if(!match([SyntaxKinds.TemplateHead, SyntaxKinds.TemplateNoSubstitution])) {
             throw createUnreachError([SyntaxKinds.TemplateHead, SyntaxKinds.TemplateNoSubstitution]);
         }
         const templateLiteralStart = getStartPosition();
@@ -2582,7 +2583,7 @@ export function createParser(code: string) {
      * This is a helper function for object expression and class for determiate is property
      * a method definition or not.
      * 
-     * Please notes that this function only accept regualer syntax, but also accept something 
+     * Please notes that this function not only accept regualer syntax, but also accept something 
      * like set and get generator, it will left sematic job for `parseMetodDefinition` method.
      * @returns  {boolean}
      */
@@ -2639,7 +2640,7 @@ export function createParser(code: string) {
         }
         // propty name is a spical test of binding identifier.
         // if `await` and `yield` is propty name with colon (means assign), it dose not affected by scope.
-        if(matchSet(IdentiferWithKeyworArray)) {
+        if(match(IdentiferWithKeyworArray)) {
             const identifer = parseIdentiferWithKeyword();
             return identifer;
         }
@@ -2693,13 +2694,13 @@ export function createParser(code: string) {
      * @param {boolean} inClass is used in class or not. 
      * @param {PropertyName | PrivateName | undefined } withPropertyName parse methodDeinfition with exited propertyName or not
      * @param {boolean} isStatic
-     * @returns {ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor  | ClassConstructor | ClassProperty}
+     * @returns {ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor  | ClassConstructor}
      */
     function parseMethodDefintion(
         inClass: boolean = false, 
         withPropertyName: PropertyName | PrivateName | undefined = undefined, 
         isStatic: boolean = false
-    ): ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor  | ClassConstructor | ClassProperty{
+    ): ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor  | ClassConstructor {
         if(!checkIsMethodStartWithModifier() && !withPropertyName) {
             throw createUnreachError([SyntaxKinds.MultiplyAssignOperator, SyntaxKinds.Identifier]);
         }
@@ -2823,7 +2824,7 @@ export function createParser(code: string) {
             }else {
                 expect(SyntaxKinds.CommaToken, "array expression or pattern need comma for separating elements");
             }
-            if(matchSet([SyntaxKinds.BracketRightPunctuator, SyntaxKinds.EOFToken])) {
+            if(match([SyntaxKinds.BracketRightPunctuator, SyntaxKinds.EOFToken])) {
                 tralingComma = true;
                 break;
             }
@@ -2908,7 +2909,6 @@ export function createParser(code: string) {
             body = parseAssigmentExpression();
             isExpression = true;
         }
-        checkFunctionNameAndParamsInCurrentFunctionStrictMode(null, functionArguments);
         return Factory.createArrowExpression(isExpression, body,  functionArguments, isCurrentFunctionAsync(), cloneSourcePosition(metaData.start), cloneSourcePosition(body.end));
     }
     // Transform argument list to function parameter list, there are some thing we need to check
@@ -2982,7 +2982,7 @@ export function createParser(code: string) {
             for(const property of pattern.properties) {
                 if(isObjectPatternProperty(property)) {
                     if(property.value) {
-                        checkPatternContainInValidAwaitAndYieldValue(property.value)
+                        checkPatternContainInValidAwaitAndYieldValue(property.value as Pattern)
                     }
                     if(!property.value && isIdentifer(property.key)) {
                         checkPatternContainInValidAwaitAndYieldValue(property.key);
@@ -3001,10 +3001,10 @@ export function createParser(code: string) {
             checkPatternContainInValidAwaitAndYieldValue(pattern.left);
             return;
         }
-        if(pattern.name === "await" && isCurrentFunctionAsync()) {
+        if( isInStrictMode() || (pattern.name === "await" && isCurrentFunctionAsync())) {
             throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
         }
-        if(pattern.name === "yield" && isCurrentFunctionGenerator()) {
+        if( isInStrictMode() || pattern.name === "yield" && isCurrentFunctionGenerator()) {
             throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
         }
     }
@@ -3230,7 +3230,7 @@ export function createParser(code: string) {
         let value = "";
         const start = getStartPosition();
         let end = getEndPosition();
-        while(!matchSet([SyntaxKinds.EOFToken, SyntaxKinds.JSXCloseTagStart, SyntaxKinds.BracesLeftPunctuator])) {
+        while(!match([SyntaxKinds.EOFToken, SyntaxKinds.JSXCloseTagStart, SyntaxKinds.BracesLeftPunctuator])) {
             value += lexer.getBeforeValue();
             value += getValue();
             end = getEndPosition();
@@ -3277,7 +3277,7 @@ export function createParser(code: string) {
     function parseBindingElement(shouldParseAssignment = true): Pattern {
         expectButNotEat([...IdentiferWithKeyworArray, SyntaxKinds.BracesLeftPunctuator, SyntaxKinds.BracketLeftPunctuator]);
         let left: Pattern | undefined ;
-        if(matchSet(BindingIdentifierSyntaxKindArray)) {
+        if(match(BindingIdentifierSyntaxKindArray)) {
             left = parseIdentifer();
         }else {
             left = parseBindingPattern();
@@ -3292,10 +3292,10 @@ export function createParser(code: string) {
     function parseRestElement(allowPattern: boolean): RestElement {
         const { start } =  expect([SyntaxKinds.SpreadOperator]);
         let id: Pattern | null = null;
-        if(matchSet(BindingIdentifierSyntaxKindArray)) {
+        if(match(BindingIdentifierSyntaxKindArray)) {
             id = parseIdentifer()
         }
-        if(matchSet([SyntaxKinds.BracesLeftPunctuator, SyntaxKinds.BracketLeftPunctuator]))  {
+        if(match([SyntaxKinds.BracesLeftPunctuator, SyntaxKinds.BracketLeftPunctuator]))  {
             if(allowPattern) {
                 id = parseBindingPattern();
             }
@@ -3352,6 +3352,7 @@ export function createParser(code: string) {
             if(match(SyntaxKinds.SpreadOperator)) {
                 properties.push(parseRestElement(false));
                 // sematic check, Rest Property Must be last,
+                // TODO, we can done is without lookahead, 
                 if(
                     !(
                         match(SyntaxKinds.BracesRightPunctuator) ||
@@ -3535,7 +3536,7 @@ export function createParser(code: string) {
             if(match(SyntaxKinds.BracesRightPunctuator) || match(SyntaxKinds.EOFToken)) {
                 break;
             }
-            if(matchSet([SyntaxKinds.Identifier, ...Keywords])) {
+            if(match([SyntaxKinds.Identifier, ...Keywords])) {
                 const imported = parseIdentiferWithKeyword();
                 if(getValue() !== "as") {
                     // @ts-ignore
@@ -3634,10 +3635,10 @@ export function createParser(code: string) {
                 break;
             }
             // TODO: reafacor into parseModuleName ?
-            const exported = matchSet([SyntaxKinds.Identifier, ...Keywords]) ? parseIdentiferWithKeyword() : parseStringLiteral();
+            const exported = match([SyntaxKinds.Identifier, ...Keywords]) ? parseIdentiferWithKeyword() : parseStringLiteral();
             if(getValue() === "as") {
                 nextToken();
-                const local = matchSet([SyntaxKinds.Identifier, ...Keywords]) ? parseIdentiferWithKeyword() : parseStringLiteral();
+                const local = match([SyntaxKinds.Identifier, ...Keywords]) ? parseIdentiferWithKeyword() : parseStringLiteral();
                 specifier.push(Factory.createExportSpecifier(exported, local, cloneSourcePosition(exported.start), cloneSourcePosition(local.end)));
                 continue;
             }

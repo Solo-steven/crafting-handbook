@@ -319,7 +319,7 @@ export interface ObjectPattern extends ModuleItem {
 export interface ObjectPatternProperty extends ModuleItem {
     kind: SyntaxKinds.ObjectPatternProperty;
     key: PropertyName;
-    value: Pattern | undefined;
+    value: Pattern | Expression | undefined;
     computed: boolean;
     shorted: boolean;
 }
@@ -498,7 +498,7 @@ export interface ClassAccessor extends Omit<MethodDefinition, "generator" | "asy
     type: "get" | "set";
 }
 export type ClassElement = ClassProperty | ClassMethodDefinition | ClassAccessor | ClassConstructor;
-export interface ClassDeclaration extends Class {
+export interface ClassDeclaration extends ModuleItem, Class {
     kind: SyntaxKinds.ClassDeclaration;
 }
 export type Declaration = FunctionDeclaration | VariableDeclaration | ClassDeclaration ;

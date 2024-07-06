@@ -1,6 +1,20 @@
+mod test_utils;
 use rustyc_optimizer::ir::function::Function;
+use rustyc_optimizer::ir_optimizer::pass::lcm::LCMPass;
+use test_utils::{get_tests_folder_root_path, test_pass};
+fn get_pass() -> LCMPass {
+    LCMPass::new()
+}
+fn get_table_path() -> String {
+    String::from(
+        get_tests_folder_root_path().join("ir_optimizer/lcm/").as_os_str().to_str().unwrap()
+    )
+}
+generate_pass_cases!(
+    (lcm_graph_from_cmu, "lcm_graph_from_cmu", &mut create_lcm_test_graph())
+);
 
-/// ## Generate Test function for LCM 1
+/// ## Generate Test Function For LCM 1
 /// This function graph is reference from CMU lecture in Page 21
 /// - ref: https://www.cs.cmu.edu/afs/cs/academic/class/15745-s16/www/lectures/L12-Lazy-Code-Motion.pdf
 fn create_lcm_test_graph() -> Function {
@@ -52,5 +66,6 @@ fn create_lcm_test_graph() -> Function {
 
     function
 }
-
+/// ## Generate Test Function For LCM 2
+/// This function is reference from dragon book lazy code motion section
 fn create_lcm_test_graph_2() {}

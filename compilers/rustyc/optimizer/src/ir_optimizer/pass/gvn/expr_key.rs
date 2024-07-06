@@ -1,7 +1,6 @@
 use crate::ir::function::BasicBlock;
 use crate::ir::instructions::{CmpFlag, InstructionData, OpCode};
 use crate::ir::value::Value;
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum RightHandSideInst {
@@ -151,39 +150,5 @@ pub fn get_right_hand_side_inst_key(
             Some((RightHandSideInst::Phi(from.clone()), dst.clone()))
         }
         _ => None,
-    }
-}
-
-pub struct ScopeCacheTable {
-    current_index: usize,
-    table: Vec<HashMap<RightHandSideInst, Value>>,
-}
-
-impl ScopeCacheTable {
-    pub fn new() -> Self {
-        Self {
-            current_index: 0,
-            table: vec![HashMap::new()],
-        }
-    }
-    pub fn insert(&mut self, key: RightHandSideInst, value: Value) {
-        let table = &mut self.table[self.current_index];
-        table.insert(key, value);
-    }
-    pub fn get(&self, key: &RightHandSideInst) -> Option<&Value> {
-        for table in &self.table {
-            if let Some(val) = table.get(key) {
-                return Some(val);
-            }
-        }
-        return None;
-    }
-    pub fn enter_scope(&mut self) {
-        self.current_index += 1;
-        self.table.push(HashMap::new());
-    }
-    pub fn exit_scope(&mut self) {
-        self.current_index -= 1;
-        self.table.pop();
     }
 }

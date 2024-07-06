@@ -86,7 +86,7 @@ import { SyntaxKinds } from "./kind";
 /**
  * Visitor Type for AST traversal table
  */
-type Visitor = {
+export type Visitor = {
     [SyntaxKinds.Program]?: (node: Program, visitor: Visitor) => void;
     [SyntaxKinds.RegexLiteral]?: (node: RegexLiteral, visitor: Visitor) => void;
     [SyntaxKinds.NullLiteral]?: (node: NullLiteral, visitor: Visitor) => void;
@@ -169,7 +169,7 @@ type Visitor = {
     [SyntaxKinds.ExportAllDeclaration]?: (node: ExportAllDeclaration, visitor: Visitor) => void;
 };
 
-const DefaultVisitorTable = {
+export const PropagationtVisitorTable = {
     [SyntaxKinds.Program]: function visitProgram(node: Program, visitor: Visitor) {
         visitNodes(node.body, visitor);
     },
@@ -190,6 +190,7 @@ const DefaultVisitorTable = {
     },
     [SyntaxKinds.TemplateElement]: function bindTemplateElement(node: TemplateElement, visitor: Visitor) {},
     [SyntaxKinds.ObjectExpression]: function bindObjectExpression(node: ObjectExpression, visitor: Visitor) {
+            // @ts-ignore
         visitNodes(node.properties, visitor);
     },
     [SyntaxKinds.ObjectProperty]: function bindObjectProperty(node: ObjectProperty, visitor: Visitor) {
@@ -443,8 +444,8 @@ const DefaultVisitorTable = {
 
 export function visitNode<T extends ModuleItem>(node: T | null | undefined, visitor: Visitor) {
     if(!node) return;
-    // @ts-ignore
-    const handler = visitor[node.kind] || DefaultVisitorTable[node.kind];
+    // @ts-expect-error 
+    const handler = visitor[node.kind] || PropagationtVisitorTable[node.kind];
     if(handler){
         handler(node, visitor);
     }

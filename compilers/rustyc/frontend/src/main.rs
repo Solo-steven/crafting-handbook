@@ -30,9 +30,9 @@ fn main() {
         return 0;
     }
     ";
-    let source2 = "
-        person->computeSome(a, b, 10);
-    ";
+    // let source2 = "
+    //     person->computeSome(a, b, 10);
+    // ";
     let mut lexer = lexer::Lexer::new(source);
     loop {
         let tok = lexer.get_token();

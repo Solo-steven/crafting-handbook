@@ -5,27 +5,24 @@ use crate::ir::instructions::*;
 use crate::ir::value::*;
 use crate::ir_optimizer::anaylsis::domtree::*;
 use crate::ir_optimizer::anaylsis::use_def_chain::*;
-
+use crate::ir_optimizer::pass::OptimizerPass;
 /// Struct for mem2reg pass.
-pub struct Mem2RegPass;
+pub struct Mem2RegPass<'a> {
+    use_def_table: &'a UseDefTable,
+    dom_table: &'a DomTable,
+}
 
-impl Mem2RegPass {
-    /// Create a new instance to performan mem2reg.
-    pub fn new() -> Self {
-        Self {}
-    }
+impl<'a> OptimizerPass for Mem2RegPass<'a> {
     /// Mutate the function and promte the usage of memory to just register.
-    pub fn process(
+    fn process(
         &mut self,
         function: &mut Function,
-        use_def_table: &UseDefTable,
-        dom_table: &DomTable,
     ) {
         // find all alloc pointer
         let alloc_pointers_and_bb_ids = self.find_all_alloc_inst_from_entry_block(function);
         // insert phi is df of store inst of alloc use.
         for (alloc_pointer, inst_id, bb_id) in &alloc_pointers_and_bb_ids {
-            let use_def_entry = use_def_table.get(bb_id).unwrap();
+            let use_def_entry = self.use_def_table.get(bb_id).unwrap();
             let use_table = &use_def_entry.use_table;
             let use_set = use_table.get(alloc_pointer).unwrap();
             // if have pointer access, skip
@@ -52,7 +49,6 @@ impl Mem2RegPass {
                     alloc_pointer,
                     function,
                     use_table,
-                    dom_table,
                 );
                 if !self.rename_load_and_store_inst(
                     bb_id.clone(),
@@ -65,6 +61,19 @@ impl Mem2RegPass {
                     function.remove_inst_from_block(bb_id, &inst_id);
                 }
             }
+        }
+    }
+}
+
+impl<'a> Mem2RegPass<'a> {
+    /// Create a new instance to performan mem2reg.
+    pub fn new(
+        use_def_table: &'a UseDefTable,
+        dom_table: &'a DomTable,
+    ) -> Self {
+        Self {
+            use_def_table,
+            dom_table,
         }
     }
     /// check is all use of alloc pointer in a same block or not
@@ -173,7 +182,6 @@ impl Mem2RegPass {
         alloc_pointer: &Value,
         function: &mut Function,
         use_table: &UseTable,
-        dom_table: &DomTable,
     ) -> HashSet<Instruction> {
         let uses_of_alloc = use_table.get(alloc_pointer).unwrap();
         // since we can not mutation function when borrow instruction, so we record all information we need to
@@ -197,7 +205,7 @@ impl Mem2RegPass {
         let mut rename_phis: HashSet<Instruction> = HashSet::new();
         let mut rename_phi_blocks: HashSet<BasicBlock> = HashSet::new();
         for (block_of_store, data_type) in store_blocks {
-            for dom_front in &dom_table.get(&block_of_store).unwrap().dom_frontier {
+            for dom_front in &self.dom_table.get(&block_of_store).unwrap().dom_frontier {
                 if rename_phi_blocks.contains(dom_front) {
                     continue;
                 }

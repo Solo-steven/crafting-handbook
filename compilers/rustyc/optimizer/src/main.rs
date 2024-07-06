@@ -5,6 +5,8 @@ pub mod ir_optimizer;
 use crate::ir::function::Function;
 use crate::ir_converter::Converter;
 use ir::value::IrValueType;
+use ir_optimizer::anaylsis::{DebuggerAnaylsis, OptimizerAnaylsis};
+use ir_optimizer::pass::{DebuggerPass, OptimizerPass};
 use rustyc_frontend::parser::Parser;
 use std::fs::File;
 use std::io::Write;
@@ -16,8 +18,10 @@ use crate::ir_optimizer::pass::lazy_code_motion::{
     print_lazy_code_motion_table, LazyCodeMotionPass,
 };
 use crate::ir_optimizer::pass::lcm::LCMPass;
+use crate::ir_optimizer::pass::gvn::GVNPass;
 use crate::ir_optimizer::pass::mem2reg::Mem2RegPass;
 use crate::ir_optimizer::pass::value_numbering::ValueNumberingPass;
+
 
 fn main() {
     // let program = Parser::new("
@@ -41,10 +45,19 @@ fn main() {
     // println!("{:#?}", program);
     // let mut converter = Converter::new();
     // let module = converter.convert(&program);
-    let mut func = create_lcm_test_graph();
-    let mut lcm_pass = LCMPass::new();
-    lcm_pass.process(&mut func);
-    lcm_pass.debugger(&func);
+    let mut func = create_gvn_graph_from_conrnell();
+    let mut dom_anaylsis = DomAnaylsier::new();
+    let table = dom_anaylsis.anaylsis(&func);
+    let out = DomAnaylsier::debugger(&func, &table);
+    // let mut lcm_pass = LCMPass::new();
+    // lcm_pass.process(&mut func);
+    // let mut file = File::create("./test1.txt").unwrap();
+    // write!(file,"{}", func.print_to_string()).unwrap();
+    // let out = lcm_pass.debugger(&func);
+    let mut file1 = File::create("./debug.txt").unwrap();
+    write!(file1,"{}", out).unwrap();
+    // lcm_pass.process(&mut func);
+
 
     // let mut dom = DomAnaylsier::new();
     // let dom_table = dom.anaylsis(&mut func);
@@ -161,6 +174,67 @@ pub fn create_dom_graph() -> Function {
     function
 }
 
+fn create_gvn_graph_from_conrnell() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    let b1 = function.create_block();
+    let b2 = function.create_block();
+    let b3 = function.create_block();
+    let b4 = function.create_block();
+
+    function.mark_as_entry(b1);
+    function.mark_as_exit(b4);
+
+    function.connect_block(b1, b2);
+    function.connect_block(b2, b4);
+    function.connect_block(b2, b3);
+    function.connect_block(b3, b4);
+
+    let mut add_to_param = || { 
+        let temp = function.add_register(IrValueType::I16);
+        function.params_value.push(temp);
+        temp
+    };
+    let a0 = add_to_param();
+    let b0 = add_to_param();
+    let c0 = add_to_param();
+    let d0 = add_to_param();
+    let e0 = add_to_param();
+    let f0 = add_to_param();
+
+    function.switch_to_block(b1);
+    let u0 = function.build_add_inst(a0,b0);
+    let v0 = function.build_add_inst(c0, d0);
+    let w0 = function.build_add_inst(e0, f0);
+    let cond = function.build_icmp_inst(u0, v0, ir::instructions::CmpFlag::Eq);
+    function.build_brif_inst(cond, b2, b3);
+
+    function.switch_to_block(b2);
+    let x0 = function.build_add_inst(c0, d0);
+    let y0 = function.build_add_inst(c0, d0);
+    function.build_jump_inst(b4);
+
+    function.switch_to_block(b3);
+    let u1 = function.build_add_inst(a0,b0);
+    let x1 = function.build_add_inst(e0, f0);
+    let y1 = function.build_add_inst(e0, f0);
+    function.build_jump_inst(b4);
+
+    function.switch_to_block(b4);
+    let u2 = function.build_phi_inst(vec![(b2,u0 ), (b3, u1)]);
+    let x2 = function.build_phi_inst(vec![(b2,x0 ), (b3, x1)]);
+    let y2 = function.build_phi_inst(vec![(b2,y0 ), (b3, y1)]);
+    function.build_add_inst(u2, y2);
+    function.build_add_inst(a0,b0);
+    function.build_ret_inst(None);
+
+    let result = function.print_to_string();
+
+    let mut file = File::create("./test.txt").unwrap();
+    write!(file,"{}", result).unwrap();
+
+    function
+}
+
 fn create_lcm_test_graph() -> Function {
     let mut function = Function::new(String::from("test_lcm_from_cmu"));
     // create blocks
@@ -205,50 +279,7 @@ fn create_lcm_test_graph() -> Function {
     let c = function.build_mov_inst(u8_const_1);
     function.switch_to_block(b7);
     function.build_add_inst(b, c);
-
     function.switch_to_block(b10);
-    function.build_add_inst(b, c);
-
-    function
-}
-
-/// Create simple graph for  
-///
-fn create_lazy_code_motion_graph() -> Function {
-    let mut function = Function::new(String::from("test_fun"));
-    let b0 = function.create_block();
-    function.mark_as_entry(b0);
-    let b1 = function.create_block();
-    let b2 = function.create_block();
-    let b3 = function.create_block();
-    let b4 = function.create_block();
-    let b5 = function.create_block();
-    let b6 = function.create_block();
-    let b7 = function.create_block();
-    function.mark_as_exit(b7);
-
-    function.connect_block(b0, b1);
-
-    function.connect_block(b1, b2);
-    function.connect_block(b2, b3);
-    function.connect_block(b3, b4);
-    function.connect_block(b3, b2);
-    function.connect_block(b4, b7);
-
-    function.connect_block(b1, b5);
-    function.connect_block(b5, b6);
-    function.connect_block(b6, b7);
-
-    function.switch_to_block(b0);
-    let u8_const = function.create_u8_const(1);
-    let b = function.build_mov_inst(u8_const);
-    let u8_const_1 = function.create_u8_const(1);
-    let c = function.build_mov_inst(u8_const_1);
-
-    function.switch_to_block(b5);
-    function.build_add_inst(b, c);
-
-    function.switch_to_block(b7);
     function.build_add_inst(b, c);
 
     function

@@ -537,7 +537,6 @@ impl Function {
                         .as_str(),
                     );
                 }
-                src_string.push_str("\n");
                 output_code.push_str(format!("phi {}{}\n", dst_str, src_string).as_str());
             }
             InstructionData::Call {
