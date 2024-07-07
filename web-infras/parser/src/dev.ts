@@ -39,5 +39,5 @@ function printParser(code: string) {
   console.log("=================================");
   const ast = createParser(code).parse();
   transformSyntaxKindToLiteral(ast);
-  // console.log(JSON.stringify(ast, null, 4));
+  console.log(JSON.stringify(ast, null, 4));
 }

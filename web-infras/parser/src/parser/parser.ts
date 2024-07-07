@@ -335,33 +335,65 @@ export function createParser(code: string) {
     }
     throw createUnexpectError(kind, message);
   }
-  // TODO: comment below:
   /**
-   * Some AST maybe end up with semi or line terminate or EOF
-   * so you can call this function for checking.
-   * it need lexer help for check EOF and line terminate.
-   * @param {boolean} canIgnore this flag is only used when dowhile case.
+   * Private API for `shouldInsertSemi` and `isSoftInsertSemi`,
+   * test is there a semi or equal syntax, return three state
+   * - `SemiExisted`: there is a semi token.
+   * - `SemiInsertAble`: there is a equal to semi syntax.
+   * - `SemiNotExisted`: there is no semi or equal syntax,
+   * @returns 
    */
-  function semi(canIgnore: boolean = false, shouldEat = true) {
+  function isSemiInsertable() {
     if (match(SyntaxKinds.SemiPunctuator)) {
-      if (shouldEat) {
-        nextToken();
-      }
-      return true;
+      return "SemiExisted";
     }
-    if (match(SyntaxKinds.BracesRightPunctuator)) {
-      return true;
+    if (match([SyntaxKinds.BracesRightPunctuator, SyntaxKinds.EOFToken])) {
+      return "SemiInsertAble";
     }
     if (getLineTerminatorFlag()) {
-      return true;
+      return "SemiInsertAble";
     }
-    if (match(SyntaxKinds.EOFToken)) {
-      return true;
+    return "SemiNotExisted";
+  }
+  /**
+   * Private API for most of insert semi check, if semi exist, eat token,
+   * pass if equal syntax exist, throw error if not existed semi or equal
+   * syntax.
+   * @returns 
+   */
+  function shouldInsertSemi() {
+    const semiState = isSemiInsertable();
+    switch(semiState) {
+      case "SemiExisted":
+        nextToken();
+        return;
+      case "SemiInsertAble":
+        return;
+      case "SemiNotExisted":
+        throw createMessageError(ErrorMessageMap.missing_semicolon);
     }
-    if (canIgnore) {
-      return false;
+  }
+  /**
+   * Private API for insert semi for three edge case 
+   * - `DoWhileStatement`
+   * - `ReturnStatement`
+   * - `YeildExpression`
+   * @param {boolean} shouldEat - false whem used in yield expression.
+   * @returns 
+   */
+  function isSoftInsertSemi(shouldEat: boolean = true) {
+    const semiState = isSemiInsertable();
+    switch(semiState) {
+      case "SemiExisted":
+        if(shouldEat) {
+          nextToken();
+        }
+        return true;
+      case "SemiInsertAble":
+        return true;
+      case "SemiNotExisted":
+        return false;
     }
-    throw createMessageError(ErrorMessageMap.missing_semicolon);
   }
   /**
    * Create a Message error from parser's error map.
@@ -1071,7 +1103,6 @@ export function createParser(code: string) {
     if (isVarDeclaration(leftOrInit)) {
       helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit);
     } else {
-      // console.log(leftOrInit);
       if (!isMemberExpression(leftOrInit)) {
         leftOrInit = toAssignmentPattern(leftOrInit) as Expression;
       }
@@ -1170,7 +1201,7 @@ export function createParser(code: string) {
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const test = parseExpression();
     const { end: punctEnd } = expect(SyntaxKinds.ParenthesesRightPunctuator);
-    semi(true);
+    isSoftInsertSemi();
     return Factory.createDoWhileStatement(test, body, keywordStart, punctEnd);
   }
   function parseBlockStatement() {
@@ -1247,24 +1278,24 @@ export function createParser(code: string) {
     const { start: keywordStart, end: keywordEnd } = expect(SyntaxKinds.ContinueKeyword);
     if (match(SyntaxKinds.Identifier)) {
       const id = parseIdentifer();
-      semi();
+      shouldInsertSemi();
       return Factory.createContinueStatement(
         id,
         keywordStart,
         cloneSourcePosition(id.end),
       );
     }
-    semi();
+    shouldInsertSemi();
     return Factory.createContinueStatement(null, keywordStart, keywordEnd);
   }
   function parseBreakStatement(): BreakStatement {
     const { start, end } = expect(SyntaxKinds.BreakKeyword);
     if (match(SyntaxKinds.Identifier)) {
       const label = parseIdentifer();
-      semi();
+      shouldInsertSemi();
       return Factory.createBreakStatement(label, start, end);
     }
-    semi();
+    shouldInsertSemi();
     return Factory.createBreakStatement(null, start, end);
   }
   function parseLabeledStatement(): LabeledStatement {
@@ -1301,11 +1332,11 @@ export function createParser(code: string) {
   }
   function parseReturnStatement(): ReturnStatement {
     const { start, end } = expect(SyntaxKinds.ReturnKeyword);
-    if (semi(true)) {
+    if (isSoftInsertSemi(true)) {
       return Factory.createReturnStatement(null, start, end);
     }
     const expr = parseExpression();
-    semi();
+    shouldInsertSemi();
     return Factory.createReturnStatement(expr, start, cloneSourcePosition(expr.end));
   }
   function parseTryStatement(): TryStatement {
@@ -1352,7 +1383,7 @@ export function createParser(code: string) {
   function parseThrowStatement() {
     const { start } = expect(SyntaxKinds.ThrowKeyword);
     const expr = parseExpression();
-    semi();
+    shouldInsertSemi();
     return Factory.createThrowStatement(expr, start, cloneSourcePosition(expr.end));
   }
   function parseWithStatement(): WithStatement {
@@ -1370,7 +1401,7 @@ export function createParser(code: string) {
   }
   function parseDebuggerStatement(): DebuggerStatement {
     const { start, end } = expect(SyntaxKinds.DebuggerKeyword);
-    semi();
+    shouldInsertSemi();
     return Factory.createDebuggerStatement(start, end);
   }
   function parseEmptyStatement(): EmptyStatement {
@@ -1465,7 +1496,7 @@ export function createParser(code: string) {
       );
     }
     if (!inForInit) {
-      semi();
+      shouldInsertSemi();
     }
     return Factory.createVariableDeclaration(
       declarations,
@@ -1925,7 +1956,7 @@ export function createParser(code: string) {
     if (match([SyntaxKinds.AssginOperator])) {
       nextToken();
       const value = parseAssigmentExpression();
-      semi();
+      shouldInsertSemi();
       return Factory.createClassProperty(
         key,
         value,
@@ -1936,7 +1967,7 @@ export function createParser(code: string) {
         cloneSourcePosition(value.end),
       );
     }
-    semi();
+    shouldInsertSemi();
     return Factory.createClassProperty(
       key,
       undefined,
@@ -1960,7 +1991,7 @@ export function createParser(code: string) {
   function parseExpressionStatement(): ExpressionStatement {
     const expr = parseExpression();
     checkStrictMode(expr);
-    semi();
+    shouldInsertSemi();
     return Factory.createExpressionStatement(
       expr,
       cloneSourcePosition(expr.start),
@@ -2063,7 +2094,7 @@ export function createParser(code: string) {
       delegate = true;
     }
     let argument: Expression | null = null;
-    if (!semi(true, false)) {
+    if (!isSoftInsertSemi(false)) {
       argument = parseAssigmentExpression();
     }
     if (delegate && !argument) {
@@ -4165,7 +4196,7 @@ export function createParser(code: string) {
     > = [];
     if (match(SyntaxKinds.StringLiteral)) {
       const source = parseStringLiteral();
-      semi();
+      shouldInsertSemi();
       return Factory.createImportDeclaration(
         specifiers,
         source,
@@ -4177,7 +4208,7 @@ export function createParser(code: string) {
       specifiers.push(parseImportNamespaceSpecifier());
       expectFormKeyword();
       const source = parseStringLiteral();
-      semi();
+      shouldInsertSemi();
       return Factory.createImportDeclaration(
         specifiers,
         source,
@@ -4189,7 +4220,7 @@ export function createParser(code: string) {
       parseImportSpecifiers(specifiers);
       expectFormKeyword();
       const source = parseStringLiteral();
-      semi();
+      shouldInsertSemi();
       return Factory.createImportDeclaration(
         specifiers,
         source,
@@ -4212,7 +4243,7 @@ export function createParser(code: string) {
     }
     expectFormKeyword();
     const source = parseStringLiteral();
-    semi();
+    shouldInsertSemi();
     return Factory.createImportDeclaration(
       specifiers,
       source,
@@ -4387,7 +4418,7 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.ClassKeyword)) {
       let classDeclar = parseClass();
       classDeclar = Factory.transFormClassToClassExpression(classDeclar);
-      semi();
+      shouldInsertSemi();
       return Factory.createExportDefaultDeclaration(
         classDeclar as ClassDeclaration | ClassExpression,
         start,
@@ -4396,7 +4427,7 @@ export function createParser(code: string) {
     }
     if (match(SyntaxKinds.FunctionKeyword)) {
       let funDeclar = parseFunctionExpression(false);
-      semi();
+      shouldInsertSemi();
       return Factory.createExportDefaultDeclaration(
         funDeclar as FunctionDeclaration | FunctionExpression,
         start,
@@ -4409,7 +4440,7 @@ export function createParser(code: string) {
     ) {
       nextToken();
       const funDeclar = parseFunctionExpression(true);
-      semi();
+      shouldInsertSemi();
       return Factory.createExportDefaultDeclaration(
         funDeclar,
         start,
@@ -4418,7 +4449,7 @@ export function createParser(code: string) {
     }
     // TODO: parse export default from ""; (experimental feature)
     const expr = parseAssigmentExpression();
-    semi();
+    shouldInsertSemi();
     return Factory.createExportDefaultDeclaration(
       expr,
       start,
@@ -4472,7 +4503,7 @@ export function createParser(code: string) {
       nextToken();
       source = parseStringLiteral();
     }
-    semi();
+    shouldInsertSemi();
     const end = source
       ? source.end
       : specifier.length === 0
@@ -4497,7 +4528,7 @@ export function createParser(code: string) {
     }
     expectFormKeyword();
     const source = parseStringLiteral();
-    semi();
+    shouldInsertSemi();
     return Factory.createExportAllDeclaration(
       exported,
       source,
