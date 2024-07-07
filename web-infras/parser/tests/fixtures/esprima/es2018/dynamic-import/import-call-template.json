@@ -33,7 +33,7 @@
                                 "quasis": [
                                     {
                                         "kind": "TemplateElement",
-                                        "value": ".js",
+                                        "value": "}.js`",
                                         "tail": true,
                                         "start": {
                                             "row": 1,

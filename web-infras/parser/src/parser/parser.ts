@@ -119,38 +119,8 @@ import {
 } from "web-infra-common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
-
-/**
- * Function Scope structure, Being used for determinate
- * current structure context for async, generator, in-
- * parameter and in strict mode.
- * @member {"FunctionContext"} type - type enum string.
- * @member {boolean} isAsync
- * @member {boolean} isGenerator
- * @member {boolean} inParameter
- * @member {boolean} inStrict
- */
-interface FunctionContext {
-    type: "FunctionContext";
-    isAsync: boolean;
-    isGenerator: boolean;
-    inParameter: boolean;
-    isSimpleParameter: boolean;
-    inStrict: boolean;
-}
-/**
- * Simple scope structure for block statement.
- * @member {"BlockStatement"} type - type enum string.
- */
-interface BlockContext {
-    type: "BlockContext";
-}
-/**
- * Scope structure for function body and block statement,
- * just a conbinmation of function scope and block scope.
- */
-type ScopeContext = FunctionContext | BlockContext;
-
+import { ExpectToken, ScopeContext, FunctionContext } from "./type";
+import { LookaheadToken } from "../lexer/type";
 /**
  * Context for parser. composeed by several parts: 
  * ## ScopeContext
@@ -222,28 +192,104 @@ const KeywordSet = new Set(LexicalLiteral.keywords);
  */
 export function createParser(code: string) {
     const lexer = createLexer(code);
-
-/** =========================================================================
- *   Composition method from lexer, Context of parsr, Util helper for parser
- * ==========================================================================
- */
     const context = createContext();
+/** ===========================================================
+ *              Public API for Parser
+ *  ===========================================================
+ */
     /**
-     * parse given string and return program if code is
-     * valid syntax.
+     * Only Public API for parser, parse code and 
+     * return a program.
      * @returns {Program}
      */
     function parse(): Program {
         return parseProgram();
     }
     return { parse };
+/** ===========================================================
+ *            Private API for Parser
+ *  ===========================================================
+ */
     /**
-     * Is current token match given kind
-     * @param {SyntaxKinds} kind
+     * Private API for parser, move to next token, skip comment and 
+     * block comment token.
+     * @returns {SyntaxKinds}
+     */
+    function nextToken(): SyntaxKinds {
+        lexer.nextToken();
+        const token = lexer.getTokenKind();
+        if(token === SyntaxKinds.Comment || token == SyntaxKinds.BlockComment) {
+           return nextToken();
+        }
+        return token;
+    }
+    /**
+     * Private API for parser, get current token kind, skip comment 
+     * and block comment token
+     * @returns {SyntaxKinds}
+     */
+    function getToken(): SyntaxKinds {
+       const token = lexer.getTokenKind();
+       if(token === SyntaxKinds.Comment || token == SyntaxKinds.BlockComment) {
+            return nextToken();
+        }
+        return token;
+    }
+    /**
+     * Private API for parser, get current token's string value.
+     * @returns {string}
+     */
+    function getSourceValue(): string {
+        return lexer.getSourceValue();
+    }
+    /**
+     * Private API for parser, just wrapper of lexer, get start
+     * position of current token.
+     * @return {SourcePosition}
+     */
+    function getStartPosition(): SourcePosition {
+        return lexer.getStartPosition();
+    }
+    /**
+     * Private API for parser, just wrapper of lexer, get end
+     * position of current token.
+     * @return {SourcePosition}
+     */
+    function getEndPosition(): SourcePosition {
+        return lexer.getEndPosition();
+    }
+    /**
+     * Private API for parser, just wrapper of lookahead method 
+     * of lexer.
+     * @returns 
+     */
+    function lookahead(): LookaheadToken {
+        return lexer.lookahead();
+    }
+    /**
+     * Private API for parser, just wrapper of lexer method.
+     * @returns
+     */
+    function readRegex() {
+        return lexer.readRegex();
+    }
+    /**
+     * Private API for parser, just wrapper of lexer method, check
+     * is a line terminator in the range of last token end and start 
+     * of current token.
+     * @returns {boolean}
+     */
+    function getLineTerminatorFlag(): boolean {
+        return lexer.getLineTerminatorFlag();
+    }
+    /**
+     * Private API for parser, is current token kind match the 
+     * given token kind ?
+     * @param {SyntaxKinds | Array<SyntaxKinds>} kind
      * @returns {boolean}
      */
     function match(kind: SyntaxKinds | Array<SyntaxKinds>): boolean {
-        const currentToken = lexer.getToken();
+        const currentToken = getToken();
         if(Array.isArray(kind)) {
             const tokenSet = new Set(kind);
             return tokenSet.has(currentToken);
@@ -251,80 +297,17 @@ export function createParser(code: string) {
         return currentToken === kind;
     }
     /**
-     * Move to next token and return next token
-     * @returns {SyntaxKinds}
+     * Private API for parser, expect current token is one of given token(s), 
+     * it not, it will create a unexpect error, if is one of given token, it will
+     * eat token and return `value`, `start`, `end` of token
+     * @param kind
+     * @param message 
+     * @returns {ExpectToken}
      */
-    function nextToken(): SyntaxKinds {
-        const token = lexer.nextToken();
-        if(token === SyntaxKinds.Comment || token == SyntaxKinds.BlockComment) {
-           return nextToken();
-        }
-        return token;
-    }
-    /**
-     * Get current token in token stream
-     * @returns {SyntaxKinds}
-     */
-    function getToken(): SyntaxKinds {
-       const token = lexer.getToken();
-       if(token === SyntaxKinds.Comment || token == SyntaxKinds.BlockComment) {
-            return nextToken();
-        }
-        return token;
-    }
-    /**
-     * Get string value of current token
-     * @returns {string}
-     */
-    function getValue(): string {
-        return lexer.getSourceValue();
-    }
-    /**
-     * Get start position of token
-     * @return {SourcePosition}
-     */
-    function getStartPosition(): SourcePosition {
-        return lexer.getStartPosition();
-    }
-    /**
-     * Get End position of token
-     * @return {SourcePosition}
-     */
-    function getEndPosition(): SourcePosition {
-        return lexer.getEndPosition();
-    }
-    /**
-     * Get next token but do not move to next token
-     */
-    function lookahead() {
-        return lexer.lookahead();
-    }
-    function readRegex() {
-        return lexer.readRegex();
-    }
-    function getLineTerminatorFlag() {
-        return lexer.getLineTerminatorFlag();
-    }
-    /**
-     * expect a token kind, if it is, return token,
-     * and move to next token
-     */
-    function expect(kind: SyntaxKinds | Array<SyntaxKinds>, message = "")  {
-        if(Array.isArray(kind)) {
-            if(match(kind)) {
-                const metaData = {
-                    value: getValue(),
-                    start: getStartPosition(),
-                    end: getEndPosition()
-                }
-                nextToken();
-                return metaData;
-            }
-            throw createUnexpectError(kind, message);
-        }
+    function expect(kind: SyntaxKinds | Array<SyntaxKinds>, message = ""): ExpectToken  {
         if(match(kind)) {
             const metaData = {
-                value: getValue(),
+                value: getSourceValue(),
                 start: getStartPosition(),
                 end: getEndPosition()
             }
@@ -333,18 +316,21 @@ export function createParser(code: string) {
         }
         throw createUnexpectError(kind, message);
     }
-    function expectButNotEat(kind: SyntaxKinds | Array<SyntaxKinds>, message = "") {
-        if(Array.isArray(kind)) {
-            if(match(kind)) {
-                return;
-            }
-            throw createUnexpectError(kind, message);
-        }
+    /**
+     * Private API for parser, expect current token is one of given token(s), 
+     * it not, it will create a unexpect error, if is one of given token, it 
+     * will NOT eat token.
+     * @param kind
+     * @param message 
+     * @returns {void}
+     */
+    function expectButNotEat(kind: SyntaxKinds | Array<SyntaxKinds>, message = ""): void {
         if(match(kind)) {
             return;
         }
         throw createUnexpectError(kind, message);
     }
+    // TODO: comment below:
     /**
      * Some AST maybe end up with semi or line terminate or EOF
      * so you can call this function for checking.
@@ -361,7 +347,7 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.BracesRightPunctuator)) {
             return true;
         }
-        if(lexer.getLineTerminatorFlag()) {
+        if(getLineTerminatorFlag()) {
             return true;
         }
         if(match(SyntaxKinds.EOFToken)) {
@@ -401,7 +387,7 @@ export function createParser(code: string) {
         if(expectToken) {
             message = `, expect token ${expectToken}`
         }
-        return new Error(`[Syntax Error]: Unexpect token${message}, got ${getToken()}(${getValue()}). ${getStartPosition().row},${getStartPosition().col}.${messsage}\n ${code.slice(getStartPosition().index - 100, getStartPosition().index)} \n ${code.slice(getStartPosition().index, getEndPosition().index)}`);
+        return new Error(`[Syntax Error]: Unexpect token${message}, got ${getToken()}(${getSourceValue()}). ${getStartPosition().row},${getStartPosition().col}.${messsage}\n ${code.slice(getStartPosition().index - 100, getStartPosition().index)} \n ${code.slice(getStartPosition().index, getEndPosition().index)}`);
     }
     /**
      * Given that this parser is recurive decent parser, some
@@ -412,7 +398,7 @@ export function createParser(code: string) {
      */
     function createUnreachError(startTokens: Array<SyntaxKinds> = []): Error {
         let start = getStartPosition();
-        let message = `[Unreach Zone]: this piece of code should not be reach (${start.row}, ${start.col}), have a unexpect token ${getToken()} (${getValue()}).`;
+        let message = `[Unreach Zone]: this piece of code should not be reach (${start.row}, ${start.col}), have a unexpect token ${getToken()} (${getSourceValue()}).`;
         if(startTokens.length !== 0) {
                 message += " it should call with start token["
                 for(const token of startTokens) {
@@ -423,10 +409,6 @@ export function createParser(code: string) {
         message += ", please report to developer.";
         return new Error(message);
     }
-/** =================================================
- *    Context Helper
- *  =================================================
- */
     /**
      * Helper function called when enter function scope. when parse
      * - function delcaration or expression.
@@ -669,8 +651,8 @@ export function createParser(code: string) {
             case SyntaxKinds.ClassKeyword:
                 return parseDeclaration();
             case SyntaxKinds.Identifier:
-                const { kind, flag } = lookahead();
-                if(getValue() === "async" && kind === SyntaxKinds.FunctionKeyword && flag == false) {
+                const { kind, lineTerminatorFlag: flag, value } = lookahead();
+                if(getSourceValue() === "async" && kind === SyntaxKinds.FunctionKeyword && flag == false) {
                     return parseDeclaration();
                 }
                 return parseStatement();
@@ -721,7 +703,7 @@ export function createParser(code: string) {
         switch(token) {
             // async function declaration
             case SyntaxKinds.Identifier:
-                if(match(SyntaxKinds.Identifier) && getValue() === "async") {
+                if(match(SyntaxKinds.Identifier) && getSourceValue() === "async") {
                     nextToken();
                     if(getLineTerminatorFlag()) {
                         throw createMessageError(ErrorMessageMap.missing_semicolon);
@@ -1012,7 +994,7 @@ export function createParser(code: string) {
             const body = parseStatement();
             return Factory.createForInStatement(leftOrInit, right, body, keywordStart, cloneSourcePosition(body.end));
         }
-        if(getValue() === "of") {
+        if(getSourceValue() === "of") {
             nextToken();
             const right = parseAssigmentExpression();
             expect(SyntaxKinds.ParenthesesRightPunctuator);
@@ -1661,7 +1643,7 @@ export function createParser(code: string) {
     function parseClassElement(): ClassElement {
         // parse static modifier
         let isStatic = false;
-        if(getValue() === "static" && lookahead().kind !== SyntaxKinds.ParenthesesLeftPunctuator) {
+        if(getSourceValue() === "static" && lookahead().kind !== SyntaxKinds.ParenthesesLeftPunctuator) {
             nextToken();
             isStatic = true;
         }    
@@ -2184,7 +2166,7 @@ export function createParser(code: string) {
             case SyntaxKinds.LetKeyword:
             case SyntaxKinds.AwaitKeyword:
             case SyntaxKinds.YieldKeyword: {
-                const { kind, flag } = lookahead();
+                const { kind, lineTerminatorFlag: flag } = lookahead();
                 // case 0: identifier `=>` ...
                 if(kind === SyntaxKinds.ArrowOperator) {
                     enterFunctionScope();
@@ -2208,7 +2190,7 @@ export function createParser(code: string) {
                 // 2.second case is not change line after async, making it become async arrow 
                 //   function.
                 if((
-                    getValue() === "async"  && (
+                    getSourceValue() === "async"  && (
                         kind === SyntaxKinds.Identifier ||
                         kind === SyntaxKinds.YieldKeyword ||
                         kind === SyntaxKinds.AwaitKeyword
@@ -2236,7 +2218,7 @@ export function createParser(code: string) {
                 }
                 // TODO: should be just default case ?
                 // case 2 `async` `?.`, in this case, must treat as call expression
-                if(getValue() === "async" &&  kind === SyntaxKinds.QustionDotOperator ) {
+                if(getSourceValue() === "async" &&  kind === SyntaxKinds.QustionDotOperator ) {
                     const id = parseIdentifer();
                     const {nodes, end} = parseArguments()
                     return Factory.createCallExpression(id, nodes, true, cloneSourcePosition(id.start), end);
@@ -2247,7 +2229,7 @@ export function createParser(code: string) {
                 //   call expression
                 // 2.second case is not change line after async, making it become async arrow 
                 //   function.
-                if(getValue() === "async"  && kind === SyntaxKinds.ParenthesesLeftPunctuator) {
+                if(getSourceValue() === "async"  && kind === SyntaxKinds.ParenthesesLeftPunctuator) {
                     const id =  parseIdentifer();
                     const meta =  parseArguments();
                     if(flag || !match(SyntaxKinds.ArrowOperator)) {
@@ -2260,7 +2242,7 @@ export function createParser(code: string) {
                     return arrowFunExpr;
                 }
                 // case 3 async function ==> must be async function <id> () {}
-                if(getValue() === "async" && kind === SyntaxKinds.FunctionKeyword) {
+                if(getSourceValue() === "async" && kind === SyntaxKinds.FunctionKeyword) {
                     const { value, start, end } = expect(SyntaxKinds.Identifier);
                     if(getLineTerminatorFlag()) {
                         return Factory.createIdentifier(value, start, end);
@@ -2375,7 +2357,7 @@ export function createParser(code: string) {
         }
         const templateLiteralStart = getStartPosition();
         if(match(SyntaxKinds.TemplateNoSubstitution)) {
-            const value = getValue();
+            const value = getSourceValue();
             const templateLiteralEnd = getEndPosition();
             nextToken();
             return Factory.createTemplateLiteral(
@@ -2388,18 +2370,17 @@ export function createParser(code: string) {
         const expressions = [parseExpression()];
         const quasis: Array<TemplateElement> = [];
         while(!match(SyntaxKinds.TemplateTail) && match(SyntaxKinds.TemplateMiddle) && !match(SyntaxKinds.EOFToken)) {
-            quasis.push(Factory.createTemplateElement(getValue(), false, getStartPosition(), getEndPosition()));
+            quasis.push(Factory.createTemplateElement(getSourceValue(), false, getStartPosition(), getEndPosition()));
             nextToken();
             expressions.push(parseExpression());
         }
         if(match(SyntaxKinds.EOFToken)) {
             throw createUnexpectError(SyntaxKinds.BracesLeftPunctuator);
         }
-        quasis.push(Factory.createTemplateElement(getValue(), true, getStartPosition(), getEndPosition()));
+        quasis.push(Factory.createTemplateElement(getSourceValue(), true, getStartPosition(), getEndPosition()));
         const templateLiteralEnd = getEndPosition();
         nextToken();
         return Factory.createTemplateLiteral(quasis, expressions, templateLiteralStart, templateLiteralEnd);
-
     }
     function parseImportMeta() {
         const { start, end } =  expect(SyntaxKinds.ImportKeyword);
@@ -2420,7 +2401,7 @@ export function createParser(code: string) {
     function parseNewTarget() {
         const { start, end } = expect(SyntaxKinds.NewKeyword);
         expect(SyntaxKinds.DotOperator);
-        if(getValue() !== "target") {
+        if(getSourceValue() !== "target") {
             throw createUnexpectError(SyntaxKinds.Identifier, "new concat with dot should only be used in meta property");
         }
         if(isTopLevel() && !isInClassScope()) {
@@ -2591,8 +2572,8 @@ export function createParser(code: string) {
         if(match(SyntaxKinds.MultiplyOperator)) {
             return true;
         }
-        const currentValue = getValue();
-        const { kind, flag } = lookahead();
+        const currentValue = getSourceValue();
+        const { kind, lineTerminatorFlag: flag } = lookahead();
         const isLookAheadValidatePropertyNameStart = 
             Keywords.find(keyword => keyword === kind) ||
             kind === SyntaxKinds.Identifier ||
@@ -2717,19 +2698,19 @@ export function createParser(code: string) {
         let start: SourcePosition | null = null;
         if(!withPropertyName) {
             // frist, is setter or getter
-            if(getValue() === "set") {
+            if(getSourceValue() === "set") {
                 type = "set";
                 start = getStartPosition();
                 nextToken();
             }
-            else if(getValue() === "get") {
+            else if(getSourceValue() === "get") {
                 type = "get"
                 start = getStartPosition();
                 nextToken();
             }
             // second, parser async and generator
             const { kind } = lookahead();
-            if(getValue() === "async" && kind !== SyntaxKinds.ParenthesesLeftPunctuator) {
+            if(getSourceValue() === "async" && kind !== SyntaxKinds.ParenthesesLeftPunctuator) {
                 start = getStartPosition();
                 isAsync = true;
                 nextToken();
@@ -3232,7 +3213,7 @@ export function createParser(code: string) {
         let end = getEndPosition();
         while(!match([SyntaxKinds.EOFToken, SyntaxKinds.JSXCloseTagStart, SyntaxKinds.BracesLeftPunctuator])) {
             value += lexer.getBeforeValue();
-            value += getValue();
+            value += getSourceValue();
             end = getEndPosition();
             nextToken();
         }
@@ -3423,7 +3404,7 @@ export function createParser(code: string) {
  * ==================================================================================
  */
     function expectFormKeyword() {
-        if(getValue() !== "from") {
+        if(getSourceValue() !== "from") {
             throw createUnexpectError(SyntaxKinds.Identifier, "expect from keyword");
         }
         nextToken();
@@ -3506,7 +3487,7 @@ export function createParser(code: string) {
      */
     function parseImportNamespaceSpecifier(): ImportNamespaceSpecifier {
         const { start } =  expect(SyntaxKinds.MultiplyOperator);
-        if(getValue()!== "as") {
+        if(getSourceValue()!== "as") {
             throw createMessageError("import namespace specifier must has 'as'");
         }
         nextToken();
@@ -3538,7 +3519,7 @@ export function createParser(code: string) {
             }
             if(match([SyntaxKinds.Identifier, ...Keywords])) {
                 const imported = parseIdentiferWithKeyword();
-                if(getValue() !== "as") {
+                if(getSourceValue() !== "as") {
                     // @ts-ignore
                     if(KeywordLiteralMapSyntaxKind[imported.name]) {
                         throw createMessageError(ErrorMessageMap.keyword_can_not_use_in_imported_when_just_a_specifier);
@@ -3551,7 +3532,7 @@ export function createParser(code: string) {
                 specifiers.push(Factory.createImportSpecifier(imported, local, cloneSourcePosition(imported.start), cloneSourcePosition(local.end)));
             }else if(match(SyntaxKinds.StringLiteral)) {
                 const imported = parseStringLiteral();
-                if(getValue() !== "as") {
+                if(getSourceValue() !== "as") {
                     specifiers.push(Factory.createImportSpecifier(imported, null, cloneSourcePosition(imported.start), cloneSourcePosition(imported.end)));
                     continue;
                 }
@@ -3610,7 +3591,7 @@ export function createParser(code: string) {
             semi();
             return Factory.createExportDefaultDeclaration(funDeclar as FunctionDeclaration | FunctionExpression, start, cloneSourcePosition(funDeclar.end));
         }   
-        if(getValue() === "async" && lookahead().kind === SyntaxKinds.FunctionKeyword) {
+        if(getSourceValue() === "async" && lookahead().kind === SyntaxKinds.FunctionKeyword) {
             nextToken();
             const funDeclar = parseFunctionExpression(true);
             semi();
@@ -3636,7 +3617,7 @@ export function createParser(code: string) {
             }
             // TODO: reafacor into parseModuleName ?
             const exported = match([SyntaxKinds.Identifier, ...Keywords]) ? parseIdentiferWithKeyword() : parseStringLiteral();
-            if(getValue() === "as") {
+            if(getSourceValue() === "as") {
                 nextToken();
                 const local = match([SyntaxKinds.Identifier, ...Keywords]) ? parseIdentiferWithKeyword() : parseStringLiteral();
                 specifier.push(Factory.createExportSpecifier(exported, local, cloneSourcePosition(exported.start), cloneSourcePosition(local.end)));
@@ -3646,7 +3627,7 @@ export function createParser(code: string) {
         }
         const { end: bracesRightPunctuatorEnd } = expect(SyntaxKinds.BracesRightPunctuator);
         let source: StringLiteral | null = null;
-        if(getValue () === "from") {
+        if(getSourceValue () === "from") {
             nextToken();
             source = parseStringLiteral();
         }
@@ -3657,7 +3638,7 @@ export function createParser(code: string) {
     function parseExportAllDeclaration(start: SourcePosition): ExportAllDeclaration {
         expect(SyntaxKinds.MultiplyOperator);
         let exported: Identifier | null = null;
-        if(getValue() === "as") {
+        if(getSourceValue() === "as") {
             nextToken();
             exported = parseIdentiferWithKeyword();
         }else {

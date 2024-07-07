@@ -24,7 +24,7 @@
                     "quasis": [
                         {
                             "kind": "TemplateElement",
-                            "value": "",
+                            "value": "}`",
                             "tail": true,
                             "start": {
                                 "row": 1,
@@ -44,7 +44,7 @@
                             "quasis": [
                                 {
                                     "kind": "TemplateElement",
-                                    "value": " blah",
+                                    "value": "} blah`",
                                     "tail": true,
                                     "start": {
                                         "row": 1,
@@ -67,7 +67,7 @@
                                         "quasis": [
                                             {
                                                 "kind": "TemplateElement",
-                                                "value": "deeply",
+                                                "value": "`deeply`",
                                                 "tail": true,
                                                 "start": {
                                                     "row": 1,

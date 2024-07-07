@@ -8,7 +8,7 @@
                 "quasis": [
                     {
                         "kind": "TemplateElement",
-                        "value": "\\${",
+                        "value": "}\\${${",
                         "tail": false,
                         "start": {
                             "row": 1,
@@ -23,7 +23,7 @@
                     },
                     {
                         "kind": "TemplateElement",
-                        "value": "}\\`",
+                        "value": "}}\\``",
                         "tail": true,
                         "start": {
                             "row": 1,

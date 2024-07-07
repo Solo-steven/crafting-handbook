@@ -38,7 +38,7 @@
                     "quasis": [
                         {
                             "kind": "TemplateElement",
-                            "value": "42",
+                            "value": "`42`",
                             "tail": true,
                             "start": {
                                 "row": 1,

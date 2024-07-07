@@ -1,80 +1,67 @@
-import { SyntaxKinds, LexicalLiteral, KeywordLiteralMapSyntaxKind } from "web-infra-common";
-import { SourcePosition, cloneSourcePosition, createSourcePosition } from "web-infra-common";
+import { SyntaxKinds, LexicalLiteral, KeywordLiteralMapSyntaxKind,SourcePosition, cloneSourcePosition, createSourcePosition } from "web-infra-common";
+import { LexerCursorContext, LexerEscFlagContext, LexerTemplateContext, LexerTokenContext, LookaheadToken, Token } from "./type";
 import { ErrorMessageMap } from "./error";
-import { performance } from "node:perf_hooks";
 /**
- * Context for lexer
- * @member {string} code
- * 
- * 
+ * Lexer Context.
  */
 interface Context {
-    // code need to tokenize
-    code: string;
-    // current pos information
-    pos: number;
-    currentLine: number;
-    currentLineStart: number;
-    lastTokenEndSourcePosition: SourcePosition;
-    // current token and token's information
-    sourceValue: string;
-    token: SyntaxKinds | null;
-    startPosition: SourcePosition;
-    endPosition: SourcePosition;
-    // stack for tokenize template literal
-    templateStringStackCounter: Array<number>;
-    escFlag: boolean;
-    // (TODO_MAYBE_REMOVE): for measure performance
-    time: number;
-    skipTime: number;
+    // Cursot for char stream, `pos` is a pointer which point to current 
+    // char in source code.
+    cursor: LexerCursorContext;
+    // Token context stoe all relative info about a token, include
+    // a kind, string value, position info, and other info we will
+    // need for syntax check (like line terminator).
+    tokenContext: LexerTokenContext;
+    // Ad-hoc data structure for tokenize template literal.
+    templateMeta: LexerTemplateContext;
+    // Ad-hoc data structure for escap char when tokenize.
+    escapeMeta: LexerEscFlagContext;
 }
-
-type TokenContext = { 
-
-}
-
+/**
+ * Create a empty lexer context
+ * @param {string} code 
+ * @returns {Context}
+ */
 function createContext(code: string): Context {
     return {
-        code,
-        pos: 0, currentLine: 1, currentLineStart: 0, lastTokenEndSourcePosition: createSourcePosition(),
-        sourceValue: "", token: null, startPosition: createSourcePosition(), endPosition: createSourcePosition(),
-        templateStringStackCounter: [],
-        escFlag: false,
-        time: 0, skipTime: 0
+        cursor: {code, pos: 0, currentLine:1, currentLineStart: 0},
+        tokenContext: { value: "", kind: null, startPosition: createSourcePosition(), endPosition: createSourcePosition(), lastTokenEndPosition: createSourcePosition() },
+        templateMeta: { stackCounter: [] },
+        escapeMeta: { flag: false }
     }
 }
-
+/**
+ * Clone a lexer context, used when need to lookahead
+ * @param {Context} source
+ * @returns {Context}
+ */
 function cloneContext(source: Context): Context {
     return {
-        ...source,
-        startPosition: cloneSourcePosition(source.startPosition),
-        endPosition: cloneSourcePosition(source.endPosition),
-        templateStringStackCounter: [...source.templateStringStackCounter],
+        cursor: {...source.cursor},
+        tokenContext: {
+            ...source.tokenContext,
+            startPosition: cloneSourcePosition(source.tokenContext.startPosition),
+            endPosition: cloneSourcePosition(source.tokenContext.endPosition),
+            lastTokenEndPosition: cloneSourcePosition(source.tokenContext.lastTokenEndPosition),
+        },
+        templateMeta: {stackCounter: [...source.templateMeta.stackCounter]},
+        escapeMeta: { ...source.escapeMeta }
     }
 }
 
-interface Lexer {
-    getSourceValue: () => string;
-    getBeforeValue: () => string;
-    getStartPosition: () => SourcePosition;
-    getEndPosition: () => SourcePosition;
-    getToken: () => SyntaxKinds;
-    nextToken: () => SyntaxKinds;
-    lookahead: () => {
-        kind: SyntaxKinds,
-        start: SourcePosition,
-        end: SourcePosition,
-        flag: boolean,
-        value: string,
-    };
-    // API for line terminator
-    getLineTerminatorFlag: () => boolean,
-    // API for read regexliteral
-    readRegex: () => { pattern: string, flag: string };
-    // Temp api for performance measure
-    getTime: () => number;
-    getSkipTime: () => number;
-}
+// interface Lexer {
+//     getSourceValue: () => string;
+//     getBeforeValue: () => string;
+//     getStartPosition: () => SourcePosition;
+//     getEndPosition: () => SourcePosition;
+//     getToken: () => SyntaxKinds;
+//     nextToken: () => SyntaxKinds;
+//     lookahead: () => Context['tokenContext'];
+//     // API for line terminator
+//     getLineTerminatorFlag: () => boolean,
+//     // API for read regexliteral
+//     readRegex: () => { pattern: string, flag: string };
+// }
 
 const nonIdentifierStartSet = new Set([ 
     ...LexicalLiteral.punctuators,
@@ -101,76 +88,159 @@ const KeywordLiteralSet = new Set([
     ...LexicalLiteral.UndefinbedLiteral,
 ])
 
-const changeLineRegex = /\n/;
-
-export function createLexer(code: string): Lexer {
+export function createLexer(code: string) {
+    // Lexer context
     let context = createContext(code);
+/** ===========================================================
+ *             Public API of Lexer
+ *  ===========================================================
+ */
     /**
      * Public Api for getting change line flag of current token.
      * @returns {boolean}
      */
     function getLineTerminatorFlag(): boolean {
-        const lastEndIndex = context.lastTokenEndSourcePosition.index;
-        const curStartIndex = context.startPosition.index;
-        return changeLineRegex.test(context.code.slice(lastEndIndex, curStartIndex));
+        return /\n/.test(context.cursor.code.slice(context.tokenContext.lastTokenEndPosition.index, context.tokenContext.startPosition.index));
     }
     /**
-     * Public Api for getting space and changeline value before
-     * current token and previous token.
+     * Public API for getting token's string value
+     * @returns {string}
+     */
+    function getSourceValue(): string {
+        return context.tokenContext.value;
+    }
+    /**
+     * Public API for getting string value which range from 
+     * last end token finish index and current token start index
+     * - NOTE: this API only used for JSX parse
      * @returns {string}
      */
     function getBeforeValue(): string {
-        const lastEndIndex = context.lastTokenEndSourcePosition.index;
-        const curStartIndex = context.startPosition.index;
-        return context.code.slice(lastEndIndex, curStartIndex);
+        return getSliceStringFromCode(context.tokenContext.lastTokenEndPosition.index, context.tokenContext.startPosition.index);
     }
-    function getSourceValue() {
-        return context.sourceValue;
+    /**
+     * Public API for get source position of current token
+     * @returns {SourcePosition}
+     */
+    function getStartPosition(): SourcePosition {
+        return context.tokenContext.startPosition;
     }
-    function getStartPosition() {
-        return context.startPosition;
+    /**
+     * Public API for get end position of current token
+     * @returns {SourcePosition}
+     */
+    function getEndPosition(): SourcePosition {
+        return context.tokenContext.endPosition
     }
-    function getEndPosition() {
-        return context.endPosition;
-    }
-    function getToken() {
-        if(context.token === null) {
-            context.token = lex();
+    /**
+     * Public API for get current token kind.
+     * @returns {SyntaxKinds}
+     */
+    function getTokenKind(): SyntaxKinds {
+        if(context.tokenContext.kind === null) {
+            context.tokenContext.kind = scan();
         }
-        return context.token;
+        return context.tokenContext.kind;
     }
-    function nextToken() {
-        context.token = lex();
-        return context.token;
+    /**
+     * Public API for moving to next token.
+     * @returns {void}
+     */
+    function nextToken(): void {
+        scan();
     }
-    function lookahead() {
+    /**
+     * Public API for lookahead token.
+     * @returns {Token}
+     */
+    function lookahead(): LookaheadToken {
         const lastContext = cloneContext(context);
-        const meta = {
-            kind: nextToken(),
-            start: getStartPosition(),
-            end: getEndPosition(),
-            flag: getLineTerminatorFlag(),
-            value: getSourceValue(),
-        };
+        nextToken();
+        const tokenContext = context.tokenContext;
         context = lastContext;
-        return meta;
+        return {
+            kind: tokenContext.kind!,
+            value: tokenContext.value,
+            startPosition: tokenContext.startPosition,
+            endPosition: tokenContext.endPosition,
+            lineTerminatorFlag: getLineTerminatorFlag(),
+        };
+    }
+    /**
+     * Public API when parse detect current context is a regex, need 
+     * to read source code string as regex format instead of other 
+     * lexer rule.
+     * @returns {}
+     */
+    function readRegex(): { pattern: string, flag: string } {
+        let pattern = "";
+        let isEscape = false;
+        let isInSet = false;
+        let flag = "";
+        let startIndex = getCurrentIndex();
+        while(!isEOF()) {
+            const char = getChar();
+            if(char === "/" && !isEscape && !isInSet) {
+                break;
+            }
+            if(char === "[" && !isEscape) {
+                isInSet = true;
+                eatChar();
+                continue;
+            }
+            if(char === "]" && !isEscape) {
+                isInSet = false;
+                eatChar();
+                continue;
+            }
+            isEscape = char === "\\" && !isEscape;
+            eatChar();
+        }
+        pattern = getSliceStringFromCode(startIndex, getCurrentIndex());
+        // eat `/`
+        eatChar();
+        /** tokenize flag  */
+        startIndex = getCurrentIndex();
+        while(!isEOF()) {
+            const char = getChar();
+            if(char && nonIdentifierStarMap[char]) {
+                break;
+            }
+            eatChar();
+        }
+        flag = getSliceStringFromCode(startIndex, getCurrentIndex());
+        if(isEOF()) {
+            throw new Error("todo error - not closed regex");
+        }
+        finishToken(SyntaxKinds.RegexLiteral, pattern + flag);
+        return { pattern, flag };
     }
     return {
+        getTokenKind,
         getSourceValue,
         getBeforeValue,
         getStartPosition,
         getEndPosition,
-        getToken,
         getLineTerminatorFlag,
         nextToken,
         lookahead,
         readRegex,
-        getTime() {
-            return context.time;
-        },
-        getSkipTime() {
-            return context.skipTime;
-        }
+    }
+/** ===========================================================
+ *             Private API for Lexer
+ *  ===========================================================
+ */
+    /**
+     * Helper for create `SourcePosition` Object from 
+     * current cursor, uesed in `startToken` and `finishToken`
+     * @returns {SourcePosition}
+     */
+    function creaetSourcePositionFromCursor(): SourcePosition {
+        return {
+            row: context.cursor.currentLine,
+            col: context.cursor.pos - context.cursor.currentLineStart + 1,
+            index: context.cursor.pos,
+        };
     }
     /**
      * Start reading a token, because token contain row and col 
@@ -179,96 +249,99 @@ export function createLexer(code: string): Lexer {
      * @returns {void}
      */
     function startToken(): void {
-        context.escFlag = false;
-        context.startPosition = {
-            row: context.currentLine,
-            col: context.pos - context.currentLineStart + 1,
-            index: context.pos,
-        }
+        context.escapeMeta.flag = false;
+        context.tokenContext.startPosition = creaetSourcePositionFromCursor();
     }
     /**
+     * Private API for finish a token, store token relative data:
      * 
-     * @param kind 
-     * @param value 
+     * 1. move current end position to last end position
+     * 2. record current position as endSourcePotion.
+     * 3. save value from start and end position
+     * 
+     * - NOTE: something we don't want value is the string range from start index
+     * of start position to end index of position is because this range have some
+     * char we don't want, for example string literal's value slice by position will
+     * be `"some-literal"` which contain start and end char of string.
      * @returns 
      */
-    function finishToken(kind: SyntaxKinds, value: string): SyntaxKinds {
-        context.token = kind;
-        context.sourceValue = value;
-        context.lastTokenEndSourcePosition = context.endPosition;
-        context.endPosition = {
-            row: context.currentLine,
-            col: context.pos - context.currentLineStart + 1,
-            index: context.pos,
-        }
+    function finishToken(kind: SyntaxKinds, value?: string): SyntaxKinds {
+        context.tokenContext.kind = kind;
+        context.tokenContext.lastTokenEndPosition = context.tokenContext.endPosition;
+        context.tokenContext.endPosition = creaetSourcePositionFromCursor();
+        context.tokenContext.value = value ?? context.cursor.code.slice(context.tokenContext.startPosition.index, context.tokenContext.endPosition.index);
         return kind;
     }
     /**
+     * Private API for getting current char accroding to
+     * the lexer cursor or get other char from current
+     * pos (offset).
+     * - NOTE: it will return undefined if reaching EOF.
+     * @returns {string}
+     */
+    function getChar(step: number = 0): string | undefined {
+       return context.cursor.code[context.cursor.pos + step];
+    }
+    /**
      * 
      */
-    function skipWhiteSpaceChangeLine() {
-        // TODO: consider the needing of `beforeValue`(only used for parse JSXText)
-        // context.beforeValue = "";
-        // const start = context.sourcePosition.index;
-        let s = performance.now();
-        loop: while(context.pos < code.length) {
-            switch(context.code[context.pos]) {
+    function isEOF(): boolean {
+        return getChar() === undefined;
+    }
+    /**
+     * Private API for eatting current char, advance cursor with
+     * one step default, or you can move more then one step
+     * @return {void}
+     */
+    function eatChar(step: number = 1): void {
+        context.cursor.pos += step;
+    }
+    /**
+     * Private API for eatting current char, which must be a change 
+     * line char, not only adavnce one step, also change the cursor
+     * data about line position
+     * @return {void}
+     */
+    function eatChangeLine(): void {
+        context.cursor.pos +=1;
+        context.cursor.currentLineStart = context.cursor.pos;
+        context.cursor.currentLine ++;
+    }
+    /**
+     * Private API called before `startToken`, skip all ignoreable char and 
+     * maintain cursor data when get a change line char
+     * @return {void}
+     */
+    function skipWhiteSpaceChangeLine(): void {
+        loop: while(context.cursor.pos < code.length) {
+            switch(getChar()) {
                 case '\n': 
-                    context.pos ++;
-                    context.currentLineStart = context.pos;
-                    context.currentLine ++;
+                    eatChangeLine();
                     break;
                 case " ":
                 case "\t":
-                    context.pos ++;
+                    eatChar();
                     break;
                 default:
                     break loop;
             }
         }
-        // context.beforeValue = context.code.slice(start, context.sourcePosition.index);
-        context.skipTime += performance.now() - s;
     }
     /**
-     * 
-     * @param {number} offset 
-     * @returns {boolean}
+     * Private API for getting current index, used when tokenize literal,
+     * for example, check a slice string in code contain some char or not
+     * we need a start index and end index to get slice string
+     * @return {number}
      */
-    function isDigital(offset : number = 0): boolean {
-        const code = context.code[context.pos + offset].charCodeAt(0);
-        return code >= 48 && code <= 57;
+    function getCurrentIndex(): number {
+        return context.cursor.pos;
     }
     /**
-     * 
+     * Private API for getting slice string from code with start index and end index,
+     * @return {string}
      */
-    function isHex(): boolean {
-        const code = context.code[context.pos].charCodeAt(0);
-        return (
-            (code >= 48 && code <= 57) ||
-            (code >= 97 && code <= 102) ||
-            (code >= 65 && code <= 70 )
-        );
-    }
-    /**
-     * 
-     */
-    function isBinary() {
-        const code = context.code[context.pos];
-        return (
-            code === "0" || code === "1"
-        );
-    }
-    function isOct() {
-        const code = context.code[context.pos].charCodeAt(0);
-        return (
-            (code >= 48 && code <= 56)
-        );
-    }
-    /**
-     * 
-     */
-    function isIdentifierStartChar() {
-        // return !nonIdentifierStartSet.has(context.code[context.pos]);
+    function getSliceStringFromCode(startIndex: number, endIndex: number): string {
+        return context.cursor.code.slice(startIndex, endIndex);
     }
     /**
      * lexicalError is used for tokenizer unexecpt char happended. ex: string start with " can't find end ""
@@ -276,18 +349,19 @@ export function createLexer(code: string): Lexer {
      * @returns {Error} - a error object
      */
     function lexicalError(content: string): Error {
-        return new Error(`[Error]: Lexical Error, ${content}, start position is (${context.startPosition.row}, ${context.startPosition.col})`);
+        return new Error(`[Error]: Lexical Error, ${content}, start position is (${context.tokenContext.startPosition.row}, ${context.tokenContext.startPosition.col})`);
     }
     /**
-     * 
+     * Main State machine for lexer, according to current char, transition
+     * to other sub state mahine for reading token.
      * @returns {SyntaxKinds}
      */
-    function lex(): SyntaxKinds {
+    function scan(): SyntaxKinds {
         skipWhiteSpaceChangeLine();
-        const char = context.code[context.pos];
+        const char = getChar();
         startToken();
         if(!char) {
-            return finishToken(SyntaxKinds.EOFToken, "eof");
+            return finishToken(SyntaxKinds.EOFToken);
         }
         switch(char) {
             /** ==========================================
@@ -295,305 +369,79 @@ export function createLexer(code: string): Lexer {
              *  ==========================================
              */
             case "{":
-                context.pos ++;
-                context.templateStringStackCounter.push(-1);
-                return finishToken(SyntaxKinds.BracesLeftPunctuator, "{");
+                context.templateMeta.stackCounter.push(-1);
+                eatChar();
+                return finishToken(SyntaxKinds.BracesLeftPunctuator);
             case "}":
-                const result = context.templateStringStackCounter.pop();
+                const result = context.templateMeta.stackCounter.pop();
                 if(result && result > 0) {
-                    return readTemplateMiddleORTail();
+                    return  readTemplateLiteral(SyntaxKinds.TemplateTail, SyntaxKinds.TemplateMiddle);
                 }
-                context.pos ++;
-                return finishToken(SyntaxKinds.BracesRightPunctuator, "}");
+                eatChar();
+                return finishToken(SyntaxKinds.BracesRightPunctuator);
             case "[":
-                context.pos ++;
-                return finishToken(SyntaxKinds.BracketLeftPunctuator, "[");
+                eatChar();
+                return finishToken(SyntaxKinds.BracketLeftPunctuator);
             case "]":
-                context.pos ++;
-                return finishToken(SyntaxKinds.BracketRightPunctuator,"]");
+                eatChar();
+                return finishToken(SyntaxKinds.BracketRightPunctuator);
             case "(":
-                context.pos ++;
-                return finishToken(SyntaxKinds.ParenthesesLeftPunctuator, "(");
+                eatChar();
+                return finishToken(SyntaxKinds.ParenthesesLeftPunctuator);
             case ")":
-                context.pos ++;
-                return finishToken(SyntaxKinds.ParenthesesRightPunctuator, ")");
+                eatChar();
+                return finishToken(SyntaxKinds.ParenthesesRightPunctuator);
             case ":":
-                context.pos ++;
-                return finishToken(SyntaxKinds.ColonPunctuator, ":");
+                eatChar();
+                return finishToken(SyntaxKinds.ColonPunctuator);
             case ";":
-                context.pos ++;
-                return finishToken(SyntaxKinds.SemiPunctuator, ";");
+                eatChar();
+                return finishToken(SyntaxKinds.SemiPunctuator);
             /** ==========================================
              *                Operators
              *  ==========================================
              */
             case ",":
-                // ','
-                context.pos ++;
-                return finishToken(SyntaxKinds.CommaToken, ",");
-            case "+": {
-                // '+', '+=', '++' 
-                const next = context.code[context.pos +1];
-                switch (next) {
-                    case "=":
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.PlusAssignOperator, "+=");
-                    case "+":
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.IncreOperator, "++");
-                    default:
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.PlusOperator, "+");
-                }
-            }
-            case "-": {
-                // '-', '-=', '--'
-                const next = context.code[context.pos +1];
-                switch (next) {
-                    case "=":
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.MinusAssignOperator, "-=");
-                    case "-":
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.DecreOperator, "--");
-                    default:
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.MinusOperator, "-");
-                }
-            }
-            case "*": {
-                // '*' , '**', '*=', '**=', 
-                const next = context.code[context.pos + 1];
-                switch (next) {
-                    case "=":
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.MultiplyAssignOperator, "*=");
-                    case "*": {
-                        const nextNext = context.code[context.pos + 2];
-                        if(nextNext === "=") {
-                            context.pos += 3;
-                            return finishToken(SyntaxKinds.ExponAssignOperator, "**=");
-                        }
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.ExponOperator, "**");
-                    }
-                    default:
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.MultiplyOperator, "*");
-                }
-            }
-            case "%": {
-                // '%', '%='
-                const next = context.code[context.pos + 1];
-                switch(next) {
-                    case "=":
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.ModAssignOperator, "%=");
-                    default:
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.ModOperator, "%");
-                }
-            }
-            case ">": {
-                // '>', '>>', '>>>' '>=', ">>=",  ">>>="
-                const next = context.code[context.pos + 1];
-                switch (next) {
-                    case ">": {
-                        const nextNext = context.code[context.pos +2];
-                        switch (nextNext) {
-                            case ">": {
-                                const nextNextNext = context.code[context.pos + 3];
-                                switch(nextNextNext) {
-                                    case "=": 
-                                        // >>>=
-                                        context.pos += 4;
-                                        return finishToken(SyntaxKinds.BitwiseRightShiftFillAssginOperator, ">>>=");
-                                    default:
-                                        // >>>
-                                        context.pos += 3;
-                                        return finishToken(SyntaxKinds.BitwiseRightShiftFillOperator, ">>>");
-                                }
-                            }
-                            case "=":
-                                // >>=
-                                context.pos += 3;
-                                return finishToken(SyntaxKinds.BitwiseRightShiftAssginOperator, ">>=");
-                            default:
-                                // >>
-                                context.pos += 2;
-                                return finishToken(SyntaxKinds.BitwiseRightShiftOperator, ">>");
-                        }
-                    }
-                    case "=": 
-                        // >=
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.GeqtOperator, ">=");
-                    default: 
-                        // >
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.GtOperator, ">");
-                }
-            }
-            case "<": {
-                // '<', '<<', '<=', '<<=', "</"
-                const next = context.code[context.pos + 1];
-                switch (next) {
-                    case "<": {
-                        const nextNext = context.code[context.pos +2];
-                        switch (nextNext) {
-                            case "=":
-                                // <<=
-                                context.pos += 3;
-                                return finishToken(SyntaxKinds.BitwiseLeftShiftAssginOperator, "<<=");
-                            default:
-                                // <<
-                                context.pos += 2;
-                                return finishToken(SyntaxKinds.BitwiseLeftShiftOperator, "<<");
-                        }
-                    }
-                    case "=": 
-                        // <=
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.LeqtOperator, "<=");
-                    case "/":
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.JSXCloseTagStart, "</");
-                    default: 
-                        // <
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.LtOperator, "<");
-                }
-            }
-            case '=': {
+                eatChar();
+                return finishToken(SyntaxKinds.CommaToken);
+            case "+": 
+                // +, ++, +=
+                return readPlusStart();
+            case "-": 
+                // -, --, -=
+                return readMinusStart();
+            case "*": 
+                return readMulStart();
+            case "%":
+                return readModStart();
+            case ">":
+                return readGreaterStart();
+            case "<": 
+                return readLessStart();
+            case '=':
                 // '=', '==', '===', '=>'
-                const next = context.code[context.pos+1];
-                switch (next) {
-                    case "=": {
-                        const nextNext = context.code[context.pos +2];
-                        switch (nextNext) {
-                            case "=": 
-                                context.pos += 3;
-                                return finishToken(SyntaxKinds.StrictEqOperator, "===");
-                            default:
-                                context.pos += 2;
-                                return finishToken(SyntaxKinds.EqOperator, "==");
-                        }
-                    }
-                    case ">":
-                        context.pos +=2;
-                        return finishToken(SyntaxKinds.ArrowOperator, "=>");
-                    default:
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.AssginOperator, "=");
-                }
-            }
-            case "!": {
+                return readEqualStart();
+            case "!":
                 // '!', '!=', '!=='
-                const next = context.code[context.pos+1];
-                switch (next) {
-                    case "=": {
-                        const nextNext = context.code[context.pos +2];
-                        switch (nextNext) {
-                            case "=": 
-                                context.pos += 3;
-                                return finishToken(SyntaxKinds.StrictNotEqOperator, "!==");
-                            default:
-                                context.pos += 2;
-                                return finishToken(SyntaxKinds.NotEqOperator, "!=");
-                        }
-                    }
-                    default:
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.LogicalNOTOperator, "!");
-                }
-            }
-            case "&": {
+                return readNotStart();
+            case "&":
                 // '&', '&&', '&=', '&&='
-                const next = context.code[context.pos+1];
-                switch (next) {
-                    case "&": {
-                        const nextNext = context.code[context.pos + 2];
-                        switch(nextNext) {
-                            case "=": 
-                                context.pos += 3;
-                                return finishToken(SyntaxKinds.logicalANDAssginOperator, "&&=");
-                            default: 
-                                context.pos += 2;
-                                return finishToken(SyntaxKinds.LogicalANDOperator, "&&");
-                        }
-                    }
-                    case "=":
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.BitwiseANDAssginOperator, "&=");
-                    default:
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.BitwiseANDOperator, "&");
-                }
-            }
-            case "|": {
+                return readAndStart();
+            case "|":
                 // '|', "||", '|=', '||='
-                const next = context.code[context.pos+1];
-                switch (next) {
-                    case "|": {
-                        const nextNext = context.code[context.pos + 2];
-                        switch(nextNext) {
-                            case "=": 
-                                context.pos += 3;
-                                return finishToken(SyntaxKinds.LogicalORAssignOperator, "||=");
-                            default: 
-                                context.pos += 2;
-                                return finishToken(SyntaxKinds.LogicalOROperator, "||");
-                        }
-                    }
-                    case "=":
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.BitwiseORAssginOperator, "|=");
-                    default:
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.BitwiseOROperator, "|");
-                }
-            }
-            case "?": {
+                return readOrStart();
+            case "?":
                 // '?', '?.' '??'
-                const next = context.code[context.pos+1];
-                switch (next) {
-                    case ".": 
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.QustionDotOperator, "?.");
-                    case "?": 
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.NullishOperator, "??");
-                    default:
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.QustionOperator, "?");
-                }
-            }
-            case "^": {
+                return readQuestionStart();
+            case "^":
                 // '^', '^='
-                const next = context.code[context.pos+1];
-                switch (next) {
-                    case "=": 
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.BitwiseXORAssginOperator, "^=");
-                    default:
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.BitwiseXOROperator, "^");
-                }
-            }
-            case "~": {
-                const next = context.code[context.pos+1];
-                switch (next) {
-                    case "=": 
-                        context.pos += 2;
-                        return finishToken(SyntaxKinds.BitwiseNOTAssginOperator, "~=");
-                    default:
-                        context.pos += 1;
-                        return finishToken(SyntaxKinds.BitwiseNOTOperator, "~");
-                }
-            }
+                return readBitwiseXORStart();
+            case "~":
+                // `~=`, `~`
+                return readBitwiseNOTStart();
             case "/": {
                 // '/' '// comment' '/* comments */'
-                const next = context.code[context.pos + 1];
+                const next = getChar(1)
                 switch (next) {
                     case "/": 
                         // start with "//"
@@ -603,47 +451,23 @@ export function createLexer(code: string): Lexer {
                         return readCommentBlock();
                     case "=":
                         // start with "/="
-                        context.pos += 2;
+                        eatChar(2)
                         return finishToken(SyntaxKinds.DivideAssignOperator, "/=");
                     case ">": 
                         // start with "/>"
-                        context.pos += 2;
+                        eatChar(2)
                         return finishToken(SyntaxKinds.JSXSelfClosedToken, "/>");
                     default:
                         // just "/"
-                        context.pos += 1;
+                        eatChar();
                         return finishToken(SyntaxKinds.DivideOperator, "/");
                 }
             }
-            case ".": {
-                // '.', '...', 'float-literal', Sub State Machine 2
-                const next = context.code[context.pos + 1];
-                const nextNext = context.code[context.pos + 2];
-                if(next === "." && nextNext === ".") {
-                    context.pos += 3;
-                    return finishToken(SyntaxKinds.SpreadOperator, "...");
-                }
-                if(isDigital(1)) {
-                    return readDotStartFloat();
-                }
-                context.pos += 1;
-                return finishToken(SyntaxKinds.DotOperator, ".");
-            }
-            case '#': {
-                context.pos ++;
-                const word = readWord();
-                return finishToken(SyntaxKinds.PrivateName, word);
-            }
-            case '`': {
-                return readTemplateHeadORNoSubstitution();
-            }
+            case ".":
+                // '.', '...', 'float-literal'
+                return readDotStart();
             /** ==========================================
              *  Keyword, Id, Literal
-             *   -> start from 0 ~ 9 , is number literal.
-             *   -> start from " or ', is string
-             *   -> oterview, read string literal
-             *       ->  string maybe match the keyword or operator, or literal (bool)
-             *       ->   id lterial
              *  ==========================================
              */
             case "0": case "1": case "2": case "3": case "4": case "5":
@@ -659,387 +483,698 @@ export function createLexer(code: string): Lexer {
                 // String Literal
                 return readStringLiteral("'");
             }
+            case '`': {
+                // Template Literal
+                return readTemplateLiteral(SyntaxKinds.TemplateNoSubstitution, SyntaxKinds.TemplateHead);
+            }
+            case '#': {
+                eatChar();
+                const word = readWordAsIdentifier();
+                return finishToken(SyntaxKinds.PrivateName, word);
+            }
             default: {
                 // Word -> Id or Keyword
-                return readString();
+                return readIdentifierOrKeyword();
             }
         }
     }
-    /** ======================================
-     *      State Machine
-     *  ======================================
+/** ===========================================================
+ *                Operators Sub state mahcine
+ *  ===========================================================
+ */
+    /**
+     * Sub state machine called when current char is start with 
+     * `+`, read three token kind:
+     * 1. `+`
+     * 2. `++`
+     * 3. `+=`
+     * @returns {SyntaxKinds}
      */
+    function readPlusStart(): SyntaxKinds {
+        // must start with +
+        eatChar();
+        switch (getChar()) {
+            // +=
+            case "=":
+                eatChar();
+                return finishToken(SyntaxKinds.PlusAssignOperator);
+            // ++
+            case "+":
+                eatChar();
+                return finishToken(SyntaxKinds.IncreOperator);
+            // +
+            default:
+                return finishToken(SyntaxKinds.PlusOperator);
+        }
+    }
+    /**
+     * Sub state machine called when current char start with `-`,
+     * read three kind of token
+     * 1. `-`
+     * 2. `-=`
+     * 3. `--`
+     * @returns {SyntaxKinds}
+     */
+    function readMinusStart(): SyntaxKinds {
+        // must start with `-`
+        eatChar();
+        switch(getChar()) {
+            // -=
+            case "=":
+                eatChar();
+                return finishToken(SyntaxKinds.MinusAssignOperator);
+            // --
+            case "-":
+                eatChar();
+                return finishToken(SyntaxKinds.DecreOperator);
+            // -
+            default:
+                return finishToken(SyntaxKinds.MinusOperator);
+        }
+    }
+    /**
+     * Sub state machine called when current char start with `*`,
+     * read four kind of token.
+     * 1. `*`
+     * 2. `**`
+     * 3. `*=`
+     * 4. `**=`
+     */
+    function readMulStart(): SyntaxKinds {
+        eatChar();
+        switch (getChar()) {
+            // *=
+            case "=":
+                eatChar();
+                return finishToken(SyntaxKinds.MultiplyAssignOperator);
+            case "*": {
+                eatChar();
+                if(getChar() === "=") {
+                    eatChar();
+                    // **=
+                    return finishToken(SyntaxKinds.ExponAssignOperator);
+                }
+                // **
+                return finishToken(SyntaxKinds.ExponOperator);
+            }
+            default:
+                // *
+                return finishToken(SyntaxKinds.MultiplyOperator);
+        }
+    }
+    /**
+     * Sub state mahcine called when current char is start with `%`,
+     * read two kind of token
+     * - `%`, `%=`
+     */
+    function readModStart(): SyntaxKinds {
+        eatChar();
+        switch(getChar()) {
+            // %=
+            case "=":
+                eatChar();
+                return finishToken(SyntaxKinds.ModAssignOperator);
+            // %
+            default:
+                return finishToken(SyntaxKinds.ModOperator);
+        }
+    }
+    /**
+     * Sub state machine called when current char is `>`, read 6 kind of token
+     * - '>', '>>', '>>>' '>=', ">>=",  ">>>="
+     * @returns {SyntaxKinds}
+     */
+    function readGreaterStart(): SyntaxKinds {
+        eatChar();
+        switch (getChar()) {
+            case ">": {
+                eatChar();
+                switch (getChar()) {
+                    case ">": {
+                        eatChar();
+                        switch(getChar()) {
+                            case "=": 
+                                // >>>=
+                                eatChar();
+                                return finishToken(SyntaxKinds.BitwiseRightShiftFillAssginOperator);
+                            default:
+                                // >>>
+                                return finishToken(SyntaxKinds.BitwiseRightShiftFillOperator);
+                        }
+                    }
+                    case "=":
+                        // >>=
+                        eatChar();
+                        return finishToken(SyntaxKinds.BitwiseRightShiftAssginOperator);
+                    default:
+                        // >>
+                        return finishToken(SyntaxKinds.BitwiseRightShiftOperator);
+                }
+            }
+            case "=": 
+                // >=
+                eatChar();
+                return finishToken(SyntaxKinds.GeqtOperator);
+            default: 
+                // >
+                return finishToken(SyntaxKinds.GtOperator);
+        }
+    }
+    /**
+     * Sun state machine called when current char is `<`, read 5 kind of token
+     * - '<', '<<', '<=', '<<=', "</"
+     * @returns {SyntaxKinds}
+     */
+    function readLessStart(): SyntaxKinds {
+        eatChar();
+        switch (getChar()) {
+            case "<": {
+                eatChar();
+                switch (getChar()) {
+                    case "=":
+                        // <<=
+                        eatChar();
+                        return finishToken(SyntaxKinds.BitwiseLeftShiftAssginOperator);
+                    default:
+                        // <<
+                        return finishToken(SyntaxKinds.BitwiseLeftShiftOperator);
+                }
+            }
+            case "=": 
+                // <=
+                eatChar();
+                return finishToken(SyntaxKinds.LeqtOperator);
+            case "/":
+                eatChar();
+                return finishToken(SyntaxKinds.JSXCloseTagStart);
+            default: 
+                // <
+                return finishToken(SyntaxKinds.LtOperator);
+        }
+    }
+    /**
+     * Sub state machine called when current char is `=`, read four 
+     * kind of token,
+     * - '=', '==', '===', '=>'
+     * @returns {SyntaxKinds}
+     */
+    function readEqualStart(): SyntaxKinds {
+        eatChar();
+        switch (getChar()) {
+            case "=": {
+                eatChar();
+                switch (getChar()) {
+                    case "=": 
+                        eatChar();
+                        return finishToken(SyntaxKinds.StrictEqOperator);
+                    default:
+                        return finishToken(SyntaxKinds.EqOperator);
+                }
+            }
+            case ">":
+                eatChar();
+                return finishToken(SyntaxKinds.ArrowOperator);
+            default:
+                return finishToken(SyntaxKinds.AssginOperator);
+        }
+    }
+    /**
+     * Sub state machine when current char is `!`, read three kind of token.
+     * - '!', '!=', '!=='
+     * @returns {SyntaxKinds}
+     */
+    function readNotStart(): SyntaxKinds {
+        eatChar();
+        switch (getChar()) {
+            case "=": {
+                eatChar();
+                switch (getChar()) {
+                    case "=": 
+                        eatChar();
+                        return finishToken(SyntaxKinds.StrictNotEqOperator);
+                    default:
+                        return finishToken(SyntaxKinds.NotEqOperator);
+                }
+            }
+            default:
+                return finishToken(SyntaxKinds.LogicalNOTOperator);
+        }
+    }
+    /**
+     * Sub state machine when current char is `&`, read four kind of token
+     * - '&', '&&', '&=', '&&='
+     * @returns {SyntaxKinds}
+     */
+    function readAndStart(): SyntaxKinds {
+        eatChar();
+        switch (getChar()) {
+            case "&": {
+                eatChar();
+                switch(getChar()) {
+                    case "=": 
+                        eatChar();
+                        return finishToken(SyntaxKinds.logicalANDAssginOperator);
+                    default: 
+                        return finishToken(SyntaxKinds.LogicalANDOperator);
+                }
+            }
+            case "=":
+                eatChar();
+                return finishToken(SyntaxKinds.BitwiseANDAssginOperator);
+            default:
+                return finishToken(SyntaxKinds.BitwiseANDOperator);
+        }
+    }
+    /**
+     * Sub state machine when current char is `|`, read four kind of token
+     * - '|', "||", '|=', '||='
+     * @returns {SyntaxKinds}
+     */
+    function readOrStart(): SyntaxKinds {
+        eatChar();
+        switch (getChar()) {
+            case "|": {
+                eatChar();
+                switch(getChar()) {
+                    case "=": 
+                        eatChar();
+                        return finishToken(SyntaxKinds.LogicalORAssignOperator);
+                    default: 
+                        return finishToken(SyntaxKinds.LogicalOROperator);
+                }
+            }
+            case "=":
+                eatChar();
+                return finishToken(SyntaxKinds.BitwiseORAssginOperator);
+            default:
+                return finishToken(SyntaxKinds.BitwiseOROperator);
+        }
+    }
+    /**
+     * Sub state machine when current char is `?`, read three kind of token:
+     * - '?', '?.' '??'
+     * @return {SyntaxKinds}
+     */
+    function readQuestionStart(): SyntaxKinds {
+        eatChar();
+        switch (getChar()) {
+            case ".": 
+                eatChar();
+                return finishToken(SyntaxKinds.QustionDotOperator);
+            case "?": 
+                eatChar();
+                return finishToken(SyntaxKinds.NullishOperator);
+            default:
+                return finishToken(SyntaxKinds.QustionOperator);
+        }
+    }
+    /**
+     * Sub state machine when current char is `^`, read two kind of token:
+     * - '^', '^='
+     * @return {SyntaxKinds}
+     */
+    function readBitwiseXORStart(): SyntaxKinds {
+        eatChar();
+        switch (getChar()) {
+            case "=": 
+                eatChar();
+                return finishToken(SyntaxKinds.BitwiseXORAssginOperator);
+            default:
+                return finishToken(SyntaxKinds.BitwiseXOROperator);
+        }
+    }
+    /**
+     * Sub state machine when current char is `~`, read two kind of token:
+     * - `~=`, `~`
+     * @return {SyntaxKinds}
+     */
+    function readBitwiseNOTStart(): SyntaxKinds {
+        eatChar();
+        switch (getChar()) {
+            case "=": 
+                eatChar();
+                return finishToken(SyntaxKinds.BitwiseNOTAssginOperator);
+            default:
+                return finishToken(SyntaxKinds.BitwiseNOTOperator);
+        }
+    }
+    /**
+     * Sub state machine when current char is `.`, read two kind of token:
+     *  - '.', '...', 'float-literal'
+     * @returns {SyntaxKinds}
+     */
+    function readDotStart(): SyntaxKinds {
+        // '.', '...', 'float-literal',
+        eatChar();
+        switch(getChar()) {
+            case ".": {
+                eatChar();
+                if(getChar() !== ".") {
+                    // should error: .. invalid
+                    throw new Error();
+                }
+                eatChar();
+                return finishToken(SyntaxKinds.SpreadOperator);
+            }
+            default: {
+                if(isDigital()) {
+                    return readDotStartFloat();
+                }
+                return finishToken(SyntaxKinds.DotOperator);
+            }
+        }
+    }
     function readComment() {
         // eat '//'
-        context.pos += 2;
-        const startIndex = context.pos;
-        while(context.pos < context.code.length) {
-            if(context.code[context.pos] === "\n") {
+        eatChar(2);
+        while(!isEOF()) {
+            if(getChar() === "\n") {
                 break;
             }
-            context.pos ++;
+            eatChar();
         }
-        return finishToken(SyntaxKinds.Comment, context.code.slice(startIndex, context.pos));
+        return finishToken(SyntaxKinds.Comment);
     }
     function readCommentBlock() {
-        // eat '/*'
-        context.pos += 2;
-        const startIndex = context.pos;
-        while(context.pos < context.code.length) {
-            const char = context.code[context.pos];
+        // eat /*
+        eatChar(2);
+        while(!isEOF()) {
+            const char = getChar();
             if(char === "\n") {
-                context.pos ++;
-                context.currentLine ++;
-                context.currentLineStart = context.pos;
+                eatChangeLine();
                 continue;
             }
-            if(context.code[context.pos] === "*") {
-                if(context.code[context.pos +1] === "/") {
-                    context.pos += 2;
+            if(char === "*") {
+                if(getChar(1) === "/") {
+                    eatChar(2)
                     break;
                 }
             }
-            context.pos ++;
+            eatChar();
         }
-        if(context.pos === context.code.length) {
-            throw new Error("todo error - unclose block comment error");
+        if(isEOF()) {
+            // TODO: error message
+            throw new Error();
         }
-        return finishToken(SyntaxKinds.BlockComment, context.code.slice(startIndex, context.pos));
+        return finishToken(SyntaxKinds.BlockComment);
     }
-    function readDotStartFloat() {
-        const startIndex = context.pos;
-        // eat '.'
-        context.pos += 1;
-        while(context.pos < context.code.length) {
-            if(!isDigital()) {
-                break;
-            }
-            context.pos ++;
-        }
-        return finishToken(SyntaxKinds.NumberLiteral ,context.code.slice(startIndex, context.pos));
-    }
-    /** ================================================
-     *     Template
-     *  ================================================
+/** ===========================================================
+ *                Literal state mahcine
+ *  ===========================================================
+ */
+    /**
+     * Sub state mahcine for tokenize template literal, by product rule,
+     * you can find tokenize `TemplateHead` and `TemplateNoSubstitution`
+     * is smailer with `TemplateTail` and `TemplateMiddle`.
+     * 
+     * - start with '`', meet '`'  => `TemplateNoSubstitution` or `TemplateTail`
+     * - start with '`', meet '${' => `TemplateHead` or `TemplateMiddle`
+     * @returns {SyntaxKinds}
      */
-    function readTemplateHeadORNoSubstitution() {
+    function readTemplateLiteral(meetEnd: SyntaxKinds, meetMiddle: SyntaxKinds): SyntaxKinds {
         // eat '`'
-        context.pos ++;
-        const startIndex = context.pos;
+        eatChar();
         let isEscape = false;
-        while(context.pos < context.code.length) {
-            const current = context.code[context.pos];
+        while(!isEOF()) {
+            const current = getChar();
             if(current === "\n") {
-                context.pos ++;
-                context.currentLine ++;
-                context.currentLineStart = context.pos;
+                eatChangeLine();
                 continue;
             }
             if(!isEscape && current === "`") {
-                const endIndex = context.pos;
-                context.pos += 1;
-                return  finishToken(SyntaxKinds.TemplateNoSubstitution, context.code.slice(startIndex, endIndex));
-            }
-            if(current === "$") {
-                if(context.code[context.pos + 1] === "{") {
-                    const endIndex = context.pos;
-                    context.pos += 2;
-                    context.templateStringStackCounter.push(1);
-                    return  finishToken(SyntaxKinds.TemplateHead, context.code.slice(startIndex, endIndex));
-                }
-            }
-            isEscape = current === "\\" && !isEscape;
-            context.pos ++;
-        }
-        throw new Error("todo error - not close template head or no subsitude");
-    }
-    function readTemplateMiddleORTail() {
-        // eat `
-        context.pos ++;
-        const startIndex = context.pos;
-        let isEscape = false;
-        while(context.pos < context.code.length) {
-            const current = context.code[context.pos];
-            if(current === "\n") {
-                context.pos ++;
-                context.currentLine ++;
-                context.currentLineStart = context.pos;
-                continue;
-            }
-            if(!isEscape && current === "`") {
-                const endIndex = context.pos;
-                context.pos += 1;
-                return  finishToken(SyntaxKinds.TemplateTail, context.code.slice(startIndex, endIndex));
+                eatChar();
+                return finishToken(meetEnd);
             }
             if(!isEscape && current === "$") {
-                if(context.code[context.pos + 1] === "{") {
-                    const endIndex = context.pos;
-                    context.pos += 2;
-                    context.templateStringStackCounter.push(1);
-                    return  finishToken(SyntaxKinds.TemplateMiddle, context.code.slice(startIndex, endIndex));
+                if(getChar(1)=== "{") {
+                    eatChar(2);
+                    context.templateMeta.stackCounter.push(1);
+                    return finishToken(meetMiddle);
                 }
             }
             isEscape = current === "\\" && !isEscape;
-            context.pos ++;
+            eatChar();
         }
-        throw new Error("todo error - not close template middle or tail");
+        // TODO: error handle
+        throw new Error("todo error - not close template head or no subsitude");
     }
-    /** ================================================
-     *     Id, Literal, Keywords State Machine
-     *  ================================================
+    /**
+     * Sub state machine for tokenize Number Literal, includeing following kind of 
+     * number literal
+     * 
+     * - Digital Number Literal
+     * - Binary Number Literal
+     * 
+     * 
+     * Since Number literal has a lot of production rule, so it goona seperator into 
+     * serval state machine helper for reading part of literal.
+     * - 
+     * @returns {SyntaxKinds}
      */
-    function readNumberLiteral() {
+    function readNumberLiteral(): SyntaxKinds {
+        let char = getChar();
         // Start With 0
-        let char = context.code[context.pos];
         if(char === "0") {
-            context.pos ++;
-            const next =  context.code[context.pos];
+            eatChar();
+            const next = getChar();
             if(next === ".") {
                 return readDotStartFloat();
             }
             if(next === "b" || next === "B") {
-                context.pos ++;
-                return readBinaryNumberLiteral();
+                eatChar();
+                return readNumberLiteralWithBase(isBinary)
             }
             if(next === "o" || next === "O") {
-                context.pos ++;
-                return readOctalNumberLiteral();
+                eatChar();
+                return readNumberLiteralWithBase(isOct);
             }
             if(next === "x" || next === "X") {
-                context.pos ++;
-                return readHexNumberLiteral();
+                eatChar();
+                return readNumberLiteralWithBase(isHex);
             }
-            return finishToken(SyntaxKinds.NumberLiteral, "0");
+            return finishToken(SyntaxKinds.NumberLiteral);
         }
         // Start With Non 0
-        let startIndex = context.pos;
-        while(context.pos < context.code.length) {
-            if(!isDigital()) {
-                break;
-            }
-            context.pos ++;
+        readDigitalHelper();
+        if(getChar() === ".") {
+            eatChar();
+            readDigitalHelper();
         }
-        let numberWord = context.code.slice(startIndex, context.pos);
-        if(context.code[context.pos] === ".") {
-            context.pos ++;
-            startIndex = context.pos;
-            while(context.pos < context.code.length) {
-                if(!isDigital()) {
-                    break;
-                }
-                context.pos ++;
-            }
-            const floatPart = context.code.slice(startIndex, context.pos);
-            numberWord = `${numberWord}.${floatPart}`;
-        }
-        char = context.code[context.pos];
+        char = getChar();
         if(char === "e" || char === "E") {
-            startIndex = context.pos;
-            context.pos ++;
-            char = context.code[context.pos];
+            eatChar();
+            char = getChar();
             if(char === "+" || char == "-") {
-                context.pos ++;
+                eatChar();
             }
-            while(context.pos < context.code.length) {
-                if(!isDigital()) {
-                    break;
-                }
-                context.pos ++;
-            }
-            const exponPart = context.code.slice(startIndex, context.pos);
-            if(exponPart.length === 1) {
+            const startIndex = getCurrentIndex();
+            readDigitalHelper();
+            const exponPart = context.cursor.code.slice(startIndex, context.cursor.pos);
+            if(exponPart.length === 0) {
+                // TODO: error handle
                 throw new Error("todo error - expon length is 0");
             }
-            numberWord += exponPart;
         }
-        return finishToken(SyntaxKinds.NumberLiteral, numberWord);
+        return finishToken(SyntaxKinds.NumberLiteral);
     }
-    function readBinaryNumberLiteral() {
-        const startIndex = context.pos;
+    /**
+     * Sub state machine helper, reading a number literal
+     * start with `.`, only could be a digital float literal.
+     * @returns {SyntaxKinds}
+     */
+    function readDotStartFloat(): SyntaxKinds {
+        // eat '.'
+        eatChar();
+        readDigitalHelper();
+        return finishToken(SyntaxKinds.NumberLiteral);
+    }
+    /**
+     * Sub State Mahcine Helper for reading a digital string.
+     * @returns {void}
+     */
+    function readDigitalHelper(): void {
+        // since `isDigital` will check eof for us.
+        while(isDigital()) {
+            eatChar();
+        }
+    }
+    /**
+     * Sub state mahcine helper for checking is current char
+     * is digital or not, it will also check EOF for us.
+     * @returns {boolean}
+     */
+    function isDigital(): boolean {
+        const char = getChar()
+        if(char == undefined) {
+            return false;
+        }
+        const code = char.charCodeAt(0);
+        return code >= 48 && code <= 57;
+    }
+    /**
+     * Sub state machine helperfor checking is current char
+     * is hex number or not, it will also check EOF for us.
+     * @returns {boolean}
+     */
+    function isHex(): boolean {
+        const char = getChar()
+        if(char == undefined) {
+            return false;
+        }
+        const code = char.charCodeAt(0);
+        return (
+            (code >= 48 && code <= 57) ||
+            (code >= 97 && code <= 102) ||
+            (code >= 65 && code <= 70 )
+        );
+    }
+    /**
+     * Sub state machine helperfor checking is current char
+     * is binary number or not, it will also check EOF for us.
+     * @returns {boolean}
+     */
+    function isBinary(): boolean {
+        const code = getChar();
+        return (
+            code === "0" || code === "1"
+        );
+    }
+    /**
+     * Sub state machine helperfor checking is current char
+     * is Oct number or not, it will also check EOF for us.
+     * @returns {boolean}
+     */
+    function isOct(): boolean {
+        const char = getChar()
+        if(char == undefined) {
+            return false;
+        }
+        const code = char.charCodeAt(0);
+        return (
+            (code >= 48 && code <= 56)
+        );
+    }
+    /**
+     * Sub state machine helper for reading a different base number
+     * literal, ECMAscript support
+     * @param stopper determinate is current char is eatable.
+     * @returns 
+     */
+    function readNumberLiteralWithBase(stopper: () => boolean) {
         let seprator = false;
-        while(context.pos < context.code.length) {
-            const char = context.code[context.pos];
+        while(!isEOF()) {
+            const char = getChar();
             if(char === "_") {
-                context.pos ++;
+                eatChar();
                 seprator = true;
                 continue;
             }else {
                 seprator = false;
             }
-            if(!isBinary()) {
+            if(!stopper()) {
                 break;
             }
-            context.pos ++;
+            eatChar();
         }
         if(seprator) {
             throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
         }
-        return finishToken(SyntaxKinds.NumberLiteral, context.code.slice(startIndex, context.pos));
+        return finishToken(SyntaxKinds.NumberLiteral);
     }
-    function readOctalNumberLiteral() {
-        const startIndex = context.pos;
-        let seprator = false;
-        while(context.pos < context.code.length) {
-            const char = context.code[context.pos];
-            if(char === "_") {
-                context.pos ++;
-                seprator = true;
-                continue;
-            }else {
-                seprator = false;
-            }
-            if(!isOct()) {
-                break;
-            }
-            context.pos ++;
-        }
-        if(seprator) {
-            throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
-        }
-        return finishToken(SyntaxKinds.NumberLiteral, context.code.slice(startIndex, context.pos));
-    }
-    function readHexNumberLiteral() {
-        const startIndex = context.pos;
-        let seprator = false;
-        while(context.pos < context.code.length) {
-            const char = context.code[context.pos];
-            if(char === "_") {
-                context.pos ++;
-                seprator = true;
-                continue;
-            }else {
-                seprator = false;
-            }
-            if(!isHex()) {
-                break;
-            }
-            context.pos ++;
-        }
-        if(seprator) {
-            throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
-        }
-        return finishToken(SyntaxKinds.NumberLiteral, context.code.slice(startIndex, context.pos));
-    }
-    function readStringLiteral(mode: "\"" | "\'") {
+    /**
+     * Sub state machine for reading a string literal, tokenize a string literal
+     * with escape char and possible change line.
+     * @param mode which char string literal is start with.
+     * @returns {SyntaxKinds}
+     */
+    function readStringLiteral(mode: "\"" | "\'"): SyntaxKinds {
         // eat mode
-        context.pos ++;
+        eatChar();
+        const indexAfterStartMode = getCurrentIndex();
         let isEscape = false;
-        const startIndex = context.pos;
-        while(context.pos < context.code.length) {
-            const char = context.code[context.pos];
+        while(!isEOF()) {
+            const char = getChar();
             if(char === mode && !isEscape) {
-                // eat mode
+                // eat node outside is because we want to 
+                // make value not including `"` or `'` 
                 break;
             }
             if(char === "\n" && !isEscape) {
+                // TODO: error handle
                 throw new Error("todo error - not close string literal");
             }
-            // TODO: remove '\' from multiple line of string.
             isEscape = char === "\\" && !isEscape ;
-            context.pos ++;
+            eatChar();
         }
-        if(context.pos === context.code.length) {
+        if(isEOF()) {
+            // TODO: error handle
             throw new Error("todo error - not close string literal");
         }
-        context.pos ++
-        return finishToken(SyntaxKinds.StringLiteral, context.code.slice(startIndex, context.pos-1));
+        // get end index before ending char ' or "
+        const indexBeforeEndMode = getCurrentIndex();
+        // eat mode
+        eatChar();
+        return finishToken(SyntaxKinds.StringLiteral, getSliceStringFromCode(indexAfterStartMode, indexBeforeEndMode));
     }
-    function readString() {
-        const word = readWord();
+/** ===========================================================
+ *         Identifier and Keywrod Sub state mahcine
+ *  ===========================================================
+ */
+    /**
+     * Sub state machine for tokenize a identifier or a keyword.
+     * @returns {SyntaxKinds}
+     */
+    function readIdentifierOrKeyword(): SyntaxKinds {
+        const word = readWordAsIdentifier();
         if(KeywordLiteralSet.has(word)) {
             // @ts-ignore
             const keywordKind = KeywordLiteralMapSyntaxKind[word];
-            if(context.escFlag) {
-                context.escFlag = false;
+            if(context.escapeMeta.flag) {
+                context.escapeMeta.flag= false;
+                // TODO: error handle
                 throw new Error("keyword can not have any escap unicode");
             }
             return finishToken(keywordKind as SyntaxKinds, word);
         }
         return finishToken(SyntaxKinds.Identifier, word);
     }
-    function readWord() {
+    function readWordAsIdentifier() {
         let isEscape = false;
-        // TODO: remove performance mesure once speed up lexer.
         let word = "";
-        let startIndex = context.pos;
-        const startTimeStamp = performance.now();
-        while(context.pos < context.code.length) {
-            const char = context.code[context.pos];
+        let startIndex = getCurrentIndex();
+        while(!isEOF()) {
+            const char =  getChar();
             if(char === "\\") {
-                const next = context.code[context.pos+1];
+                const next = getChar(1);
                 if(next === "u" || next === "U") {
-                    context.escFlag = true;
-                    word += context.code.slice(startIndex, context.pos);
+                    context.escapeMeta.flag= true;
+                    word += getSliceStringFromCode(startIndex, getCurrentIndex())
                     word += readHexEscap();
-                    startIndex = context.pos;
+                    startIndex = getCurrentIndex();
                     continue;
                 }
                 isEscape = !isEscape;
             }else {
                 isEscape = false;
             }
-            if(nonIdentifierStartSet.has(context.code[context.pos])) {
+            if(char && nonIdentifierStartSet.has(char)) {
                 break
             }
-            context.pos ++;
+            eatChar();
         }
-        // TODO: remove performance mesure once speed up lexer.
-        context.time += performance.now() - startTimeStamp ;
-        word += context.code.slice(startIndex, context.pos);
+        word += getSliceStringFromCode(startIndex, getCurrentIndex());
         return word;
     }
     function readHexEscap() {
         // eat \u \U
-        context.pos += 2;
-        const startIndex = context.pos;
-        while(context.pos < context.code.length) {
+        eatChar(2);
+        const startIndex = getCurrentIndex();
+        while(!isEOF()) {
             if(!isHex()) {
                 break;
             }
-            context.pos++;
+            eatChar();
         }
-        return String.fromCharCode(Number(`0x${context.code.slice(startIndex, context.pos)}`));
-    }
-    function readRegex(): { pattern: string, flag: string } {
-        let pattern = "";
-        let isEscape = false;
-        let isInSet = false;
-        let flag = "";
-        let startIndex = context.pos;
-        while(context.pos < context.code.length) {
-            const char = context.code[context.pos];
-            if(char === "/" && !isEscape && !isInSet) {
-                break;
-            }
-            if(char === "[" && !isEscape) {
-                isInSet = true;
-                context.pos ++;
-                continue;
-            }
-            if(char === "]" && !isEscape) {
-                isInSet = false;
-                context.pos ++;
-                continue;
-            }
-            isEscape = char === "\\" && !isEscape;
-            context.pos ++;
-        }
-        pattern = context.code.slice(startIndex, context.pos);
-        // eat `/`
-        context.pos ++;
-        /** tokenize flag  */
-        startIndex = context.pos;
-        while(context.pos < context.code.length) {
-            if(nonIdentifierStarMap[context.code[context.pos]]) {
-                break;
-            }
-            context.pos ++;
-        }
-        flag = context.code.slice(startIndex, context.pos);
-        if(context.pos === context.code.length) {
-            throw new Error("todo error - not closed regex");
-        }
-        finishToken(SyntaxKinds.RegexLiteral, pattern + flag);
-        return { pattern, flag };
+        return String.fromCharCode(Number(`0x${getSliceStringFromCode(startIndex, getCurrentIndex())}`));
     }
 }

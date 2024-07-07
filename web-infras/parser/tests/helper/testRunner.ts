@@ -37,13 +37,12 @@ async function runExpectPassTestCase(
     ]);
     const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString());
     const expectASTString = astBuffer.toString();
-
     if(resultASTString === null || expectASTString !== resultASTString) {
         failedResult.push({
             kind: "ExpectPassButFailed",
             filePath: testCase.jsFilePath,
             fileId: testCase.fileId,
-            reason: "ExpectPassButFailed",
+            reason: resultASTString === null ? "Parse Error" : "Diff Error",
         })
         return;
     }
@@ -57,7 +56,6 @@ async function runExpectPassTestCase(
 async function runExpectFailedTestCase(testCase: ExpectFailedTestCase, passResult: Array<PassTestCaseResult>, failedResult: Array<FailedTestCasesResult>) {
     const codeBuffer = await readFile(testCase.jsFilePath);
     const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString());
-
     if(resultASTString !== null) {
         failedResult.push({
             kind: "ExpectFailedButPass",

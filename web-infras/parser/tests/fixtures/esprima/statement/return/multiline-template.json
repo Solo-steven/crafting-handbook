@@ -29,7 +29,7 @@
                             "quasis": [
                                 {
                                     "kind": "TemplateElement",
-                                    "value": "\n        test\n    ",
+                                    "value": "`\n        test\n    `",
                                     "tail": true,
                                     "start": {
                                         "row": 2,
