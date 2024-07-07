@@ -1,1 +1,1 @@
-export const square = async x => x * x
+export const square = async (x) => x * x;

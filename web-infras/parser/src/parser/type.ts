@@ -2,8 +2,8 @@ import { SourcePosition } from "web-infra-common";
 import { Token } from "../lexer/type";
 
 export type ExpectToken = Omit<Token, "kind" | "startPosition" | "endPosition"> & {
-    start: SourcePosition,
-    end: SourcePosition,
+  start: SourcePosition;
+  end: SourcePosition;
 };
 /**
  * Function Scope structure, Being used for determinate
@@ -16,19 +16,19 @@ export type ExpectToken = Omit<Token, "kind" | "startPosition" | "endPosition"> 
  * @member {boolean} inStrict
  */
 export interface FunctionContext {
-    type: "FunctionContext";
-    isAsync: boolean;
-    isGenerator: boolean;
-    inParameter: boolean;
-    isSimpleParameter: boolean;
-    inStrict: boolean;
+  type: "FunctionContext";
+  isAsync: boolean;
+  isGenerator: boolean;
+  inParameter: boolean;
+  isSimpleParameter: boolean;
+  inStrict: boolean;
 }
 /**
  * Simple scope structure for block statement.
  * @member {"BlockStatement"} type - type enum string.
  */
 export interface BlockContext {
-    type: "BlockContext";
+  type: "BlockContext";
 }
 /**
  * Scope structure for function body and block statement,

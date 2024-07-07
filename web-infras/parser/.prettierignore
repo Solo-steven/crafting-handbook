@@ -1,0 +1,9 @@
+## fixture files
+**/tests/fixtures/**/*.json
+## tsconfig
+**/tsconfig.json
+**/tsconfig.build.json
+## rollup config
+**/rollup.config.js
+## README
+**/README.md
