@@ -302,6 +302,15 @@ export function createParser(code: string) {
     return currentToken === kind;
   }
   /**
+   * Private API for check if current identifier is a given value, 
+   * used when we need to detect a contextual keyword (like `async`).
+   * @param {string} value 
+   * @returns {boolean}
+   */
+  function isContextKeyword(value: string): boolean {
+    return getSourceValue() === value;
+  }
+  /**
    * Private API for parser, expect current token is one of given token(s),
    * it not, it will create a unexpect error, if is one of given token, it will
    * eat token and return `value`, `start`, `end` of token
@@ -395,6 +404,7 @@ export function createParser(code: string) {
         return false;
     }
   }
+  // TODO document: below:
   /**
    * Create a Message error from parser's error map.
    * @param {string} messsage
@@ -703,13 +713,14 @@ export function createParser(code: string) {
       case SyntaxKinds.ClassKeyword:
         return parseDeclaration();
       case SyntaxKinds.Identifier:
-        const { kind, lineTerminatorFlag: flag, value } = lookahead();
         if (
-          getSourceValue() === "async" &&
-          kind === SyntaxKinds.FunctionKeyword &&
-          flag == false
+          isContextKeyword("async")
         ) {
-          return parseDeclaration();
+          const { kind, lineTerminatorFlag: flag } = lookahead();
+          if(kind === SyntaxKinds.FunctionKeyword && flag == false) {
+            nextToken();
+            return parseFunctionDeclaration(true);
+          }
         }
         return parseStatement();
       case SyntaxKinds.LetKeyword:
@@ -759,7 +770,7 @@ export function createParser(code: string) {
     switch (token) {
       // async function declaration
       case SyntaxKinds.Identifier:
-        if (match(SyntaxKinds.Identifier) && getSourceValue() === "async") {
+        if (match(SyntaxKinds.Identifier) && isContextKeyword("async")) {
           nextToken();
           if (getLineTerminatorFlag()) {
             throw createMessageError(ErrorMessageMap.missing_semicolon);
@@ -770,8 +781,7 @@ export function createParser(code: string) {
         }
       // function delcaration
       case SyntaxKinds.FunctionKeyword:
-        const functionExpr = parseFunctionDeclaration(false);
-        return functionExpr;
+        return parseFunctionDeclaration(false);
       case SyntaxKinds.ConstKeyword:
       case SyntaxKinds.LetKeyword:
         return parseVariableDeclaration();
@@ -1123,7 +1133,7 @@ export function createParser(code: string) {
         cloneSourcePosition(body.end),
       );
     }
-    if (getSourceValue() === "of") {
+    if (isContextKeyword("of")) {
       nextToken();
       const right = parseAssigmentExpression();
       expect(SyntaxKinds.ParenthesesRightPunctuator);
@@ -2617,7 +2627,7 @@ export function createParser(code: string) {
         // 2.second case is not change line after async, making it become async arrow
         //   function.
         if (
-          getSourceValue() === "async" &&
+          isContextKeyword("async") &&
           (kind === SyntaxKinds.Identifier ||
             kind === SyntaxKinds.YieldKeyword ||
             kind === SyntaxKinds.AwaitKeyword)
@@ -2646,7 +2656,7 @@ export function createParser(code: string) {
         }
         // TODO: should be just default case ?
         // case 2 `async` `?.`, in this case, must treat as call expression
-        if (getSourceValue() === "async" && kind === SyntaxKinds.QustionDotOperator) {
+        if (isContextKeyword("async") && kind === SyntaxKinds.QustionDotOperator) {
           const id = parseIdentifer();
           const { nodes, end } = parseArguments();
           return Factory.createCallExpression(
@@ -2664,7 +2674,7 @@ export function createParser(code: string) {
         // 2.second case is not change line after async, making it become async arrow
         //   function.
         if (
-          getSourceValue() === "async" &&
+          isContextKeyword("async") &&
           kind === SyntaxKinds.ParenthesesLeftPunctuator
         ) {
           const id = parseIdentifer();
@@ -2685,7 +2695,7 @@ export function createParser(code: string) {
           return arrowFunExpr;
         }
         // case 3 async function ==> must be async function <id> () {}
-        if (getSourceValue() === "async" && kind === SyntaxKinds.FunctionKeyword) {
+        if (isContextKeyword("async") && kind === SyntaxKinds.FunctionKeyword) {
           const { value, start, end } = expect(SyntaxKinds.Identifier);
           if (getLineTerminatorFlag()) {
             return Factory.createIdentifier(value, start, end);
@@ -2901,7 +2911,7 @@ export function createParser(code: string) {
   function parseNewTarget() {
     const { start, end } = expect(SyntaxKinds.NewKeyword);
     expect(SyntaxKinds.DotOperator);
-    if (getSourceValue() !== "target") {
+    if (!isContextKeyword("target")) {
       throw createUnexpectError(
         SyntaxKinds.Identifier,
         "new concat with dot should only be used in meta property",
@@ -3277,7 +3287,7 @@ export function createParser(code: string) {
       // second, parser async and generator
       const { kind } = lookahead();
       if (
-        getSourceValue() === "async" &&
+        isContextKeyword("async") &&
         kind !== SyntaxKinds.ParenthesesLeftPunctuator
       ) {
         start = getStartPosition();
@@ -4435,7 +4445,7 @@ export function createParser(code: string) {
       );
     }
     if (
-      getSourceValue() === "async" &&
+      isContextKeyword("async") &&
       lookahead().kind === SyntaxKinds.FunctionKeyword
     ) {
       nextToken();
