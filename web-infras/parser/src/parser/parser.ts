@@ -198,10 +198,10 @@ const KeywordSet = new Set(LexicalLiteral.keywords);
 export function createParser(code: string) {
   const lexer = createLexer(code);
   const context = createContext();
-/** ===========================================================
- *              Public API for Parser
- *  ===========================================================
- */
+  /** ===========================================================
+   *              Public API for Parser
+   *  ===========================================================
+   */
   /**
    * Only Public API for parser, parse code and
    * return a program.
@@ -211,10 +211,10 @@ export function createParser(code: string) {
     return parseProgram();
   }
   return { parse };
-/** ===========================================================
- *            Private API for other Parser API
- *  ===========================================================
- */
+  /** ===========================================================
+   *            Private API for other Parser API
+   *  ===========================================================
+   */
   /**
    * Private API for parser, move to next token, skip comment and
    * block comment token.
@@ -302,9 +302,9 @@ export function createParser(code: string) {
     return currentToken === kind;
   }
   /**
-   * Private API for check if current identifier is a given value, 
+   * Private API for check if current identifier is a given value,
    * used when we need to detect a contextual keyword (like `async`).
-   * @param {string} value 
+   * @param {string} value
    * @returns {boolean}
    */
   function isContextKeyword(value: string): boolean {
@@ -350,7 +350,7 @@ export function createParser(code: string) {
    * - `SemiExisted`: there is a semi token.
    * - `SemiInsertAble`: there is a equal to semi syntax.
    * - `SemiNotExisted`: there is no semi or equal syntax,
-   * @returns 
+   * @returns
    */
   function isSemiInsertable() {
     if (match(SyntaxKinds.SemiPunctuator)) {
@@ -368,11 +368,11 @@ export function createParser(code: string) {
    * Private API for most of insert semi check, if semi exist, eat token,
    * pass if equal syntax exist, throw error if not existed semi or equal
    * syntax.
-   * @returns 
+   * @returns
    */
   function shouldInsertSemi() {
     const semiState = isSemiInsertable();
-    switch(semiState) {
+    switch (semiState) {
       case "SemiExisted":
         nextToken();
         return;
@@ -383,18 +383,18 @@ export function createParser(code: string) {
     }
   }
   /**
-   * Private API for insert semi for three edge case 
+   * Private API for insert semi for three edge case
    * - `DoWhileStatement`
    * - `ReturnStatement`
    * - `YeildExpression`
    * @param {boolean} shouldEat - false whem used in yield expression.
-   * @returns 
+   * @returns
    */
   function isSoftInsertSemi(shouldEat: boolean = true) {
     const semiState = isSemiInsertable();
-    switch(semiState) {
+    switch (semiState) {
       case "SemiExisted":
-        if(shouldEat) {
+        if (shouldEat) {
           nextToken();
         }
         return true;
@@ -404,7 +404,6 @@ export function createParser(code: string) {
         return false;
     }
   }
-  // TODO document: below:
   /**
    * Create a Message error from parser's error map.
    * @param {string} messsage
@@ -486,7 +485,7 @@ export function createParser(code: string) {
     });
   }
   /**
-   * Private API called when start parse moduleItem in `parseProgram`, different from 
+   * Private API called when start parse moduleItem in `parseProgram`, different from
    * `enterFunctionScope`, it will not find parent scope, since it not exist.
    */
   function enterProgram() {
@@ -525,7 +524,7 @@ export function createParser(code: string) {
    * function scope structure in scopeContext.
    * @returns {FunctionContext}
    */
-  function helperFindLastFunctionContext(): FunctionContext{
+  function helperFindLastFunctionContext(): FunctionContext {
     for (let index = context.scopeContext.length - 1; index >= 0; --index) {
       const scopeContext = context.scopeContext[index];
       if (scopeContext.type === "FunctionContext") {
@@ -545,7 +544,7 @@ export function createParser(code: string) {
     scope.inParameter = true;
   }
   /**
-   * Private API called when finish parse function param, reason please 
+   * Private API called when finish parse function param, reason please
    * refer to `enterFunctionParameter`
    */
   function existFunctionParameter() {
@@ -554,7 +553,7 @@ export function createParser(code: string) {
   }
   /**
    * Private API called when parse `*` after parse function, since `function`
-   * keyword is before `*`, so when we called `parseFunction` parser api, we 
+   * keyword is before `*`, so when we called `parseFunction` parser api, we
    * not know is this function is generator or not, this api is design to solve
    * this problem, set current function as generator.
    */
@@ -564,7 +563,7 @@ export function createParser(code: string) {
   }
   /**
    * Private API called when parse `'use strict';` after parse function, since `function`
-   * keyword is before directive, so when we called `parseFunction` parser api, we 
+   * keyword is before directive, so when we called `parseFunction` parser api, we
    * not know is this function in strict mode or not, this api is design to solve
    * this problem, set current function strict mode.
    */
@@ -610,21 +609,21 @@ export function createParser(code: string) {
   /**
    * Private API to know is current recursion parse in the
    * function param or not (used by yeild and await)
-   * @returns 
+   * @returns
    */
   function isInParameter(): boolean {
     const scope = helperFindLastFunctionContext();
     return scope.inParameter;
   }
   /**
-   * Private API called when parse function, since `function` keyword is argument lisr, 
-   * so when we called `parseFunction` parser api, we not know is this function's argument 
+   * Private API called when parse function, since `function` keyword is argument lisr,
+   * so when we called `parseFunction` parser api, we not know is this function's argument
    * is simple or not, this api is design to solve this problem, set current function param
    * is not simple.
    */
   function setCurrentFunctionParameterListAsNonSimple() {
     const scope = helperFindLastFunctionContext();
-     scope.isSimpleParameter = false;
+    scope.isSimpleParameter = false;
   }
   /**
    * Private API to know is current function's param is simple.
@@ -635,7 +634,7 @@ export function createParser(code: string) {
     return scope.isSimpleParameter;
   }
   /**
-   * Helper function for other private api to find a parnet 
+   * Helper function for other private api to find a parnet
    * function scope (not arrow function scope or block scope).
    * @returns {FunctionContext | undefined}
    */
@@ -653,7 +652,7 @@ export function createParser(code: string) {
     }
   }
   /**
-   * Private API to know is parent function scope 
+   * Private API to know is parent function scope
    * is async, used by parse function name.
    * @returns {boolean}
    */
@@ -665,7 +664,7 @@ export function createParser(code: string) {
     return false;
   }
   /**
-   * Private API to know is parent function scope 
+   * Private API to know is parent function scope
    * is generator, used by parse function name.
    * @returns {boolean}
    */
@@ -678,7 +677,7 @@ export function createParser(code: string) {
   }
   /**
    * Private API called when start parse class scope.
-   * @param {boolean} isExtend 
+   * @param {boolean} isExtend
    */
   function enterClassScope(isExtend: boolean = false) {
     context.classContext.push([isExtend]);
@@ -698,9 +697,9 @@ export function createParser(code: string) {
   }
   /**
    * Private API to know is current class scope have extend.
-   * @returns 
+   * @returns {boolean}
    */
-  function isCurrentClassExtend() {
+  function isCurrentClassExtend(): boolean {
     if (context.classContext.length === 0) {
       return false;
     }
@@ -732,10 +731,10 @@ export function createParser(code: string) {
     );
   }
 
-/** ===========================================================
- *            Parser internal Parse API
- *  ===========================================================
- */
+  /** ===========================================================
+   *            Parser internal Parse API
+   *  ===========================================================
+   */
   /** ==================================================
    *  Top level parse function
    *  ==================================================
@@ -786,11 +785,9 @@ export function createParser(code: string) {
       case SyntaxKinds.ClassKeyword:
         return parseDeclaration();
       case SyntaxKinds.Identifier:
-        if (
-          isContextKeyword("async")
-        ) {
+        if (isContextKeyword("async")) {
           const { kind, lineTerminatorFlag: flag } = lookahead();
-          if(kind === SyntaxKinds.FunctionKeyword && flag == false) {
+          if (kind === SyntaxKinds.FunctionKeyword && flag == false) {
             nextToken();
             return parseFunctionDeclaration(true);
           }
@@ -2361,7 +2358,7 @@ export function createParser(code: string) {
         cloneSourcePosition(argument.end),
       );
     }
-    if (match(SyntaxKinds.AwaitKeyword) && (isCurrentFunctionAsync())) {
+    if (match(SyntaxKinds.AwaitKeyword) && isCurrentFunctionAsync()) {
       if (isInParameter()) {
         throw createMessageError(
           ErrorMessageMap.await_expression_can_not_used_in_parameter_list,
@@ -2746,10 +2743,7 @@ export function createParser(code: string) {
         //   call expression
         // 2.second case is not change line after async, making it become async arrow
         //   function.
-        if (
-          isContextKeyword("async") &&
-          kind === SyntaxKinds.ParenthesesLeftPunctuator
-        ) {
+        if (isContextKeyword("async") && kind === SyntaxKinds.ParenthesesLeftPunctuator) {
           const id = parseIdentifer();
           const meta = parseArguments();
           if (flag || !match(SyntaxKinds.ArrowOperator)) {
@@ -3359,10 +3353,7 @@ export function createParser(code: string) {
       }
       // second, parser async and generator
       const { kind } = lookahead();
-      if (
-        isContextKeyword("async") &&
-        kind !== SyntaxKinds.ParenthesesLeftPunctuator
-      ) {
+      if (isContextKeyword("async") && kind !== SyntaxKinds.ParenthesesLeftPunctuator) {
         start = getStartPosition();
         isAsync = true;
         nextToken();
@@ -4517,10 +4508,7 @@ export function createParser(code: string) {
         cloneSourcePosition(funDeclar.end),
       );
     }
-    if (
-      isContextKeyword("async") &&
-      lookahead().kind === SyntaxKinds.FunctionKeyword
-    ) {
+    if (isContextKeyword("async") && lookahead().kind === SyntaxKinds.FunctionKeyword) {
       nextToken();
       const funDeclar = parseFunctionExpression(true);
       shouldInsertSemi();

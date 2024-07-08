@@ -12,9 +12,10 @@ import { createParser } from "@/src/parser";
 import { transformSyntaxKindToLiteral } from "./transform";
 
 /**
- *
+ * Try to parse a code string, return format string if no parse
+ * error, return null if parse error.
  * @param code
- * @returns
+ * @returns {string | null} return null if parse failed.
  */
 function tryParseCodeStringIntoASTString(code: string): string | null {
   try {
@@ -25,7 +26,14 @@ function tryParseCodeStringIntoASTString(code: string): string | null {
     return null;
   }
 }
-
+/**
+ * Run a test case expect to be pass
+ * @param testCase
+ * @param passResult
+ * @param failedResult
+ * @param skipResult
+ * @returns
+ */
 async function runExpectPassTestCase(
   testCase: ExpectPassTestCase,
   passResult: Array<PassTestCaseResult>,
@@ -60,7 +68,13 @@ async function runExpectPassTestCase(
     kind: "ExpectPass",
   });
 }
-
+/**
+ * Run a test case expect to be failed.
+ * @param testCase
+ * @param passResult
+ * @param failedResult
+ * @returns
+ */
 async function runExpectFailedTestCase(
   testCase: ExpectFailedTestCase,
   passResult: Array<PassTestCaseResult>,
@@ -82,7 +96,13 @@ async function runExpectFailedTestCase(
     kind: "ExpectFailed",
   });
 }
-
+/**
+ * Update a test case expect to be pass
+ * @param testCase
+ * @param passResult
+ * @param failedResult
+ * @returns
+ */
 async function updateTestCase(
   testCase: ExpectPassTestCase,
   passResult: Array<PassTestCaseResult>,
@@ -106,7 +126,12 @@ async function updateTestCase(
     filePath: testCase.jsFilePath,
   });
 }
-
+/**
+ * Run given test suit and return test result.
+ * @param testSuite
+ * @param isUpdate
+ * @returns
+ */
 export async function runTestSuit(
   testSuite: TestSuite,
   isUpdate: boolean,

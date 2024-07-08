@@ -110,10 +110,10 @@ const KeywordLiteralSet = new Set([
 
 export function createLexer(code: string) {
   /**
-   * 
+   *
    */
   let context = createContext(code);
-  
+
   /** ===========================================================
    *             Public API of Lexer
    *  ===========================================================

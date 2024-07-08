@@ -4,6 +4,7 @@ import { runTestSuit } from "./helper/testRunner";
 import { FailedTestCasesResult, TestResult } from "./helper/type";
 
 const isUpdate = Boolean(process.env.TEST_UPDATE) || false;
+const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 // const gate = Number(process.env.TEST_GATE) || .95;
 // const isCI = Boolean(process.env.TEST_CI) || false;
 
@@ -39,12 +40,16 @@ function report(testResult: TestResult) {
     testResult.failedResult,
   );
   console.log(`|---> Expect Failed But Pass : ${expectFailedButPass.length}`);
-  for (const failedcase of expectFailedButPass) {
-    console.log(`  |---> File: ${failedcase.fileId}`);
+  if (isVerbose) {
+    for (const failedcase of expectFailedButPass) {
+      console.log(`  |---> File: ${failedcase.fileId}`);
+    }
   }
   console.log(`|---> Expect Pass But Failed : ${expectPassButFailed.length}`);
-  for (const failedcase of expectPassButFailed) {
-    console.log(`  |---> File ${(failedcase as any).reason}: ${failedcase.fileId}`);
+  if (isVerbose) {
+    for (const failedcase of expectPassButFailed) {
+      console.log(`  |---> File ${(failedcase as any).reason}: ${failedcase.fileId}`);
+    }
   }
   console.log("======================================");
 }

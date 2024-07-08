@@ -9,11 +9,13 @@
     "prettier:check": "yarn prettier .",
     "prettier:write": "yarn prettier . --write",
     "test": "ts-node ./tests/runner.ts",
-    "test:update": "TEST_UPDATE=1 ts-node ./tests/runner.ts",
-    "test:ci": "TEST_CI=1 ts-node ./tests/runner.ts"
+    "test:verbose": "TEST_VERBOSE=1 yarn test",
+    "test:update": "TEST_UPDATE=1 yarn test",
+    "test:ci": "TEST_CI=1 ts-node yarn test"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.5",
+    "lint-staged": "^15.2.7",
     "nodemon": "^3.0.1",
     "prettier": "^3.3.2",
     "rollup": "^4.1.4",
@@ -23,5 +25,8 @@
     "tslib": "^2.6.2",
     "typescript": "^5.2.2",
     "web-infra-common": "workspace:*"
+  },
+  "lint-staged": {
+    "*.{ts}": "yarn prettier:write"
   }
 }

@@ -143,6 +143,10 @@ function transformKind(node: ModuleItem, visior: Visitor) {
   node.kind = SytaxKindsMapLexicalLiteral[node.kind];
   visitChild(node, visior);
 }
+/**
+ * Transform AST kind from number enum to string.
+ * @param {Program} program
+ */
 export function transformSyntaxKindToLiteral(program: Program): void {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   visitNode(program, VisitorTable);
