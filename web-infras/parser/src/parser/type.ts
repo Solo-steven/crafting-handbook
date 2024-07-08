@@ -24,6 +24,23 @@ export interface FunctionContext {
   inStrict: boolean;
 }
 /**
+ * Arrow Function Scope structure, Being used for determinate
+ * current structure context for async, in-parameter and in 
+ * strict mode.
+ * - NOTE: arrow function can not be generator
+ * @member {"ArrowFunctionContext"} type - type enum string.
+ * @member {boolean} isAsync
+ * @member {boolean} inParameter
+ * @member {boolean} inStrict
+ */
+export interface ArrowFunctionContext {
+  type: "ArrowFunctionContext"
+  isAsync: boolean;
+  inParameter: boolean;
+  isSimpleParameter: boolean;
+  inStrict: boolean;
+}
+/**
  * Simple scope structure for block statement.
  * @member {"BlockStatement"} type - type enum string.
  */

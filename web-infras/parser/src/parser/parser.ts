@@ -198,10 +198,10 @@ const KeywordSet = new Set(LexicalLiteral.keywords);
 export function createParser(code: string) {
   const lexer = createLexer(code);
   const context = createContext();
-  /** ===========================================================
-   *              Public API for Parser
-   *  ===========================================================
-   */
+/** ===========================================================
+ *              Public API for Parser
+ *  ===========================================================
+ */
   /**
    * Only Public API for parser, parse code and
    * return a program.
@@ -211,10 +211,10 @@ export function createParser(code: string) {
     return parseProgram();
   }
   return { parse };
-  /** ===========================================================
-   *            Private API for Parser
-   *  ===========================================================
-   */
+/** ===========================================================
+ *            Private API for other Parser API
+ *  ===========================================================
+ */
   /**
    * Private API for parser, move to next token, skip comment and
    * block comment token.
@@ -463,10 +463,11 @@ export function createParser(code: string) {
     return new Error(message);
   }
   /**
-   * Helper function called when enter function scope. when parse
-   * - function delcaration or expression.
-   * - arrow function.
-   * - method of class or object.
+   * Private API called when enter function scope. when parse
+   * - **Function delcaration or expression** : called`parseFunction` api, which is called by
+   * `parseFunctionDeclaration` and `parseFunctionExpression`
+   * - **Arrow function** : called before parseArrowFunction, in a lot of place.
+   * - **method of class or object** : parseMethodDefintion.
    *
    * need to call this function and give this flag of is this function
    * a async or generator
@@ -485,93 +486,159 @@ export function createParser(code: string) {
     });
   }
   /**
-   * Helper function for exit the function scope;
+   * Private API called when start parse moduleItem in `parseProgram`, different from 
+   * `enterFunctionScope`, it will not find parent scope, since it not exist.
+   */
+  function enterProgram() {
+    context.scopeContext.push({
+      type: "FunctionContext",
+      isAsync: false,
+      isGenerator: false,
+      inParameter: false,
+      inStrict: false,
+      isSimpleParameter: true,
+    });
+  }
+  /**
+   * Private API called  when exist a function scope, refer to
+   * `enterFunctionScope` comment
    */
   function exitFunctionScope() {
     context.scopeContext.pop();
   }
   /**
-   * Helper function when enter this block scope.
+   * Private API called when enter this block scope.
    * this function only called when `parseBlockStatement`.
    */
   function enterBlockScope() {
     context.scopeContext.push({ type: "BlockContext" });
   }
   /**
-   * Helper function when exiting block scope
-   * this function only called when `parseBlokcStatement`
+   * Private APII called when enter this block scope.
+   * this function only called when `parseBlockStatement`.
    */
   function exitBlockScope() {
     context.scopeContext.pop();
   }
   /**
-   * Helper function for other context helper function to get this closest
+   * Helper function for other context Private API to get this closest
    * function scope structure in scopeContext.
-   * @returns {FunctionContext | undefined}
+   * @returns {FunctionContext}
    */
-  function helperFindLastFunctionContext(): FunctionContext | undefined {
+  function helperFindLastFunctionContext(): FunctionContext{
     for (let index = context.scopeContext.length - 1; index >= 0; --index) {
       const scopeContext = context.scopeContext[index];
       if (scopeContext.type === "FunctionContext") {
         return scopeContext;
       }
     }
+    // TODO: better error
+    throw new Error();
   }
   /**
-   * Helper function for getting is parser in current function parameter.
-   * we need this because event in async or generator function, we can not
-   * call await and yield expression in function parameter list. so we need
-   * this function to perform side effect to mark current function context
-   * as we are parsing function parameter.
+   * Private API called when parse function param, since we should ban
+   * await expression and yeild expression in function param, event if
+   * function is async or generator.
    */
   function enterFunctionParameter() {
     const scope = helperFindLastFunctionContext();
-    if (scope) {
-      scope.inParameter = true;
-    }
+    scope.inParameter = true;
   }
+  /**
+   * Private API called when finish parse function param, reason please 
+   * refer to `enterFunctionParameter`
+   */
   function existFunctionParameter() {
     const scope = helperFindLastFunctionContext();
-    if (scope) {
-      scope.inParameter = false;
-    }
+    scope.inParameter = false;
   }
+  /**
+   * Private API called when parse `*` after parse function, since `function`
+   * keyword is before `*`, so when we called `parseFunction` parser api, we 
+   * not know is this function is generator or not, this api is design to solve
+   * this problem, set current function as generator.
+   */
   function setCurrentFunctionContextAsGenerator() {
     const scope = helperFindLastFunctionContext();
-    if (scope) {
-      scope.isGenerator = true;
-    }
+    scope.isGenerator = true;
   }
+  /**
+   * Private API called when parse `'use strict';` after parse function, since `function`
+   * keyword is before directive, so when we called `parseFunction` parser api, we 
+   * not know is this function in strict mode or not, this api is design to solve
+   * this problem, set current function strict mode.
+   */
   function setCurrentFunctionContextAsStrictMode() {
     const scope = helperFindLastFunctionContext();
-    if (scope) {
-      scope.inStrict = true;
-    }
+    scope.inStrict = true;
   }
-  function getCurrentInOperatorStack() {
+  /**
+   * Private API for `For-In` parsering problem.
+   * @returns {boolean}
+   */
+  function getCurrentInOperatorStack(): boolean {
     if (context.inOperatorStack.length === 0) {
       return false;
     }
     return context.inOperatorStack[context.inOperatorStack.length - 1];
   }
-  function isTopLevel() {
+  /**
+   * Private API to know is current scope is top level, some syntax item
+   * can not show in top level (like new.target)
+   * @returns {boolean}
+   */
+  function isTopLevel(): boolean {
     const scope = helperFindLastFunctionContext();
     return scope === context.scopeContext[0];
   }
+  /**
+   * Private API to know is current function is async.
+   * @returns {boolean}
+   */
   function isCurrentFunctionAsync(): boolean {
     const scope = helperFindLastFunctionContext();
-    if (scope) {
-      return scope.isAsync;
-    }
-    return false;
+    return scope.isAsync;
   }
+  /**
+   * Private API to know is current function is generator.
+   * @returns {boolean}
+   */
+  function isCurrentFunctionGenerator(): boolean {
+    const scope = helperFindLastFunctionContext();
+    return scope.isGenerator;
+  }
+  /**
+   * Private API to know is current recursion parse in the
+   * function param or not (used by yeild and await)
+   * @returns 
+   */
   function isInParameter(): boolean {
     const scope = helperFindLastFunctionContext();
-    if (scope) {
-      return scope.inParameter;
-    }
-    return false;
+    return scope.inParameter;
   }
+  /**
+   * Private API called when parse function, since `function` keyword is argument lisr, 
+   * so when we called `parseFunction` parser api, we not know is this function's argument 
+   * is simple or not, this api is design to solve this problem, set current function param
+   * is not simple.
+   */
+  function setCurrentFunctionParameterListAsNonSimple() {
+    const scope = helperFindLastFunctionContext();
+     scope.isSimpleParameter = false;
+  }
+  /**
+   * Private API to know is current function's param is simple.
+   * @returns {boolean}
+   */
+  function isCurrentFunctionParameterListSimple(): boolean {
+    const scope = helperFindLastFunctionContext();
+    return scope.isSimpleParameter;
+  }
+  /**
+   * Helper function for other private api to find a parnet 
+   * function scope (not arrow function scope or block scope).
+   * @returns {FunctionContext | undefined}
+   */
   function helperFindParentScope(): FunctionContext | undefined {
     let flag = false;
     for (let index = context.scopeContext.length - 1; index >= 0; --index) {
@@ -585,6 +652,11 @@ export function createParser(code: string) {
       }
     }
   }
+  /**
+   * Private API to know is parent function scope 
+   * is async, used by parse function name.
+   * @returns {boolean}
+   */
   function isParentFunctionAsync(): boolean {
     const parentScope = helperFindParentScope();
     if (parentScope) {
@@ -592,6 +664,11 @@ export function createParser(code: string) {
     }
     return false;
   }
+  /**
+   * Private API to know is parent function scope 
+   * is generator, used by parse function name.
+   * @returns {boolean}
+   */
   function isParentFunctionGenerator(): boolean {
     const parentScope = helperFindParentScope();
     if (parentScope) {
@@ -599,22 +676,30 @@ export function createParser(code: string) {
     }
     return false;
   }
-  function isCurrentFunctionGenerator() {
-    const scope = helperFindLastFunctionContext();
-    if (scope) {
-      return scope.isGenerator;
-    }
-    return false;
-  }
+  /**
+   * Private API called when start parse class scope.
+   * @param {boolean} isExtend 
+   */
   function enterClassScope(isExtend: boolean = false) {
     context.classContext.push([isExtend]);
   }
+  /**
+   * Private API called when finish parse class scope.
+   */
   function existClassScope() {
     context.classContext.pop();
   }
-  function isInClassScope() {
+  /**
+   * Private API to know is current scope under class scope.
+   * @returns {boolean}
+   */
+  function isInClassScope(): boolean {
     return context.classContext.length > 0;
   }
+  /**
+   * Private API to know is current class scope have extend.
+   * @returns 
+   */
   function isCurrentClassExtend() {
     if (context.classContext.length === 0) {
       return false;
@@ -622,7 +707,7 @@ export function createParser(code: string) {
     return context.classContext[context.classContext.length - 1][0];
   }
   /**
-   * Helper function for getting is current function scope is in strict mode,
+   * Private API to know is current function scope is in strict mode,
    * according to ECMA spec, in class declaration and class expression, is
    * always strict mode.
    * @returns {boolean}
@@ -632,10 +717,7 @@ export function createParser(code: string) {
       return true;
     }
     const scope = helperFindLastFunctionContext();
-    if (scope) {
-      return scope.inStrict;
-    }
-    return false;
+    return scope.inStrict;
   }
   /**
    * Helper function only used by `checkStrictMode`, because
@@ -649,27 +731,18 @@ export function createParser(code: string) {
       context.scopeContext[context.scopeContext.length - 1].type === "FunctionContext"
     );
   }
-  function setCurrentFunctionParameterListAsNonSimple() {
-    const scope = helperFindLastFunctionContext();
-    if (scope) {
-      scope.isSimpleParameter = false;
-    }
-  }
-  function isCurrentFunctionParameterListSimple() {
-    const scope = helperFindLastFunctionContext();
-    if (scope) {
-      return scope.isSimpleParameter;
-    }
-    return false;
-  }
 
+/** ===========================================================
+ *            Parser internal Parse API
+ *  ===========================================================
+ */
   /** ==================================================
    *  Top level parse function
    *  ==================================================
    */
   function parseProgram() {
     const body: Array<ModuleItem> = [];
-    enterFunctionScope();
+    enterProgram();
     while (!match(SyntaxKinds.EOFToken)) {
       body.push(parseModuleItem());
     }
@@ -2288,7 +2361,7 @@ export function createParser(code: string) {
         cloneSourcePosition(argument.end),
       );
     }
-    if (match(SyntaxKinds.AwaitKeyword) && isCurrentFunctionAsync()) {
+    if (match(SyntaxKinds.AwaitKeyword) && (isCurrentFunctionAsync())) {
       if (isInParameter()) {
         throw createMessageError(
           ErrorMessageMap.await_expression_can_not_used_in_parameter_list,
