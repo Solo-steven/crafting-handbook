@@ -37,6 +37,7 @@ export const ErrorMessageMap = {
   assignment_pattern_left_value_can_only_be_idenifier_or_pattern: "assignment pattern",
   binding_pattern_can_not_have_member_expression:
     "binding pattern can not have member expression",
+  pattern_should_not_has_paran: "pattern should not has pattern.",
   // for-related statement
   for_in_of_loop_can_not_using_initializer:
     "for in and for of loop can not usng initializer",
@@ -63,6 +64,7 @@ export const ErrorMessageMap = {
   expont_operator_need_parans:
     "Illegal expression. Wrap left hand side or entire exponentiation in parentheses",
   // other
+  function_declaration_must_have_name: "Function delcaration must have function name",
   new_expression_cant_using_optional_chain:
     "New expression can not using optional chain in callee",
   tag_template_expression_can_not_use_option_chain:
@@ -91,4 +93,5 @@ export const ErrorMessageMap = {
     "let keyword can not used as identifier in lexical binding",
   import_call_is_not_allow_as_new_expression_called:
     "import call is not allowed as new expression called",
+  invalid_esc_char_in_keyword: "keyword can not contain any esc flag.",
 };

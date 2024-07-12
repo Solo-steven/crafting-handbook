@@ -116,6 +116,8 @@ import {
   JSXExpressionContainer,
   JSXSpreadChild,
   JSXClosingElement,
+  createSourcePosition,
+  isObjectProperty,
 } from "web-infra-common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -156,6 +158,11 @@ import { LookaheadToken } from "../lexer/type";
  */
 interface Context {
   maybeArrow: boolean;
+  maybeArrowStart: number;
+  lastArrowExprPosition: {
+    start: SourcePosition;
+    end: SourcePosition;
+  } | null;
   scopeContext: Array<ScopeContext>;
   classContext: Array<[boolean]>;
   inOperatorStack: Array<boolean>;
@@ -176,6 +183,8 @@ function createContext(): Context {
     scopeContext: [],
     classContext: [],
     maybeArrow: false,
+    maybeArrowStart: -1,
+    lastArrowExprPosition: null,
     inOperatorStack: [],
     propertiesInitSet: new Set(),
   };
@@ -308,7 +317,14 @@ export function createParser(code: string) {
    * @returns {boolean}
    */
   function isContextKeyword(value: string): boolean {
-    return getSourceValue() === value;
+    if (getSourceValue() === value && getToken() === SyntaxKinds.Identifier) {
+      // TODO lexer get ecsflag.
+      if (lexer.getEscFlag()) {
+        throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
+      }
+      return true;
+    }
+    return false;
   }
   /**
    * Private API for parser, expect current token is one of given token(s),
@@ -461,11 +477,22 @@ export function createParser(code: string) {
     message += ", please report to developer.";
     return new Error(message);
   }
+  function disAllowInOperaotr<T>(parseCallback: () => T): T {
+    context.inOperatorStack.push(false);
+    const result = parseCallback();
+    context.inOperatorStack.pop();
+    return result;
+  }
+  function allowInOperaotr<T>(parseCallback: () => T) {
+    context.inOperatorStack.push(true);
+    const result = parseCallback();
+    context.inOperatorStack.pop();
+    return result;
+  }
   /**
    * Private API called when enter function scope. when parse
    * - **Function delcaration or expression** : called`parseFunction` api, which is called by
    * `parseFunctionDeclaration` and `parseFunctionExpression`
-   * - **Arrow function** : called before parseArrowFunction, in a lot of place.
    * - **method of class or object** : parseMethodDefintion.
    *
    * need to call this function and give this flag of is this function
@@ -477,8 +504,29 @@ export function createParser(code: string) {
     const lastScope = helperFindLastFunctionContext();
     context.scopeContext.push({
       type: "FunctionContext",
+      isArrow: false,
       isAsync,
       isGenerator,
+      inParameter: false,
+      inStrict: lastScope ? lastScope.inStrict : false,
+      isSimpleParameter: true,
+    });
+  }
+  /**
+   * Private API called when enter arrow function scope, called when
+   *  - **Arrow function** : called before parseArrowFunction, in a lot of place.
+   *
+   * Different from `enterFunctionScope`, arrow function can not be a generator,
+   * so it's scope value of generator is always be false.
+   * @param isAsync
+   */
+  function enterArrowFunctionScope(isAsync: boolean = false) {
+    const lastScope = helperFindLastFunctionContext();
+    context.scopeContext.push({
+      type: "FunctionContext",
+      isArrow: true,
+      isAsync,
+      isGenerator: false,
       inParameter: false,
       inStrict: lastScope ? lastScope.inStrict : false,
       isSimpleParameter: true,
@@ -491,6 +539,7 @@ export function createParser(code: string) {
   function enterProgram() {
     context.scopeContext.push({
       type: "FunctionContext",
+      isArrow: false,
       isAsync: false,
       isGenerator: false,
       inParameter: false,
@@ -587,8 +636,14 @@ export function createParser(code: string) {
    * @returns {boolean}
    */
   function isTopLevel(): boolean {
-    const scope = helperFindLastFunctionContext();
-    return scope === context.scopeContext[0];
+    for (let index = context.scopeContext.length - 1; index >= 0; --index) {
+      const scope = context.scopeContext[index];
+      if (scope.type === "FunctionContext" && scope.isArrow === false) {
+        return scope === context.scopeContext[0];
+      }
+    }
+    // TODO: better unreach error
+    throw new Error();
   }
   /**
    * Private API to know is current function is async.
@@ -840,7 +895,7 @@ export function createParser(code: string) {
     switch (token) {
       // async function declaration
       case SyntaxKinds.Identifier:
-        if (match(SyntaxKinds.Identifier) && isContextKeyword("async")) {
+        if (isContextKeyword("async")) {
           nextToken();
           if (getLineTerminatorFlag()) {
             throw createMessageError(ErrorMessageMap.missing_semicolon);
@@ -939,17 +994,22 @@ export function createParser(code: string) {
    * @param {ModuleItem} node target for transform to Pattern
    * @param {boolean} isBinding Is transform to BindingPattern
    */
-  function toAssignmentPattern(node: ModuleItem, isBinding: boolean = false): ModuleItem {
+  function toAssignmentPattern(node: ModuleItem, isBinding: boolean = false): Pattern {
+    const expr = node as Expression;
+    if (expr.parentheses) {
+      throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
+    }
     switch (node.kind) {
       case SyntaxKinds.Identifier:
-        return node;
+        return node as Identifier;
       case SyntaxKinds.AssigmentExpression: {
         const assignmentExpressionNode = node as AssigmentExpression;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const left = assignmentExpressionNode.left;
-        // isObjectPattern(assignmentExpressionNode.left) || isArrayPattern(assignmentExpressionNode.left)
-        //     ? assignmentExpressionNode.left
-        //     : toAssignmentPattern(assignmentExpressionNode.left, isBinding);
+        const left =
+          isObjectPattern(assignmentExpressionNode.left) ||
+          isArrayPattern(assignmentExpressionNode.left)
+            ? checkPatternWithBinding(assignmentExpressionNode.left, isBinding)
+            : toAssignmentPattern(assignmentExpressionNode.left, isBinding);
         if (assignmentExpressionNode.operator !== SyntaxKinds.AssginOperator) {
           throw createMessageError(
             ErrorMessageMap.assigment_pattern_only_can_use_assigment_operator,
@@ -1007,7 +1067,9 @@ export function createParser(code: string) {
         const properties: Array<ModuleItem> = [];
         for (let index = 0; index < objecExpressionNode.properties.length; ++index) {
           const property = objecExpressionNode.properties[index];
-          const transformElement = toAssignmentPattern(property, isBinding);
+          const transformElement = isObjectProperty(property)
+            ? ObjectPropertyToObjectPatternProperty(property, isBinding)
+            : toAssignmentPattern(property, isBinding);
           if (
             isRestElement(transformElement) &&
             (isObjectPattern(transformElement.argument) ||
@@ -1030,51 +1092,9 @@ export function createParser(code: string) {
           properties.push(transformElement);
         }
         return Factory.createObjectPattern(
-          properties as Array<ObjectPatternProperty>,
+          properties as Array<ObjectPatternProperty | RestElement | AssignmentPattern>,
           objecExpressionNode.start,
           objecExpressionNode.end,
-        );
-      }
-      case SyntaxKinds.ObjectProperty: {
-        const objectPropertyNode = node as ObjectProperty;
-        if (
-          isBinding &&
-          objectPropertyNode.value &&
-          isMemberExpression(objectPropertyNode.value)
-        ) {
-          throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
-        }
-        if (
-          context.propertiesInitSet.has(objectPropertyNode) &&
-          !objectPropertyNode.shorted
-        ) {
-          context.propertiesInitSet.delete(objectPropertyNode);
-          if (objectPropertyNode.computed || !isIdentifer(objectPropertyNode.key)) {
-            // property name of assignment pattern can not use computed propertyname or literal
-            throw createMessageError(
-              ErrorMessageMap.assignment_pattern_left_value_can_only_be_idenifier_or_pattern,
-            );
-          }
-          return Factory.createAssignmentPattern(
-            objectPropertyNode.key,
-            objectPropertyNode.value as Expression,
-            objectPropertyNode.start,
-            objectPropertyNode.end,
-          );
-        }
-        return Factory.createObjectPatternProperty(
-          objectPropertyNode.key,
-          !objectPropertyNode.value
-            ? objectPropertyNode.value
-            : isMemberExpression(objectPropertyNode.value)
-              ? objectPropertyNode.value
-              : (toAssignmentPattern(
-                  objectPropertyNode.value as ModuleItem,
-                ) as unknown as any),
-          objectPropertyNode.computed,
-          objectPropertyNode.shorted,
-          objectPropertyNode.start,
-          objectPropertyNode.end,
         );
       }
       default:
@@ -1082,6 +1102,80 @@ export function createParser(code: string) {
           ErrorMessageMap.invalid_left_value + ` get kind ${node.kind}.`,
         );
     }
+  }
+  function ObjectPropertyToObjectPatternProperty(
+    objectPropertyNode: ObjectProperty,
+    isBinding = false,
+  ): ObjectPatternProperty | AssignmentPattern {
+    if (
+      isBinding &&
+      objectPropertyNode.value &&
+      isMemberExpression(objectPropertyNode.value)
+    ) {
+      throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
+    }
+    if (
+      context.propertiesInitSet.has(objectPropertyNode) &&
+      !objectPropertyNode.shorted
+    ) {
+      context.propertiesInitSet.delete(objectPropertyNode);
+      if (objectPropertyNode.computed || !isIdentifer(objectPropertyNode.key)) {
+        // property name of assignment pattern can not use computed propertyname or literal
+        throw createMessageError(
+          ErrorMessageMap.assignment_pattern_left_value_can_only_be_idenifier_or_pattern,
+        );
+      }
+      return Factory.createAssignmentPattern(
+        objectPropertyNode.key,
+        objectPropertyNode.value as Expression,
+        objectPropertyNode.start,
+        objectPropertyNode.end,
+      );
+    }
+    return Factory.createObjectPatternProperty(
+      objectPropertyNode.key,
+      !objectPropertyNode.value
+        ? objectPropertyNode.value
+        : isMemberExpression(objectPropertyNode.value)
+          ? objectPropertyNode.value
+          : (toAssignmentPattern(
+              objectPropertyNode.value as ModuleItem,
+            ) as unknown as any),
+      objectPropertyNode.computed,
+      objectPropertyNode.shorted,
+      objectPropertyNode.start,
+      objectPropertyNode.end,
+    );
+  }
+  function checkPatternWithBinding(leftValue: Pattern, isBinding = false): Pattern {
+    if (isObjectPattern(leftValue)) {
+      for (const property of leftValue.properties) {
+        if (isObjectPatternProperty(property)) {
+          if (property.value && isMemberExpression(property.value) && isBinding) {
+            throw createMessageError(
+              ErrorMessageMap.invalid_left_value + ` get kind ${leftValue.kind}.`,
+            );
+          }
+        }
+      }
+      return leftValue;
+    }
+    if (isAssignmentPattern(leftValue)) {
+      checkPatternWithBinding(leftValue.left, isBinding);
+      return leftValue;
+    }
+    if (isRestElement(leftValue)) {
+      checkPatternWithBinding(leftValue.argument, isBinding);
+      return leftValue;
+    }
+    if (isArrayPattern(leftValue)) {
+      for (const pat of leftValue.elements) {
+        if (pat) {
+          checkPatternWithBinding(pat, isBinding);
+        }
+      }
+    }
+    return leftValue;
   }
   /**
    * Parse For-related Statement, include ForStatement, ForInStatement, ForOfStatement.
@@ -1114,7 +1208,7 @@ export function createParser(code: string) {
       match([SyntaxKinds.LetKeyword, SyntaxKinds.ConstKeyword, SyntaxKinds.VarKeyword])
     ) {
       if (match(SyntaxKinds.LetKeyword) && isLetPossibleIdentifier()) {
-        leftOrInit = parseExpression(false);
+        leftOrInit = disAllowInOperaotr(() => parseExpression());
       } else {
         leftOrInit = parseVariableDeclaration(true);
       }
@@ -1122,7 +1216,7 @@ export function createParser(code: string) {
       // for test case `for(;;)`
       leftOrInit = null;
     } else {
-      leftOrInit = parseExpression(false);
+      leftOrInit = disAllowInOperaotr(() => parseExpression());
     }
     // Second is branching part, determinate the branch by following token
     // - if start with semi it should be ForStatement,
@@ -1239,7 +1333,7 @@ export function createParser(code: string) {
   function parseIfStatement(): IfStatement {
     const { start: keywordStart } = expect(SyntaxKinds.IfKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
-    const test = parseExpression();
+    const test = allowInOperaotr(() => parseExpression());
     expect(SyntaxKinds.ParenthesesRightPunctuator);
     const consequnce = parseStatement();
     if (match(SyntaxKinds.ElseKeyword)) {
@@ -1415,7 +1509,7 @@ export function createParser(code: string) {
     if (isSoftInsertSemi(true)) {
       return Factory.createReturnStatement(null, start, end);
     }
-    const expr = parseExpression();
+    const expr = allowInOperaotr(() => parseExpression());
     shouldInsertSemi();
     return Factory.createReturnStatement(expr, start, cloneSourcePosition(expr.end));
   }
@@ -1674,6 +1768,9 @@ export function createParser(code: string) {
       nextToken();
     }
     const name = parseFunctionName(isExpression);
+    if (!name && !isExpression) {
+      throw createMessageError(ErrorMessageMap.function_declaration_must_have_name);
+    }
     const params = parseFunctionParam();
     const body = parseFunctionBody();
     checkFunctionNameAndParamsInCurrentFunctionStrictMode(name, params);
@@ -2010,7 +2107,7 @@ export function createParser(code: string) {
     // parse static modifier
     let isStatic = false;
     if (
-      getSourceValue() === "static" &&
+      isContextKeyword("static") &&
       lookahead().kind !== SyntaxKinds.ParenthesesLeftPunctuator
     ) {
       nextToken();
@@ -2069,7 +2166,7 @@ export function createParser(code: string) {
    * @returns {ExpressionStatement}
    */
   function parseExpressionStatement(): ExpressionStatement {
-    const expr = parseExpression();
+    const expr = allowInOperaotr(() => parseExpression());
     checkStrictMode(expr);
     shouldInsertSemi();
     return Factory.createExpressionStatement(
@@ -2103,11 +2200,11 @@ export function createParser(code: string) {
       }
     }
   }
-  function parseExpressionBase() {
-    const exprs = [parseAssigmentExpressionBase()];
+  function parseExpression(): Expression {
+    const exprs = [parseAssigmentExpression()];
     while (match(SyntaxKinds.CommaToken)) {
       nextToken();
-      exprs.push(parseAssigmentExpressionBase());
+      exprs.push(parseAssigmentExpression());
     }
     if (exprs.length === 1) {
       return exprs[0];
@@ -2118,15 +2215,9 @@ export function createParser(code: string) {
       cloneSourcePosition(exprs[exprs.length - 1].end),
     );
   }
-  function parseExpression(allowIn = true): Expression {
-    context.inOperatorStack.push(allowIn);
-    const expr = parseExpressionBase();
-    context.inOperatorStack.pop();
-    return expr;
-  }
-  function parseAssigmentExpressionBase(): Expression {
-    if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-      context.maybeArrow = true;
+  function parseAssigmentExpression(): Expression {
+    if (match([SyntaxKinds.ParenthesesLeftPunctuator, SyntaxKinds.Identifier])) {
+      context.maybeArrowStart = getStartPosition().index;
     }
     if (match(SyntaxKinds.YieldKeyword) && isCurrentFunctionGenerator()) {
       return parseYieldExpression();
@@ -2138,7 +2229,7 @@ export function createParser(code: string) {
     left = isMemberExpression(left) ? left : (toAssignmentPattern(left) as Expression);
     const operator = getToken();
     nextToken();
-    const right = parseAssigmentExpressionBase();
+    const right = parseAssigmentExpression();
     return Factory.createAssignmentExpression(
       left,
       right,
@@ -2147,11 +2238,8 @@ export function createParser(code: string) {
       cloneSourcePosition(right.end),
     );
   }
-  function parseAssigmentExpression(allowIn = true): Expression {
-    context.inOperatorStack.push(allowIn);
-    const expr = parseAssigmentExpressionBase();
-    context.inOperatorStack.pop();
-    return expr;
+  function canParseAsArrowFunction(): boolean {
+    return getStartPosition().index === context.maybeArrowStart;
   }
   /**
    * Parse Yield Expression, when current function scope is generator, yield would
@@ -2168,6 +2256,7 @@ export function createParser(code: string) {
    */
   function parseYieldExpression(): YieldExpression {
     const { start } = expect(SyntaxKinds.YieldKeyword);
+    // const isLineDterminator = getLineTerminatorFlag();
     let delegate = false;
     if (match(SyntaxKinds.MultiplyOperator)) {
       nextToken();
@@ -2196,11 +2285,14 @@ export function createParser(code: string) {
   }
   function parseConditionalExpression(): Expression {
     const test = parseBinaryExpression();
+    if (shouldEarlyReturn(test)) {
+      return test;
+    }
     if (!match(SyntaxKinds.QustionOperator)) {
       return test;
     }
     nextToken();
-    const conseq = parseAssigmentExpression();
+    const conseq = allowInOperaotr(() => parseAssigmentExpression());
     expect(SyntaxKinds.ColonPunctuator);
     const alter = parseAssigmentExpression();
     return Factory.createConditionalExpression(
@@ -2212,14 +2304,21 @@ export function createParser(code: string) {
     );
   }
   /**
+   * Private Parse Helper API for parse arrow function.
+   * @param {Expression} expr
+   * @returns
+   */
+  function shouldEarlyReturn(expr: Expression) {
+    return isArrowFunctionExpression(expr) && !expr.parentheses;
+  }
+  /**
    * Using Operator-precedence parser algorithm is used for parse binary expressiom
    * with precedence order. and this is entry function for parseBinaryExpression.
    * @returns {Expression}
    */
   function parseBinaryExpression(): Expression {
     const atom = parseUnaryExpression();
-    // early return for arrow function;
-    if (isArrowFunctionExpression(atom)) {
+    if (shouldEarlyReturn(atom)) {
       return atom;
     }
     if (match(BinaryOperators)) {
@@ -2413,6 +2512,9 @@ export function createParser(code: string) {
    */
   function parseLeftHandSideExpression(): Expression {
     let base = parsePrimaryExpression();
+    if (shouldEarlyReturn(base)) {
+      return base;
+    }
     let shouldStop = false;
     let hasOptional = false;
     while (!shouldStop) {
@@ -2520,7 +2622,7 @@ export function createParser(code: string) {
       if (match(SyntaxKinds.SpreadOperator)) {
         const spreadElementStart = getStartPosition();
         nextToken();
-        const argu = parseAssigmentExpression();
+        const argu = allowInOperaotr(() => parseAssigmentExpression());
         callerArguments.push(
           Factory.createSpreadElement(
             argu,
@@ -2531,7 +2633,7 @@ export function createParser(code: string) {
         continue;
       }
       // case 3 : ',' AssigmentExpression
-      callerArguments.push(parseAssigmentExpression());
+      callerArguments.push(allowInOperaotr(() => parseAssigmentExpression()));
     }
     const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
     return {
@@ -2582,7 +2684,7 @@ export function createParser(code: string) {
     // if start with `[`, must be computed property access.
     else if (match(SyntaxKinds.BracketLeftPunctuator)) {
       expect(SyntaxKinds.BracketLeftPunctuator);
-      const property = parseExpression();
+      const property = allowInOperaotr(() => parseExpression());
       const { end } = expect(SyntaxKinds.BracketRightPunctuator);
       return Factory.createMemberExpression(
         true,
@@ -2673,8 +2775,8 @@ export function createParser(code: string) {
       case SyntaxKinds.YieldKeyword: {
         const { kind, lineTerminatorFlag: flag } = lookahead();
         // case 0: identifier `=>` ...
-        if (kind === SyntaxKinds.ArrowOperator) {
-          enterFunctionScope();
+        if (kind === SyntaxKinds.ArrowOperator && canParseAsArrowFunction()) {
+          enterArrowFunctionScope();
           const argus = [parseIdentifer()];
           if (getLineTerminatorFlag()) {
             throw createMessageError(
@@ -2690,85 +2792,71 @@ export function createParser(code: string) {
           exitFunctionScope();
           return arrowExpr;
         }
-        // case 1: `async` `Identifer` ...
-        // There might be two case :
-        // 1.frist case is there are line change after async, which make this case into
-        //   async as identifier
-        // 2.second case is not change line after async, making it become async arrow
-        //   function.
-        if (
-          isContextKeyword("async") &&
-          (kind === SyntaxKinds.Identifier ||
+        // case 1 async function ==> must be async function <id> () {}
+        if (isContextKeyword("async") && canParseAsArrowFunction()) {
+          if (kind === SyntaxKinds.FunctionKeyword) {
+            const { value, start, end } = expect(SyntaxKinds.Identifier);
+            if (getLineTerminatorFlag()) {
+              return Factory.createIdentifier(value, start, end);
+            }
+            return parseFunctionExpression(true);
+          }
+          // case 2 `async` `(`
+          // There might be two case :
+          // 1.frist case is there are line change after async, which make this case into
+          //   call expression
+          // 2.second case is not change line after async, making it become async arrow
+          //   function.
+          if (kind === SyntaxKinds.ParenthesesLeftPunctuator) {
+            const id = parseIdentifer();
+            const meta = parseArguments();
+            if (flag || !match(SyntaxKinds.ArrowOperator)) {
+              return Factory.createCallExpression(
+                id,
+                meta.nodes,
+                false,
+                cloneSourcePosition(id.start),
+                meta.end,
+              );
+            }
+            enterArrowFunctionScope(true);
+            const arrowFunExpr = parseArrowFunctionExpression(meta);
+            exitFunctionScope();
+            return arrowFunExpr;
+          }
+          // case 3: `async` `Identifer` ...
+          // There might be two case :
+          // 1.frist case is there are line change after async, which make this case into
+          //   async as identifier
+          // 2.second case is not change line after async, making it become async arrow
+          //   function.
+          if (
+            kind === SyntaxKinds.Identifier ||
             kind === SyntaxKinds.YieldKeyword ||
-            kind === SyntaxKinds.AwaitKeyword)
-        ) {
-          // async followed by flag
-          if (flag) {
-            return parseIdentifer();
+            kind === SyntaxKinds.AwaitKeyword
+          ) {
+            // async followed by flag
+            if (flag) {
+              return parseIdentifer();
+            }
+            nextToken();
+            enterArrowFunctionScope(true);
+            const argus = [parseIdentifer()];
+            if (getLineTerminatorFlag()) {
+              throw createMessageError(
+                ErrorMessageMap.no_line_break_is_allowed_before_async,
+              );
+            }
+            // TODO: check arrow operator
+            const arrowExpr = parseArrowFunctionExpression({
+              nodes: argus,
+              start: argus[0].start,
+              end: argus[0].end,
+              trailingComma: false,
+            });
+            exitFunctionScope();
+            return arrowExpr;
           }
-          nextToken();
-          enterFunctionScope(true);
-          const argus = [parseIdentifer()];
-          if (getLineTerminatorFlag()) {
-            throw createMessageError(
-              ErrorMessageMap.no_line_break_is_allowed_before_async,
-            );
-          }
-          // TODO: check arrow operator
-          const arrowExpr = parseArrowFunctionExpression({
-            nodes: argus,
-            start: argus[0].start,
-            end: argus[0].end,
-            trailingComma: false,
-          });
-          exitFunctionScope();
-          return arrowExpr;
-        }
-        // TODO: should be just default case ?
-        // case 2 `async` `?.`, in this case, must treat as call expression
-        if (isContextKeyword("async") && kind === SyntaxKinds.QustionDotOperator) {
-          const id = parseIdentifer();
-          const { nodes, end } = parseArguments();
-          return Factory.createCallExpression(
-            id,
-            nodes,
-            true,
-            cloneSourcePosition(id.start),
-            end,
-          );
-        }
-        // case 2 `async` `(`
-        // There might be two case :
-        // 1.frist case is there are line change after async, which make this case into
-        //   call expression
-        // 2.second case is not change line after async, making it become async arrow
-        //   function.
-        if (isContextKeyword("async") && kind === SyntaxKinds.ParenthesesLeftPunctuator) {
-          const id = parseIdentifer();
-          const meta = parseArguments();
-          if (flag || !match(SyntaxKinds.ArrowOperator)) {
-            return Factory.createCallExpression(
-              id,
-              meta.nodes,
-              false,
-              cloneSourcePosition(id.start),
-              meta.end,
-            );
-          }
-          enterFunctionScope(true);
-          // TODO: should remove parseArgument, using parseFunctionParam instead.
-          const arrowFunExpr = parseArrowFunctionExpression(meta);
-          exitFunctionScope();
-          return arrowFunExpr;
-        }
-        // case 3 async function ==> must be async function <id> () {}
-        if (isContextKeyword("async") && kind === SyntaxKinds.FunctionKeyword) {
-          const { value, start, end } = expect(SyntaxKinds.Identifier);
-          if (getLineTerminatorFlag()) {
-            return Factory.createIdentifier(value, start, end);
-          }
-          const functionExpr = parseFunctionExpression(true);
-          return functionExpr;
         }
         return parseIdentifer();
       }
@@ -3342,11 +3430,11 @@ export function createParser(code: string) {
     let start: SourcePosition | null = null;
     if (!withPropertyName) {
       // frist, is setter or getter
-      if (getSourceValue() === "set") {
+      if (isContextKeyword("set")) {
         type = "set";
         start = getStartPosition();
         nextToken();
-      } else if (getSourceValue() === "get") {
+      } else if (isContextKeyword("get")) {
         type = "get";
         start = getStartPosition();
         nextToken();
@@ -3503,7 +3591,7 @@ export function createParser(code: string) {
           Factory.createSpreadElement(expr, start, cloneSourcePosition(expr.end)),
         );
       } else {
-        const expr = parseAssigmentExpression();
+        const expr = allowInOperaotr(() => parseAssigmentExpression());
         elements.push(expr);
       }
     }
@@ -3520,9 +3608,10 @@ export function createParser(code: string) {
     return Factory.transFormClassToClassExpression(parseClass());
   }
   function parseCoverExpressionORArrowFunction() {
+    const possibleBeArrow = canParseAsArrowFunction();
     expectButNotEat(SyntaxKinds.ParenthesesLeftPunctuator);
     const { start, end, nodes, trailingComma } = parseArguments();
-    if (!context.maybeArrow || !match(SyntaxKinds.ArrowOperator)) {
+    if (!possibleBeArrow || !match(SyntaxKinds.ArrowOperator)) {
       // transfor to sequence or signal expression
       for (const element of nodes) {
         if (isSpreadElement(element)) {
@@ -3531,6 +3620,9 @@ export function createParser(code: string) {
       }
       if (nodes.length === 1) {
         nodes[0].parentheses = true;
+        if (nodes[0].kind === SyntaxKinds.ArrowFunctionExpression) {
+          context.lastArrowExprPosition = null;
+        }
         return nodes[0];
       }
       if (trailingComma) {
@@ -3542,6 +3634,7 @@ export function createParser(code: string) {
       seq.parentheses = true;
       return seq;
     }
+    context.maybeArrow = false;
     enterFunctionScope();
     const arrowExpr = parseArrowFunctionExpression({ start, end, nodes, trailingComma });
     exitFunctionScope();
@@ -3581,6 +3674,10 @@ export function createParser(code: string) {
       body = parseAssigmentExpression();
       isExpression = true;
     }
+    context.lastArrowExprPosition = {
+      start: metaData.start,
+      end: body.end,
+    };
     return Factory.createArrowExpression(
       isExpression,
       body,

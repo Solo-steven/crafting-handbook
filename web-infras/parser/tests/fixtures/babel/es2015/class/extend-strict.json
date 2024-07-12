@@ -1,0 +1,185 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "C",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "FunctionExpression",
+                    "name": {
+                        "kind": "Identifer",
+                        "name": "B",
+                        "start": {
+                            "row": 1,
+                            "col": 27,
+                            "index": 26
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 28,
+                            "index": 27
+                        }
+                    },
+                    "generator": false,
+                    "async": false,
+                    "body": {
+                        "kind": "FunctionBody",
+                        "body": [
+                            {
+                                "kind": "WithStatement",
+                                "body": {
+                                    "kind": "EmptyStatement",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 14,
+                                        "index": 45
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 15,
+                                        "index": 46
+                                    }
+                                },
+                                "object": {
+                                    "kind": "ObjectExpression",
+                                    "properties": [],
+                                    "trailingComma": false,
+                                    "start": {
+                                        "row": 2,
+                                        "col": 11,
+                                        "index": 42
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 13,
+                                        "index": 44
+                                    }
+                                },
+                                "start": {
+                                    "row": 2,
+                                    "col": 5,
+                                    "index": 36
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 15,
+                                    "index": 46
+                                }
+                            },
+                            {
+                                "kind": "ReturnStatement",
+                                "argu": {
+                                    "kind": "Identifer",
+                                    "name": "B",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 12,
+                                        "index": 58
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 13,
+                                        "index": 59
+                                    }
+                                },
+                                "start": {
+                                    "row": 3,
+                                    "col": 5,
+                                    "index": 51
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 13,
+                                    "index": 59
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 31,
+                            "index": 30
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 4,
+                            "index": 64
+                        }
+                    },
+                    "params": [],
+                    "start": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 4,
+                        "index": 64
+                    }
+                },
+                "arguments": [],
+                "start": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                },
+                "end": {
+                    "row": 4,
+                    "col": 6,
+                    "index": 66
+                },
+                "parentheses": true
+            },
+            "body": {
+                "kind": "ClassBody",
+                "body": [],
+                "start": {
+                    "row": 4,
+                    "col": 8,
+                    "index": 68
+                },
+                "end": {
+                    "row": 4,
+                    "col": 10,
+                    "index": 70
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 4,
+                "col": 10,
+                "index": 70
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 10,
+        "index": 70
+    }
+}

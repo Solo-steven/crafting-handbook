@@ -16,26 +16,10 @@ export type ExpectToken = Omit<Token, "kind" | "startPosition" | "endPosition"> 
  * @member {boolean} inStrict
  */
 export interface FunctionContext {
-  type: "FunctionContext";
+  readonly type: "FunctionContext";
+  readonly isArrow: boolean;
   isAsync: boolean;
   isGenerator: boolean;
-  inParameter: boolean;
-  isSimpleParameter: boolean;
-  inStrict: boolean;
-}
-/**
- * Arrow Function Scope structure, Being used for determinate
- * current structure context for async, in-parameter and in
- * strict mode.
- * - NOTE: arrow function can not be generator
- * @member {"ArrowFunctionContext"} type - type enum string.
- * @member {boolean} isAsync
- * @member {boolean} inParameter
- * @member {boolean} inStrict
- */
-export interface ArrowFunctionContext {
-  type: "ArrowFunctionContext";
-  isAsync: boolean;
   inParameter: boolean;
   isSimpleParameter: boolean;
   inStrict: boolean;
@@ -45,7 +29,7 @@ export interface ArrowFunctionContext {
  * @member {"BlockStatement"} type - type enum string.
  */
 export interface BlockContext {
-  type: "BlockContext";
+  readonly type: "BlockContext";
 }
 /**
  * Scope structure for function body and block statement,

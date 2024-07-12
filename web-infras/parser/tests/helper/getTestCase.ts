@@ -67,6 +67,8 @@ async function recursivelyFindTestCase(
  * @returns
  */
 export async function getTestSuite(): Promise<TestSuite> {
+  const babelJsonRoot = path.join(__dirname, "../fixtures/babel");
+  const babelJsRoot = path.join(__dirname, "../../../../assets/js/parse/babel");
   const modelCheckingJsonRoot = path.join(__dirname, "../fixtures/model-checking");
   const modelCheckingJsRoot = path.join(
     __dirname,
@@ -80,6 +82,12 @@ export async function getTestSuite(): Promise<TestSuite> {
   const expectPassTestCases: Array<ExpectPassTestCase> = [];
   const expectFailedTestCases: Array<ExpectPassTestCase> = [];
   await Promise.all([
+    recursivelyFindTestCase(
+      babelJsRoot,
+      babelJsonRoot,
+      expectPassTestCases,
+      expectFailedTestCases,
+    ),
     recursivelyFindTestCase(
       modelCheckingJsRoot,
       modelCheckingJsonRoot,

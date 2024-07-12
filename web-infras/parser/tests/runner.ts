@@ -33,6 +33,11 @@ function report(testResult: TestResult) {
   console.log(
     `== Skip Test Case : ${testResult.skipResult.length} / ${allTestCaseCount}`,
   );
+  if (isVerbose) {
+    for (const skipCase of testResult.skipResult) {
+      console.log(`  |---> File: ${skipCase.fileId}`);
+    }
+  }
   console.log(
     `== Failed Test Case : ${testResult.failedResult.length} / ${allTestCaseCount}`,
   );
@@ -124,7 +129,7 @@ const TempIgnoreCases: Array<String> = [
   "esprima/ES6/template-literals/invalid_octal-literal.js",
   "esprima/ES6/template-literals/invalid_strict-octal-literal.js",
   //  ==== other
-  "esprima/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
+  // (fixed) "esprima/ES6/arrow-function/invalid-non-arrow-param-followed-by-arrow.js",
   // ==== dev pss, test failed ?
-  "esprima/expression/binary/multiline_string_literal.js",
+  // (fixed) "esprima/expression/binary/multiline_string_literal.js",
 ];

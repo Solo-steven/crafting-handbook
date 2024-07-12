@@ -131,6 +131,14 @@ export function createLexer(code: string) {
     );
   }
   /**
+   * Public API for getting is current value contain esc flag.
+   * - used by checking contextual keyword.
+   * @returns {boolean}
+   */
+  function getEscFlag(): boolean {
+    return context.escapeMeta.flag;
+  }
+  /**
    * Public API for getting token's string value
    * @returns {string}
    */
@@ -255,6 +263,7 @@ export function createLexer(code: string) {
     getStartPosition,
     getEndPosition,
     getLineTerminatorFlag,
+    getEscFlag,
     nextToken,
     lookahead,
     readRegex,
@@ -321,7 +330,8 @@ export function createLexer(code: string) {
     return context.cursor.code[context.cursor.pos + step];
   }
   /**
-   *
+   * Private API for checking is current reach EOF or not,
+   * must used by every loop which use to eat char.
    */
   function isEOF(): boolean {
     return getChar() === undefined;
@@ -1186,7 +1196,6 @@ export function createLexer(code: string) {
       // @ts-ignore
       const keywordKind = KeywordLiteralMapSyntaxKind[word];
       if (context.escapeMeta.flag) {
-        context.escapeMeta.flag = false;
         // TODO: error handle
         throw new Error("keyword can not have any escap unicode");
       }

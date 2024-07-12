@@ -6,7 +6,16 @@ import fs from "fs";
 import path from "path";
 const code = fs.readFileSync(path.join(__dirname, "test.js"), "utf-8").toString();
 
-printLexer(code);
+const writePath = path.join(__dirname, "test.json");
+
+// import chalk from 'chalk';
+
+// const log = console.log;
+
+// // Combine styled and normal strings
+// log(chalk.blue('Hello') + ' World' + chalk.red('!'));
+
+// printLexer(code);
 printParser(code);
 
 function printLexer(code: string) {
@@ -34,10 +43,8 @@ function printLexer(code: string) {
   );
 }
 function printParser(code: string) {
-  console.log("=================================");
-  console.log("============ Parser =============");
-  console.log("=================================");
   const ast = createParser(code).parse();
   transformSyntaxKindToLiteral(ast);
   console.log(JSON.stringify(ast, null, 4));
+  return 0;
 }
