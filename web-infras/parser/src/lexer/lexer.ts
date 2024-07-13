@@ -425,10 +425,7 @@ export function createLexer(code: string) {
       case "}":
         const result = context.templateMeta.stackCounter.pop();
         if (result && result > 0) {
-          return readTemplateLiteral(
-            SyntaxKinds.TemplateTail,
-            SyntaxKinds.TemplateMiddle,
-          );
+          return readTemplateLiteral(SyntaxKinds.TemplateTail, SyntaxKinds.TemplateMiddle);
         }
         eatChar();
         return finishToken(SyntaxKinds.BracesRightPunctuator);
@@ -546,10 +543,7 @@ export function createLexer(code: string) {
       }
       case "`": {
         // Template Literal
-        return readTemplateLiteral(
-          SyntaxKinds.TemplateNoSubstitution,
-          SyntaxKinds.TemplateHead,
-        );
+        return readTemplateLiteral(SyntaxKinds.TemplateNoSubstitution, SyntaxKinds.TemplateHead);
       }
       case "#": {
         eatChar();
@@ -955,10 +949,7 @@ export function createLexer(code: string) {
    * - start with '`', meet '${' => `TemplateHead` or `TemplateMiddle`
    * @returns {SyntaxKinds}
    */
-  function readTemplateLiteral(
-    meetEnd: SyntaxKinds,
-    meetMiddle: SyntaxKinds,
-  ): SyntaxKinds {
+  function readTemplateLiteral(meetEnd: SyntaxKinds, meetMiddle: SyntaxKinds): SyntaxKinds {
     // eat '`'
     eatChar();
     let isEscape = false;
@@ -1089,11 +1080,7 @@ export function createLexer(code: string) {
       return false;
     }
     const code = char.charCodeAt(0);
-    return (
-      (code >= 48 && code <= 57) ||
-      (code >= 97 && code <= 102) ||
-      (code >= 65 && code <= 70)
-    );
+    return (code >= 48 && code <= 57) || (code >= 97 && code <= 102) || (code >= 65 && code <= 70);
   }
   /**
    * Sub state machine helperfor checking is current char
@@ -1240,8 +1227,6 @@ export function createLexer(code: string) {
       }
       eatChar();
     }
-    return String.fromCharCode(
-      Number(`0x${getSliceStringFromCode(startIndex, getCurrentIndex())}`),
-    );
+    return String.fromCharCode(Number(`0x${getSliceStringFromCode(startIndex, getCurrentIndex())}`));
   }
 }

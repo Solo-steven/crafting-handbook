@@ -1,0 +1,145 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "Identifer",
+                    "name": "async",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 6,
+                        "index": 5
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "AssigmentExpression",
+                        "operator": "=",
+                        "left": {
+                            "kind": "ArrayPattern",
+                            "elements": [
+                                {
+                                    "kind": "AssigmentPattern",
+                                    "left": {
+                                        "kind": "Identifer",
+                                        "name": "a",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 10,
+                                            "index": 9
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 11,
+                                            "index": 10
+                                        },
+                                        "parentheses": true
+                                    },
+                                    "right": {
+                                        "kind": "ArrayExpression",
+                                        "elements": [],
+                                        "trailingComma": false,
+                                        "start": {
+                                            "row": 1,
+                                            "col": 15,
+                                            "index": 14
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 17,
+                                            "index": 16
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 10,
+                                        "index": 9
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 17,
+                                        "index": 16
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 8,
+                                "index": 7
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 19,
+                                "index": 18
+                            }
+                        },
+                        "right": {
+                            "kind": "ArrayExpression",
+                            "elements": [],
+                            "trailingComma": false,
+                            "start": {
+                                "row": 1,
+                                "col": 22,
+                                "index": 21
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 24,
+                                "index": 23
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 25,
+                    "index": 24
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 25,
+                "index": 24
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 26,
+        "index": 25
+    }
+}

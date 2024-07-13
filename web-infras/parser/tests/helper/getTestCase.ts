@@ -17,10 +17,7 @@ async function recursivelyFindTestCase(
   expectPassTestCases: Array<ExpectPassTestCase>,
   expectFailedTestCases: Array<ExpectFailedTestCase>,
 ) {
-  const [jsFilesInJsDir, jsonFilesInJsonDir] = await Promise.all([
-    readdir(jsDirPath),
-    readdir(jsonDirPath),
-  ]);
+  const [jsFilesInJsDir, jsonFilesInJsonDir] = await Promise.all([readdir(jsDirPath), readdir(jsonDirPath)]);
   const subDir: Array<Promise<unknown>> = [];
   for (const jsFileName of jsFilesInJsDir) {
     const isDir = (await stat(path.join(jsDirPath, jsFileName))).isDirectory();
@@ -28,12 +25,7 @@ async function recursivelyFindTestCase(
       const nextJsDirPath = path.join(jsDirPath, jsFileName);
       const nextJsonDirPath = path.join(jsonDirPath, jsFileName);
       subDir.push(
-        recursivelyFindTestCase(
-          nextJsDirPath,
-          nextJsonDirPath,
-          expectPassTestCases,
-          expectFailedTestCases,
-        ),
+        recursivelyFindTestCase(nextJsDirPath, nextJsonDirPath, expectPassTestCases, expectFailedTestCases),
       );
       continue;
     }
@@ -54,8 +46,7 @@ async function recursivelyFindTestCase(
       jsFilePath,
       jsonFilePath,
       fileId: jsFilePath,
-      isJsonFileExist:
-        jsonFilesInJsonDir.filter((file) => file === `${fileName}.json`).length > 0,
+      isJsonFileExist: jsonFilesInJsonDir.filter((file) => file === `${fileName}.json`).length > 0,
     });
   }
   await Promise.all(subDir);
@@ -70,10 +61,7 @@ export async function getTestSuite(): Promise<TestSuite> {
   const babelJsonRoot = path.join(__dirname, "../fixtures/babel");
   const babelJsRoot = path.join(__dirname, "../../../../assets/js/parse/babel");
   const modelCheckingJsonRoot = path.join(__dirname, "../fixtures/model-checking");
-  const modelCheckingJsRoot = path.join(
-    __dirname,
-    "../../../../assets/js/parse/model-checking",
-  );
+  const modelCheckingJsRoot = path.join(__dirname, "../../../../assets/js/parse/model-checking");
   const esprimaJsonRoot = path.join(__dirname, "../fixtures/esprima");
   const esprimaJsRoot = path.join(__dirname, "../../../../assets/js/parse/esprima");
   const uncategoryJsonRoot = path.join(__dirname, "../fixtures/uncategory");
@@ -82,30 +70,15 @@ export async function getTestSuite(): Promise<TestSuite> {
   const expectPassTestCases: Array<ExpectPassTestCase> = [];
   const expectFailedTestCases: Array<ExpectPassTestCase> = [];
   await Promise.all([
-    recursivelyFindTestCase(
-      babelJsRoot,
-      babelJsonRoot,
-      expectPassTestCases,
-      expectFailedTestCases,
-    ),
+    recursivelyFindTestCase(babelJsRoot, babelJsonRoot, expectPassTestCases, expectFailedTestCases),
     recursivelyFindTestCase(
       modelCheckingJsRoot,
       modelCheckingJsonRoot,
       expectPassTestCases,
       expectFailedTestCases,
     ),
-    recursivelyFindTestCase(
-      esprimaJsRoot,
-      esprimaJsonRoot,
-      expectPassTestCases,
-      expectFailedTestCases,
-    ),
-    recursivelyFindTestCase(
-      uncategoryJsRoot,
-      uncategoryJsonRoot,
-      expectPassTestCases,
-      expectFailedTestCases,
-    ),
+    recursivelyFindTestCase(esprimaJsRoot, esprimaJsonRoot, expectPassTestCases, expectFailedTestCases),
+    recursivelyFindTestCase(uncategoryJsRoot, uncategoryJsonRoot, expectPassTestCases, expectFailedTestCases),
   ]);
 
   return { expectFailedTestCases, expectPassTestCases };

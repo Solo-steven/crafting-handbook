@@ -278,7 +278,7 @@ export interface YieldExpression extends ExpressionModuleItem {
 }
 export interface AssigmentExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.AssigmentExpression;
-    left: Expression;
+    left: Pattern;
     right: Expression;
     operator: AssigmentOperatorKinds;
 }
@@ -337,7 +337,7 @@ export interface RestElement extends ModuleItem {
     argument: Pattern;
 }
 
-export type Pattern = RestElement | AssignmentPattern | ObjectPattern | ArrayPattern | Identifier;
+export type Pattern = RestElement | AssignmentPattern | ObjectPattern | ArrayPattern | Identifier | MemberExpression;
 
 /** ==========================
  * Statement
@@ -651,7 +651,8 @@ export function isPattern(node: ModuleItem): node is Pattern {
         node.kind === SyntaxKinds.ObjectPattern || 
         node.kind === SyntaxKinds.ArrayPattern || 
         node.kind === SyntaxKinds.RestElement ||
-        node.kind === SyntaxKinds.Identifier
+        node.kind === SyntaxKinds.Identifier ||
+        node.kind === SyntaxKinds.MemberExpression 
     )
 }
 export function isCallExpression(node: ModuleItem): node is CallExpression{

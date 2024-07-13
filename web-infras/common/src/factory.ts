@@ -321,7 +321,7 @@ export function createYieldExpression(
     };
 }
 export function createAssignmentExpression(
-    left: AST.Expression, 
+    left: AST.AssigmentExpression['left'], 
     right: AST.Expression, 
     operator: AssigmentOperatorKinds,
     start: SourcePosition, end: SourcePosition,

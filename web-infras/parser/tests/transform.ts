@@ -114,26 +114,17 @@ const VisitorTable: Visitor = {
   [SyntaxKinds.CallExpression]: transformKind,
   [SyntaxKinds.TaggedTemplateExpression]: transformKind,
   [SyntaxKinds.ChainExpression]: transformKind,
-  [SyntaxKinds.UpdateExpression]: function UpdateExpression(
-    node: UpdateExpression,
-    visitor: Visitor,
-  ) {
+  [SyntaxKinds.UpdateExpression]: function UpdateExpression(node: UpdateExpression, visitor: Visitor) {
     // @ts-expect-error
     node.operator = SytaxKindsMapLexicalLiteral[node.operator];
     transformKind(node, visitor);
   },
-  [SyntaxKinds.UnaryExpression]: function UnaryExpression(
-    node: UnaryExpression,
-    visitor: Visitor,
-  ) {
+  [SyntaxKinds.UnaryExpression]: function UnaryExpression(node: UnaryExpression, visitor: Visitor) {
     // @ts-expect-error
     node.operator = SytaxKindsMapLexicalLiteral[node.operator];
     transformKind(node, visitor);
   },
-  [SyntaxKinds.BinaryExpression]: function BinaryExpression(
-    node: BinaryExpression,
-    visitor: Visitor,
-  ) {
+  [SyntaxKinds.BinaryExpression]: function BinaryExpression(node: BinaryExpression, visitor: Visitor) {
     // @ts-expect-error
     node.operator = SytaxKindsMapLexicalLiteral[node.operator];
     transformKind(node, visitor);

@@ -22,28 +22,17 @@ function getFailedKindCount(failedTestCases: Array<FailedTestCasesResult>) {
 }
 
 function report(testResult: TestResult) {
-  const allTestCaseCount = Object.values(testResult).reduce(
-    (count, results) => count + results.length,
-    0,
-  );
+  const allTestCaseCount = Object.values(testResult).reduce((count, results) => count + results.length, 0);
   console.log("======================================");
-  console.log(
-    `== Pass Test Case : ${testResult.passResult.length} / ${allTestCaseCount}`,
-  );
-  console.log(
-    `== Skip Test Case : ${testResult.skipResult.length} / ${allTestCaseCount}`,
-  );
+  console.log(`== Pass Test Case : ${testResult.passResult.length} / ${allTestCaseCount}`);
+  console.log(`== Skip Test Case : ${testResult.skipResult.length} / ${allTestCaseCount}`);
   if (isVerbose) {
     for (const skipCase of testResult.skipResult) {
       console.log(`  |---> File: ${skipCase.fileId}`);
     }
   }
-  console.log(
-    `== Failed Test Case : ${testResult.failedResult.length} / ${allTestCaseCount}`,
-  );
-  const { expectFailedButPass, expectPassButFailed } = getFailedKindCount(
-    testResult.failedResult,
-  );
+  console.log(`== Failed Test Case : ${testResult.failedResult.length} / ${allTestCaseCount}`);
+  const { expectFailedButPass, expectPassButFailed } = getFailedKindCount(testResult.failedResult);
   console.log(`|---> Expect Failed But Pass : ${expectFailedButPass.length}`);
   if (isVerbose) {
     for (const failedcase of expectFailedButPass) {

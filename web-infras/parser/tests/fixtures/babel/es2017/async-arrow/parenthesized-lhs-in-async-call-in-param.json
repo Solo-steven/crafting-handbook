@@ -1,0 +1,176 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": false,
+                "async": true,
+                "arguments": [
+                    {
+                        "kind": "AssigmentPattern",
+                        "left": {
+                            "kind": "Identifer",
+                            "name": "x",
+                            "start": {
+                                "row": 1,
+                                "col": 8,
+                                "index": 7
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 9,
+                                "index": 8
+                            }
+                        },
+                        "right": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "Identifer",
+                                "name": "async",
+                                "start": {
+                                    "row": 1,
+                                    "col": 12,
+                                    "index": 11
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 17,
+                                    "index": 16
+                                }
+                            },
+                            "arguments": [
+                                {
+                                    "kind": "ArrayExpression",
+                                    "elements": [
+                                        {
+                                            "kind": "AssigmentExpression",
+                                            "operator": "=",
+                                            "left": {
+                                                "kind": "Identifer",
+                                                "name": "f",
+                                                "start": {
+                                                    "row": 1,
+                                                    "col": 20,
+                                                    "index": 19
+                                                },
+                                                "end": {
+                                                    "row": 1,
+                                                    "col": 21,
+                                                    "index": 20
+                                                },
+                                                "parentheses": true
+                                            },
+                                            "right": {
+                                                "kind": "ArrayExpression",
+                                                "elements": [],
+                                                "trailingComma": false,
+                                                "start": {
+                                                    "row": 1,
+                                                    "col": 25,
+                                                    "index": 24
+                                                },
+                                                "end": {
+                                                    "row": 1,
+                                                    "col": 27,
+                                                    "index": 26
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 1,
+                                                "col": 20,
+                                                "index": 19
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 27,
+                                                "index": 26
+                                            }
+                                        }
+                                    ],
+                                    "trailingComma": false,
+                                    "start": {
+                                        "row": 1,
+                                        "col": 18,
+                                        "index": 17
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 28,
+                                        "index": 27
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 12,
+                                "index": 11
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 29,
+                                "index": 28
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 29,
+                            "index": 28
+                        }
+                    }
+                ],
+                "body": {
+                    "kind": "FunctionBody",
+                    "body": [],
+                    "start": {
+                        "row": 1,
+                        "col": 34,
+                        "index": 33
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 36,
+                        "index": 35
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 36,
+                    "index": 35
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 7,
+                "index": 6
+            },
+            "end": {
+                "row": 1,
+                "col": 36,
+                "index": 35
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 7,
+        "index": 6
+    },
+    "end": {
+        "row": 1,
+        "col": 37,
+        "index": 36
+    }
+}

@@ -781,9 +781,7 @@ export function createParser(code: string) {
    * @returns {boolean}
    */
   function isDirectToFunctionContext(): boolean {
-    return (
-      context.scopeContext[context.scopeContext.length - 1].type === "FunctionContext"
-    );
+    return context.scopeContext[context.scopeContext.length - 1].type === "FunctionContext";
   }
 
   /** ===========================================================
@@ -815,10 +813,7 @@ export function createParser(code: string) {
     switch (token) {
       case SyntaxKinds.ImportKeyword:
         const { kind } = lookahead();
-        if (
-          kind === SyntaxKinds.DotOperator ||
-          kind === SyntaxKinds.ParenthesesLeftPunctuator
-        ) {
+        if (kind === SyntaxKinds.DotOperator || kind === SyntaxKinds.ParenthesesLeftPunctuator) {
           return parseStatementListItem();
         }
         return parseImportDeclaration();
@@ -958,10 +953,7 @@ export function createParser(code: string) {
       case SyntaxKinds.VarKeyword:
         return parseVariableDeclaration();
       default:
-        if (
-          match(SyntaxKinds.Identifier) &&
-          lookahead().kind === SyntaxKinds.ColonPunctuator
-        ) {
+        if (match(SyntaxKinds.Identifier) && lookahead().kind === SyntaxKinds.ColonPunctuator) {
           return parseLabeledStatement();
         }
         return parseExpressionStatement();
@@ -997,7 +989,8 @@ export function createParser(code: string) {
   function toAssignmentPattern(node: ModuleItem, isBinding: boolean = false): Pattern {
     const expr = node as Expression;
     if (expr.parentheses) {
-      throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
+      if (isBinding || (!isBinding && !isMemberExpression(node) && !isIdentifer(node)))
+        throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
     }
     switch (node.kind) {
       case SyntaxKinds.Identifier:
@@ -1005,15 +998,11 @@ export function createParser(code: string) {
       case SyntaxKinds.AssigmentExpression: {
         const assignmentExpressionNode = node as AssigmentExpression;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const left =
-          isObjectPattern(assignmentExpressionNode.left) ||
-          isArrayPattern(assignmentExpressionNode.left)
-            ? checkPatternWithBinding(assignmentExpressionNode.left, isBinding)
-            : toAssignmentPattern(assignmentExpressionNode.left, isBinding);
+        const left = isPattern(assignmentExpressionNode.left)
+          ? checkPatternWithBinding(assignmentExpressionNode.left, isBinding)
+          : toAssignmentPattern(assignmentExpressionNode.left, isBinding);
         if (assignmentExpressionNode.operator !== SyntaxKinds.AssginOperator) {
-          throw createMessageError(
-            ErrorMessageMap.assigment_pattern_only_can_use_assigment_operator,
-          );
+          throw createMessageError(ErrorMessageMap.assigment_pattern_only_can_use_assigment_operator);
         }
         return Factory.createAssignmentPattern(
           left as Pattern,
@@ -1025,9 +1014,7 @@ export function createParser(code: string) {
       case SyntaxKinds.SpreadElement: {
         const spreadElementNode = node as SpreadElement;
         return Factory.createRestElement(
-          (isMemberExpression(spreadElementNode.argument)
-            ? spreadElementNode.argument
-            : toAssignmentPattern(spreadElementNode.argument)) as Pattern,
+          toAssignmentPattern(spreadElementNode.argument, isBinding) as Pattern,
           spreadElementNode.start,
           spreadElementNode.end,
         );
@@ -1041,17 +1028,10 @@ export function createParser(code: string) {
             elements.push(element);
             continue;
           }
-          const transformElement = isMemberExpression(element)
-            ? element
-            : toAssignmentPattern(element, isBinding);
+          const transformElement = toAssignmentPattern(element, isBinding);
           if (isRestElement(transformElement)) {
-            if (
-              index !== arrayExpressionNode.elements.length - 1 ||
-              arrayExpressionNode.trailingComma
-            ) {
-              throw createMessageError(
-                ErrorMessageMap.rest_element_can_not_end_with_comma,
-              );
+            if (index !== arrayExpressionNode.elements.length - 1 || arrayExpressionNode.trailingComma) {
+              throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
             }
           }
           elements.push(transformElement);
@@ -1072,21 +1052,13 @@ export function createParser(code: string) {
             : toAssignmentPattern(property, isBinding);
           if (
             isRestElement(transformElement) &&
-            (isObjectPattern(transformElement.argument) ||
-              isArrayPattern(transformElement.argument))
+            (isObjectPattern(transformElement.argument) || isArrayPattern(transformElement.argument))
           ) {
-            throw createMessageError(
-              ErrorMessageMap.invalid_rest_element_with_pattern_in_object_pattern,
-            );
+            throw createMessageError(ErrorMessageMap.invalid_rest_element_with_pattern_in_object_pattern);
           }
           if (isRestElement(transformElement)) {
-            if (
-              index !== objecExpressionNode.properties.length - 1 ||
-              objecExpressionNode.trailingComma
-            ) {
-              throw createMessageError(
-                ErrorMessageMap.rest_element_can_not_end_with_comma,
-              );
+            if (index !== objecExpressionNode.properties.length - 1 || objecExpressionNode.trailingComma) {
+              throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
             }
           }
           properties.push(transformElement);
@@ -1097,27 +1069,26 @@ export function createParser(code: string) {
           objecExpressionNode.end,
         );
       }
+      case SyntaxKinds.MemberExpression:
+        if (!isBinding) {
+          return node as Pattern;
+        }
+      // fall throught to error
       default:
-        throw createMessageError(
-          ErrorMessageMap.invalid_left_value + ` get kind ${node.kind}.`,
-        );
+        throw createMessageError(ErrorMessageMap.invalid_left_value + ` get kind ${node.kind}.`);
     }
   }
   function ObjectPropertyToObjectPatternProperty(
     objectPropertyNode: ObjectProperty,
     isBinding = false,
   ): ObjectPatternProperty | AssignmentPattern {
-    if (
-      isBinding &&
-      objectPropertyNode.value &&
-      isMemberExpression(objectPropertyNode.value)
-    ) {
+    if (isBinding && objectPropertyNode.value && isMemberExpression(objectPropertyNode.value)) {
       throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
     }
-    if (
-      context.propertiesInitSet.has(objectPropertyNode) &&
-      !objectPropertyNode.shorted
-    ) {
+    if (objectPropertyNode.value && objectPropertyNode.value.parentheses) {
+      throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
+    }
+    if (context.propertiesInitSet.has(objectPropertyNode) && !objectPropertyNode.shorted) {
       context.propertiesInitSet.delete(objectPropertyNode);
       if (objectPropertyNode.computed || !isIdentifer(objectPropertyNode.key)) {
         // property name of assignment pattern can not use computed propertyname or literal
@@ -1136,11 +1107,7 @@ export function createParser(code: string) {
       objectPropertyNode.key,
       !objectPropertyNode.value
         ? objectPropertyNode.value
-        : isMemberExpression(objectPropertyNode.value)
-          ? objectPropertyNode.value
-          : (toAssignmentPattern(
-              objectPropertyNode.value as ModuleItem,
-            ) as unknown as any),
+        : (toAssignmentPattern(objectPropertyNode.value as ModuleItem) as unknown as any),
       objectPropertyNode.computed,
       objectPropertyNode.shorted,
       objectPropertyNode.start,
@@ -1152,9 +1119,7 @@ export function createParser(code: string) {
       for (const property of leftValue.properties) {
         if (isObjectPatternProperty(property)) {
           if (property.value && isMemberExpression(property.value) && isBinding) {
-            throw createMessageError(
-              ErrorMessageMap.invalid_left_value + ` get kind ${leftValue.kind}.`,
-            );
+            throw createMessageError(ErrorMessageMap.invalid_left_value + ` get kind ${leftValue.kind}.`);
           }
         }
       }
@@ -1175,7 +1140,17 @@ export function createParser(code: string) {
         }
       }
     }
+    if (isMemberExpression(leftValue) || isIdentifer(leftValue)) {
+      checkIsPatternparenthesizedInvalid(leftValue, isBinding);
+    }
     return leftValue;
+  }
+  function checkIsPatternparenthesizedInvalid(node: Pattern, isBinding: boolean) {
+    const isPatternOriginalHaveParenthesized =
+      (isMemberExpression(node) || isIdentifer(node)) && node.parentheses;
+    if (isBinding && isPatternOriginalHaveParenthesized) {
+      throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
+    }
   }
   /**
    * Parse For-related Statement, include ForStatement, ForInStatement, ForOfStatement.
@@ -1205,9 +1180,7 @@ export function createParser(code: string) {
       isAwait = true;
     }
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
-    if (
-      match([SyntaxKinds.LetKeyword, SyntaxKinds.ConstKeyword, SyntaxKinds.VarKeyword])
-    ) {
+    if (match([SyntaxKinds.LetKeyword, SyntaxKinds.ConstKeyword, SyntaxKinds.VarKeyword])) {
       if (match(SyntaxKinds.LetKeyword) && isLetPossibleIdentifier()) {
         isParseLetAsExpr = true;
         leftOrInit = disAllowInOperaotr(() => parseExpression());
@@ -1238,9 +1211,7 @@ export function createParser(code: string) {
       if (leftOrInit && isVarDeclaration(leftOrInit)) {
         for (const delcar of leftOrInit.declarations) {
           if ((isArrayPattern(delcar.id) || isObjectPattern(delcar.id)) && !delcar.init) {
-            throw createMessageError(
-              ErrorMessageMap.destructing_pattern_must_need_initializer,
-            );
+            throw createMessageError(ErrorMessageMap.destructing_pattern_must_need_initializer);
           }
         }
       }
@@ -1277,9 +1248,7 @@ export function createParser(code: string) {
     // function, it would transform to assignment pattern, so we need to checko if there is Assignment
     // pattern, it is , means original is assignment expression, it should throw a error.
     if (!isVarDeclaration(leftOrInit)) {
-      if (!isMemberExpression(leftOrInit)) {
-        leftOrInit = toAssignmentPattern(leftOrInit) as Expression;
-      }
+      leftOrInit = toAssignmentPattern(leftOrInit) as Expression;
       if (isAssignmentPattern(leftOrInit)) {
         throw createMessageError(ErrorMessageMap.invalid_left_value);
       }
@@ -1335,30 +1304,20 @@ export function createParser(code: string) {
     kind: "ForIn" | "ForOf",
   ) {
     if (declaration.declarations.length > 1) {
-      throw createMessageError(
-        ErrorMessageMap.for_in_of_loop_can_not_have_one_more_binding,
-      );
+      throw createMessageError(ErrorMessageMap.for_in_of_loop_can_not_have_one_more_binding);
     }
     const delcarationVariant = declaration.variant;
     const onlyDeclaration = declaration.declarations[0];
     if (kind === "ForIn") {
       if (onlyDeclaration.init !== null) {
-        if (
-          delcarationVariant === "var" &&
-          !isInStrictMode() &&
-          isIdentifer(onlyDeclaration.id)
-        ) {
+        if (delcarationVariant === "var" && !isInStrictMode() && isIdentifer(onlyDeclaration.id)) {
           return;
         }
-        throw createMessageError(
-          ErrorMessageMap.for_in_of_loop_may_not_using_initializer,
-        );
+        throw createMessageError(ErrorMessageMap.for_in_of_loop_may_not_using_initializer);
       }
     } else {
       if (onlyDeclaration.init !== null) {
-        throw createMessageError(
-          ErrorMessageMap.for_in_of_loop_may_not_using_initializer,
-        );
+        throw createMessageError(ErrorMessageMap.for_in_of_loop_may_not_using_initializer);
       }
     }
   }
@@ -1371,13 +1330,7 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.ElseKeyword)) {
       nextToken();
       const alter = parseStatement();
-      return Factory.createIfStatement(
-        test,
-        consequnce,
-        alter,
-        keywordStart,
-        cloneSourcePosition(alter.end),
-      );
+      return Factory.createIfStatement(test, consequnce, alter, keywordStart, cloneSourcePosition(alter.end));
     }
     return Factory.createIfStatement(
       test,
@@ -1393,12 +1346,7 @@ export function createParser(code: string) {
     const test = parseExpression();
     expect(SyntaxKinds.ParenthesesRightPunctuator);
     const body = parseStatement();
-    return Factory.createWhileStatement(
-      test,
-      body,
-      keywordStart,
-      cloneSourcePosition(body.end),
-    );
+    return Factory.createWhileStatement(test, body, keywordStart, cloneSourcePosition(body.end));
   }
   function parseDoWhileStatement(): DoWhileStatement {
     const { start: keywordStart } = expect(SyntaxKinds.DoKeyword);
@@ -1431,10 +1379,7 @@ export function createParser(code: string) {
     expect(SyntaxKinds.ParenthesesRightPunctuator);
     //TODO: should remove, duplicate check
     if (!match(SyntaxKinds.BracesLeftPunctuator)) {
-      throw createUnexpectError(
-        SyntaxKinds.BracesLeftPunctuator,
-        "switch statement should has cases body",
-      );
+      throw createUnexpectError(SyntaxKinds.BracesLeftPunctuator, "switch statement should has cases body");
     }
     const { nodes, end } = parseSwitchCases();
     return Factory.createSwitchStatement(discriminant, nodes, keywordStart, end);
@@ -1485,11 +1430,7 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.Identifier)) {
       const id = parseIdentifer();
       shouldInsertSemi();
-      return Factory.createContinueStatement(
-        id,
-        keywordStart,
-        cloneSourcePosition(id.end),
-      );
+      return Factory.createContinueStatement(id, keywordStart, cloneSourcePosition(id.end));
     }
     shouldInsertSemi();
     return Factory.createContinueStatement(null, keywordStart, keywordEnd);
@@ -1505,10 +1446,7 @@ export function createParser(code: string) {
     return Factory.createBreakStatement(null, start, end);
   }
   function parseLabeledStatement(): LabeledStatement {
-    if (
-      !match(SyntaxKinds.Identifier) ||
-      lookahead().kind !== SyntaxKinds.ColonPunctuator
-    ) {
+    if (!match(SyntaxKinds.Identifier) || lookahead().kind !== SyntaxKinds.ColonPunctuator) {
       // TODO: unreach
     }
     const label = parseIdentifer();
@@ -1558,20 +1496,10 @@ export function createParser(code: string) {
         const param = parseBindingElement();
         expect(SyntaxKinds.ParenthesesRightPunctuator);
         const body = parseBlockStatement();
-        handler = Factory.createCatchClause(
-          param,
-          body,
-          catchKeywordStart,
-          cloneSourcePosition(body.end),
-        );
+        handler = Factory.createCatchClause(param, body, catchKeywordStart, cloneSourcePosition(body.end));
       } else {
         const body = parseBlockStatement();
-        handler = Factory.createCatchClause(
-          null,
-          body,
-          catchKeywordStart,
-          cloneSourcePosition(body.end),
-        );
+        handler = Factory.createCatchClause(null, body, catchKeywordStart, cloneSourcePosition(body.end));
       }
     }
     if (match(SyntaxKinds.FinallyKeyword)) {
@@ -1598,12 +1526,7 @@ export function createParser(code: string) {
     const object = parseExpression();
     expect(SyntaxKinds.ParenthesesRightPunctuator);
     const body = parseStatement();
-    return Factory.createWithStatement(
-      object,
-      body,
-      start,
-      cloneSourcePosition(body.end),
-    );
+    return Factory.createWithStatement(object, body, start, cloneSourcePosition(body.end));
   }
   function parseDebuggerStatement(): DebuggerStatement {
     const { start, end } = expect(SyntaxKinds.DebuggerKeyword);
@@ -1665,9 +1588,7 @@ export function createParser(code: string) {
       // custom logical for check is lexical binding have let identifier ?
       if (variableKind === "lexical" || isInStrictMode()) {
         if (checkPatternContainCertinValue(id, (value) => value === "let")) {
-          throw createMessageError(
-            ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding,
-          );
+          throw createMessageError(ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding);
         }
       }
       if (
@@ -1726,10 +1647,7 @@ export function createParser(code: string) {
    * @param {Pattern} pattern
    * @returns {boolean}
    */
-  function checkPatternContainCertinValue(
-    pattern: Pattern,
-    callback: (value: string) => boolean,
-  ): boolean {
+  function checkPatternContainCertinValue(pattern: Pattern, callback: (value: string) => boolean): boolean {
     if (isArrayPattern(pattern)) {
       for (const element of pattern.elements) {
         if (element) {
@@ -1742,10 +1660,7 @@ export function createParser(code: string) {
     if (isObjectPattern(pattern)) {
       for (const property of pattern.properties) {
         if (isObjectPatternProperty(property)) {
-          if (
-            property.value &&
-            checkPatternContainCertinValue(property.value as Pattern, callback)
-          ) {
+          if (property.value && checkPatternContainCertinValue(property.value as Pattern, callback)) {
             return true;
           }
           if (
@@ -1830,11 +1745,7 @@ export function createParser(code: string) {
   ) {
     if (isInStrictMode()) {
       if (name) {
-        if (
-          name.name === "yield" ||
-          name.name === "let" ||
-          PreserveWordSet.has(name.name)
-        ) {
+        if (name.name === "yield" || name.name === "let" || PreserveWordSet.has(name.name)) {
           throw createMessageError("unexepct keyword in parameter list in strict mode");
         }
       }
@@ -1869,36 +1780,26 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.AwaitKeyword)) {
       // for function expression, can await treat as function name is dep on current scope.
       if (isExpression && isCurrentFunctionAsync()) {
-        throw createMessageError(
-          ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
-        );
+        throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
       }
       // for function declaration, can await treat as function name is dep on parent scope.
       if (!isExpression && isParentFunctionAsync()) {
-        throw createMessageError(
-          ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
-        );
+        throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
       }
       name = parseIdentiferWithKeyword();
     }
     if (match(SyntaxKinds.YieldKeyword)) {
       // for function expression, can yield treat as function name is dep on current scope.
       if (isExpression && isCurrentFunctionGenerator()) {
-        throw createMessageError(
-          ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword,
-        );
+        throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
       }
       // for function declaration, can yield treat as function name is  dep on parent scope.
       if (!isExpression && isParentFunctionGenerator()) {
-        throw createMessageError(
-          ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword,
-        );
+        throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
       }
       // if in strict mode, yield can not be function name.
       if (isInStrictMode()) {
-        throw createMessageError(
-          ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword,
-        );
+        throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
       }
       name = parseIdentiferWithKeyword();
     }
@@ -1948,9 +1849,7 @@ export function createParser(code: string) {
     while (!match(SyntaxKinds.ParenthesesRightPunctuator)) {
       if (isStart) {
         if (match(SyntaxKinds.CommaToken)) {
-          throw createMessageError(
-            ErrorMessageMap.function_parameter_can_not_have_empty_trailing_comma,
-          );
+          throw createMessageError(ErrorMessageMap.function_parameter_can_not_have_empty_trailing_comma);
         }
         isStart = false;
       } else {
@@ -2084,13 +1983,7 @@ export function createParser(code: string) {
     }
     const body = parseClassBody();
     existClassScope();
-    return Factory.createClass(
-      name,
-      superClass,
-      body,
-      start,
-      cloneSourcePosition(body.end),
-    );
+    return Factory.createClass(name, superClass, body, start, cloneSourcePosition(body.end));
   }
   /**
    * Parse ClassBody
@@ -2110,11 +2003,7 @@ export function createParser(code: string) {
       classbody.push(parseClassElement());
     }
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
-    return Factory.createClassBody(
-      classbody,
-      cloneSourcePosition(start),
-      cloneSourcePosition(end),
-    );
+    return Factory.createClassBody(classbody, cloneSourcePosition(start), cloneSourcePosition(end));
   }
   /**
    * Parse ClassElement
@@ -2138,10 +2027,7 @@ export function createParser(code: string) {
   function parseClassElement(): ClassElement {
     // parse static modifier
     let isStatic = false;
-    if (
-      isContextKeyword("static") &&
-      lookahead().kind !== SyntaxKinds.ParenthesesLeftPunctuator
-    ) {
+    if (isContextKeyword("static") && lookahead().kind !== SyntaxKinds.ParenthesesLeftPunctuator) {
       nextToken();
       isStatic = true;
     }
@@ -2223,9 +2109,7 @@ export function createParser(code: string) {
       if (expr.value === "use strict") {
         if (isDirectToFunctionContext()) {
           if (!isCurrentFunctionParameterListSimple()) {
-            throw createMessageError(
-              ErrorMessageMap.illegal_use_strict_in_non_simple_parameter_list,
-            );
+            throw createMessageError(ErrorMessageMap.illegal_use_strict_in_non_simple_parameter_list);
           }
           setCurrentFunctionContextAsStrictMode();
         }
@@ -2254,11 +2138,11 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.YieldKeyword) && isCurrentFunctionGenerator()) {
       return parseYieldExpression();
     }
-    let left = parseConditionalExpression();
+    let leftExpr = parseConditionalExpression();
     if (!match(AssigmentOperators)) {
-      return left;
+      return leftExpr;
     }
-    left = isMemberExpression(left) ? left : (toAssignmentPattern(left) as Expression);
+    const left = toAssignmentPattern(leftExpr);
     const operator = getToken();
     nextToken();
     const right = parseAssigmentExpression();
@@ -2299,14 +2183,10 @@ export function createParser(code: string) {
       argument = parseAssigmentExpression();
     }
     if (delegate && !argument) {
-      throw createMessageError(
-        ErrorMessageMap.yield_deletgate_can_must_be_followed_by_assignment_expression,
-      );
+      throw createMessageError(ErrorMessageMap.yield_deletgate_can_must_be_followed_by_assignment_expression);
     }
     if (isInParameter()) {
-      throw createMessageError(
-        ErrorMessageMap.yield_expression_can_not_used_in_parameter_list,
-      );
+      throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
     }
     return Factory.createYieldExpression(
       argument,
@@ -2430,10 +2310,7 @@ export function createParser(code: string) {
       let right = parseUnaryExpression();
       const nextOp = getToken();
       checkNullishAndExpontOperation(currentOp, left, nextOp);
-      if (
-        isBinaryOps(nextOp) &&
-        getBinaryPrecedence(nextOp) > getBinaryPrecedence(currentOp)
-      ) {
+      if (isBinaryOps(nextOp) && getBinaryPrecedence(nextOp) > getBinaryPrecedence(currentOp)) {
         right = parseBinaryOps(right, getBinaryPrecedence(nextOp));
       }
       left = Factory.createBinaryExpression(
@@ -2446,11 +2323,7 @@ export function createParser(code: string) {
     }
     return left;
   }
-  function checkNullishAndExpontOperation(
-    currentOps: SyntaxKinds,
-    left: Expression,
-    nextOps: SyntaxKinds,
-  ) {
+  function checkNullishAndExpontOperation(currentOps: SyntaxKinds, left: Expression, nextOps: SyntaxKinds) {
     if (left.parentheses) {
       return;
     }
@@ -2463,15 +2336,13 @@ export function createParser(code: string) {
     // if current Ops is logical, check next is nullish or not
     if (
       currentOps === SyntaxKinds.NullishOperator &&
-      (nextOps === SyntaxKinds.LogicalANDOperator ||
-        nextOps === SyntaxKinds.LogicalOROperator)
+      (nextOps === SyntaxKinds.LogicalANDOperator || nextOps === SyntaxKinds.LogicalOROperator)
     ) {
       throw createMessageError(ErrorMessageMap.nullish_require_parans);
     }
     if (
       nextOps === SyntaxKinds.NullishOperator &&
-      (currentOps === SyntaxKinds.LogicalANDOperator ||
-        currentOps === SyntaxKinds.LogicalOROperator)
+      (currentOps === SyntaxKinds.LogicalANDOperator || currentOps === SyntaxKinds.LogicalOROperator)
     ) {
       throw createMessageError(ErrorMessageMap.nullish_require_parans);
     }
@@ -2482,18 +2353,11 @@ export function createParser(code: string) {
       const start = getStartPosition();
       nextToken();
       const argument = parseUnaryExpression();
-      return Factory.createUnaryExpression(
-        argument,
-        operator,
-        start,
-        cloneSourcePosition(argument.end),
-      );
+      return Factory.createUnaryExpression(argument, operator, start, cloneSourcePosition(argument.end));
     }
     if (match(SyntaxKinds.AwaitKeyword) && isCurrentFunctionAsync()) {
       if (isInParameter()) {
-        throw createMessageError(
-          ErrorMessageMap.await_expression_can_not_used_in_parameter_list,
-        );
+        throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
       }
       const start = getStartPosition();
       nextToken();
@@ -2559,21 +2423,13 @@ export function createParser(code: string) {
       if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
         // callexpression
         base = parseCallExpression(base, optional);
-      } else if (
-        match([SyntaxKinds.DotOperator, SyntaxKinds.BracketLeftPunctuator]) ||
-        optional
-      ) {
+      } else if (match([SyntaxKinds.DotOperator, SyntaxKinds.BracketLeftPunctuator]) || optional) {
         // memberexpression
         base = parseMemberExpression(base, optional);
-      } else if (
-        match(SyntaxKinds.TemplateHead) ||
-        match(SyntaxKinds.TemplateNoSubstitution)
-      ) {
+      } else if (match(SyntaxKinds.TemplateHead) || match(SyntaxKinds.TemplateNoSubstitution)) {
         // tag template expressuin
         if (hasOptional) {
-          throw createMessageError(
-            ErrorMessageMap.tag_template_expression_can_not_use_option_chain,
-          );
+          throw createMessageError(ErrorMessageMap.tag_template_expression_can_not_use_option_chain);
         }
         base = parseTagTemplateExpression(base);
       } else {
@@ -2601,13 +2457,7 @@ export function createParser(code: string) {
   function parseCallExpression(callee: Expression, optional: boolean): Expression {
     expectButNotEat([SyntaxKinds.ParenthesesLeftPunctuator]);
     const { nodes, end } = parseArguments();
-    return Factory.createCallExpression(
-      callee,
-      nodes,
-      optional,
-      cloneSourcePosition(callee.start),
-      end,
-    );
+    return Factory.createCallExpression(callee, nodes, optional, cloneSourcePosition(callee.start), end);
   }
   /**
    * // TODO: remove possble dep of arrow function paramemter need to call this function.
@@ -2630,16 +2480,11 @@ export function createParser(code: string) {
     // TODO: refactor logic to remove shoulStop
     const callerArguments: Array<Expression> = [];
     let trailingComma = false;
-    while (
-      !match(SyntaxKinds.ParenthesesRightPunctuator) &&
-      !match(SyntaxKinds.EOFToken)
-    ) {
+    while (!match(SyntaxKinds.ParenthesesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
       if (isStart) {
         isStart = false;
         if (match(SyntaxKinds.CommaToken)) {
-          throw createMessageError(
-            ErrorMessageMap.function_argument_can_not_have_empty_trailing_comma,
-          );
+          throw createMessageError(ErrorMessageMap.function_argument_can_not_have_empty_trailing_comma);
         }
       } else {
         trailingComma = true;
@@ -2656,11 +2501,7 @@ export function createParser(code: string) {
         nextToken();
         const argu = allowInOperaotr(() => parseAssigmentExpression());
         callerArguments.push(
-          Factory.createSpreadElement(
-            argu,
-            spreadElementStart,
-            cloneSourcePosition(argu.end),
-          ),
+          Factory.createSpreadElement(argu, spreadElementStart, cloneSourcePosition(argu.end)),
         );
         continue;
       }
@@ -2689,15 +2530,8 @@ export function createParser(code: string) {
    * @returns {Expression}
    */
   function parseMemberExpression(base: Expression, optional: boolean): Expression {
-    if (
-      !match(SyntaxKinds.DotOperator) &&
-      !match(SyntaxKinds.BracketLeftPunctuator) &&
-      !optional
-    ) {
-      throw createUnreachError([
-        SyntaxKinds.DotOperator,
-        SyntaxKinds.BracketLeftPunctuator,
-      ]);
+    if (!match(SyntaxKinds.DotOperator) && !match(SyntaxKinds.BracketLeftPunctuator) && !optional) {
+      throw createUnreachError([SyntaxKinds.DotOperator, SyntaxKinds.BracketLeftPunctuator]);
     }
     // if start with dot, must be a access property, can not with optional.
     // because optional means that last token is `?.`
@@ -2811,9 +2645,7 @@ export function createParser(code: string) {
           enterArrowFunctionScope();
           const argus = [parseIdentifer()];
           if (getLineTerminatorFlag()) {
-            throw createMessageError(
-              ErrorMessageMap.no_line_break_is_allowed_before_arrow,
-            );
+            throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_arrow);
           }
           const arrowExpr = parseArrowFunctionExpression({
             nodes: argus,
@@ -2875,9 +2707,7 @@ export function createParser(code: string) {
             enterArrowFunctionScope(true);
             const argus = [parseIdentifer()];
             if (getLineTerminatorFlag()) {
-              throw createMessageError(
-                ErrorMessageMap.no_line_break_is_allowed_before_async,
-              );
+              throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_async);
             }
             // TODO: check arrow operator
             const arrowExpr = parseArrowFunctionExpression({
@@ -2935,9 +2765,7 @@ export function createParser(code: string) {
         const { value, start, end } = expect(SyntaxKinds.YieldKeyword);
         return Factory.createIdentifier(value, start, end);
       }
-      throw createMessageError(
-        ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword,
-      );
+      throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
     }
     if (match(SyntaxKinds.AwaitKeyword)) {
       // for most of await keyword, if it should treat as identifier,
@@ -2946,9 +2774,7 @@ export function createParser(code: string) {
         const { value, start, end } = expect(SyntaxKinds.AwaitKeyword);
         return Factory.createIdentifier(value, start, end);
       }
-      throw createMessageError(
-        ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
-      );
+      throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
     }
     if (match(SyntaxKinds.LetKeyword)) {
       // let maybe treat as identifier in not strict mode, and not lexical binding declaration.
@@ -2997,18 +2823,12 @@ export function createParser(code: string) {
     return Factory.createStringLiteral(value, start, end);
   }
   function parseBoolLiteral() {
-    const { start, end, value } = expect([
-      SyntaxKinds.TrueKeyword,
-      SyntaxKinds.FalseKeyword,
-    ]);
+    const { start, end, value } = expect([SyntaxKinds.TrueKeyword, SyntaxKinds.FalseKeyword]);
     return Factory.createBoolLiteral(value === "true" ? true : false, start, end);
   }
   function parseTemplateLiteral() {
     if (!match([SyntaxKinds.TemplateHead, SyntaxKinds.TemplateNoSubstitution])) {
-      throw createUnreachError([
-        SyntaxKinds.TemplateHead,
-        SyntaxKinds.TemplateNoSubstitution,
-      ]);
+      throw createUnreachError([SyntaxKinds.TemplateHead, SyntaxKinds.TemplateNoSubstitution]);
     }
     const templateLiteralStart = getStartPosition();
     if (match(SyntaxKinds.TemplateNoSubstitution)) {
@@ -3016,14 +2836,7 @@ export function createParser(code: string) {
       const templateLiteralEnd = getEndPosition();
       nextToken();
       return Factory.createTemplateLiteral(
-        [
-          Factory.createTemplateElement(
-            value,
-            true,
-            templateLiteralStart,
-            templateLiteralEnd,
-          ),
-        ],
+        [Factory.createTemplateElement(value, true, templateLiteralStart, templateLiteralEnd)],
         [],
         templateLiteralStart,
         templateLiteralEnd,
@@ -3038,12 +2851,7 @@ export function createParser(code: string) {
       !match(SyntaxKinds.EOFToken)
     ) {
       quasis.push(
-        Factory.createTemplateElement(
-          getSourceValue(),
-          false,
-          getStartPosition(),
-          getEndPosition(),
-        ),
+        Factory.createTemplateElement(getSourceValue(), false, getStartPosition(), getEndPosition()),
       );
       nextToken();
       expressions.push(parseExpression());
@@ -3051,22 +2859,10 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.EOFToken)) {
       throw createUnexpectError(SyntaxKinds.BracesLeftPunctuator);
     }
-    quasis.push(
-      Factory.createTemplateElement(
-        getSourceValue(),
-        true,
-        getStartPosition(),
-        getEndPosition(),
-      ),
-    );
+    quasis.push(Factory.createTemplateElement(getSourceValue(), true, getStartPosition(), getEndPosition()));
     const templateLiteralEnd = getEndPosition();
     nextToken();
-    return Factory.createTemplateLiteral(
-      quasis,
-      expressions,
-      templateLiteralStart,
-      templateLiteralEnd,
-    );
+    return Factory.createTemplateLiteral(quasis, expressions, templateLiteralStart, templateLiteralEnd);
   }
   function parseImportMeta() {
     const { start, end } = expect(SyntaxKinds.ImportKeyword);
@@ -3105,9 +2901,7 @@ export function createParser(code: string) {
       );
     }
     if (isTopLevel() && !isInClassScope()) {
-      throw createMessageError(
-        ErrorMessageMap.new_target_can_only_be_used_in_class_or_function_scope,
-      );
+      throw createMessageError(ErrorMessageMap.new_target_can_only_be_used_in_class_or_function_scope);
     }
     const targetStart = getStartPosition();
     const targetEnd = getEndPosition();
@@ -3139,9 +2933,7 @@ export function createParser(code: string) {
     }
     let base = parsePrimaryExpression();
     if (isCallExpression(base)) {
-      throw createMessageError(
-        ErrorMessageMap.import_call_is_not_allow_as_new_expression_called,
-      );
+      throw createMessageError(ErrorMessageMap.import_call_is_not_allow_as_new_expression_called);
     }
     // TODO: refactor this loop to with function -> parseNewExpressionCallee ?
     while (
@@ -3150,9 +2942,7 @@ export function createParser(code: string) {
       match(SyntaxKinds.QustionDotOperator)
     ) {
       if (match(SyntaxKinds.QustionDotOperator)) {
-        throw createMessageError(
-          ErrorMessageMap.new_expression_cant_using_optional_chain,
-        );
+        throw createMessageError(ErrorMessageMap.new_expression_cant_using_optional_chain);
       }
       base = parseMemberExpression(base, false);
     }
@@ -3181,9 +2971,7 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.DotOperator) || match(SyntaxKinds.BracketLeftPunctuator)) {
       return Factory.createSuper(keywordStart, keywordEnd);
     }
-    throw createMessageError(
-      ErrorMessageMap.super_must_be_followed_by_an_argument_list_or_member_access,
-    );
+    throw createMessageError(ErrorMessageMap.super_must_be_followed_by_an_argument_list_or_member_access);
   }
   function parseThisExpression() {
     const { start, end } = expect([SyntaxKinds.ThisKeyword]);
@@ -3221,12 +3009,7 @@ export function createParser(code: string) {
       propertyDefinitionList.push(parsePropertyDefinition());
     }
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
-    return Factory.createObjectExpression(
-      propertyDefinitionList,
-      trailingComma,
-      start,
-      end,
-    );
+    return Factory.createObjectExpression(propertyDefinitionList, trailingComma, start, end);
   }
   /**
    * Parse PropertyDefinition
@@ -3258,11 +3041,7 @@ export function createParser(code: string) {
       const spreadElementStart = getStartPosition();
       nextToken();
       const expr = parseAssigmentExpression();
-      return Factory.createSpreadElement(
-        expr,
-        spreadElementStart,
-        cloneSourcePosition(expr.end),
-      );
+      return Factory.createSpreadElement(expr, spreadElementStart, cloneSourcePosition(expr.end));
     }
     // start with possible method modifier
     if (checkIsMethodStartWithModifier()) {
@@ -3437,17 +3216,9 @@ export function createParser(code: string) {
     inClass: boolean = false,
     withPropertyName: PropertyName | PrivateName | undefined = undefined,
     isStatic: boolean = false,
-  ):
-    | ObjectMethodDefinition
-    | ClassMethodDefinition
-    | ObjectAccessor
-    | ClassAccessor
-    | ClassConstructor {
+  ): ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor | ClassConstructor {
     if (!checkIsMethodStartWithModifier() && !withPropertyName) {
-      throw createUnreachError([
-        SyntaxKinds.MultiplyAssignOperator,
-        SyntaxKinds.Identifier,
-      ]);
+      throw createUnreachError([SyntaxKinds.MultiplyAssignOperator, SyntaxKinds.Identifier]);
     }
     /**
      * Step 1 : if not with propertyName , parse modifier frist, otherwise, if with propertyName, it shouldn't do anything.
@@ -3516,9 +3287,7 @@ export function createParser(code: string) {
       }
       for (const param of parmas) {
         if (isRestElement(param)) {
-          throw createMessageError(
-            ErrorMessageMap.setter_can_not_have_rest_element_as_argument,
-          );
+          throw createMessageError(ErrorMessageMap.setter_can_not_have_rest_element_as_argument);
         }
       }
     }
@@ -3531,9 +3300,7 @@ export function createParser(code: string) {
     if (isIdentifer(withPropertyName)) {
       if (withPropertyName.name === "constructor" && isInClassScope()) {
         if (isAsync || generator || isStatic) {
-          throw createMessageError(
-            ErrorMessageMap.constructor_can_not_be_async_or_generator,
-          );
+          throw createMessageError(ErrorMessageMap.constructor_can_not_be_async_or_generator);
         }
         return Factory.createClassConstructor(
           withPropertyName,
@@ -3602,10 +3369,7 @@ export function createParser(code: string) {
       if (isStart) {
         isStart = false;
       } else {
-        expect(
-          SyntaxKinds.CommaToken,
-          "array expression or pattern need comma for separating elements",
-        );
+        expect(SyntaxKinds.CommaToken, "array expression or pattern need comma for separating elements");
       }
       if (match([SyntaxKinds.BracketRightPunctuator, SyntaxKinds.EOFToken])) {
         tralingComma = true;
@@ -3619,9 +3383,7 @@ export function createParser(code: string) {
         const start = getStartPosition();
         nextToken();
         const expr = parseAssigmentExpression();
-        elements.push(
-          Factory.createSpreadElement(expr, start, cloneSourcePosition(expr.end)),
-        );
+        elements.push(Factory.createSpreadElement(expr, start, cloneSourcePosition(expr.end)));
       } else {
         const expr = allowInOperaotr(() => parseAssigmentExpression());
         elements.push(expr);
@@ -3658,9 +3420,7 @@ export function createParser(code: string) {
         return nodes[0];
       }
       if (trailingComma) {
-        throw createMessageError(
-          ErrorMessageMap.sequence_expression_can_not_have_trailing_comma,
-        );
+        throw createMessageError(ErrorMessageMap.sequence_expression_can_not_have_trailing_comma);
       }
       const seq = Factory.createSequenceExpression(nodes, start, end);
       seq.parentheses = true;
@@ -3694,10 +3454,7 @@ export function createParser(code: string) {
       throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_arrow);
     }
     nextToken();
-    const functionArguments = argumentToFunctionParams(
-      metaData.nodes,
-      metaData.trailingComma,
-    );
+    const functionArguments = argumentToFunctionParams(metaData.nodes, metaData.trailingComma);
     let body: Expression | FunctionBody | undefined;
     let isExpression = false;
     if (match(SyntaxKinds.BracesLeftPunctuator)) {
@@ -3733,9 +3490,7 @@ export function createParser(code: string) {
     functionArguments: Array<Expression>,
     trailingComma: boolean,
   ): Array<Pattern> {
-    const paramaList = functionArguments.map((node) =>
-      toAssignmentPattern(node, true),
-    ) as Array<Pattern>;
+    const paramaList = functionArguments.map((node) => toAssignmentPattern(node, true)) as Array<Pattern>;
     // check as function params
     checkFunctionParams(paramaList);
     checkIsSimpleParameterList(paramaList);
@@ -3757,16 +3512,12 @@ export function createParser(code: string) {
         // parent scope is async, no matter current scope is async or not
         // await expression can not call
         if (isAwaitExpression(param.right)) {
-          throw createMessageError(
-            ErrorMessageMap.await_expression_can_not_used_in_parameter_list,
-          );
+          throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
         }
         // parent scope is generator, arrow expression must not generator,
         // so yield is not illegal
         if (isYieldExpression(param.right)) {
-          throw createMessageError(
-            ErrorMessageMap.yield_expression_can_not_used_in_parameter_list,
-          );
+          throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
         }
       }
     }
@@ -3818,15 +3569,14 @@ export function createParser(code: string) {
       checkPatternContainInValidAwaitAndYieldValue(pattern.left);
       return;
     }
-    if (isInStrictMode() || (pattern.name === "await" && isCurrentFunctionAsync())) {
-      throw createMessageError(
-        ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
-      );
+    if (isInStrictMode() || (isIdentifer(pattern) && pattern.name === "await" && isCurrentFunctionAsync())) {
+      throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
     }
-    if (isInStrictMode() || (pattern.name === "yield" && isCurrentFunctionGenerator())) {
-      throw createMessageError(
-        ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword,
-      );
+    if (
+      isInStrictMode() ||
+      (isIdentifer(pattern) && pattern.name === "yield" && isCurrentFunctionGenerator())
+    ) {
+      throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
     }
   }
   /** ================================================================================
@@ -3909,12 +3659,8 @@ export function createParser(code: string) {
    * ```
    * @returns {JSXIdentifier | JSXMemberExpression | JSXNamespacedName}
    */
-  function parseJSXElementName():
-    | JSXIdentifier
-    | JSXMemberExpression
-    | JSXNamespacedName {
-    let name: JSXIdentifier | JSXMemberExpression | JSXNamespacedName =
-      parseJSXIdentifier();
+  function parseJSXElementName(): JSXIdentifier | JSXMemberExpression | JSXNamespacedName {
+    let name: JSXIdentifier | JSXMemberExpression | JSXNamespacedName = parseJSXIdentifier();
     if (match(SyntaxKinds.ColonPunctuator)) {
       nextToken();
       const subName = parseJSXIdentifier();
@@ -4008,9 +3754,7 @@ export function createParser(code: string) {
         if (match(SyntaxKinds.BracesLeftPunctuator)) {
           const expression = parseJSXExpressionContainer();
           if (!expression.expression) {
-            throw new Error(
-              "right hand side of jsx attribute must have expression if start with `{`",
-            );
+            throw new Error("right hand side of jsx attribute must have expression if start with `{`");
           }
           attribute.push(
             Factory.createJSXAttribute(
@@ -4095,9 +3839,7 @@ export function createParser(code: string) {
    */
   function parseJSXExpressionContainer(): JSXExpressionContainer {
     const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
-    const expression = match(SyntaxKinds.BracesRightPunctuator)
-      ? null
-      : parseAssigmentExpression();
+    const expression = match(SyntaxKinds.BracesRightPunctuator) ? null : parseAssigmentExpression();
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
     return Factory.createsJSXExpressionContainer(expression, start, end);
   }
@@ -4126,13 +3868,7 @@ export function createParser(code: string) {
     let value = "";
     const start = getStartPosition();
     let end = getEndPosition();
-    while (
-      !match([
-        SyntaxKinds.EOFToken,
-        SyntaxKinds.JSXCloseTagStart,
-        SyntaxKinds.BracesLeftPunctuator,
-      ])
-    ) {
+    while (!match([SyntaxKinds.EOFToken, SyntaxKinds.JSXCloseTagStart, SyntaxKinds.BracesLeftPunctuator])) {
       value += lexer.getBeforeValue();
       value += getSourceValue();
       end = getEndPosition();
@@ -4229,10 +3965,7 @@ export function createParser(code: string) {
    * ```
    */
   function parseBindingPattern(): ObjectPattern | ArrayPattern {
-    expectButNotEat([
-      SyntaxKinds.BracesLeftPunctuator,
-      SyntaxKinds.BracketLeftPunctuator,
-    ]);
+    expectButNotEat([SyntaxKinds.BracesLeftPunctuator, SyntaxKinds.BracketLeftPunctuator]);
     if (match(SyntaxKinds.BracesLeftPunctuator)) {
       return parseObjectPattern();
     }
@@ -4272,8 +4005,7 @@ export function createParser(code: string) {
         if (
           !(
             match(SyntaxKinds.BracesRightPunctuator) ||
-            (match(SyntaxKinds.CommaToken) &&
-              lookahead().kind === SyntaxKinds.BracesRightPunctuator)
+            (match(SyntaxKinds.CommaToken) && lookahead().kind === SyntaxKinds.BracesRightPunctuator)
           )
         ) {
           throw createMessageError(ErrorMessageMap.rest_element_should_be_last_property);
@@ -4287,9 +4019,7 @@ export function createParser(code: string) {
         nextToken();
         const expr = parseAssigmentExpression();
         if (!isPattern(propertyName)) {
-          throw createMessageError(
-            "assignment pattern left value can only allow identifier or pattern",
-          );
+          throw createMessageError("assignment pattern left value can only allow identifier or pattern");
         }
         properties.push(
           Factory.createAssignmentPattern(
@@ -4394,42 +4124,25 @@ export function createParser(code: string) {
    */
   function parseImportDeclaration(): ImportDeclaration {
     const { start } = expect(SyntaxKinds.ImportKeyword);
-    const specifiers: Array<
-      ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier
-    > = [];
+    const specifiers: Array<ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier> = [];
     if (match(SyntaxKinds.StringLiteral)) {
       const source = parseStringLiteral();
       shouldInsertSemi();
-      return Factory.createImportDeclaration(
-        specifiers,
-        source,
-        start,
-        cloneSourcePosition(source.end),
-      );
+      return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
     }
     if (match(SyntaxKinds.MultiplyOperator)) {
       specifiers.push(parseImportNamespaceSpecifier());
       expectFormKeyword();
       const source = parseStringLiteral();
       shouldInsertSemi();
-      return Factory.createImportDeclaration(
-        specifiers,
-        source,
-        start,
-        cloneSourcePosition(source.end),
-      );
+      return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
     }
     if (match(SyntaxKinds.BracesLeftPunctuator)) {
       parseImportSpecifiers(specifiers);
       expectFormKeyword();
       const source = parseStringLiteral();
       shouldInsertSemi();
-      return Factory.createImportDeclaration(
-        specifiers,
-        source,
-        start,
-        cloneSourcePosition(source.end),
-      );
+      return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
     }
     specifiers.push(parseImportDefaultSpecifier());
     if (match(SyntaxKinds.CommaToken)) {
@@ -4447,12 +4160,7 @@ export function createParser(code: string) {
     expectFormKeyword();
     const source = parseStringLiteral();
     shouldInsertSemi();
-    return Factory.createImportDeclaration(
-      specifiers,
-      source,
-      start,
-      cloneSourcePosition(source.end),
-    );
+    return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
   }
   /**
    * Parse Default import binding
@@ -4497,9 +4205,7 @@ export function createParser(code: string) {
    * @return {void}
    */
   function parseImportSpecifiers(
-    specifiers: Array<
-      ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier
-    >,
+    specifiers: Array<ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier>,
   ): void {
     expect(SyntaxKinds.BracesLeftPunctuator);
     let isStart = true;
@@ -4517,9 +4223,7 @@ export function createParser(code: string) {
         if (getSourceValue() !== "as") {
           // @ts-ignore
           if (KeywordLiteralMapSyntaxKind[imported.name]) {
-            throw createMessageError(
-              ErrorMessageMap.keyword_can_not_use_in_imported_when_just_a_specifier,
-            );
+            throw createMessageError(ErrorMessageMap.keyword_can_not_use_in_imported_when_just_a_specifier);
           }
           specifiers.push(
             Factory.createImportSpecifier(
@@ -4603,9 +4307,7 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.BracesLeftPunctuator)) {
       return parseExportNamedDeclaration(start);
     }
-    const declaration = match(SyntaxKinds.VarKeyword)
-      ? parseVariableDeclaration()
-      : parseDeclaration();
+    const declaration = match(SyntaxKinds.VarKeyword) ? parseVariableDeclaration() : parseDeclaration();
     return Factory.createExportNamedDeclaration(
       [],
       declaration,
@@ -4614,9 +4316,7 @@ export function createParser(code: string) {
       cloneSourcePosition(declaration.end),
     );
   }
-  function parseExportDefaultDeclaration(
-    start: SourcePosition,
-  ): ExportDefaultDeclaration {
+  function parseExportDefaultDeclaration(start: SourcePosition): ExportDefaultDeclaration {
     expect(SyntaxKinds.DefaultKeyword);
     if (match(SyntaxKinds.ClassKeyword)) {
       let classDeclar = parseClass();
@@ -4641,20 +4341,12 @@ export function createParser(code: string) {
       nextToken();
       const funDeclar = parseFunctionExpression(true);
       shouldInsertSemi();
-      return Factory.createExportDefaultDeclaration(
-        funDeclar,
-        start,
-        cloneSourcePosition(funDeclar.end),
-      );
+      return Factory.createExportDefaultDeclaration(funDeclar, start, cloneSourcePosition(funDeclar.end));
     }
     // TODO: parse export default from ""; (experimental feature)
     const expr = parseAssigmentExpression();
     shouldInsertSemi();
-    return Factory.createExportDefaultDeclaration(
-      expr,
-      start,
-      cloneSourcePosition(expr.end),
-    );
+    return Factory.createExportDefaultDeclaration(expr, start, cloneSourcePosition(expr.end));
   }
   function parseExportNamedDeclaration(start: SourcePosition): ExportNamedDeclarations {
     expect(SyntaxKinds.BracesLeftPunctuator);
@@ -4709,13 +4401,7 @@ export function createParser(code: string) {
       : specifier.length === 0
         ? bracesRightPunctuatorEnd
         : specifier[specifier.length - 1].end;
-    return Factory.createExportNamedDeclaration(
-      specifier,
-      null,
-      source,
-      start,
-      cloneSourcePosition(end),
-    );
+    return Factory.createExportNamedDeclaration(specifier, null, source, start, cloneSourcePosition(end));
   }
   function parseExportAllDeclaration(start: SourcePosition): ExportAllDeclaration {
     expect(SyntaxKinds.MultiplyOperator);
@@ -4729,11 +4415,6 @@ export function createParser(code: string) {
     expectFormKeyword();
     const source = parseStringLiteral();
     shouldInsertSemi();
-    return Factory.createExportAllDeclaration(
-      exported,
-      source,
-      start,
-      cloneSourcePosition(source.end),
-    );
+    return Factory.createExportAllDeclaration(exported, source, start, cloneSourcePosition(source.end));
   }
 }
