@@ -318,7 +318,6 @@ export function createParser(code: string) {
    */
   function isContextKeyword(value: string): boolean {
     if (getSourceValue() === value && getToken() === SyntaxKinds.Identifier) {
-      // TODO lexer get ecsflag.
       if (lexer.getEscFlag()) {
         throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
       }
@@ -483,6 +482,12 @@ export function createParser(code: string) {
     context.inOperatorStack.pop();
     return result;
   }
+  /**
+   * Private API for parse api for expression, in ECMAscript, there is
+   * a syntax tranlation for in operator production rule.
+   * @param parseCallback
+   * @returns
+   */
   function allowInOperaotr<T>(parseCallback: () => T) {
     context.inOperatorStack.push(true);
     const result = parseCallback();
@@ -988,6 +993,10 @@ export function createParser(code: string) {
    */
   function toAssignmentPattern(node: ModuleItem, isBinding: boolean = false): Pattern {
     const expr = node as Expression;
+    /**
+     * parentheses in pattern only allow in Assignment Pattern
+     * for MemberExpression and Identifier
+     */
     if (expr.parentheses) {
       if (isBinding || (!isBinding && !isMemberExpression(node) && !isIdentifer(node)))
         throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
@@ -1082,12 +1091,11 @@ export function createParser(code: string) {
     objectPropertyNode: ObjectProperty,
     isBinding = false,
   ): ObjectPatternProperty | AssignmentPattern {
-    if (isBinding && objectPropertyNode.value && isMemberExpression(objectPropertyNode.value)) {
-      throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
-    }
+    // object property's value can not has parentheses.
     if (objectPropertyNode.value && objectPropertyNode.value.parentheses) {
       throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
     }
+    // When a property name is a CoverInitializedName, we need to cover to assignment pattern
     if (context.propertiesInitSet.has(objectPropertyNode) && !objectPropertyNode.shorted) {
       context.propertiesInitSet.delete(objectPropertyNode);
       if (objectPropertyNode.computed || !isIdentifer(objectPropertyNode.key)) {
@@ -1103,17 +1111,30 @@ export function createParser(code: string) {
         objectPropertyNode.end,
       );
     }
+    const patternValue = !objectPropertyNode.value
+      ? objectPropertyNode.value
+      : toAssignmentPattern(objectPropertyNode.value);
+    // for binding pattern, member expression is not allow
+    //  - for assignment pattern: value production rule is `DestructuringAssignmentTarget`, which just a LeftHandSideExpression
+    //  - for binding pattern: value production rule is `BindingElement`, which only can be object-pattern, array-pattern, id.
+    if (isBinding && patternValue && isMemberExpression(patternValue)) {
+      throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
+    }
     return Factory.createObjectPatternProperty(
       objectPropertyNode.key,
-      !objectPropertyNode.value
-        ? objectPropertyNode.value
-        : (toAssignmentPattern(objectPropertyNode.value as ModuleItem) as unknown as any),
+      patternValue,
       objectPropertyNode.computed,
       objectPropertyNode.shorted,
       objectPropertyNode.start,
       objectPropertyNode.end,
     );
   }
+  /**
+   *
+   * @param leftValue
+   * @param isBinding
+   * @returns
+   */
   function checkPatternWithBinding(leftValue: Pattern, isBinding = false): Pattern {
     if (isObjectPattern(leftValue)) {
       for (const property of leftValue.properties) {
@@ -1183,15 +1204,15 @@ export function createParser(code: string) {
     if (match([SyntaxKinds.LetKeyword, SyntaxKinds.ConstKeyword, SyntaxKinds.VarKeyword])) {
       if (match(SyntaxKinds.LetKeyword) && isLetPossibleIdentifier()) {
         isParseLetAsExpr = true;
-        leftOrInit = disAllowInOperaotr(() => parseExpression());
+        leftOrInit = parseExpressionDisallowIn();
       } else {
-        leftOrInit = parseVariableDeclaration(true);
+        leftOrInit = disAllowInOperaotr(() => parseVariableDeclaration(true));
       }
     } else if (match(SyntaxKinds.SemiPunctuator)) {
       // for test case `for(;;)`
       leftOrInit = null;
     } else {
-      leftOrInit = disAllowInOperaotr(() => parseExpression());
+      leftOrInit = parseExpressionDisallowIn();
     }
     // Second is branching part, determinate the branch by following token
     // - if start with semi it should be ForStatement,
@@ -1219,11 +1240,11 @@ export function createParser(code: string) {
       let test: Expression | null = null,
         update: Expression | null = null;
       if (!match(SyntaxKinds.SemiPunctuator)) {
-        test = parseExpression();
+        test = parseExpressionAllowIn();
       }
       expect(SyntaxKinds.SemiPunctuator);
       if (!match(SyntaxKinds.ParenthesesRightPunctuator)) {
-        update = parseExpression();
+        update = parseExpressionAllowIn();
       }
       expect(SyntaxKinds.ParenthesesRightPunctuator);
       const body = parseStatement();
@@ -1259,7 +1280,7 @@ export function createParser(code: string) {
         helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit, "ForIn");
       }
       nextToken();
-      const right = parseExpression();
+      const right = parseExpressionAllowIn();
       expect(SyntaxKinds.ParenthesesRightPunctuator);
       const body = parseStatement();
       return Factory.createForInStatement(
@@ -1279,7 +1300,7 @@ export function createParser(code: string) {
         throw createMessageError(ErrorMessageMap.for_of_can_not_use_let_as_identifirt);
       }
       nextToken();
-      const right = parseAssigmentExpression();
+      const right = parseAssignmentExpressionAllowIn();
       expect(SyntaxKinds.ParenthesesRightPunctuator);
       const body = parseStatement();
       return Factory.createForOfStatement(
@@ -1324,7 +1345,7 @@ export function createParser(code: string) {
   function parseIfStatement(): IfStatement {
     const { start: keywordStart } = expect(SyntaxKinds.IfKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
-    const test = allowInOperaotr(() => parseExpression());
+    const test = parseExpressionAllowIn();
     expect(SyntaxKinds.ParenthesesRightPunctuator);
     const consequnce = parseStatement();
     if (match(SyntaxKinds.ElseKeyword)) {
@@ -1343,7 +1364,7 @@ export function createParser(code: string) {
   function parseWhileStatement(): WhileStatement {
     const { start: keywordStart } = expect(SyntaxKinds.WhileKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
-    const test = parseExpression();
+    const test = parseExpressionAllowIn();
     expect(SyntaxKinds.ParenthesesRightPunctuator);
     const body = parseStatement();
     return Factory.createWhileStatement(test, body, keywordStart, cloneSourcePosition(body.end));
@@ -1353,7 +1374,7 @@ export function createParser(code: string) {
     const body = parseStatement();
     expect(SyntaxKinds.WhileKeyword, "do while statement should has while condition");
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
-    const test = parseExpression();
+    const test = parseExpressionAllowIn();
     const { end: punctEnd } = expect(SyntaxKinds.ParenthesesRightPunctuator);
     isSoftInsertSemi();
     return Factory.createDoWhileStatement(test, body, keywordStart, punctEnd);
@@ -1375,7 +1396,7 @@ export function createParser(code: string) {
   function parseSwitchStatement() {
     const { start: keywordStart } = expect(SyntaxKinds.SwitchKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
-    const discriminant = parseExpression();
+    const discriminant = parseExpressionAllowIn();
     expect(SyntaxKinds.ParenthesesRightPunctuator);
     //TODO: should remove, duplicate check
     if (!match(SyntaxKinds.BracesLeftPunctuator)) {
@@ -1392,7 +1413,7 @@ export function createParser(code: string) {
       const start = getStartPosition();
       if (match(SyntaxKinds.CaseKeyword)) {
         nextToken();
-        test = parseExpression();
+        test = parseExpressionAllowIn();
       } else if (match(SyntaxKinds.DefaultKeyword)) {
         nextToken();
       }
@@ -1479,7 +1500,7 @@ export function createParser(code: string) {
     if (isSoftInsertSemi(true)) {
       return Factory.createReturnStatement(null, start, end);
     }
-    const expr = allowInOperaotr(() => parseExpression());
+    const expr = parseExpressionAllowIn();
     shouldInsertSemi();
     return Factory.createReturnStatement(expr, start, cloneSourcePosition(expr.end));
   }
@@ -1516,14 +1537,14 @@ export function createParser(code: string) {
   }
   function parseThrowStatement() {
     const { start } = expect(SyntaxKinds.ThrowKeyword);
-    const expr = parseExpression();
+    const expr = parseExpressionAllowIn();
     shouldInsertSemi();
     return Factory.createThrowStatement(expr, start, cloneSourcePosition(expr.end));
   }
   function parseWithStatement(): WithStatement {
     const { start } = expect(SyntaxKinds.WithKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
-    const object = parseExpression();
+    const object = parseExpressionAllowIn();
     expect(SyntaxKinds.ParenthesesRightPunctuator);
     const body = parseStatement();
     return Factory.createWithStatement(object, body, start, cloneSourcePosition(body.end));
@@ -1602,7 +1623,7 @@ export function createParser(code: string) {
       }
       if (match(SyntaxKinds.AssginOperator)) {
         nextToken();
-        const init = parseAssigmentExpression();
+        const init = parseAssignmentExpressionInheritIn();
         declarations.push(
           Factory.createVariableDeclarator(
             id,
@@ -2050,7 +2071,7 @@ export function createParser(code: string) {
     }
     if (match([SyntaxKinds.AssginOperator])) {
       nextToken();
-      const value = parseAssigmentExpression();
+      const value = parseAssignmentExpressionAllowIn();
       shouldInsertSemi();
       return Factory.createClassProperty(
         key,
@@ -2084,7 +2105,7 @@ export function createParser(code: string) {
    * @returns {ExpressionStatement}
    */
   function parseExpressionStatement(): ExpressionStatement {
-    const expr = allowInOperaotr(() => parseExpression());
+    const expr = parseExpressionAllowIn();
     checkStrictMode(expr);
     shouldInsertSemi();
     return Factory.createExpressionStatement(
@@ -2116,11 +2137,43 @@ export function createParser(code: string) {
       }
     }
   }
-  function parseExpression(): Expression {
-    const exprs = [parseAssigmentExpression()];
+  /**
+   * Private Parse API, parse Expression.
+   * ```
+   * Expression:
+   *  AssignmentExpression
+   *  Expression, AssignmentExpression
+   * ```
+   * Since Expression have in operator syntax action, so there we split parseExpression
+   * into three kind of function.
+   * - `parseExpressionAllowIn`: equal to production rule with parameter `Expression[+In]`
+   * - `parseExpressionDisallowIn`: equal to production rule with parameter `Expression[~In]`
+   * - `parseExpressionInheritIn`: equal to production rule with parameter `Expression[?in]`
+   * @returns {Expression}
+   */
+  function parseExpressionAllowIn(): Expression {
+    return allowInOperaotr(parseExpressionInheritIn);
+  }
+  /**
+   * Private Parse API, parse Expression.
+   * - allow disallow in operator syntax transition action.
+   * - for more detail, please refer to `parseExpressionAllowIn`.
+   * @returns {Expression}
+   */
+  function parseExpressionDisallowIn(): Expression {
+    return disAllowInOperaotr(parseExpressionInheritIn);
+  }
+  /**
+   * Private Parse API, parse Expression.
+   * - inherit in operator syntax transition action.
+   * - for more detail, please refer to `parseExpressionAllowIn`.
+   * @returns {Expression}
+   */
+  function parseExpressionInheritIn(): Expression {
+    const exprs = [parseAssignmentExpressionInheritIn()];
     while (match(SyntaxKinds.CommaToken)) {
       nextToken();
-      exprs.push(parseAssigmentExpression());
+      exprs.push(parseAssignmentExpressionInheritIn());
     }
     if (exprs.length === 1) {
       return exprs[0];
@@ -2131,7 +2184,26 @@ export function createParser(code: string) {
       cloneSourcePosition(exprs[exprs.length - 1].end),
     );
   }
-  function parseAssigmentExpression(): Expression {
+  /**
+   * Private Parse API, parse AssignmentExpression
+   *
+   * Since AssignmentExpression usually is a entry point of in operator syntax action. just like
+   * parseExpression, there we split function into three kind:
+   * - `parseAssignmentExpressionAllowIn`: equals to production rule with parameter
+   * - `parseAssignmentExpressionInhertIn`: equals to production rule with parameter
+   * - It since that disallow is not show in current spec, so ignore it.
+   * @returns {Expression}
+   */
+  function parseAssignmentExpressionAllowIn(): Expression {
+    return allowInOperaotr(parseAssignmentExpressionInheritIn);
+  }
+  /**
+   * Private Parse API, parse AssignmentExpression
+   * - inherit in operator syntax transition action.
+   * - for more detail, please refer to `parseAssignmentExpressionAllowIn`.
+   * @returns {Expression}
+   */
+  function parseAssignmentExpressionInheritIn(): Expression {
     if (match([SyntaxKinds.ParenthesesLeftPunctuator, SyntaxKinds.Identifier])) {
       context.maybeArrowStart = getStartPosition().index;
     }
@@ -2145,7 +2217,7 @@ export function createParser(code: string) {
     const left = toAssignmentPattern(leftExpr);
     const operator = getToken();
     nextToken();
-    const right = parseAssigmentExpression();
+    const right = parseAssignmentExpressionInheritIn();
     return Factory.createAssignmentExpression(
       left,
       right,
@@ -2154,6 +2226,14 @@ export function createParser(code: string) {
       cloneSourcePosition(right.end),
     );
   }
+  /**
+   * Helper function for any parse API that need to parse Arrow function.
+   * From production rule in `AssignmentExpression`, `ArrowFunctionExpression` and
+   * `AsyncArrowFunctionExpression` is same level of `ConditionalExpression`, but we
+   * parse ArrowFunction in the bottom of parse recursion(parsePrimary), so we should
+   * mark context there to make parseArrowFunction only parse when context is mark.
+   * @returns {boolean}
+   */
   function canParseAsArrowFunction(): boolean {
     return getStartPosition().index === context.maybeArrowStart;
   }
@@ -2180,7 +2260,7 @@ export function createParser(code: string) {
     }
     let argument: Expression | null = null;
     if (!isSoftInsertSemi(false)) {
-      argument = parseAssigmentExpression();
+      argument = parseAssignmentExpressionInheritIn();
     }
     if (delegate && !argument) {
       throw createMessageError(ErrorMessageMap.yield_deletgate_can_must_be_followed_by_assignment_expression);
@@ -2204,9 +2284,9 @@ export function createParser(code: string) {
       return test;
     }
     nextToken();
-    const conseq = allowInOperaotr(() => parseAssigmentExpression());
+    const conseq = parseAssignmentExpressionAllowIn();
     expect(SyntaxKinds.ColonPunctuator);
-    const alter = parseAssigmentExpression();
+    const alter = parseAssignmentExpressionInheritIn();
     return Factory.createConditionalExpression(
       test,
       conseq,
@@ -2499,14 +2579,14 @@ export function createParser(code: string) {
       if (match(SyntaxKinds.SpreadOperator)) {
         const spreadElementStart = getStartPosition();
         nextToken();
-        const argu = allowInOperaotr(() => parseAssigmentExpression());
+        const argu = parseAssignmentExpressionAllowIn();
         callerArguments.push(
           Factory.createSpreadElement(argu, spreadElementStart, cloneSourcePosition(argu.end)),
         );
         continue;
       }
       // case 3 : ',' AssigmentExpression
-      callerArguments.push(allowInOperaotr(() => parseAssigmentExpression()));
+      callerArguments.push(parseAssignmentExpressionAllowIn());
     }
     const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
     return {
@@ -2550,7 +2630,7 @@ export function createParser(code: string) {
     // if start with `[`, must be computed property access.
     else if (match(SyntaxKinds.BracketLeftPunctuator)) {
       expect(SyntaxKinds.BracketLeftPunctuator);
-      const property = allowInOperaotr(() => parseExpression());
+      const property = parseExpressionAllowIn();
       const { end } = expect(SyntaxKinds.BracketRightPunctuator);
       return Factory.createMemberExpression(
         true,
@@ -2843,7 +2923,7 @@ export function createParser(code: string) {
       );
     }
     nextToken();
-    const expressions = [parseExpression()];
+    const expressions = [parseExpressionAllowIn()];
     const quasis: Array<TemplateElement> = [];
     while (
       !match(SyntaxKinds.TemplateTail) &&
@@ -2854,7 +2934,7 @@ export function createParser(code: string) {
         Factory.createTemplateElement(getSourceValue(), false, getStartPosition(), getEndPosition()),
       );
       nextToken();
-      expressions.push(parseExpression());
+      expressions.push(parseExpressionAllowIn());
     }
     if (match(SyntaxKinds.EOFToken)) {
       throw createUnexpectError(SyntaxKinds.BracesLeftPunctuator);
@@ -2881,7 +2961,7 @@ export function createParser(code: string) {
   function parseImportCall() {
     const { start, end } = expect(SyntaxKinds.ImportKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
-    const argument = parseAssigmentExpression();
+    const argument = parseAssignmentExpressionAllowIn();
     const { end: finalEnd } = expect(SyntaxKinds.ParenthesesRightPunctuator);
     return Factory.createCallExpression(
       Factory.createImport(start, end),
@@ -3040,7 +3120,7 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.SpreadOperator)) {
       const spreadElementStart = getStartPosition();
       nextToken();
-      const expr = parseAssigmentExpression();
+      const expr = parseAssignmentExpressionAllowIn();
       return Factory.createSpreadElement(expr, spreadElementStart, cloneSourcePosition(expr.end));
     }
     // start with possible method modifier
@@ -3055,7 +3135,7 @@ export function createParser(code: string) {
     }
     if (match(SyntaxKinds.ColonPunctuator)) {
       nextToken();
-      const expr = parseAssigmentExpression();
+      const expr = parseAssignmentExpressionAllowIn();
       return Factory.createObjectProperty(
         propertyName,
         expr,
@@ -3067,7 +3147,7 @@ export function createParser(code: string) {
     }
     if (match(SyntaxKinds.AssginOperator)) {
       nextToken();
-      const expr = parseAssigmentExpression();
+      const expr = parseAssignmentExpressionAllowIn();
       const property = Factory.createObjectProperty(
         propertyName,
         expr,
@@ -3161,7 +3241,7 @@ export function createParser(code: string) {
       return identifer;
     }
     nextToken();
-    const expr = parseAssigmentExpression();
+    const expr = parseAssignmentExpressionAllowIn();
     if (match(SyntaxKinds.BracketRightPunctuator)) {
       nextToken();
       isComputedRef.isComputed = true;
@@ -3382,10 +3462,10 @@ export function createParser(code: string) {
       if (match(SyntaxKinds.SpreadOperator)) {
         const start = getStartPosition();
         nextToken();
-        const expr = parseAssigmentExpression();
+        const expr = parseAssignmentExpressionAllowIn();
         elements.push(Factory.createSpreadElement(expr, start, cloneSourcePosition(expr.end)));
       } else {
-        const expr = allowInOperaotr(() => parseAssigmentExpression());
+        const expr = parseAssignmentExpressionAllowIn();
         elements.push(expr);
       }
     }
@@ -3460,7 +3540,7 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.BracesLeftPunctuator)) {
       body = parseFunctionBody();
     } else {
-      body = parseAssigmentExpression();
+      body = parseAssignmentExpressionInheritIn();
       isExpression = true;
     }
     context.lastArrowExprPosition = {
@@ -3713,7 +3793,7 @@ export function createParser(code: string) {
       if (match(SyntaxKinds.BracesLeftPunctuator)) {
         nextToken();
         expect(SyntaxKinds.SpreadOperator);
-        const expression = parseAssigmentExpression();
+        const expression = parseAssignmentExpressionAllowIn();
         expect(SyntaxKinds.BracesRightPunctuator);
         attribute.push(
           Factory.createJSXSpreadAttribute(
@@ -3813,7 +3893,7 @@ export function createParser(code: string) {
         if (lookahead().kind == SyntaxKinds.SpreadOperator) {
           expect(SyntaxKinds.BracesLeftPunctuator);
           expect(SyntaxKinds.SpreadOperator);
-          const expression = parseAssigmentExpression();
+          const expression = parseAssignmentExpressionAllowIn();
           expect(SyntaxKinds.BracesRightPunctuator);
           children.push(
             Factory.createJSXSpreadChild(
@@ -3839,7 +3919,7 @@ export function createParser(code: string) {
    */
   function parseJSXExpressionContainer(): JSXExpressionContainer {
     const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
-    const expression = match(SyntaxKinds.BracesRightPunctuator) ? null : parseAssigmentExpression();
+    const expression = match(SyntaxKinds.BracesRightPunctuator) ? null : parseAssignmentExpressionAllowIn();
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
     return Factory.createsJSXExpressionContainer(expression, start, end);
   }
@@ -3926,7 +4006,7 @@ export function createParser(code: string) {
     }
     if (match(SyntaxKinds.AssginOperator) && shouldParseAssignment) {
       nextToken();
-      const right = parseAssigmentExpression();
+      const right = parseAssignmentExpressionAllowIn();
       return Factory.createAssignmentPattern(
         left,
         right,
@@ -4017,7 +4097,7 @@ export function createParser(code: string) {
       const propertyName = parsePropertyName(isComputedRef);
       if (match(SyntaxKinds.AssginOperator)) {
         nextToken();
-        const expr = parseAssigmentExpression();
+        const expr = parseAssignmentExpressionAllowIn();
         if (!isPattern(propertyName)) {
           throw createMessageError("assignment pattern left value can only allow identifier or pattern");
         }
@@ -4344,7 +4424,7 @@ export function createParser(code: string) {
       return Factory.createExportDefaultDeclaration(funDeclar, start, cloneSourcePosition(funDeclar.end));
     }
     // TODO: parse export default from ""; (experimental feature)
-    const expr = parseAssigmentExpression();
+    const expr = parseAssignmentExpressionAllowIn();
     shouldInsertSemi();
     return Factory.createExportDefaultDeclaration(expr, start, cloneSourcePosition(expr.end));
   }
