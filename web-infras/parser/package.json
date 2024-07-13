@@ -8,7 +8,7 @@
     "dev": "nodemon ./src/dev.ts",
     "prettier:check": "yarn prettier .",
     "prettier:write": "yarn prettier . --write",
-    "test": "ts-node ./tests/runner.ts",
+    "test": "ts-node ./tests/index.ts",
     "test:verbose": "TEST_VERBOSE=1 yarn test",
     "test:update": "TEST_UPDATE=1 yarn test",
     "test:ci": "TEST_CI=1 ts-node yarn test"

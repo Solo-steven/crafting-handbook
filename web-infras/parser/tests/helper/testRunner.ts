@@ -8,8 +8,8 @@ import {
   TestSuite,
   TestResult,
 } from "./type";
-import { createParser } from "@/src/parser";
 import { transformSyntaxKindToLiteral } from "./transform";
+import { parse } from "@/src/index";
 
 /**
  * Try to parse a code string, return format string if no parse
@@ -19,7 +19,7 @@ import { transformSyntaxKindToLiteral } from "./transform";
  */
 function tryParseCodeStringIntoASTString(code: string): string | null {
   try {
-    const ast = createParser(code).parse();
+    const ast = parse(code);
     transformSyntaxKindToLiteral(ast);
     return JSON.stringify(ast, null, 4);
   } catch (e) {

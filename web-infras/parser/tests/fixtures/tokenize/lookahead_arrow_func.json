@@ -1,0 +1,58 @@
+[
+    {
+        "kind": "=>",
+        "value": "=>",
+        "startPosition": {
+            "row": 1,
+            "col": 1,
+            "index": 0
+        },
+        "endPosition": {
+            "row": 1,
+            "col": 3,
+            "index": 2
+        }
+    },
+    {
+        "kind": "{",
+        "value": "{",
+        "startPosition": {
+            "row": 2,
+            "col": 1,
+            "index": 4
+        },
+        "endPosition": {
+            "row": 2,
+            "col": 2,
+            "index": 5
+        }
+    },
+    {
+        "kind": "}",
+        "value": "}",
+        "startPosition": {
+            "row": 2,
+            "col": 2,
+            "index": 5
+        },
+        "endPosition": {
+            "row": 2,
+            "col": 3,
+            "index": 6
+        }
+    },
+    {
+        "kind": "EOFToken",
+        "value": "",
+        "startPosition": {
+            "row": 2,
+            "col": 3,
+            "index": 6
+        },
+        "endPosition": {
+            "row": 2,
+            "col": 3,
+            "index": 6
+        }
+    }
+]

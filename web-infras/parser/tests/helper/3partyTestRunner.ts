@@ -1,5 +1,5 @@
 import { createParser } from "@/src/parser";
-import {} from "chalk";
+import chalk from "chalk";
 const thirdPartyTestCase = [
   {
     title: "Jquery uncompressed",
@@ -34,17 +34,18 @@ export async function run3partyTestCase() {
       testCase.code = code;
     }),
   );
-  console.log("==========================================");
-  for (const testCode of thirdPartyTestCase) {
-    try {
-      const parser = createParser(testCode.code);
-      parser.parse();
-      testCode.pass = true;
-      console.log(`|${testCode.title}|: parse PASS.`);
-    } catch (e) {
-      testCode.pass = false;
-      console.log(`|${testCode.title}|: parse FAILED.`);
+  return () => {
+    console.log(chalk.bold(`=========== 3rd Party Parser Test Case ===========`));
+    for (const testCode of thirdPartyTestCase) {
+      try {
+        const parser = createParser(testCode.code);
+        parser.parse();
+        testCode.pass = true;
+        console.log(`|${testCode.title}|: ${chalk.green("parse PASS")}.`);
+      } catch (e) {
+        testCode.pass = false;
+        console.log(`|${testCode.title}|: ${chalk.red("parse FAILED")}.`);
+      }
     }
-  }
-  console.log("==========================================");
+  };
 }

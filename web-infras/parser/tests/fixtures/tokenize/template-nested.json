@@ -1,0 +1,86 @@
+[
+    {
+        "kind": "TemplateHead",
+        "value": "`${",
+        "startPosition": {
+            "row": 1,
+            "col": 1,
+            "index": 0
+        },
+        "endPosition": {
+            "row": 1,
+            "col": 4,
+            "index": 3
+        }
+    },
+    {
+        "kind": "Identifer",
+        "value": "test",
+        "startPosition": {
+            "row": 1,
+            "col": 4,
+            "index": 3
+        },
+        "endPosition": {
+            "row": 1,
+            "col": 8,
+            "index": 7
+        }
+    },
+    {
+        "kind": "+",
+        "value": "+",
+        "startPosition": {
+            "row": 1,
+            "col": 9,
+            "index": 8
+        },
+        "endPosition": {
+            "row": 1,
+            "col": 10,
+            "index": 9
+        }
+    },
+    {
+        "kind": "TemplateNoSubstitution",
+        "value": "`{}`",
+        "startPosition": {
+            "row": 1,
+            "col": 11,
+            "index": 10
+        },
+        "endPosition": {
+            "row": 1,
+            "col": 15,
+            "index": 14
+        }
+    },
+    {
+        "kind": "TemplateTail",
+        "value": "}`",
+        "startPosition": {
+            "row": 1,
+            "col": 16,
+            "index": 15
+        },
+        "endPosition": {
+            "row": 1,
+            "col": 18,
+            "index": 17
+        }
+    },
+    {
+        "kind": "EOFToken",
+        "value": "",
+        "startPosition": {
+            "row": 1,
+            "col": 18,
+            "index": 17
+        },
+        "endPosition": {
+            "row": 1,
+            "col": 18,
+            "index": 17
+        }
+    }
+]

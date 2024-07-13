@@ -1,0 +1,100 @@
+[
+    {
+        "kind": "Identifer",
+        "value": "async",
+        "startPosition": {
+            "row": 1,
+            "col": 1,
+            "index": 0
+        },
+        "endPosition": {
+            "row": 1,
+            "col": 6,
+            "index": 5
+        }
+    },
+    {
+        "kind": "(",
+        "value": "(",
+        "startPosition": {
+            "row": 1,
+            "col": 7,
+            "index": 6
+        },
+        "endPosition": {
+            "row": 1,
+            "col": 8,
+            "index": 7
+        }
+    },
+    {
+        "kind": ")",
+        "value": ")",
+        "startPosition": {
+            "row": 1,
+            "col": 8,
+            "index": 7
+        },
+        "endPosition": {
+            "row": 1,
+            "col": 9,
+            "index": 8
+        }
+    },
+    {
+        "kind": "=>",
+        "value": "=>",
+        "startPosition": {
+            "row": 1,
+            "col": 10,
+            "index": 9
+        },
+        "endPosition": {
+            "row": 1,
+            "col": 12,
+            "index": 11
+        }
+    },
+    {
+        "kind": "{",
+        "value": "{",
+        "startPosition": {
+            "row": 2,
+            "col": 1,
+            "index": 13
+        },
+        "endPosition": {
+            "row": 2,
+            "col": 2,
+            "index": 14
+        }
+    },
+    {
+        "kind": "}",
+        "value": "}",
+        "startPosition": {
+            "row": 2,
+            "col": 2,
+            "index": 14
+        },
+        "endPosition": {
+            "row": 2,
+            "col": 3,
+            "index": 15
+        }
+    },
+    {
+        "kind": "EOFToken",
+        "value": "",
+        "startPosition": {
+            "row": 3,
+            "col": 1,
+            "index": 16
+        },
+        "endPosition": {
+            "row": 3,
+            "col": 1,
+            "index": 16
+        }
+    }
+]

@@ -1,27 +1,27 @@
 import { createParser } from "@/src/parser";
 import { createLexer } from "@/src/lexer";
+import { Token } from "@/src/lexer/type";
 import { SyntaxKinds } from "web-infra-common";
 
 export function parse(code: string) {
   const parser = createParser(code);
   return parser.parse();
 }
-// export function tokenize(code: string) {
-//   const lexer = createLexer(code);
-//   const tokens = [];
-//   while (1) {
-//     const token = lexer.nextToken();
-//     tokens.push(token);
-//     if (token === SyntaxKinds.EOFToken) {
-//       break;
-//     }
-//   }
-//   return [tokens, lexer.getTime(), lexer.getSkipTime()];
-// }
-
-// export function doNothing(code: string) {
-//   for (const ch of code) {
-//     if (ch == " ") {
-//     }
-//   }
-// }
+export function tokenize(code: string): Array<Token> {
+  const lexer = createLexer(code);
+  const tokens: Array<Token> = [];
+  while (1) {
+    const tokenKind = lexer.getTokenKind();
+    tokens.push({
+      kind: tokenKind,
+      value: lexer.getSourceValue(),
+      startPosition: lexer.getStartPosition(),
+      endPosition: lexer.getEndPosition(),
+    });
+    if (tokenKind === SyntaxKinds.EOFToken) {
+      break;
+    }
+    lexer.nextToken();
+  }
+  return tokens;
+}

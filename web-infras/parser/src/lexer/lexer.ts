@@ -12,7 +12,6 @@ import {
   LexerTemplateContext,
   LexerTokenContext,
   LookaheadToken,
-  Token,
 } from "./type";
 import { ErrorMessageMap } from "./error";
 /**
@@ -190,7 +189,7 @@ export function createLexer(code: string) {
   }
   /**
    * Public API for lookahead token.
-   * @returns {Token}
+   * @returns {LookaheadToken}
    */
   function lookahead(): LookaheadToken {
     // store last context
