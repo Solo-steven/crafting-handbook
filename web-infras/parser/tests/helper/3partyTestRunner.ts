@@ -25,6 +25,18 @@ const thirdPartyTestCase = [
     code: "",
     pass: false,
   },
+  {
+    title: "redux development",
+    url: "https://cdnjs.cloudflare.com/ajax/libs/redux/5.0.1/redux.legacy-esm.js",
+    code: "",
+    pass: false,
+  },
+  {
+    title: "MUI development",
+    url: "https://unpkg.com/@mui/material@latest/umd/material-ui.development.js",
+    code: "",
+    pass: false,
+  }
 ];
 
 export async function run3partyTestCase() {
