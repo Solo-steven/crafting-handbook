@@ -1,0 +1,102 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "log",
+                "start": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [],
+                "start": {
+                    "row": 1,
+                    "col": 27,
+                    "index": 26
+                },
+                "end": {
+                    "row": 1,
+                    "col": 30,
+                    "index": 29
+                }
+            },
+            "params": [
+                {
+                    "kind": "Identifer",
+                    "name": "n",
+                    "start": {
+                        "row": 1,
+                        "col": 14,
+                        "index": 13
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 15,
+                        "index": 14
+                    }
+                },
+                {
+                    "kind": "Identifer",
+                    "name": "op",
+                    "start": {
+                        "row": 1,
+                        "col": 17,
+                        "index": 16
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 19,
+                        "index": 18
+                    }
+                },
+                {
+                    "kind": "Identifer",
+                    "name": "val",
+                    "start": {
+                        "row": 1,
+                        "col": 21,
+                        "index": 20
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 24,
+                        "index": 23
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 30,
+                "index": 29
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 30,
+        "index": 29
+    }
+}

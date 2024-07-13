@@ -3412,15 +3412,15 @@ export function createParser(code: string) {
           throw createMessageError(ErrorMessageMap.rest_element_can_not_use_in_cover);
         }
       }
+      if (trailingComma) {
+        throw createMessageError(ErrorMessageMap.sequence_expression_can_not_have_trailing_comma);
+      }
       if (nodes.length === 1) {
         nodes[0].parentheses = true;
         if (nodes[0].kind === SyntaxKinds.ArrowFunctionExpression) {
           context.lastArrowExprPosition = null;
         }
         return nodes[0];
-      }
-      if (trailingComma) {
-        throw createMessageError(ErrorMessageMap.sequence_expression_can_not_have_trailing_comma);
       }
       const seq = Factory.createSequenceExpression(nodes, start, end);
       seq.parentheses = true;
