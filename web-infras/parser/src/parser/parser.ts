@@ -1195,6 +1195,7 @@ export function createParser(code: string) {
     // expression can not take `in` operator as operator in toplevel, so we need pass
     // false to disallow parseExpression to take in  as operator
     let isAwait = false,
+      isParseLetAsExpr = false,
       leftOrInit: VariableDeclaration | Expression | null = null;
     if (match(SyntaxKinds.AwaitKeyword)) {
       nextToken();
@@ -1208,6 +1209,7 @@ export function createParser(code: string) {
       match([SyntaxKinds.LetKeyword, SyntaxKinds.ConstKeyword, SyntaxKinds.VarKeyword])
     ) {
       if (match(SyntaxKinds.LetKeyword) && isLetPossibleIdentifier()) {
+        isParseLetAsExpr = true;
         leftOrInit = disAllowInOperaotr(() => parseExpression());
       } else {
         leftOrInit = parseVariableDeclaration(true);
@@ -1274,9 +1276,7 @@ export function createParser(code: string) {
     // in this case , leftOrInit would be a assignment expression, and when it pass to toAssignment
     // function, it would transform to assignment pattern, so we need to checko if there is Assignment
     // pattern, it is , means original is assignment expression, it should throw a error.
-    if (isVarDeclaration(leftOrInit)) {
-      helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit);
-    } else {
+    if (!isVarDeclaration(leftOrInit)) {
       if (!isMemberExpression(leftOrInit)) {
         leftOrInit = toAssignmentPattern(leftOrInit) as Expression;
       }
@@ -1284,7 +1284,11 @@ export function createParser(code: string) {
         throw createMessageError(ErrorMessageMap.invalid_left_value);
       }
     }
+    // branch case for `for-in` statement
     if (match(SyntaxKinds.InKeyword)) {
+      if (isVarDeclaration(leftOrInit)) {
+        helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit, "ForIn");
+      }
       nextToken();
       const right = parseExpression();
       expect(SyntaxKinds.ParenthesesRightPunctuator);
@@ -1297,7 +1301,14 @@ export function createParser(code: string) {
         cloneSourcePosition(body.end),
       );
     }
+    // branch case for `for-of` statement
     if (isContextKeyword("of")) {
+      if (isVarDeclaration(leftOrInit)) {
+        helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit, "ForOf");
+      }
+      if (isParseLetAsExpr) {
+        throw createMessageError(ErrorMessageMap.for_of_can_not_use_let_as_identifirt);
+      }
       nextToken();
       const right = parseAssigmentExpression();
       expect(SyntaxKinds.ParenthesesRightPunctuator);
@@ -1313,6 +1324,7 @@ export function createParser(code: string) {
     }
     throw createUnexpectError(null);
   }
+
   /**
    * Helper function for check sematic error of VariableDeclaration of ForInStatement and ForOfStatement,
    * please reference to comment in parseForStatement.
@@ -1320,14 +1332,34 @@ export function createParser(code: string) {
    */
   function helperCheckDeclarationmaybeForInOrForOfStatement(
     declaration: VariableDeclaration,
+    kind: "ForIn" | "ForOf",
   ) {
     if (declaration.declarations.length > 1) {
       throw createMessageError(
         ErrorMessageMap.for_in_of_loop_can_not_have_one_more_binding,
       );
     }
-    if (declaration.declarations[0].init !== null) {
-      throw createMessageError(ErrorMessageMap.for_in_of_loop_can_not_using_initializer);
+    const delcarationVariant = declaration.variant;
+    const onlyDeclaration = declaration.declarations[0];
+    if (kind === "ForIn") {
+      if (onlyDeclaration.init !== null) {
+        if (
+          delcarationVariant === "var" &&
+          !isInStrictMode() &&
+          isIdentifer(onlyDeclaration.id)
+        ) {
+          return;
+        }
+        throw createMessageError(
+          ErrorMessageMap.for_in_of_loop_may_not_using_initializer,
+        );
+      }
+    } else {
+      if (onlyDeclaration.init !== null) {
+        throw createMessageError(
+          ErrorMessageMap.for_in_of_loop_may_not_using_initializer,
+        );
+      }
     }
   }
   function parseIfStatement(): IfStatement {

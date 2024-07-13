@@ -39,11 +39,12 @@ export const ErrorMessageMap = {
     "binding pattern can not have member expression",
   pattern_should_not_has_paran: "pattern should not has pattern.",
   // for-related statement
-  for_in_of_loop_can_not_using_initializer:
-    "for in and for of loop can not usng initializer",
+  for_in_of_loop_may_not_using_initializer:
+    "for in and for of loop may not usng initializer",
   for_in_of_loop_can_not_have_one_more_binding:
     "variable declaration in for-in or for-of statement can't not have more than one binding",
   await_can_just_in_for_of_loop: "await can only be in for of loop",
+  for_of_can_not_use_let_as_identifirt: "for-of loop can not use let as identifier",
   // trailing comma
   function_parameter_can_not_have_empty_trailing_comma:
     "function parameter list can not have trailing comma when is empty",

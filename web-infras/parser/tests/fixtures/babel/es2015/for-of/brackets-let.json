@@ -1,0 +1,132 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ForOfStatement",
+            "await": false,
+            "left": {
+                "kind": "VariableDeclaration",
+                "variant": "let",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": true,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "a",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 11,
+                                            "index": 10
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 12,
+                                            "index": 11
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 11,
+                                        "index": 10
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 12,
+                                        "index": 11
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 10,
+                                "index": 9
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 13,
+                                "index": 12
+                            }
+                        },
+                        "init": null,
+                        "start": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 13,
+                            "index": 12
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 6,
+                    "index": 5
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "right": {
+                "kind": "RegexLiteral",
+                "pattern": "b",
+                "flag": "",
+                "start": {
+                    "row": 1,
+                    "col": 17,
+                    "index": 16
+                },
+                "end": {
+                    "row": 1,
+                    "col": 21,
+                    "index": 20
+                }
+            },
+            "body": {
+                "kind": "BlockStatement",
+                "body": [],
+                "start": {
+                    "row": 1,
+                    "col": 22,
+                    "index": 21
+                },
+                "end": {
+                    "row": 1,
+                    "col": 24,
+                    "index": 23
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 24,
+                "index": 23
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 24,
+        "index": 23
+    }
+}
