@@ -1627,9 +1627,7 @@ export function createParser(code: string) {
       const isBindingPattern = !isIdentifer(id);
       // custom logical for check is lexical binding have let identifier ?
       if (variableKind === "lexical" || isInStrictMode()) {
-        if (checkPatternContainCertinValue(id, (value) => value === "let")) {
-          throw createMessageError(ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding);
-        }
+        checkIsLetExistInLexicalBinding(id);
       }
       if (
         // variable declarations binding pattern but but have init.
@@ -1672,6 +1670,17 @@ export function createParser(code: string) {
       declarations[declarations.length - 1].end,
     );
   }
+  function checkIsLetExistInLexicalBinding(pattern: Pattern) {
+    checkBindingPatternValueWithCallbacks(
+      pattern,
+      (value) => {
+        if (value === "let") {
+          throw createMessageError(ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding);
+        }
+      },
+      (_, _1) => void 0,
+    );
+  }
   /**
    * Helper function for check is pattern contain certin identifier value.
    *
@@ -1685,54 +1694,53 @@ export function createParser(code: string) {
    * need to check if function parameter list and function name is illegal in current function scope
    * or not.
    * @param {Pattern} pattern
-   * @returns {boolean}
    */
-  function checkPatternContainCertinValue(pattern: Pattern, callback: (value: string) => boolean): boolean {
-    if (isArrayPattern(pattern)) {
-      for (const element of pattern.elements) {
-        if (element) {
-          if (checkPatternContainCertinValue(element, callback)) {
-            return true;
+  function checkBindingPatternValueWithCallbacks(
+    pattern: Pattern,
+    patternValueCallback: (value: string) => void,
+    rightHandSideCallback: (expr: Expression, addToWorkList: (...pattern: Array<Pattern>) => void) => void,
+  ) {
+    const workList = [pattern];
+    const addToWorkList = (pattern: Pattern) => workList.push(pattern);
+    while (workList.length > 0) {
+      const currentPat = workList.pop()!;
+      switch (currentPat.kind) {
+        case SyntaxKinds.ArrayPattern:
+          const elements = currentPat.elements.filter((ele) => !!ele) as Array<Pattern>;
+          if (elements.length > 0) workList.push(...elements);
+          break;
+        case SyntaxKinds.Identifier:
+          patternValueCallback(currentPat.name);
+          break;
+        case SyntaxKinds.RestElement:
+          addToWorkList(currentPat.argument);
+          break;
+        case SyntaxKinds.AssignmentPattern:
+          addToWorkList(currentPat.left);
+          rightHandSideCallback(currentPat.right, addToWorkList);
+          break;
+        case SyntaxKinds.ObjectPattern: {
+          for (const property of currentPat.properties) {
+            if (isObjectPatternProperty(property)) {
+              if (!property.value) {
+                if (isIdentifer(property.key)) {
+                  workList.push(property.key);
+                }
+                continue;
+              }
+              if (isPattern(property.value)) {
+                addToWorkList(property.value);
+                continue;
+              }
+              rightHandSideCallback(property.value, addToWorkList);
+            } else {
+              addToWorkList(property);
+            }
           }
+          break;
         }
       }
     }
-    if (isObjectPattern(pattern)) {
-      for (const property of pattern.properties) {
-        if (isObjectPatternProperty(property)) {
-          if (property.value && checkPatternContainCertinValue(property.value as Pattern, callback)) {
-            return true;
-          }
-          if (
-            !property.value &&
-            isIdentifer(property.key) &&
-            checkPatternContainCertinValue(property.key, callback)
-          ) {
-            return true;
-          }
-        } else {
-          if (checkPatternContainCertinValue(property, callback)) {
-            return true;
-          }
-        }
-      }
-    }
-    if (isRestElement(pattern)) {
-      if (checkPatternContainCertinValue(pattern.argument, callback)) {
-        return true;
-      }
-    }
-    if (isAssignmentPattern(pattern)) {
-      if (checkPatternContainCertinValue(pattern.left, callback)) {
-        return true;
-      }
-    }
-    if (isIdentifer(pattern)) {
-      if (callback(pattern.name)) {
-        return true;
-      }
-    }
-    return false;
   }
   function parseFunctionDeclaration(isAsync: boolean) {
     enterFunctionScope(isAsync);
@@ -1790,14 +1798,15 @@ export function createParser(code: string) {
         }
       }
       for (const param of params) {
-        if (
-          checkPatternContainCertinValue(
-            param,
-            (value) => value === "yield" || value === "let" || PreserveWordSet.has(value),
-          )
-        ) {
-          throw createMessageError("unexepct keyword in parameter list in strict mode");
-        }
+        checkBindingPatternValueWithCallbacks(
+          param,
+          (value) => {
+            if (value === "yield" || value === "let" || PreserveWordSet.has(value)) {
+              throw createMessageError("unexepct keyword in parameter list in strict mode");
+            }
+          },
+          (_, _1) => void 0,
+        );
       }
     }
   }
@@ -3703,54 +3712,31 @@ export function createParser(code: string) {
     return flag;
   }
   function checkPatternContainInValidAwaitAndYieldValue(pattern: Pattern) {
-    if (isArrayPattern(pattern)) {
-      for (const element of pattern.elements) {
-        if (element) {
-          checkPatternContainInValidAwaitAndYieldValue(element);
-        }
-      }
-      return;
-    }
-    if (isObjectPattern(pattern)) {
-      for (const property of pattern.properties) {
-        if (isObjectPatternProperty(property)) {
-          if (property.value) {
-            checkPatternContainInValidAwaitAndYieldValue(property.value as Pattern);
+    checkBindingPatternValueWithCallbacks(
+      pattern,
+      (patternVal) => {
+        if (patternVal === "await") {
+          if (isInStrictMode() || isCurrentFunctionAsync()) {
+            throw createMessageError(
+              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+            );
           }
-          if (!property.value && isIdentifer(property.key)) {
-            checkPatternContainInValidAwaitAndYieldValue(property.key);
+          return;
+        }
+        if (patternVal === "yield") {
+          if (isInStrictMode() || isCurrentFunctionGenerator()) {
+            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
           }
-        } else {
-          checkPatternContainInValidAwaitAndYieldValue(property);
+          return;
         }
-      }
-      return;
-    }
-    if (isRestElement(pattern)) {
-      checkPatternContainInValidAwaitAndYieldValue(pattern.argument);
-      return;
-    }
-    if (isAssignmentPattern(pattern)) {
-      checkPatternContainInValidAwaitAndYieldValue(pattern.left);
-      if (isArrowFunctionExpression(pattern.right) || isFunctionExpression(pattern.right)) {
-        const funArgument = isArrowFunctionExpression(pattern.right)
-          ? pattern.right.arguments
-          : pattern.right.params;
-        for (const deeperPattern of funArgument) {
-          checkPatternContainInValidAwaitAndYieldValue(deeperPattern);
+      },
+      (expr, addToWorkList) => {
+        if (isArrowFunctionExpression(expr)) {
+          if (expr.arguments.length > 0) addToWorkList(...expr.arguments);
+          return;
         }
-      }
-      return;
-    }
-    if (isInStrictMode() || (isIdentifer(pattern) && pattern.name === "await" && isCurrentFunctionAsync())) {
-      throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
-    }
-    if (
-      isInStrictMode() ||
-      (isIdentifer(pattern) && pattern.name === "yield" && isCurrentFunctionGenerator())
-    ) {
-      throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-    }
+      },
+    );
   }
   /** ================================================================================
    *  Parse JSX
