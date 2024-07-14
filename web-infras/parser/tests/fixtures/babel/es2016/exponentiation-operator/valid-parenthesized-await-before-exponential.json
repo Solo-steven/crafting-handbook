@@ -1,0 +1,100 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": true,
+                "async": true,
+                "arguments": [],
+                "body": {
+                    "kind": "BinaryExpression",
+                    "operator": "**",
+                    "left": {
+                        "kind": "AwaitExpression",
+                        "argument": {
+                            "kind": "NumberLiteral",
+                            "value": "5",
+                            "start": {
+                                "row": 1,
+                                "col": 20,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        },
+                        "parentheses": true
+                    },
+                    "right": {
+                        "kind": "NumberLiteral",
+                        "value": "6",
+                        "start": {
+                            "row": 1,
+                            "col": 26,
+                            "index": 25
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 27,
+                            "index": 26
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 14,
+                        "index": 13
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 27,
+                        "index": 26
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 27,
+                    "index": 26
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 7,
+                "index": 6
+            },
+            "end": {
+                "row": 1,
+                "col": 27,
+                "index": 26
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 7,
+        "index": 6
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 28
+    }
+}

@@ -1,0 +1,190 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "ArrayPattern",
+                    "elements": [
+                        {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "__proto__",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 5,
+                                            "index": 4
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 14,
+                                            "index": 13
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "Identifer",
+                                        "name": "x",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 16,
+                                            "index": 15
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 17,
+                                            "index": 16
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 5,
+                                        "index": 4
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 17,
+                                        "index": 16
+                                    }
+                                },
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "__proto__",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 19,
+                                            "index": 18
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 28,
+                                            "index": 27
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "Identifer",
+                                        "name": "y",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 30,
+                                            "index": 29
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 31,
+                                            "index": 30
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 19,
+                                        "index": 18
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 31,
+                                        "index": 30
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 3,
+                                "index": 2
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 33,
+                                "index": 32
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 34,
+                        "index": 33
+                    }
+                },
+                "right": {
+                    "kind": "ArrayExpression",
+                    "elements": [
+                        {
+                            "kind": "ObjectExpression",
+                            "properties": [],
+                            "trailingComma": false,
+                            "start": {
+                                "row": 1,
+                                "col": 38,
+                                "index": 37
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 40,
+                                "index": 39
+                            }
+                        }
+                    ],
+                    "trailingComma": false,
+                    "start": {
+                        "row": 1,
+                        "col": 37,
+                        "index": 36
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 41,
+                        "index": 40
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 2,
+                    "index": 1
+                },
+                "end": {
+                    "row": 1,
+                    "col": 41,
+                    "index": 40
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 2,
+                "index": 1
+            },
+            "end": {
+                "row": 1,
+                "col": 41,
+                "index": 40
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 2,
+        "index": 1
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 43
+    }
+}

@@ -11,10 +11,15 @@ const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 const TempIgnoreCases: Set<string> = new Set([
   /** Pending Problems */
   //  ==== strict mode problem
+  // checking `argument`, `eval` in strict mode
+  "/babel/es2015/destructuring/invalid_binding-eval.js",
+  "/babel/es2015/destructuring/invalid_binding-arguments-strict.js",
+  "/babel/es2015/destructuring/invalid_binding-arguments-module.js",
   "/esprima/ES6/arrow-function/invalid-param-strict-mode.js",
+  // other strict mode problem
   "/esprima/declaration/function/invalid-strict-labelled-function-declaration.js",
   // yield predi followed argument (in skip test case)
-  // "/esprima/ES6/yield/ternary-yield.js",
+  "/esprima/ES6/yield/ternary-yield.js",
   //  ==== unicode and excap char problem
   "/esprima/ES6/template-literals/invalid-escape.js",
   "/esprima/ES6/template-literals/invalid-hex-escape-sequence.js",

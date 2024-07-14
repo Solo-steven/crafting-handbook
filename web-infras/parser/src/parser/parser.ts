@@ -1092,7 +1092,7 @@ export function createParser(code: string) {
     isBinding = false,
   ): ObjectPatternProperty | AssignmentPattern {
     // object property's value can not has parentheses.
-    if (objectPropertyNode.value && objectPropertyNode.value.parentheses) {
+    if (objectPropertyNode.value && objectPropertyNode.value.parentheses && isBinding) {
       throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
     }
     // When a property name is a CoverInitializedName, we need to cover to assignment pattern
@@ -1140,7 +1140,10 @@ export function createParser(code: string) {
       for (const property of leftValue.properties) {
         if (isObjectPatternProperty(property)) {
           if (property.value && isMemberExpression(property.value) && isBinding) {
-            throw createMessageError(ErrorMessageMap.invalid_left_value + ` get kind ${leftValue.kind}.`);
+            throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
+          }
+          if(isBinding && property.value && (isMemberExpression(property.value) || isIdentifer(property.value)) && property.value.parentheses) {
+            throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
           }
         }
       }
@@ -1229,6 +1232,9 @@ export function createParser(code: string) {
     // make leftOrInit parse all token in () as a expression, so we need to check if those
     // case happend.
     if (match(SyntaxKinds.SemiPunctuator)) {
+      if(isAwait) {
+        throw createMessageError(ErrorMessageMap.await_can_just_in_for_of_loop);
+      }
       if (leftOrInit && isVarDeclaration(leftOrInit)) {
         for (const delcar of leftOrInit.declarations) {
           if ((isArrayPattern(delcar.id) || isObjectPattern(delcar.id)) && !delcar.init) {
@@ -1276,6 +1282,9 @@ export function createParser(code: string) {
     }
     // branch case for `for-in` statement
     if (match(SyntaxKinds.InKeyword)) {
+      if(isAwait) {
+        throw createMessageError(ErrorMessageMap.await_can_just_in_for_of_loop);
+      }
       if (isVarDeclaration(leftOrInit)) {
         helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit, "ForIn");
       }
@@ -2408,7 +2417,7 @@ export function createParser(code: string) {
       return;
     }
     if (currentOps === SyntaxKinds.ExponOperator) {
-      if (isUnaryExpression(left)) {
+      if (isUnaryExpression(left) || isAwaitExpression(left)) {
         throw createMessageError(ErrorMessageMap.expont_operator_need_parans);
       }
     }

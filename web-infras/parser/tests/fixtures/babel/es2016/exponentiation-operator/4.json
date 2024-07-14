@@ -1,0 +1,100 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "squared",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        }
+                    },
+                    "init": {
+                        "kind": "BinaryExpression",
+                        "operator": "**",
+                        "left": {
+                            "kind": "NumberLiteral",
+                            "value": "2",
+                            "start": {
+                                "row": 1,
+                                "col": 15,
+                                "index": 14
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 16,
+                                "index": 15
+                            }
+                        },
+                        "right": {
+                            "kind": "NumberLiteral",
+                            "value": "2",
+                            "start": {
+                                "row": 1,
+                                "col": 20,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 21,
+                        "index": 20
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 21,
+                "index": 20
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 22,
+        "index": 21
+    }
+}

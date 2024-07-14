@@ -30,12 +30,12 @@ async function getTestCases(): Promise<Array<TestCase>> {
     }
     const fileName = jsFileName.split(".")[0];
     const jsFilePath = path.join(tokenizeJsRoot, jsFileName);
-    const jsonFilePath = path.join(tokenizeJsonRoot, `${fileName}.json`);
+    const jsonFilePath = path.join(tokenizeJsonRoot, `${fileName.split('.')[0]}.json`);
     testCases.push({
       jsFilePath,
       jsonFilePath,
       fileId: `/tokenize/${jsFileName}`,
-      isExisted: jsonFiles.filter((p) => p === jsonFilePath).length > 0,
+      isExisted: jsonFiles.filter((p) => p === `${fileName.split('.')[0]}.json`).length > 0,
     });
   }
   return testCases;
@@ -61,6 +61,7 @@ async function runTestCases(testCases: Array<TestCase>): Promise<Result> {
       if (tokensString === jsonString) {
         result.pass.push(testCase.fileId);
       } else {
+        // console.log(jsonString, tokensString);
         result.failed.push(testCase.fileId);
       }
     } else {
@@ -79,7 +80,7 @@ export default async function runLexerTestCases() {
     console.log(chalk.bold(`=========== Lexer Test Case ===========`));
     console.log(`|---> ${chalk.green("Pass Cases")}: ${result.pass.length} / ${allTestCaseCount}`);
     console.log(`|---> ${chalk.red("Failed Cases")}: ${result.failed.length} / ${allTestCaseCount}`);
-    for (const fileId of result.pass) {
+    for (const fileId of result.failed) {
       console.log(`  | --> ${chalk.red(fileId)}`);
     }
   };
