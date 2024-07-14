@@ -1,7 +1,6 @@
 import { getTestSuite } from "./helper/getTestCase";
 import { runTestSuit } from "./helper/testRunner";
 import { FailedTestCasesResult, TestResult } from "./helper/type";
-import { run3partyTestCase } from "./helper/3partyTestRunner";
 import chalk from "chalk";
 
 const isUpdate = Boolean(process.env.TEST_UPDATE) || false;
@@ -70,12 +69,8 @@ function report(testResult: TestResult) {
 
 export default async function runParserTestCases() {
   const testSuite = await getTestSuite();
-  const [testResult, reporter3rdParty] = await Promise.all([
-    runTestSuit(testSuite, isUpdate),
-    run3partyTestCase(),
-  ]);
+  const testResult = await runTestSuit(testSuite, isUpdate);
   return () => {
     report(testResult);
-    reporter3rdParty();
   };
 }

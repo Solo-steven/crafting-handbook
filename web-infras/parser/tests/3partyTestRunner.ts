@@ -39,7 +39,7 @@ const thirdPartyTestCase = [
   }
 ];
 
-export async function run3partyTestCase() {
+export default async function run3partyTestCase() {
   await Promise.all(
     thirdPartyTestCase.map(async (testCase) => {
       const code = await fetch(testCase.url).then((resp) => resp.text());

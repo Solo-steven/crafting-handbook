@@ -1,11 +1,16 @@
 import runLexerTestCases from "./lexerRunner";
 import runParserTestCases from "./parserRunner";
+import run3partyTestCase from "./3partyTestRunner";
 
 async function main() {
-  const lexerReport = await runLexerTestCases();
-  const parserReport = await runParserTestCases();
+  const [lexerReport, parserReport, thirdPartyReport] = await Promise.all([
+    runLexerTestCases(),
+    runParserTestCases(),
+    run3partyTestCase(),
+  ])
   lexerReport();
   parserReport();
+  thirdPartyReport();
 }
 
 main();
