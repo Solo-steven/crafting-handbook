@@ -36,7 +36,7 @@ const thirdPartyTestCase = [
     url: "https://unpkg.com/@mui/material@latest/umd/material-ui.development.js",
     code: "",
     pass: false,
-  }
+  },
 ];
 
 export default async function run3partyTestCase() {

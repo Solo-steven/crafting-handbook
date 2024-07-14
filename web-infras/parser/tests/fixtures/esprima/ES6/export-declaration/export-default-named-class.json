@@ -4,7 +4,7 @@
         {
             "kind": "ExportDefaultDeclaration",
             "declaration": {
-                "kind": "ClassExpression",
+                "kind": "ClassDeclaration",
                 "id": {
                     "kind": "Identifer",
                     "name": "foo",

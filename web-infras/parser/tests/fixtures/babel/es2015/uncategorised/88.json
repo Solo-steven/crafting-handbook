@@ -1,0 +1,129 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ImportDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ImportDefaultSpecifier",
+                    "imported": {
+                        "kind": "Identifer",
+                        "name": "encrypt",
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 8,
+                        "index": 7
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 15,
+                        "index": 14
+                    }
+                }
+            ],
+            "source": {
+                "kind": "StringLiteral",
+                "value": "",
+                "start": {
+                    "row": 1,
+                    "col": 21,
+                    "index": 20
+                },
+                "end": {
+                    "row": 1,
+                    "col": 23,
+                    "index": 22
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 23,
+                "index": 22
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ExportSpecifier",
+                    "exported": {
+                        "kind": "Identifer",
+                        "name": "encrypt",
+                        "start": {
+                            "row": 2,
+                            "col": 10,
+                            "index": 33
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 17,
+                            "index": 40
+                        }
+                    },
+                    "local": {
+                        "kind": "Identifer",
+                        "name": "default",
+                        "start": {
+                            "row": 2,
+                            "col": 21,
+                            "index": 44
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 28,
+                            "index": 51
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 10,
+                        "index": 33
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 28,
+                        "index": 51
+                    }
+                }
+            ],
+            "declaration": null,
+            "source": null,
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 24
+            },
+            "end": {
+                "row": 2,
+                "col": 28,
+                "index": 51
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 54
+    }
+}

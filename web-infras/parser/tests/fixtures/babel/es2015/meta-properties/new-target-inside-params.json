@@ -1,0 +1,285 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "Foo",
+                "start": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [],
+                "start": {
+                    "row": 1,
+                    "col": 30,
+                    "index": 29
+                },
+                "end": {
+                    "row": 1,
+                    "col": 32,
+                    "index": 31
+                }
+            },
+            "params": [
+                {
+                    "kind": "AssigmentPattern",
+                    "left": {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        }
+                    },
+                    "right": {
+                        "kind": "MetaProperty",
+                        "meta": {
+                            "kind": "Identifer",
+                            "name": "new",
+                            "start": {
+                                "row": 1,
+                                "col": 18,
+                                "index": 17
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            }
+                        },
+                        "property": {
+                            "kind": "Identifer",
+                            "name": "target",
+                            "start": {
+                                "row": 1,
+                                "col": 22,
+                                "index": 21
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 28,
+                                "index": 27
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 28,
+                            "index": 27
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 14,
+                        "index": 13
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 28,
+                        "index": 27
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 32,
+                "index": 31
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "Bar",
+                "start": {
+                    "row": 2,
+                    "col": 10,
+                    "index": 41
+                },
+                "end": {
+                    "row": 2,
+                    "col": 13,
+                    "index": 44
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "ArrowFunctionExpression",
+                            "expressionBody": false,
+                            "async": false,
+                            "arguments": [
+                                {
+                                    "kind": "AssigmentPattern",
+                                    "left": {
+                                        "kind": "Identifer",
+                                        "name": "x",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 19,
+                                            "index": 50
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 20,
+                                            "index": 51
+                                        }
+                                    },
+                                    "right": {
+                                        "kind": "MetaProperty",
+                                        "meta": {
+                                            "kind": "Identifer",
+                                            "name": "new",
+                                            "start": {
+                                                "row": 2,
+                                                "col": 23,
+                                                "index": 54
+                                            },
+                                            "end": {
+                                                "row": 2,
+                                                "col": 26,
+                                                "index": 57
+                                            }
+                                        },
+                                        "property": {
+                                            "kind": "Identifer",
+                                            "name": "target",
+                                            "start": {
+                                                "row": 2,
+                                                "col": 27,
+                                                "index": 58
+                                            },
+                                            "end": {
+                                                "row": 2,
+                                                "col": 33,
+                                                "index": 64
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 2,
+                                            "col": 23,
+                                            "index": 54
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 33,
+                                            "index": 64
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 2,
+                                        "col": 19,
+                                        "index": 50
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 33,
+                                        "index": 64
+                                    }
+                                }
+                            ],
+                            "body": {
+                                "kind": "FunctionBody",
+                                "body": [],
+                                "start": {
+                                    "row": 2,
+                                    "col": 38,
+                                    "index": 69
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 40,
+                                    "index": 71
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 18,
+                                "index": 49
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 40,
+                                "index": 71
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 18,
+                            "index": 49
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 40,
+                            "index": 71
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 16,
+                    "index": 47
+                },
+                "end": {
+                    "row": 2,
+                    "col": 42,
+                    "index": 73
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 32
+            },
+            "end": {
+                "row": 2,
+                "col": 42,
+                "index": 73
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 74
+    }
+}

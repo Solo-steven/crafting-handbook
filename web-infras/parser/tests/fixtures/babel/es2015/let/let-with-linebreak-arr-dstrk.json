@@ -1,0 +1,103 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "let",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "ArrayPattern",
+                        "elements": [
+                            {
+                                "kind": "Identifer",
+                                "name": "a",
+                                "start": {
+                                    "row": 2,
+                                    "col": 6,
+                                    "index": 9
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 7,
+                                    "index": 10
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 8,
+                            "index": 11
+                        }
+                    },
+                    "init": {
+                        "kind": "ArrayExpression",
+                        "elements": [
+                            {
+                                "kind": "NumberLiteral",
+                                "value": "1",
+                                "start": {
+                                    "row": 2,
+                                    "col": 12,
+                                    "index": 15
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 13,
+                                    "index": 16
+                                }
+                            }
+                        ],
+                        "trailingComma": false,
+                        "start": {
+                            "row": 2,
+                            "col": 11,
+                            "index": 14
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 14,
+                            "index": 17
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 5,
+                        "index": 8
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 14,
+                        "index": 17
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 2,
+                "col": 14,
+                "index": 17
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 19
+    }
+}

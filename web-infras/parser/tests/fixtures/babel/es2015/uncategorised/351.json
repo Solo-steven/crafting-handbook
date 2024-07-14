@@ -1,0 +1,161 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ObjectExpression",
+                "properties": [
+                    {
+                        "kind": "ObjectMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "__proto__",
+                            "start": {
+                                "row": 1,
+                                "col": 4,
+                                "index": 3
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 13,
+                                "index": 12
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [
+                                {
+                                    "kind": "ReturnStatement",
+                                    "argu": {
+                                        "kind": "NumberLiteral",
+                                        "value": "1",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 25,
+                                            "index": 24
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 26,
+                                            "index": 25
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 18,
+                                        "index": 17
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 26,
+                                        "index": 25
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 16,
+                                "index": 15
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 28,
+                                "index": 27
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 4,
+                            "index": 3
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 28,
+                            "index": 27
+                        }
+                    },
+                    {
+                        "kind": "ObjectProperty",
+                        "computed": false,
+                        "shorted": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "__proto__",
+                            "start": {
+                                "row": 1,
+                                "col": 30,
+                                "index": 29
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 39,
+                                "index": 38
+                            }
+                        },
+                        "value": {
+                            "kind": "NumberLiteral",
+                            "value": "2",
+                            "start": {
+                                "row": 1,
+                                "col": 41,
+                                "index": 40
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 42,
+                                "index": 41
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 30,
+                            "index": 29
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 42,
+                            "index": 41
+                        }
+                    }
+                ],
+                "trailingComma": false,
+                "start": {
+                    "row": 1,
+                    "col": 2,
+                    "index": 1
+                },
+                "end": {
+                    "row": 1,
+                    "col": 44,
+                    "index": 43
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 2,
+                "index": 1
+            },
+            "end": {
+                "row": 1,
+                "col": 44,
+                "index": 43
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 2,
+        "index": 1
+    },
+    "end": {
+        "row": 1,
+        "col": 45,
+        "index": 44
+    }
+}

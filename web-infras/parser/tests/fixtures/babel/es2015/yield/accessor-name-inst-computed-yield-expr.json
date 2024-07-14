@@ -1,0 +1,447 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "yieldSet",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 13,
+                            "index": 12
+                        }
+                    },
+                    "init": null,
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    }
+                },
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "C",
+                        "start": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 16,
+                            "index": 15
+                        }
+                    },
+                    "init": null,
+                    "start": {
+                        "row": 1,
+                        "col": 15,
+                        "index": 14
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 16,
+                        "index": 15
+                    }
+                },
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "iter",
+                        "start": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 22,
+                            "index": 21
+                        }
+                    },
+                    "init": null,
+                    "start": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 22,
+                        "index": 21
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 22,
+                "index": 21
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "g",
+                "start": {
+                    "row": 2,
+                    "col": 11,
+                    "index": 33
+                },
+                "end": {
+                    "row": 2,
+                    "col": 12,
+                    "index": 34
+                }
+            },
+            "generator": true,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ClassDeclaration",
+                        "id": {
+                            "kind": "Identifer",
+                            "name": "C_",
+                            "start": {
+                                "row": 3,
+                                "col": 9,
+                                "index": 47
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 11,
+                                "index": 49
+                            }
+                        },
+                        "superClass": null,
+                        "body": {
+                            "kind": "ClassBody",
+                            "body": [
+                                {
+                                    "kind": "ClassAccessor",
+                                    "key": {
+                                        "kind": "YieldExpression",
+                                        "argument": null,
+                                        "delegate": false,
+                                        "start": {
+                                            "row": 4,
+                                            "col": 10,
+                                            "index": 61
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 10,
+                                            "index": 61
+                                        }
+                                    },
+                                    "params": [],
+                                    "body": {
+                                        "kind": "FunctionBody",
+                                        "body": [
+                                            {
+                                                "kind": "ReturnStatement",
+                                                "argu": {
+                                                    "kind": "StringLiteral",
+                                                    "value": "get yield",
+                                                    "start": {
+                                                        "row": 4,
+                                                        "col": 28,
+                                                        "index": 79
+                                                    },
+                                                    "end": {
+                                                        "row": 4,
+                                                        "col": 39,
+                                                        "index": 90
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 4,
+                                                    "col": 21,
+                                                    "index": 72
+                                                },
+                                                "end": {
+                                                    "row": 4,
+                                                    "col": 39,
+                                                    "index": 90
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 4,
+                                            "col": 19,
+                                            "index": 70
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 42,
+                                            "index": 93
+                                        }
+                                    },
+                                    "type": "get",
+                                    "computed": true,
+                                    "start": {
+                                        "row": 4,
+                                        "col": 5,
+                                        "index": 56
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 42,
+                                        "index": 93
+                                    }
+                                },
+                                {
+                                    "kind": "ClassAccessor",
+                                    "key": {
+                                        "kind": "YieldExpression",
+                                        "argument": null,
+                                        "delegate": false,
+                                        "start": {
+                                            "row": 5,
+                                            "col": 10,
+                                            "index": 103
+                                        },
+                                        "end": {
+                                            "row": 5,
+                                            "col": 10,
+                                            "index": 103
+                                        }
+                                    },
+                                    "params": [
+                                        {
+                                            "kind": "Identifer",
+                                            "name": "param",
+                                            "start": {
+                                                "row": 5,
+                                                "col": 17,
+                                                "index": 110
+                                            },
+                                            "end": {
+                                                "row": 5,
+                                                "col": 22,
+                                                "index": 115
+                                            }
+                                        }
+                                    ],
+                                    "body": {
+                                        "kind": "FunctionBody",
+                                        "body": [
+                                            {
+                                                "kind": "ExpressionStatement",
+                                                "expr": {
+                                                    "kind": "AssigmentExpression",
+                                                    "operator": "=",
+                                                    "left": {
+                                                        "kind": "Identifer",
+                                                        "name": "yieldSet",
+                                                        "start": {
+                                                            "row": 5,
+                                                            "col": 26,
+                                                            "index": 119
+                                                        },
+                                                        "end": {
+                                                            "row": 5,
+                                                            "col": 34,
+                                                            "index": 127
+                                                        }
+                                                    },
+                                                    "right": {
+                                                        "kind": "Identifer",
+                                                        "name": "param",
+                                                        "start": {
+                                                            "row": 5,
+                                                            "col": 37,
+                                                            "index": 130
+                                                        },
+                                                        "end": {
+                                                            "row": 5,
+                                                            "col": 42,
+                                                            "index": 135
+                                                        }
+                                                    },
+                                                    "start": {
+                                                        "row": 5,
+                                                        "col": 26,
+                                                        "index": 119
+                                                    },
+                                                    "end": {
+                                                        "row": 5,
+                                                        "col": 42,
+                                                        "index": 135
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 5,
+                                                    "col": 26,
+                                                    "index": 119
+                                                },
+                                                "end": {
+                                                    "row": 5,
+                                                    "col": 42,
+                                                    "index": 135
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 5,
+                                            "col": 24,
+                                            "index": 117
+                                        },
+                                        "end": {
+                                            "row": 5,
+                                            "col": 45,
+                                            "index": 138
+                                        }
+                                    },
+                                    "type": "set",
+                                    "computed": true,
+                                    "start": {
+                                        "row": 5,
+                                        "col": 5,
+                                        "index": 98
+                                    },
+                                    "end": {
+                                        "row": 5,
+                                        "col": 45,
+                                        "index": 138
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 3,
+                                "col": 12,
+                                "index": 50
+                            },
+                            "end": {
+                                "row": 6,
+                                "col": 4,
+                                "index": 142
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 3,
+                            "index": 41
+                        },
+                        "end": {
+                            "row": 6,
+                            "col": 4,
+                            "index": 142
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "AssigmentExpression",
+                            "operator": "=",
+                            "left": {
+                                "kind": "Identifer",
+                                "name": "C",
+                                "start": {
+                                    "row": 8,
+                                    "col": 3,
+                                    "index": 146
+                                },
+                                "end": {
+                                    "row": 8,
+                                    "col": 4,
+                                    "index": 147
+                                }
+                            },
+                            "right": {
+                                "kind": "Identifer",
+                                "name": "C_",
+                                "start": {
+                                    "row": 8,
+                                    "col": 7,
+                                    "index": 150
+                                },
+                                "end": {
+                                    "row": 8,
+                                    "col": 9,
+                                    "index": 152
+                                }
+                            },
+                            "start": {
+                                "row": 8,
+                                "col": 3,
+                                "index": 146
+                            },
+                            "end": {
+                                "row": 8,
+                                "col": 9,
+                                "index": 152
+                            }
+                        },
+                        "start": {
+                            "row": 8,
+                            "col": 3,
+                            "index": 146
+                        },
+                        "end": {
+                            "row": 8,
+                            "col": 9,
+                            "index": 152
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 15,
+                    "index": 37
+                },
+                "end": {
+                    "row": 9,
+                    "col": 2,
+                    "index": 155
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 23
+            },
+            "end": {
+                "row": 9,
+                "col": 2,
+                "index": 155
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 10,
+        "col": 1,
+        "index": 156
+    }
+}

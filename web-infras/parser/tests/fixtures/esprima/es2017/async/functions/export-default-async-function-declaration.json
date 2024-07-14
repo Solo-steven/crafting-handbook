@@ -4,7 +4,7 @@
         {
             "kind": "ExportDefaultDeclaration",
             "declaration": {
-                "kind": "FunctionExpression",
+                "kind": "FunctionDeclaration",
                 "name": null,
                 "generator": false,
                 "async": true,

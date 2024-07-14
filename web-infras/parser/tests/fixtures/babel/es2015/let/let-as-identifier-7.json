@@ -1,0 +1,97 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "WhileStatement",
+            "test": {
+                "kind": "NumberLiteral",
+                "value": "0",
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                }
+            },
+            "body": {
+                "kind": "ExpressionStatement",
+                "expr": {
+                    "kind": "BinaryExpression",
+                    "operator": "instanceof",
+                    "left": {
+                        "kind": "Identifer",
+                        "name": "let",
+                        "start": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        }
+                    },
+                    "right": {
+                        "kind": "Identifer",
+                        "name": "Foo",
+                        "start": {
+                            "row": 2,
+                            "col": 12,
+                            "index": 25
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 15,
+                            "index": 28
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 11,
+                        "index": 10
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 15,
+                        "index": 28
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 2,
+                    "col": 15,
+                    "index": 28
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 2,
+                "col": 15,
+                "index": 28
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 29
+    }
+}

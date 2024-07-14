@@ -1,0 +1,59 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "let",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "a",
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 6,
+                            "index": 9
+                        }
+                    },
+                    "init": null,
+                    "start": {
+                        "row": 2,
+                        "col": 5,
+                        "index": 8
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 6,
+                        "index": 9
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 2,
+                "col": 6,
+                "index": 9
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 11
+    }
+}

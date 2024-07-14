@@ -7,7 +7,7 @@ async function main() {
     runLexerTestCases(),
     runParserTestCases(),
     run3partyTestCase(),
-  ])
+  ]);
   lexerReport();
   parserReport();
   thirdPartyReport();

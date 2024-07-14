@@ -4,7 +4,7 @@
         {
             "kind": "ExportDefaultDeclaration",
             "declaration": {
-                "kind": "FunctionExpression",
+                "kind": "FunctionDeclaration",
                 "name": {
                     "kind": "Identifer",
                     "name": "foo",

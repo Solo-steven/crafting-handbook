@@ -8,7 +8,8 @@ export const ErrorMessageMap = {
   setter_can_not_be_async_or_generator: "setter can not be async or generator",
   setter_can_not_have_rest_element_as_argument: "setter method can not ahve rest element as argument",
   setter_and_getter_can_not_used_in_field_definition: "setter and getter can not used in field definition",
-  constructor_can_not_be_async_or_generator: "constructor in class can not be a async or generator",
+  constructor_can_not_be_async_or_generator_or_method_incorrect:
+    "constructor in class can not be a async or generator, and can not be getter or setter",
   object_property_can_not_have_initializer: "object property can not have initializer",
   private_field_can_not_use_in_object: "Private field '#test' must be declared in an enclosing class",
   invalid_property_name: "invalid property name",
@@ -29,6 +30,8 @@ export const ErrorMessageMap = {
   assigment_pattern_only_can_use_assigment_operator: "assigment pattern can only using assignment operator",
   assignment_pattern_left_value_can_only_be_idenifier_or_pattern: "assignment pattern",
   binding_pattern_can_not_have_member_expression: "binding pattern can not have member expression",
+  when_binding_pattern_property_name_is_string_literal_can_not_be_shorted:
+    "When binding pattern property name is string literal, it can not be shorted",
   pattern_should_not_has_paran: "pattern should not has pattern.",
   // for-related statement
   for_in_of_loop_may_not_using_initializer: "for in and for of loop may not usng initializer",

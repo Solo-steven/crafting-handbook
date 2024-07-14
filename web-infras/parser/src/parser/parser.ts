@@ -118,6 +118,11 @@ import {
   JSXClosingElement,
   createSourcePosition,
   isObjectProperty,
+  BinaryExpression,
+  MemberExpression,
+  CallExpression,
+  isNumnerLiteral,
+  isFunctionExpression,
 } from "web-infra-common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -1142,7 +1147,12 @@ export function createParser(code: string) {
           if (property.value && isMemberExpression(property.value) && isBinding) {
             throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
           }
-          if(isBinding && property.value && (isMemberExpression(property.value) || isIdentifer(property.value)) && property.value.parentheses) {
+          if (
+            isBinding &&
+            property.value &&
+            (isMemberExpression(property.value) || isIdentifer(property.value)) &&
+            property.value.parentheses
+          ) {
             throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
           }
         }
@@ -1232,7 +1242,7 @@ export function createParser(code: string) {
     // make leftOrInit parse all token in () as a expression, so we need to check if those
     // case happend.
     if (match(SyntaxKinds.SemiPunctuator)) {
-      if(isAwait) {
+      if (isAwait) {
         throw createMessageError(ErrorMessageMap.await_can_just_in_for_of_loop);
       }
       if (leftOrInit && isVarDeclaration(leftOrInit)) {
@@ -1282,7 +1292,7 @@ export function createParser(code: string) {
     }
     // branch case for `for-in` statement
     if (match(SyntaxKinds.InKeyword)) {
-      if(isAwait) {
+      if (isAwait) {
         throw createMessageError(ErrorMessageMap.await_can_just_in_for_of_loop);
       }
       if (isVarDeclaration(leftOrInit)) {
@@ -1964,7 +1974,12 @@ export function createParser(code: string) {
           checkParam(property, paramSet);
           continue;
         }
-        if (property.value) {
+        // ({a}, a)
+        if (property.shorted) {
+          checkParam(property.key as Pattern, paramSet);
+        }
+        // ({a: a}, a)
+        else if (property.value) {
           checkParam(property.value as Pattern, paramSet);
         }
       }
@@ -2213,7 +2228,15 @@ export function createParser(code: string) {
    * @returns {Expression}
    */
   function parseAssignmentExpressionInheritIn(): Expression {
-    if (match([SyntaxKinds.ParenthesesLeftPunctuator, SyntaxKinds.Identifier])) {
+    if (
+      match([
+        SyntaxKinds.ParenthesesLeftPunctuator,
+        SyntaxKinds.Identifier,
+        SyntaxKinds.LetKeyword,
+        SyntaxKinds.YieldKeyword,
+        SyntaxKinds.AwaitKeyword,
+      ])
+    ) {
       context.maybeArrowStart = getStartPosition().index;
     }
     if (match(SyntaxKinds.YieldKeyword) && isCurrentFunctionGenerator()) {
@@ -2261,15 +2284,19 @@ export function createParser(code: string) {
    */
   function parseYieldExpression(): YieldExpression {
     const { start } = expect(SyntaxKinds.YieldKeyword);
-    // const isLineDterminator = getLineTerminatorFlag();
     let delegate = false;
     if (match(SyntaxKinds.MultiplyOperator)) {
-      nextToken();
-      delegate = true;
+      if (!getLineTerminatorFlag()) {
+        nextToken();
+        delegate = true;
+      }
     }
+    const isLineDterminator = getLineTerminatorFlag();
     let argument: Expression | null = null;
-    if (!isSoftInsertSemi(false)) {
-      argument = parseAssignmentExpressionInheritIn();
+    if (!isSoftInsertSemi(false) && checkIsFollowByExpreesion()) {
+      if (delegate || (!delegate && !isLineDterminator)) {
+        argument = parseAssignmentExpressionInheritIn();
+      }
     }
     if (delegate && !argument) {
       throw createMessageError(ErrorMessageMap.yield_deletgate_can_must_be_followed_by_assignment_expression);
@@ -2283,6 +2310,17 @@ export function createParser(code: string) {
       start,
       cloneSourcePosition(argument ? argument.end : start),
     );
+  }
+  function checkIsFollowByExpreesion() {
+    switch (getToken()) {
+      case SyntaxKinds.ColonPunctuator:
+      case SyntaxKinds.ParenthesesRightPunctuator:
+      case SyntaxKinds.BracketRightPunctuator:
+      case SyntaxKinds.CommaToken:
+        return false;
+      default:
+        return true;
+    }
   }
   function parseConditionalExpression(): Expression {
     const test = parseBinaryExpression();
@@ -3142,7 +3180,7 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
       return parseMethodDefintion(false, propertyName) as ObjectMethodDefinition;
     }
-    if (match(SyntaxKinds.ColonPunctuator)) {
+    if (isComputedRef.isComputed || match(SyntaxKinds.ColonPunctuator)) {
       nextToken();
       const expr = parseAssignmentExpressionAllowIn();
       return Factory.createObjectProperty(
@@ -3167,6 +3205,11 @@ export function createParser(code: string) {
       );
       context.propertiesInitSet.add(property);
       return property;
+    }
+    if (isStringLiteral(propertyName) || isNumnerLiteral(propertyName)) {
+      throw createMessageError(
+        ErrorMessageMap.when_binding_pattern_property_name_is_string_literal_can_not_be_shorted,
+      );
     }
     // check if shorted property is keyword or not.
     checkPropertyShortedIsKeyword(propertyName);
@@ -3266,7 +3309,18 @@ export function createParser(code: string) {
    */
   function checkPropertyShortedIsKeyword(propertyName: PropertyName) {
     if (isIdentifer(propertyName)) {
-      // @ts-ignore
+      if (propertyName.name === "await") {
+        if (isCurrentFunctionAsync()) {
+          throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+        }
+        return;
+      }
+      if (propertyName.name === "yield") {
+        if (isCurrentFunctionGenerator()) {
+          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+        }
+        return;
+      }
       if (KeywordSet.has(propertyName.name)) {
         throw createMessageError(ErrorMessageMap.invalid_property_name);
       }
@@ -3388,8 +3442,10 @@ export function createParser(code: string) {
     }
     if (isIdentifer(withPropertyName)) {
       if (withPropertyName.name === "constructor" && isInClassScope()) {
-        if (isAsync || generator || isStatic) {
-          throw createMessageError(ErrorMessageMap.constructor_can_not_be_async_or_generator);
+        if (isAsync || generator || isStatic || type !== "method") {
+          throw createMessageError(
+            ErrorMessageMap.constructor_can_not_be_async_or_generator_or_method_incorrect,
+          );
         }
         return Factory.createClassConstructor(
           withPropertyName,
@@ -3516,7 +3572,7 @@ export function createParser(code: string) {
       return seq;
     }
     context.maybeArrow = false;
-    enterFunctionScope();
+    enterArrowFunctionScope();
     const arrowExpr = parseArrowFunctionExpression({ start, end, nodes, trailingComma });
     exitFunctionScope();
     return arrowExpr;
@@ -3598,16 +3654,36 @@ export function createParser(code: string) {
   function checkAwaitAndYieldUsageOfArrowParams(params: Array<Pattern>) {
     for (const param of params) {
       if (isAssignmentPattern(param)) {
-        // parent scope is async, no matter current scope is async or not
-        // await expression can not call
-        if (isAwaitExpression(param.right)) {
+        checkExpressionContainAwaitOrYieldExpression(param.right);
+      }
+    }
+  }
+  function checkExpressionContainAwaitOrYieldExpression(expr: Expression) {
+    const workList = [expr];
+    while (workList.length > 0) {
+      const currentExpr = workList.pop()!;
+      switch (currentExpr.kind) {
+        case SyntaxKinds.AwaitExpression:
+          // parent scope is async, no matter current scope is async or not
+          // await expression can not call
           throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
-        }
-        // parent scope is generator, arrow expression must not generator,
-        // so yield is not illegal
-        if (isYieldExpression(param.right)) {
+        case SyntaxKinds.YieldExpression:
+          // parent scope is generator, arrow expression must not generator,
+          // so yield is not illegal
           throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
-        }
+        case SyntaxKinds.BinaryExpression:
+          const binaryNode = currentExpr as BinaryExpression;
+          workList.push(binaryNode.left, binaryNode.right);
+          break;
+        case SyntaxKinds.MemberExpression:
+          const memberNode = currentExpr as MemberExpression;
+          workList.push(memberNode.object);
+          break;
+        case SyntaxKinds.CallExpression:
+          const callNode = currentExpr as CallExpression;
+          workList.push(...callNode.arguments);
+        default:
+          break;
       }
     }
   }
@@ -3656,6 +3732,14 @@ export function createParser(code: string) {
     }
     if (isAssignmentPattern(pattern)) {
       checkPatternContainInValidAwaitAndYieldValue(pattern.left);
+      if (isArrowFunctionExpression(pattern.right) || isFunctionExpression(pattern.right)) {
+        const funArgument = isArrowFunctionExpression(pattern.right)
+          ? pattern.right.arguments
+          : pattern.right.params;
+        for (const deeperPattern of funArgument) {
+          checkPatternContainInValidAwaitAndYieldValue(deeperPattern);
+        }
+      }
       return;
     }
     if (isInStrictMode() || (isIdentifer(pattern) && pattern.name === "await" && isCurrentFunctionAsync())) {
@@ -4135,6 +4219,11 @@ export function createParser(code: string) {
         );
         continue;
       }
+      if (isStringLiteral(propertyName) || isNumnerLiteral(propertyName)) {
+        throw createMessageError(
+          ErrorMessageMap.when_binding_pattern_property_name_is_string_literal_can_not_be_shorted,
+        );
+      }
       // check property name is keyword or not
       checkPropertyShortedIsKeyword(propertyName);
       properties.push(
@@ -4409,8 +4498,7 @@ export function createParser(code: string) {
     expect(SyntaxKinds.DefaultKeyword);
     if (match(SyntaxKinds.ClassKeyword)) {
       let classDeclar = parseClass();
-      classDeclar = Factory.transFormClassToClassExpression(classDeclar);
-      shouldInsertSemi();
+      classDeclar = Factory.transFormClassToClassDeclaration(classDeclar);
       return Factory.createExportDefaultDeclaration(
         classDeclar as ClassDeclaration | ClassExpression,
         start,
@@ -4418,19 +4506,20 @@ export function createParser(code: string) {
       );
     }
     if (match(SyntaxKinds.FunctionKeyword)) {
-      let funDeclar = parseFunctionExpression(false);
-      shouldInsertSemi();
-      return Factory.createExportDefaultDeclaration(
-        funDeclar as FunctionDeclaration | FunctionExpression,
-        start,
-        cloneSourcePosition(funDeclar.end),
-      );
+      enterFunctionScope();
+      const func = parseFunction(true);
+      exitFunctionScope();
+      const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
+      return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
     }
     if (isContextKeyword("async") && lookahead().kind === SyntaxKinds.FunctionKeyword) {
       nextToken();
-      const funDeclar = parseFunctionExpression(true);
-      shouldInsertSemi();
-      return Factory.createExportDefaultDeclaration(funDeclar, start, cloneSourcePosition(funDeclar.end));
+      enterFunctionScope(true);
+      const func = parseFunction(true);
+      exitFunctionScope();
+      const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
+      funcDeclar.async = true;
+      return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
     }
     // TODO: parse export default from ""; (experimental feature)
     const expr = parseAssignmentExpressionAllowIn();

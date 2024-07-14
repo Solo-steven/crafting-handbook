@@ -30,12 +30,12 @@ async function getTestCases(): Promise<Array<TestCase>> {
     }
     const fileName = jsFileName.split(".")[0];
     const jsFilePath = path.join(tokenizeJsRoot, jsFileName);
-    const jsonFilePath = path.join(tokenizeJsonRoot, `${fileName.split('.')[0]}.json`);
+    const jsonFilePath = path.join(tokenizeJsonRoot, `${fileName.split(".")[0]}.json`);
     testCases.push({
       jsFilePath,
       jsonFilePath,
       fileId: `/tokenize/${jsFileName}`,
-      isExisted: jsonFiles.filter((p) => p === `${fileName.split('.')[0]}.json`).length > 0,
+      isExisted: jsonFiles.filter((p) => p === `${fileName.split(".")[0]}.json`).length > 0,
     });
   }
   return testCases;

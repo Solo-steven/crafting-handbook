@@ -1,0 +1,111 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": {
+                "kind": "ClassExpression",
+                "id": {
+                    "kind": "Identifer",
+                    "name": "B",
+                    "start": {
+                        "row": 1,
+                        "col": 23,
+                        "index": 22
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 24,
+                        "index": 23
+                    }
+                },
+                "superClass": {
+                    "kind": "Identifer",
+                    "name": "C",
+                    "start": {
+                        "row": 1,
+                        "col": 33,
+                        "index": 32
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 34,
+                        "index": 33
+                    }
+                },
+                "body": {
+                    "kind": "ClassBody",
+                    "body": [],
+                    "start": {
+                        "row": 1,
+                        "col": 35,
+                        "index": 34
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 37,
+                        "index": 36
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 17,
+                    "index": 16
+                },
+                "end": {
+                    "row": 1,
+                    "col": 37,
+                    "index": 36
+                }
+            },
+            "body": {
+                "kind": "ClassBody",
+                "body": [],
+                "start": {
+                    "row": 1,
+                    "col": 38,
+                    "index": 37
+                },
+                "end": {
+                    "row": 1,
+                    "col": 40,
+                    "index": 39
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 40,
+                "index": 39
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 40,
+        "index": 39
+    }
+}

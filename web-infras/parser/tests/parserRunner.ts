@@ -9,22 +9,56 @@ const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 // const isCI = Boolean(process.env.TEST_CI) || false;
 
 const TempIgnoreCases: Set<string> = new Set([
-  /** Pending Problems */
   //  ==== strict mode problem
   // checking `argument`, `eval` in strict mode
   "/babel/es2015/destructuring/invalid_binding-eval.js",
   "/babel/es2015/destructuring/invalid_binding-arguments-strict.js",
   "/babel/es2015/destructuring/invalid_binding-arguments-module.js",
   "/esprima/ES6/arrow-function/invalid-param-strict-mode.js",
+  "/babel/es2015/uncategorised/invalid_334.js",
+  "/babel/es2015/uncategorised/invalid_332.js",
+  "/babel/es2015/uncategorised/invalid_296.js",
+  "/babel/es2015/uncategorised/invalid_297.js",
+  "/babel/es2015/uncategorised/invalid_289.js",
+  "/babel/es2015/uncategorised/invalid_247.js",
+  "/babel/es2015/uncategorised/invalid_246.js",
+  "/babel/es2015/uncategorised/invalid_245.js",
+  "/babel/es2015/uncategorised/invalid_244.js",
+  "/babel/es2015/uncategorised/invalid_243.js",
+  "/babel/es2015/uncategorised/invalid_242.js",
+  "/babel/es2015/uncategorised/invalid_233.js",
+  "/babel/es2015/uncategorised/invalid_234.js",
+  "/babel/es2015/uncategorised/invalid_227.js",
   // other strict mode problem
   "/esprima/declaration/function/invalid-strict-labelled-function-declaration.js",
-  // yield predi followed argument (in skip test case)
-  "/esprima/ES6/yield/ternary-yield.js",
-  //  ==== unicode and excap char problem
+  // ===  duplicate Proto check on onject.
+  "/babel/es2015/uncategorised/invalid_349.js",
+  // === `00` as number literal problem
+  "/babel/es2015/uncategorised/42.js",
+  "/babel/es2015/uncategorised/3.js",
+  // === number literal non stop problem
+  "/babel/es2015/uncategorised/invalid_201.js",
+  "/babel/es2015/uncategorised/invalid_205.js",
+  // === duplicate of `constructor` in class problem
+  "/babel/es2015/uncategorised/invalid_125.js",
+  //  ==== unicode and excap char im template problem
   "/esprima/ES6/template-literals/invalid-escape.js",
   "/esprima/ES6/template-literals/invalid-hex-escape-sequence.js",
   "/esprima/ES6/template-literals/invalid_octal-literal.js",
   "/esprima/ES6/template-literals/invalid_strict-octal-literal.js",
+  "/babel/es2015/uncategorised/invalid_339.js",
+  "/babel/es2015/uncategorised/invalid_290.js",
+  "/babel/es2015/uncategorised/invalid_219.js",
+  "/babel/es2015/uncategorised/invalid_217.js",
+  "/babel/es2015/uncategorised/invalid_218.js",
+  "/babel/es2015/uncategorised/invalid_216.js",
+  // === production rule problem
+  "/babel/es2015/generators/invalid-hanging.js",
+  "/babel/es2015/generators/invalid-sloppy-function.js",
+  "/babel/es2015/let/invalid_let-array-with-newline.js", // lexical decalration derived from statementListItem not statement.
+  // ==== file encoding problem (unicode)
+  "/babel/es2015/uncategorised/invalid_327.js",
+  "/babel/es2015/uncategorised/319.js",
 ]);
 
 function getFailedKindCount(failedTestCases: Array<FailedTestCasesResult>) {

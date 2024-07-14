@@ -4,7 +4,7 @@
         {
             "kind": "ExportDefaultDeclaration",
             "declaration": {
-                "kind": "ClassExpression",
+                "kind": "ClassDeclaration",
                 "id": null,
                 "superClass": null,
                 "body": {

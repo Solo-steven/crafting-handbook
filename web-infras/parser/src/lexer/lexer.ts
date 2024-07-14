@@ -249,9 +249,6 @@ export function createLexer(code: string) {
       eatChar();
     }
     flag = getSliceStringFromCode(startIndex, getCurrentIndex());
-    if (isEOF()) {
-      throw new Error("todo error - not closed regex");
-    }
     finishToken(SyntaxKinds.RegexLiteral, pattern + flag);
     return { pattern, flag };
   }
@@ -1111,6 +1108,7 @@ export function createLexer(code: string) {
    */
   function readNumberLiteralWithBase(stopper: () => boolean) {
     let seprator = false;
+    const startIndex = getCurrentIndex();
     while (!isEOF()) {
       const char = getChar();
       if (char === "_") {
@@ -1127,6 +1125,10 @@ export function createLexer(code: string) {
     }
     if (seprator) {
       throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+    }
+    // ban `0x` or `0b`
+    if (getSliceStringFromCode(startIndex, getCurrentIndex()).length === 0) {
+      throw new Error("Number Literal Length can not be 0");
     }
     return finishToken(SyntaxKinds.NumberLiteral);
   }
@@ -1220,10 +1222,7 @@ export function createLexer(code: string) {
     // eat \u \U
     eatChar(2);
     const startIndex = getCurrentIndex();
-    while (!isEOF()) {
-      if (!isHex()) {
-        break;
-      }
+    for (let i = 0; i < 4; ++i) {
       eatChar();
     }
     return String.fromCharCode(Number(`0x${getSliceStringFromCode(startIndex, getCurrentIndex())}`));
