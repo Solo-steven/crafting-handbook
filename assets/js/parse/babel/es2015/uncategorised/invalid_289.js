@@ -1,1 +1,1 @@
-({ t(eval) { "use strict"; } });
+({ yield(eval) { "use strict"; } });

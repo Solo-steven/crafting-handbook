@@ -962,6 +962,15 @@ export function createParser(code: string) {
         return parseDoWhileStatement();
       case SyntaxKinds.VarKeyword:
         return parseVariableDeclaration();
+      case SyntaxKinds.LetKeyword:
+        const { kind, lineTerminatorFlag } = lookahead();
+        if (
+          kind === SyntaxKinds.BracketLeftPunctuator ||
+          (!lineTerminatorFlag &&
+            (kind === SyntaxKinds.BracesLeftPunctuator || kind === SyntaxKinds.Identifier))
+        ) {
+          throw createMessageError("lexical binding wrong position");
+        }
       default:
         if (match(SyntaxKinds.Identifier) && lookahead().kind === SyntaxKinds.ColonPunctuator) {
           return parseLabeledStatement();
@@ -993,10 +1002,15 @@ export function createParser(code: string) {
    * Most of BindingPattern and AssignmentPattern's production rule is alike, one key different is that BindingPattern
    * `PropertyName` can only have `BindingElement`, but `PropertyName` of AssignmentPattern can have LeftHandSideExpression
    * so we add a param `isBinding` to determinate is transform to BindingPattern or not.
-   * @param {ModuleItem} node target for transform to Pattern
+   * @param {Expression} expr target for transform to Pattern
    * @param {boolean} isBinding Is transform to BindingPattern
    */
-  function toAssignmentPattern(node: ModuleItem, isBinding: boolean = false): Pattern {
+  function exprToPattern(expr: Expression, isBinding: boolean): Pattern {
+    const pattern = exprToPatternImpl(expr, isBinding);
+    checkPatternContainArgumentOrEval(pattern);
+    return pattern;
+  }
+  function exprToPatternImpl(node: ModuleItem, isBinding: boolean = false): Pattern {
     const expr = node as Expression;
     /**
      * parentheses in pattern only allow in Assignment Pattern
@@ -1014,7 +1028,7 @@ export function createParser(code: string) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const left = isPattern(assignmentExpressionNode.left)
           ? checkPatternWithBinding(assignmentExpressionNode.left, isBinding)
-          : toAssignmentPattern(assignmentExpressionNode.left, isBinding);
+          : exprToPatternImpl(assignmentExpressionNode.left, isBinding);
         if (assignmentExpressionNode.operator !== SyntaxKinds.AssginOperator) {
           throw createMessageError(ErrorMessageMap.assigment_pattern_only_can_use_assigment_operator);
         }
@@ -1028,7 +1042,7 @@ export function createParser(code: string) {
       case SyntaxKinds.SpreadElement: {
         const spreadElementNode = node as SpreadElement;
         return Factory.createRestElement(
-          toAssignmentPattern(spreadElementNode.argument, isBinding) as Pattern,
+          exprToPatternImpl(spreadElementNode.argument, isBinding) as Pattern,
           spreadElementNode.start,
           spreadElementNode.end,
         );
@@ -1042,7 +1056,7 @@ export function createParser(code: string) {
             elements.push(element);
             continue;
           }
-          const transformElement = toAssignmentPattern(element, isBinding);
+          const transformElement = exprToPatternImpl(element, isBinding);
           if (isRestElement(transformElement)) {
             if (index !== arrayExpressionNode.elements.length - 1 || arrayExpressionNode.trailingComma) {
               throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
@@ -1063,7 +1077,7 @@ export function createParser(code: string) {
           const property = objecExpressionNode.properties[index];
           const transformElement = isObjectProperty(property)
             ? ObjectPropertyToObjectPatternProperty(property, isBinding)
-            : toAssignmentPattern(property, isBinding);
+            : exprToPatternImpl(property, isBinding);
           if (
             isRestElement(transformElement) &&
             (isObjectPattern(transformElement.argument) || isArrayPattern(transformElement.argument))
@@ -1118,7 +1132,7 @@ export function createParser(code: string) {
     }
     const patternValue = !objectPropertyNode.value
       ? objectPropertyNode.value
-      : toAssignmentPattern(objectPropertyNode.value);
+      : exprToPatternImpl(objectPropertyNode.value, isBinding);
     // for binding pattern, member expression is not allow
     //  - for assignment pattern: value production rule is `DestructuringAssignmentTarget`, which just a LeftHandSideExpression
     //  - for binding pattern: value production rule is `BindingElement`, which only can be object-pattern, array-pattern, id.
@@ -1285,7 +1299,7 @@ export function createParser(code: string) {
     // function, it would transform to assignment pattern, so we need to checko if there is Assignment
     // pattern, it is , means original is assignment expression, it should throw a error.
     if (!isVarDeclaration(leftOrInit)) {
-      leftOrInit = toAssignmentPattern(leftOrInit) as Expression;
+      leftOrInit = exprToPattern(leftOrInit, false) as Expression;
       if (isAssignmentPattern(leftOrInit)) {
         throw createMessageError(ErrorMessageMap.invalid_left_value);
       }
@@ -1627,7 +1641,17 @@ export function createParser(code: string) {
       const isBindingPattern = !isIdentifer(id);
       // custom logical for check is lexical binding have let identifier ?
       if (variableKind === "lexical" || isInStrictMode()) {
-        checkIsLetExistInLexicalBinding(id);
+        checkBindingPatternValueWithCallbacks(
+          id,
+          (value) => {
+            if (value === "let") {
+              throw createMessageError(
+                ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding,
+              );
+            }
+          },
+          (_, _1) => void 0,
+        );
       }
       if (
         // variable declarations binding pattern but but have init.
@@ -1670,17 +1694,6 @@ export function createParser(code: string) {
       declarations[declarations.length - 1].end,
     );
   }
-  function checkIsLetExistInLexicalBinding(pattern: Pattern) {
-    checkBindingPatternValueWithCallbacks(
-      pattern,
-      (value) => {
-        if (value === "let") {
-          throw createMessageError(ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding);
-        }
-      },
-      (_, _1) => void 0,
-    );
-  }
   /**
    * Helper function for check is pattern contain certin identifier value.
    *
@@ -1701,13 +1714,13 @@ export function createParser(code: string) {
     rightHandSideCallback: (expr: Expression, addToWorkList: (...pattern: Array<Pattern>) => void) => void,
   ) {
     const workList = [pattern];
-    const addToWorkList = (pattern: Pattern) => workList.push(pattern);
+    const addToWorkList = (...pattern: Array<Pattern>) => workList.push(...pattern);
     while (workList.length > 0) {
       const currentPat = workList.pop()!;
       switch (currentPat.kind) {
         case SyntaxKinds.ArrayPattern:
           const elements = currentPat.elements.filter((ele) => !!ele) as Array<Pattern>;
-          if (elements.length > 0) workList.push(...elements);
+          if (elements.length > 0) addToWorkList(...elements);
           break;
         case SyntaxKinds.Identifier:
           patternValueCallback(currentPat.name);
@@ -1798,6 +1811,7 @@ export function createParser(code: string) {
         }
       }
       for (const param of params) {
+        checkPatternContainArgumentOrEval(param);
         checkBindingPatternValueWithCallbacks(
           param,
           (value) => {
@@ -1925,10 +1939,13 @@ export function createParser(code: string) {
       );
     }
     nextToken();
-    checkFunctionParams(params);
-    checkIsSimpleParameterList(params);
+    checkFunctionParamDuplicateAndSetSimpleListContext(params);
     existFunctionParameter();
     return params;
+  }
+  function checkFunctionParamDuplicateAndSetSimpleListContext(params: Array<Pattern>) {
+    checkFunctionParamIsDuplicate(params);
+    setContextIfParamsIsSimpleParameterList(params);
   }
   /**
    * Helper function for check if parameter list is simple
@@ -1937,7 +1954,7 @@ export function createParser(code: string) {
    * @param {Array<Pattern>} params
    * @returns
    */
-  function checkIsSimpleParameterList(params: Array<Pattern>) {
+  function setContextIfParamsIsSimpleParameterList(params: Array<Pattern>) {
     for (const param of params) {
       if (!isIdentifer(param)) {
         setCurrentFunctionParameterListAsNonSimple();
@@ -1950,57 +1967,52 @@ export function createParser(code: string) {
    * in function paramemter declaration list.
    * @param {Array<Pattern>} params
    */
-  function checkFunctionParams(params: Array<Pattern>) {
-    const paramsSet = new Set<string>();
+  function checkFunctionParamIsDuplicate(params: Array<Pattern>) {
+    const paramSet = new Set<string>();
     for (const param of params) {
-      checkParam(param, paramsSet);
-    }
-  }
-  /**
-   * recursive checker for check is there are maybe duplicate param
-   * name of givn param and existed param list set
-   * @param {Pattern} param
-   * @param {Set<string>} paramSet
-   * @returns
-   */
-  function checkParam(param: Pattern, paramSet: Set<string>) {
-    if (isIdentifer(param)) {
-      if (paramSet.has(param.name)) {
-        throw createMessageError(ErrorMessageMap.duplicate_param);
+      const workList = [param];
+      while (workList.length > 0) {
+        const currentParam = workList.pop()!;
+        switch (currentParam.kind) {
+          case SyntaxKinds.Identifier: {
+            if (paramSet.has(currentParam.name)) {
+              throw createMessageError(ErrorMessageMap.duplicate_param);
+            }
+            paramSet.add(currentParam.name);
+            break;
+          }
+          case SyntaxKinds.ArrayPattern: {
+            currentParam.elements.forEach((element) => {
+              if (element) workList.push(element);
+            });
+            break;
+          }
+          case SyntaxKinds.ObjectPattern: {
+            for (const property of currentParam.properties) {
+              if (isRestElement(property) || isAssignmentPattern(property)) {
+                workList.push(property);
+              }
+              // ({a}, a)
+              else if (property.shorted) {
+                workList.push(property.key as Pattern);
+              }
+              // ({a: a}, a)
+              else if (property.value) {
+                workList.push(property.value as Pattern);
+              }
+            }
+            break;
+          }
+          case SyntaxKinds.AssignmentPattern: {
+            workList.push(currentParam.left);
+            break;
+          }
+          case SyntaxKinds.RestElement: {
+            workList.push(currentParam.argument);
+            break;
+          }
+        }
       }
-      paramSet.add(param.name);
-      return;
-    }
-    if (isArrayPattern(param)) {
-      param.elements.forEach((element) => {
-        if (element) checkParam(element, paramSet);
-      });
-      return;
-    }
-    if (isObjectPattern(param)) {
-      for (const property of param.properties) {
-        if (isRestElement(property) || isAssignmentPattern(property)) {
-          checkParam(property, paramSet);
-          continue;
-        }
-        // ({a}, a)
-        if (property.shorted) {
-          checkParam(property.key as Pattern, paramSet);
-        }
-        // ({a: a}, a)
-        else if (property.value) {
-          checkParam(property.value as Pattern, paramSet);
-        }
-      }
-      return;
-    }
-    if (isAssignmentPattern(param)) {
-      checkParam(param.left, paramSet);
-      return;
-    }
-    if (isRestElement(param)) {
-      checkParam(param.argument, paramSet);
-      return;
     }
   }
   /**
@@ -2255,7 +2267,7 @@ export function createParser(code: string) {
     if (!match(AssigmentOperators)) {
       return leftExpr;
     }
-    const left = toAssignmentPattern(leftExpr);
+    const left = exprToPattern(leftExpr, false);
     const operator = getToken();
     nextToken();
     const right = parseAssignmentExpressionInheritIn();
@@ -2915,14 +2927,14 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.LetKeyword)) {
       // let maybe treat as identifier in not strict mode, and not lexical binding declaration.
       // so lexical binding declaration should implement it's own checker logical with parseIdentifierWithKeyword
-      if (!isInStrictMode()) {
+      if (!isInStrictMode() && !isInClassScope()) {
         const { value, start, end } = expect(SyntaxKinds.LetKeyword);
         return Factory.createIdentifier(value, start, end);
       }
       throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
     }
     const { value, start, end } = expect(SyntaxKinds.Identifier);
-    if (isInStrictMode()) {
+    if (isInStrictMode() || isInClassScope()) {
       if (PreserveWordSet.has(value)) {
         throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
       }
@@ -3422,10 +3434,10 @@ export function createParser(code: string) {
     enterFunctionScope(isAsync, generator);
     const parmas = parseFunctionParam();
     const body = parseFunctionBody();
+    // when is in class there we do not need to check parameter list and function name in body strcit mode
+    // by the function `checkFunctionNameAndParamsInCurrentFunctionStrictMode`
+    if (!inClass) checkFunctionNameAndParamsInCurrentFunctionStrictMode(null, parmas);
     exitFunctionScope();
-    // there we do not need to check parameter list and function name in body strcit mode
-    // by the function `checkFunctionNameAndParamsInCurrentFunctionStrictMode`, because
-    // class scope is auto strict mode.
     /**
      * Step 2: semantic and more concise syntax check instead just throw a unexpect
      * token error.
@@ -3613,6 +3625,7 @@ export function createParser(code: string) {
     let isExpression = false;
     if (match(SyntaxKinds.BracesLeftPunctuator)) {
       body = parseFunctionBody();
+      checkFunctionNameAndParamsInCurrentFunctionStrictMode(null, functionArguments);
     } else {
       body = parseAssignmentExpressionInheritIn();
       isExpression = true;
@@ -3644,59 +3657,50 @@ export function createParser(code: string) {
     functionArguments: Array<Expression>,
     trailingComma: boolean,
   ): Array<Pattern> {
-    const paramaList = functionArguments.map((node) => toAssignmentPattern(node, true)) as Array<Pattern>;
-    // check as function params
-    checkFunctionParams(paramaList);
-    checkIsSimpleParameterList(paramaList);
-    // extra check
-    checkAwaitAndYieldUsageOfArrowParams(paramaList);
-    if (isCurrentFunctionAsync() || isCurrentFunctionGenerator()) {
-      // when parse as argument, it already follow the parent scope rule, now only if
-      // current scope is async or generator we need to check
-      paramaList.forEach((param) => checkPatternContainInValidAwaitAndYieldValue(param));
-    }
-    if (checkArrowParamemterHaveMultiSpreadElement(paramaList) && trailingComma) {
+    const params = functionArguments.map((node) => exprToPattern(node, true)) as Array<Pattern>;
+    checkArrowFunctionParamsDefaultExpressionContext(params);
+    if (isCurrentFunctionAsync()) checkArrowFunctionParamsContainInValidAwait(params);
+    const isMultiSpread = checkArrowFunctionParamsSpreadElementRule(params);
+    if (isMultiSpread && trailingComma)
       throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
-    }
-    return paramaList;
+    // check as function params
+    checkFunctionParamDuplicateAndSetSimpleListContext(params);
+    return params;
   }
-  function checkAwaitAndYieldUsageOfArrowParams(params: Array<Pattern>) {
+  function checkArrowFunctionParamsDefaultExpressionContext(params: Array<Pattern>) {
     for (const param of params) {
       if (isAssignmentPattern(param)) {
-        checkExpressionContainAwaitOrYieldExpression(param.right);
+        const workList = [param.right];
+        while (workList.length > 0) {
+          const currentExpr = workList.pop()!;
+          switch (currentExpr.kind) {
+            case SyntaxKinds.AwaitExpression:
+              // parent scope is async, no matter current scope is async or not
+              // await expression can not call
+              throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
+            case SyntaxKinds.YieldExpression:
+              // parent scope is generator, arrow expression must not generator,
+              // so yield is not illegal
+              throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
+            case SyntaxKinds.BinaryExpression:
+              const binaryNode = currentExpr as BinaryExpression;
+              workList.push(binaryNode.left, binaryNode.right);
+              break;
+            case SyntaxKinds.MemberExpression:
+              const memberNode = currentExpr as MemberExpression;
+              workList.push(memberNode.object);
+              break;
+            case SyntaxKinds.CallExpression:
+              const callNode = currentExpr as CallExpression;
+              workList.push(...callNode.arguments);
+            default:
+              break;
+          }
+        }
       }
     }
   }
-  function checkExpressionContainAwaitOrYieldExpression(expr: Expression) {
-    const workList = [expr];
-    while (workList.length > 0) {
-      const currentExpr = workList.pop()!;
-      switch (currentExpr.kind) {
-        case SyntaxKinds.AwaitExpression:
-          // parent scope is async, no matter current scope is async or not
-          // await expression can not call
-          throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
-        case SyntaxKinds.YieldExpression:
-          // parent scope is generator, arrow expression must not generator,
-          // so yield is not illegal
-          throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
-        case SyntaxKinds.BinaryExpression:
-          const binaryNode = currentExpr as BinaryExpression;
-          workList.push(binaryNode.left, binaryNode.right);
-          break;
-        case SyntaxKinds.MemberExpression:
-          const memberNode = currentExpr as MemberExpression;
-          workList.push(memberNode.object);
-          break;
-        case SyntaxKinds.CallExpression:
-          const callNode = currentExpr as CallExpression;
-          workList.push(...callNode.arguments);
-        default:
-          break;
-      }
-    }
-  }
-  function checkArrowParamemterHaveMultiSpreadElement(params: Array<Pattern>) {
+  function checkArrowFunctionParamsSpreadElementRule(params: Array<Pattern>) {
     let flag = false;
     params.forEach((param) => {
       if (flag && isRestElement(param)) {
@@ -3711,31 +3715,27 @@ export function createParser(code: string) {
     });
     return flag;
   }
-  function checkPatternContainInValidAwaitAndYieldValue(pattern: Pattern) {
-    checkBindingPatternValueWithCallbacks(
-      pattern,
-      (patternVal) => {
-        if (patternVal === "await") {
-          if (isInStrictMode() || isCurrentFunctionAsync()) {
-            throw createMessageError(
-              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
-            );
+  function checkArrowFunctionParamsContainInValidAwait(params: Array<Pattern>) {
+    params.forEach((param) =>
+      checkBindingPatternValueWithCallbacks(
+        param,
+        (patternVal) => {
+          if (patternVal === "await") {
+            if (isInStrictMode() || isCurrentFunctionAsync()) {
+              throw createMessageError(
+                ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+              );
+            }
+            return;
           }
-          return;
-        }
-        if (patternVal === "yield") {
-          if (isInStrictMode() || isCurrentFunctionGenerator()) {
-            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+        },
+        (expr, addToWorkList) => {
+          if (isArrowFunctionExpression(expr)) {
+            if (expr.arguments.length > 0) addToWorkList(...expr.arguments);
+            return;
           }
-          return;
-        }
-      },
-      (expr, addToWorkList) => {
-        if (isArrowFunctionExpression(expr)) {
-          if (expr.arguments.length > 0) addToWorkList(...expr.arguments);
-          return;
-        }
-      },
+        },
+      ),
     );
   }
   /** ================================================================================
@@ -4080,6 +4080,7 @@ export function createParser(code: string) {
     let left: Pattern | undefined;
     if (match(BindingIdentifierSyntaxKindArray)) {
       left = parseIdentifer();
+      checkPatternContainArgumentOrEval(left);
     } else {
       left = parseBindingPattern();
     }
@@ -4100,6 +4101,7 @@ export function createParser(code: string) {
     let id: Pattern | null = null;
     if (match(BindingIdentifierSyntaxKindArray)) {
       id = parseIdentifer();
+      checkPatternContainArgumentOrEval(id);
     }
     if (match([SyntaxKinds.BracesLeftPunctuator, SyntaxKinds.BracketLeftPunctuator])) {
       if (allowPattern) {
@@ -4224,7 +4226,9 @@ export function createParser(code: string) {
       );
     }
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
-    return Factory.createObjectPattern(properties, start, end);
+    const objectPattern = Factory.createObjectPattern(properties, start, end);
+    checkPatternContainArgumentOrEval(objectPattern);
+    return objectPattern;
   }
   function parseArrayPattern(): ArrayPattern {
     const { start } = expect(SyntaxKinds.BracketLeftPunctuator);
@@ -4253,7 +4257,28 @@ export function createParser(code: string) {
       elements.push(parseBindingElement());
     }
     const { end } = expect(SyntaxKinds.BracketRightPunctuator);
-    return Factory.createArrayPattern(elements, start, end);
+    const arrayPattern = Factory.createArrayPattern(elements, start, end);
+    checkPatternContainArgumentOrEval(arrayPattern);
+    return arrayPattern;
+  }
+  /**
+   * Whenever we need to parse a
+   * @param pattern
+   * @returns
+   */
+  function checkPatternContainArgumentOrEval(pattern: Pattern) {
+    if (!isInStrictMode()) {
+      return;
+    }
+    checkBindingPatternValueWithCallbacks(
+      pattern,
+      (val) => {
+        if (val === "arguments" || val === "eval") {
+          throw new Error();
+        }
+      },
+      (_, _1) => void 0,
+    );
   }
   /** ================================================================================
    *  Parse Import Declaration

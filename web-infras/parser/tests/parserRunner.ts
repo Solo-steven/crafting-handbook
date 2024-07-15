@@ -9,26 +9,6 @@ const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 // const isCI = Boolean(process.env.TEST_CI) || false;
 
 const TempIgnoreCases: Set<string> = new Set([
-  //  ==== strict mode problem
-  // checking `argument`, `eval` in strict mode
-  "/babel/es2015/destructuring/invalid_binding-eval.js",
-  "/babel/es2015/destructuring/invalid_binding-arguments-strict.js",
-  "/babel/es2015/destructuring/invalid_binding-arguments-module.js",
-  "/esprima/ES6/arrow-function/invalid-param-strict-mode.js",
-  "/babel/es2015/uncategorised/invalid_334.js",
-  "/babel/es2015/uncategorised/invalid_332.js",
-  "/babel/es2015/uncategorised/invalid_296.js",
-  "/babel/es2015/uncategorised/invalid_297.js",
-  "/babel/es2015/uncategorised/invalid_289.js",
-  "/babel/es2015/uncategorised/invalid_247.js",
-  "/babel/es2015/uncategorised/invalid_246.js",
-  "/babel/es2015/uncategorised/invalid_245.js",
-  "/babel/es2015/uncategorised/invalid_244.js",
-  "/babel/es2015/uncategorised/invalid_243.js",
-  "/babel/es2015/uncategorised/invalid_242.js",
-  "/babel/es2015/uncategorised/invalid_233.js",
-  "/babel/es2015/uncategorised/invalid_234.js",
-  "/babel/es2015/uncategorised/invalid_227.js",
   // other strict mode problem
   "/esprima/declaration/function/invalid-strict-labelled-function-declaration.js",
   // ===  duplicate Proto check on onject.
@@ -55,7 +35,6 @@ const TempIgnoreCases: Set<string> = new Set([
   // === production rule problem
   "/babel/es2015/generators/invalid-hanging.js",
   "/babel/es2015/generators/invalid-sloppy-function.js",
-  "/babel/es2015/let/invalid_let-array-with-newline.js", // lexical decalration derived from statementListItem not statement.
   // ==== file encoding problem (unicode)
   "/babel/es2015/uncategorised/invalid_327.js",
   "/babel/es2015/uncategorised/319.js",
