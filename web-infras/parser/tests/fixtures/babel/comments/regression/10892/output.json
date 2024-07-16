@@ -1,0 +1,100 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ImportDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ImportSpecifier",
+                    "imported": {
+                        "kind": "Identifer",
+                        "name": "foo",
+                        "start": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 13,
+                            "index": 12
+                        }
+                    },
+                    "local": null,
+                    "start": {
+                        "row": 1,
+                        "col": 10,
+                        "index": 9
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    }
+                }
+            ],
+            "source": {
+                "kind": "StringLiteral",
+                "value": "bar",
+                "start": {
+                    "row": 1,
+                    "col": 21,
+                    "index": 20
+                },
+                "end": {
+                    "row": 1,
+                    "col": 26,
+                    "index": 25
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 26,
+                "index": 25
+            }
+        },
+        {
+            "kind": "ExportDefaultDeclaration",
+            "declaration": {
+                "kind": "ObjectExpression",
+                "properties": [],
+                "trailingComma": false,
+                "start": {
+                    "row": 6,
+                    "col": 16,
+                    "index": 66
+                },
+                "end": {
+                    "row": 7,
+                    "col": 2,
+                    "index": 69
+                }
+            },
+            "start": {
+                "row": 6,
+                "col": 1,
+                "index": 51
+            },
+            "end": {
+                "row": 7,
+                "col": 2,
+                "index": 69
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 8,
+        "col": 1,
+        "index": 70
+    }
+}

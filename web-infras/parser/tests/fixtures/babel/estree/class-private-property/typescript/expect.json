@@ -1,0 +1,14 @@
+{
+  "expect": "Pass",
+  "config": {
+    "plugins": [
+      "typescript",
+      [
+        "estree",
+        {
+          "classFeatures": true
+        }
+      ]
+    ]
+  }
+}

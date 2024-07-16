@@ -1,0 +1,28 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "DebuggerStatement",
+            "start": {
+                "row": 1,
+                "col": 11,
+                "index": 10
+            },
+            "end": {
+                "row": 1,
+                "col": 19,
+                "index": 18
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 11,
+        "index": 10
+    },
+    "end": {
+        "row": 1,
+        "col": 28,
+        "index": 27
+    }
+}

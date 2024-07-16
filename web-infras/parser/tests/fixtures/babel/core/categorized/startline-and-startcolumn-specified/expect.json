@@ -1,0 +1,7 @@
+{
+  "expect": "Pass",
+  "config": {
+    "startLine": 3,
+    "startColumn": 3
+  }
+}

@@ -1,0 +1,85 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ImportDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ImportSpecifier",
+                    "imported": {
+                        "kind": "StringLiteral",
+                        "value": "default",
+                        "start": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        }
+                    },
+                    "local": {
+                        "kind": "Identifer",
+                        "name": "quotation",
+                        "start": {
+                            "row": 1,
+                            "col": 22,
+                            "index": 21
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 31,
+                            "index": 30
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 9,
+                        "index": 8
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 31,
+                        "index": 30
+                    }
+                }
+            ],
+            "source": {
+                "kind": "StringLiteral",
+                "value": "Confucius",
+                "start": {
+                    "row": 1,
+                    "col": 38,
+                    "index": 37
+                },
+                "end": {
+                    "row": 1,
+                    "col": 49,
+                    "index": 48
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 49,
+                "index": 48
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 50
+    }
+}

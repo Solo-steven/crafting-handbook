@@ -1,0 +1,2045 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": true,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 16,
+                                            "index": 15
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 19,
+                                            "index": 18
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 16,
+                                        "index": 15
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 19,
+                                        "index": 18
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 14,
+                                "index": 13
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 1,
+                                "col": 24,
+                                "index": 23
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 27,
+                                "index": 26
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 27,
+                            "index": 26
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 27,
+                    "index": 26
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 27,
+                "index": 26
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 16,
+                                            "index": 43
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 19,
+                                            "index": 46
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "Identifer",
+                                        "name": "foo2",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 21,
+                                            "index": 48
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 25,
+                                            "index": 52
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 2,
+                                        "col": 16,
+                                        "index": 43
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 25,
+                                        "index": 52
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 2,
+                                "col": 14,
+                                "index": 41
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 27,
+                                "index": 54
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 2,
+                                "col": 30,
+                                "index": 57
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 33,
+                                "index": 60
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 14,
+                            "index": 41
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 33,
+                            "index": 60
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 8,
+                    "index": 35
+                },
+                "end": {
+                    "row": 2,
+                    "col": 33,
+                    "index": 60
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 28
+            },
+            "end": {
+                "row": 2,
+                "col": 33,
+                "index": 60
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo",
+                                        "start": {
+                                            "row": 3,
+                                            "col": 16,
+                                            "index": 77
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 19,
+                                            "index": 80
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "ObjectPattern",
+                                        "properties": [
+                                            {
+                                                "kind": "ObjectPatternProperty",
+                                                "computed": false,
+                                                "shorted": true,
+                                                "key": {
+                                                    "kind": "Identifer",
+                                                    "name": "baz",
+                                                    "start": {
+                                                        "row": 3,
+                                                        "col": 23,
+                                                        "index": 84
+                                                    },
+                                                    "end": {
+                                                        "row": 3,
+                                                        "col": 26,
+                                                        "index": 87
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 3,
+                                                    "col": 23,
+                                                    "index": 84
+                                                },
+                                                "end": {
+                                                    "row": 3,
+                                                    "col": 26,
+                                                    "index": 87
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 3,
+                                            "col": 21,
+                                            "index": 82
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 28,
+                                            "index": 89
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 3,
+                                        "col": 16,
+                                        "index": 77
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 28,
+                                        "index": 89
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 3,
+                                "col": 14,
+                                "index": 75
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 30,
+                                "index": 91
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 3,
+                                "col": 33,
+                                "index": 94
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 36,
+                                "index": 97
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 14,
+                            "index": 75
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 36,
+                            "index": 97
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 3,
+                    "col": 8,
+                    "index": 69
+                },
+                "end": {
+                    "row": 3,
+                    "col": 36,
+                    "index": 97
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 62
+            },
+            "end": {
+                "row": 3,
+                "col": 36,
+                "index": 97
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo",
+                                        "start": {
+                                            "row": 4,
+                                            "col": 16,
+                                            "index": 114
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 19,
+                                            "index": 117
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "ObjectPattern",
+                                        "properties": [
+                                            {
+                                                "kind": "ObjectPatternProperty",
+                                                "computed": false,
+                                                "shorted": false,
+                                                "key": {
+                                                    "kind": "Identifer",
+                                                    "name": "baz",
+                                                    "start": {
+                                                        "row": 4,
+                                                        "col": 23,
+                                                        "index": 121
+                                                    },
+                                                    "end": {
+                                                        "row": 4,
+                                                        "col": 26,
+                                                        "index": 124
+                                                    }
+                                                },
+                                                "value": {
+                                                    "kind": "ObjectPattern",
+                                                    "properties": [
+                                                        {
+                                                            "kind": "ObjectPatternProperty",
+                                                            "computed": false,
+                                                            "shorted": true,
+                                                            "key": {
+                                                                "kind": "Identifer",
+                                                                "name": "qux",
+                                                                "start": {
+                                                                    "row": 4,
+                                                                    "col": 31,
+                                                                    "index": 129
+                                                                },
+                                                                "end": {
+                                                                    "row": 4,
+                                                                    "col": 34,
+                                                                    "index": 132
+                                                                }
+                                                            },
+                                                            "start": {
+                                                                "row": 4,
+                                                                "col": 31,
+                                                                "index": 129
+                                                            },
+                                                            "end": {
+                                                                "row": 4,
+                                                                "col": 34,
+                                                                "index": 132
+                                                            }
+                                                        }
+                                                    ],
+                                                    "start": {
+                                                        "row": 4,
+                                                        "col": 29,
+                                                        "index": 127
+                                                    },
+                                                    "end": {
+                                                        "row": 4,
+                                                        "col": 36,
+                                                        "index": 134
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 4,
+                                                    "col": 23,
+                                                    "index": 121
+                                                },
+                                                "end": {
+                                                    "row": 4,
+                                                    "col": 36,
+                                                    "index": 134
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 4,
+                                            "col": 21,
+                                            "index": 119
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 38,
+                                            "index": 136
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 4,
+                                        "col": 16,
+                                        "index": 114
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 38,
+                                        "index": 136
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 4,
+                                "col": 14,
+                                "index": 112
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 40,
+                                "index": 138
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 4,
+                                "col": 43,
+                                "index": 141
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 46,
+                                "index": 144
+                            }
+                        },
+                        "start": {
+                            "row": 4,
+                            "col": 14,
+                            "index": 112
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 46,
+                            "index": 144
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 4,
+                    "col": 8,
+                    "index": 106
+                },
+                "end": {
+                    "row": 4,
+                    "col": 46,
+                    "index": 144
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 4,
+                "col": 1,
+                "index": 99
+            },
+            "end": {
+                "row": 4,
+                "col": 46,
+                "index": 144
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo",
+                                        "start": {
+                                            "row": 5,
+                                            "col": 16,
+                                            "index": 161
+                                        },
+                                        "end": {
+                                            "row": 5,
+                                            "col": 19,
+                                            "index": 164
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "ObjectPattern",
+                                        "properties": [
+                                            {
+                                                "kind": "ObjectPatternProperty",
+                                                "computed": false,
+                                                "shorted": false,
+                                                "key": {
+                                                    "kind": "Identifer",
+                                                    "name": "baz",
+                                                    "start": {
+                                                        "row": 5,
+                                                        "col": 23,
+                                                        "index": 168
+                                                    },
+                                                    "end": {
+                                                        "row": 5,
+                                                        "col": 26,
+                                                        "index": 171
+                                                    }
+                                                },
+                                                "value": {
+                                                    "kind": "ObjectPattern",
+                                                    "properties": [
+                                                        {
+                                                            "kind": "ObjectPatternProperty",
+                                                            "computed": false,
+                                                            "shorted": true,
+                                                            "key": {
+                                                                "kind": "Identifer",
+                                                                "name": "qux2",
+                                                                "start": {
+                                                                    "row": 5,
+                                                                    "col": 31,
+                                                                    "index": 176
+                                                                },
+                                                                "end": {
+                                                                    "row": 5,
+                                                                    "col": 35,
+                                                                    "index": 180
+                                                                }
+                                                            },
+                                                            "start": {
+                                                                "row": 5,
+                                                                "col": 31,
+                                                                "index": 176
+                                                            },
+                                                            "end": {
+                                                                "row": 5,
+                                                                "col": 35,
+                                                                "index": 180
+                                                            }
+                                                        }
+                                                    ],
+                                                    "start": {
+                                                        "row": 5,
+                                                        "col": 29,
+                                                        "index": 174
+                                                    },
+                                                    "end": {
+                                                        "row": 5,
+                                                        "col": 37,
+                                                        "index": 182
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 5,
+                                                    "col": 23,
+                                                    "index": 168
+                                                },
+                                                "end": {
+                                                    "row": 5,
+                                                    "col": 37,
+                                                    "index": 182
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 5,
+                                            "col": 21,
+                                            "index": 166
+                                        },
+                                        "end": {
+                                            "row": 5,
+                                            "col": 39,
+                                            "index": 184
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 5,
+                                        "col": 16,
+                                        "index": 161
+                                    },
+                                    "end": {
+                                        "row": 5,
+                                        "col": 39,
+                                        "index": 184
+                                    }
+                                },
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": true,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo3",
+                                        "start": {
+                                            "row": 5,
+                                            "col": 41,
+                                            "index": 186
+                                        },
+                                        "end": {
+                                            "row": 5,
+                                            "col": 45,
+                                            "index": 190
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 5,
+                                        "col": 41,
+                                        "index": 186
+                                    },
+                                    "end": {
+                                        "row": 5,
+                                        "col": 45,
+                                        "index": 190
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 5,
+                                "col": 14,
+                                "index": 159
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 47,
+                                "index": 192
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 5,
+                                "col": 50,
+                                "index": 195
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 53,
+                                "index": 198
+                            }
+                        },
+                        "start": {
+                            "row": 5,
+                            "col": 14,
+                            "index": 159
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 53,
+                            "index": 198
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 5,
+                    "col": 8,
+                    "index": 153
+                },
+                "end": {
+                    "row": 5,
+                    "col": 53,
+                    "index": 198
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 5,
+                "col": 1,
+                "index": 146
+            },
+            "end": {
+                "row": 5,
+                "col": 53,
+                "index": 198
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ArrayPattern",
+                            "elements": [
+                                {
+                                    "kind": "Identifer",
+                                    "name": "foo4",
+                                    "start": {
+                                        "row": 6,
+                                        "col": 15,
+                                        "index": 214
+                                    },
+                                    "end": {
+                                        "row": 6,
+                                        "col": 19,
+                                        "index": 218
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 6,
+                                "col": 14,
+                                "index": 213
+                            },
+                            "end": {
+                                "row": 6,
+                                "col": 20,
+                                "index": 219
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 6,
+                                "col": 23,
+                                "index": 222
+                            },
+                            "end": {
+                                "row": 6,
+                                "col": 26,
+                                "index": 225
+                            }
+                        },
+                        "start": {
+                            "row": 6,
+                            "col": 14,
+                            "index": 213
+                        },
+                        "end": {
+                            "row": 6,
+                            "col": 26,
+                            "index": 225
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 6,
+                    "col": 8,
+                    "index": 207
+                },
+                "end": {
+                    "row": 6,
+                    "col": 26,
+                    "index": 225
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 6,
+                "col": 1,
+                "index": 200
+            },
+            "end": {
+                "row": 6,
+                "col": 26,
+                "index": 225
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ArrayPattern",
+                            "elements": [
+                                {
+                                    "kind": "ArrayPattern",
+                                    "elements": [
+                                        {
+                                            "kind": "Identifer",
+                                            "name": "baz2",
+                                            "start": {
+                                                "row": 7,
+                                                "col": 16,
+                                                "index": 242
+                                            },
+                                            "end": {
+                                                "row": 7,
+                                                "col": 20,
+                                                "index": 246
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 7,
+                                        "col": 15,
+                                        "index": 241
+                                    },
+                                    "end": {
+                                        "row": 7,
+                                        "col": 21,
+                                        "index": 247
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 7,
+                                "col": 14,
+                                "index": 240
+                            },
+                            "end": {
+                                "row": 7,
+                                "col": 22,
+                                "index": 248
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 7,
+                                "col": 25,
+                                "index": 251
+                            },
+                            "end": {
+                                "row": 7,
+                                "col": 28,
+                                "index": 254
+                            }
+                        },
+                        "start": {
+                            "row": 7,
+                            "col": 14,
+                            "index": 240
+                        },
+                        "end": {
+                            "row": 7,
+                            "col": 28,
+                            "index": 254
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 7,
+                    "col": 8,
+                    "index": 234
+                },
+                "end": {
+                    "row": 7,
+                    "col": 28,
+                    "index": 254
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 7,
+                "col": 1,
+                "index": 227
+            },
+            "end": {
+                "row": 7,
+                "col": 28,
+                "index": 254
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ArrayPattern",
+                            "elements": [
+                                {
+                                    "kind": "ObjectPattern",
+                                    "properties": [
+                                        {
+                                            "kind": "ObjectPatternProperty",
+                                            "computed": false,
+                                            "shorted": false,
+                                            "key": {
+                                                "kind": "Identifer",
+                                                "name": "foo",
+                                                "start": {
+                                                    "row": 8,
+                                                    "col": 17,
+                                                    "index": 272
+                                                },
+                                                "end": {
+                                                    "row": 8,
+                                                    "col": 20,
+                                                    "index": 275
+                                                }
+                                            },
+                                            "value": {
+                                                "kind": "ArrayPattern",
+                                                "elements": [
+                                                    {
+                                                        "kind": "Identifer",
+                                                        "name": "baz3",
+                                                        "start": {
+                                                            "row": 8,
+                                                            "col": 23,
+                                                            "index": 278
+                                                        },
+                                                        "end": {
+                                                            "row": 8,
+                                                            "col": 27,
+                                                            "index": 282
+                                                        }
+                                                    }
+                                                ],
+                                                "start": {
+                                                    "row": 8,
+                                                    "col": 22,
+                                                    "index": 277
+                                                },
+                                                "end": {
+                                                    "row": 8,
+                                                    "col": 28,
+                                                    "index": 283
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 8,
+                                                "col": 17,
+                                                "index": 272
+                                            },
+                                            "end": {
+                                                "row": 8,
+                                                "col": 28,
+                                                "index": 283
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 8,
+                                        "col": 15,
+                                        "index": 270
+                                    },
+                                    "end": {
+                                        "row": 8,
+                                        "col": 30,
+                                        "index": 285
+                                    }
+                                },
+                                {
+                                    "kind": "ObjectPattern",
+                                    "properties": [
+                                        {
+                                            "kind": "ObjectPatternProperty",
+                                            "computed": false,
+                                            "shorted": false,
+                                            "key": {
+                                                "kind": "Identifer",
+                                                "name": "foo2",
+                                                "start": {
+                                                    "row": 8,
+                                                    "col": 34,
+                                                    "index": 289
+                                                },
+                                                "end": {
+                                                    "row": 8,
+                                                    "col": 38,
+                                                    "index": 293
+                                                }
+                                            },
+                                            "value": {
+                                                "kind": "ArrayPattern",
+                                                "elements": [
+                                                    {
+                                                        "kind": "Identifer",
+                                                        "name": "baz4",
+                                                        "start": {
+                                                            "row": 8,
+                                                            "col": 41,
+                                                            "index": 296
+                                                        },
+                                                        "end": {
+                                                            "row": 8,
+                                                            "col": 45,
+                                                            "index": 300
+                                                        }
+                                                    }
+                                                ],
+                                                "start": {
+                                                    "row": 8,
+                                                    "col": 40,
+                                                    "index": 295
+                                                },
+                                                "end": {
+                                                    "row": 8,
+                                                    "col": 46,
+                                                    "index": 301
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 8,
+                                                "col": 34,
+                                                "index": 289
+                                            },
+                                            "end": {
+                                                "row": 8,
+                                                "col": 46,
+                                                "index": 301
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 8,
+                                        "col": 32,
+                                        "index": 287
+                                    },
+                                    "end": {
+                                        "row": 8,
+                                        "col": 48,
+                                        "index": 303
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 8,
+                                "col": 14,
+                                "index": 269
+                            },
+                            "end": {
+                                "row": 8,
+                                "col": 49,
+                                "index": 304
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 8,
+                                "col": 52,
+                                "index": 307
+                            },
+                            "end": {
+                                "row": 8,
+                                "col": 55,
+                                "index": 310
+                            }
+                        },
+                        "start": {
+                            "row": 8,
+                            "col": 14,
+                            "index": 269
+                        },
+                        "end": {
+                            "row": 8,
+                            "col": 55,
+                            "index": 310
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 8,
+                    "col": 8,
+                    "index": 263
+                },
+                "end": {
+                    "row": 8,
+                    "col": 55,
+                    "index": 310
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 8,
+                "col": 1,
+                "index": 256
+            },
+            "end": {
+                "row": 8,
+                "col": 55,
+                "index": 310
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo",
+                                        "start": {
+                                            "row": 9,
+                                            "col": 16,
+                                            "index": 327
+                                        },
+                                        "end": {
+                                            "row": 9,
+                                            "col": 19,
+                                            "index": 330
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "ObjectPattern",
+                                        "properties": [
+                                            {
+                                                "kind": "ObjectPatternProperty",
+                                                "computed": false,
+                                                "shorted": false,
+                                                "key": {
+                                                    "kind": "Identifer",
+                                                    "name": "baz",
+                                                    "start": {
+                                                        "row": 9,
+                                                        "col": 23,
+                                                        "index": 334
+                                                    },
+                                                    "end": {
+                                                        "row": 9,
+                                                        "col": 26,
+                                                        "index": 337
+                                                    }
+                                                },
+                                                "value": {
+                                                    "kind": "ObjectPattern",
+                                                    "properties": [
+                                                        {
+                                                            "kind": "ObjectPatternProperty",
+                                                            "computed": false,
+                                                            "shorted": true,
+                                                            "key": {
+                                                                "kind": "Identifer",
+                                                                "name": "qux3",
+                                                                "start": {
+                                                                    "row": 9,
+                                                                    "col": 30,
+                                                                    "index": 341
+                                                                },
+                                                                "end": {
+                                                                    "row": 9,
+                                                                    "col": 34,
+                                                                    "index": 345
+                                                                }
+                                                            },
+                                                            "start": {
+                                                                "row": 9,
+                                                                "col": 30,
+                                                                "index": 341
+                                                            },
+                                                            "end": {
+                                                                "row": 9,
+                                                                "col": 34,
+                                                                "index": 345
+                                                            }
+                                                        }
+                                                    ],
+                                                    "start": {
+                                                        "row": 9,
+                                                        "col": 28,
+                                                        "index": 339
+                                                    },
+                                                    "end": {
+                                                        "row": 9,
+                                                        "col": 36,
+                                                        "index": 347
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 9,
+                                                    "col": 23,
+                                                    "index": 334
+                                                },
+                                                "end": {
+                                                    "row": 9,
+                                                    "col": 36,
+                                                    "index": 347
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 9,
+                                            "col": 21,
+                                            "index": 332
+                                        },
+                                        "end": {
+                                            "row": 9,
+                                            "col": 38,
+                                            "index": 349
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 9,
+                                        "col": 16,
+                                        "index": 327
+                                    },
+                                    "end": {
+                                        "row": 9,
+                                        "col": 38,
+                                        "index": 349
+                                    }
+                                },
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo2",
+                                        "start": {
+                                            "row": 9,
+                                            "col": 40,
+                                            "index": 351
+                                        },
+                                        "end": {
+                                            "row": 9,
+                                            "col": 44,
+                                            "index": 355
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "ObjectPattern",
+                                        "properties": [
+                                            {
+                                                "kind": "ObjectPatternProperty",
+                                                "computed": false,
+                                                "shorted": false,
+                                                "key": {
+                                                    "kind": "Identifer",
+                                                    "name": "baz2",
+                                                    "start": {
+                                                        "row": 9,
+                                                        "col": 48,
+                                                        "index": 359
+                                                    },
+                                                    "end": {
+                                                        "row": 9,
+                                                        "col": 52,
+                                                        "index": 363
+                                                    }
+                                                },
+                                                "value": {
+                                                    "kind": "ArrayPattern",
+                                                    "elements": [
+                                                        {
+                                                            "kind": "Identifer",
+                                                            "name": "qux4",
+                                                            "start": {
+                                                                "row": 9,
+                                                                "col": 55,
+                                                                "index": 366
+                                                            },
+                                                            "end": {
+                                                                "row": 9,
+                                                                "col": 59,
+                                                                "index": 370
+                                                            }
+                                                        }
+                                                    ],
+                                                    "start": {
+                                                        "row": 9,
+                                                        "col": 54,
+                                                        "index": 365
+                                                    },
+                                                    "end": {
+                                                        "row": 9,
+                                                        "col": 60,
+                                                        "index": 371
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 9,
+                                                    "col": 48,
+                                                    "index": 359
+                                                },
+                                                "end": {
+                                                    "row": 9,
+                                                    "col": 60,
+                                                    "index": 371
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 9,
+                                            "col": 46,
+                                            "index": 357
+                                        },
+                                        "end": {
+                                            "row": 9,
+                                            "col": 61,
+                                            "index": 372
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 9,
+                                        "col": 40,
+                                        "index": 351
+                                    },
+                                    "end": {
+                                        "row": 9,
+                                        "col": 61,
+                                        "index": 372
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 9,
+                                "col": 14,
+                                "index": 325
+                            },
+                            "end": {
+                                "row": 9,
+                                "col": 63,
+                                "index": 374
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 9,
+                                "col": 66,
+                                "index": 377
+                            },
+                            "end": {
+                                "row": 9,
+                                "col": 69,
+                                "index": 380
+                            }
+                        },
+                        "start": {
+                            "row": 9,
+                            "col": 14,
+                            "index": 325
+                        },
+                        "end": {
+                            "row": 9,
+                            "col": 69,
+                            "index": 380
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 9,
+                    "col": 8,
+                    "index": 319
+                },
+                "end": {
+                    "row": 9,
+                    "col": 69,
+                    "index": 380
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 9,
+                "col": 1,
+                "index": 312
+            },
+            "end": {
+                "row": 9,
+                "col": 69,
+                "index": 380
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo",
+                                        "start": {
+                                            "row": 10,
+                                            "col": 16,
+                                            "index": 397
+                                        },
+                                        "end": {
+                                            "row": 10,
+                                            "col": 19,
+                                            "index": 400
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "ObjectPattern",
+                                        "properties": [
+                                            {
+                                                "kind": "ObjectPatternProperty",
+                                                "computed": false,
+                                                "shorted": false,
+                                                "key": {
+                                                    "kind": "Identifer",
+                                                    "name": "baz",
+                                                    "start": {
+                                                        "row": 10,
+                                                        "col": 23,
+                                                        "index": 404
+                                                    },
+                                                    "end": {
+                                                        "row": 10,
+                                                        "col": 26,
+                                                        "index": 407
+                                                    }
+                                                },
+                                                "value": {
+                                                    "kind": "ObjectPattern",
+                                                    "properties": [
+                                                        {
+                                                            "kind": "ObjectPatternProperty",
+                                                            "computed": false,
+                                                            "shorted": true,
+                                                            "key": {
+                                                                "kind": "Identifer",
+                                                                "name": "qux5",
+                                                                "start": {
+                                                                    "row": 10,
+                                                                    "col": 30,
+                                                                    "index": 411
+                                                                },
+                                                                "end": {
+                                                                    "row": 10,
+                                                                    "col": 34,
+                                                                    "index": 415
+                                                                }
+                                                            },
+                                                            "start": {
+                                                                "row": 10,
+                                                                "col": 30,
+                                                                "index": 411
+                                                            },
+                                                            "end": {
+                                                                "row": 10,
+                                                                "col": 34,
+                                                                "index": 415
+                                                            }
+                                                        }
+                                                    ],
+                                                    "start": {
+                                                        "row": 10,
+                                                        "col": 28,
+                                                        "index": 409
+                                                    },
+                                                    "end": {
+                                                        "row": 10,
+                                                        "col": 36,
+                                                        "index": 417
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 10,
+                                                    "col": 23,
+                                                    "index": 404
+                                                },
+                                                "end": {
+                                                    "row": 10,
+                                                    "col": 36,
+                                                    "index": 417
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 10,
+                                            "col": 21,
+                                            "index": 402
+                                        },
+                                        "end": {
+                                            "row": 10,
+                                            "col": 38,
+                                            "index": 419
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 10,
+                                        "col": 16,
+                                        "index": 397
+                                    },
+                                    "end": {
+                                        "row": 10,
+                                        "col": 38,
+                                        "index": 419
+                                    }
+                                },
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo2",
+                                        "start": {
+                                            "row": 10,
+                                            "col": 40,
+                                            "index": 421
+                                        },
+                                        "end": {
+                                            "row": 10,
+                                            "col": 44,
+                                            "index": 425
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "ObjectPattern",
+                                        "properties": [
+                                            {
+                                                "kind": "ObjectPatternProperty",
+                                                "computed": false,
+                                                "shorted": false,
+                                                "key": {
+                                                    "kind": "Identifer",
+                                                    "name": "baz2",
+                                                    "start": {
+                                                        "row": 10,
+                                                        "col": 48,
+                                                        "index": 429
+                                                    },
+                                                    "end": {
+                                                        "row": 10,
+                                                        "col": 52,
+                                                        "index": 433
+                                                    }
+                                                },
+                                                "value": {
+                                                    "kind": "ArrayPattern",
+                                                    "elements": [
+                                                        {
+                                                            "kind": "ObjectPattern",
+                                                            "properties": [
+                                                                {
+                                                                    "kind": "ObjectPatternProperty",
+                                                                    "computed": false,
+                                                                    "shorted": true,
+                                                                    "key": {
+                                                                        "kind": "Identifer",
+                                                                        "name": "qux6",
+                                                                        "start": {
+                                                                            "row": 10,
+                                                                            "col": 56,
+                                                                            "index": 437
+                                                                        },
+                                                                        "end": {
+                                                                            "row": 10,
+                                                                            "col": 60,
+                                                                            "index": 441
+                                                                        }
+                                                                    },
+                                                                    "start": {
+                                                                        "row": 10,
+                                                                        "col": 56,
+                                                                        "index": 437
+                                                                    },
+                                                                    "end": {
+                                                                        "row": 10,
+                                                                        "col": 60,
+                                                                        "index": 441
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "start": {
+                                                                "row": 10,
+                                                                "col": 55,
+                                                                "index": 436
+                                                            },
+                                                            "end": {
+                                                                "row": 10,
+                                                                "col": 61,
+                                                                "index": 442
+                                                            }
+                                                        }
+                                                    ],
+                                                    "start": {
+                                                        "row": 10,
+                                                        "col": 54,
+                                                        "index": 435
+                                                    },
+                                                    "end": {
+                                                        "row": 10,
+                                                        "col": 62,
+                                                        "index": 443
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 10,
+                                                    "col": 48,
+                                                    "index": 429
+                                                },
+                                                "end": {
+                                                    "row": 10,
+                                                    "col": 62,
+                                                    "index": 443
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 10,
+                                            "col": 46,
+                                            "index": 427
+                                        },
+                                        "end": {
+                                            "row": 10,
+                                            "col": 63,
+                                            "index": 444
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 10,
+                                        "col": 40,
+                                        "index": 421
+                                    },
+                                    "end": {
+                                        "row": 10,
+                                        "col": 63,
+                                        "index": 444
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 10,
+                                "col": 14,
+                                "index": 395
+                            },
+                            "end": {
+                                "row": 10,
+                                "col": 65,
+                                "index": 446
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 10,
+                                "col": 68,
+                                "index": 449
+                            },
+                            "end": {
+                                "row": 10,
+                                "col": 71,
+                                "index": 452
+                            }
+                        },
+                        "start": {
+                            "row": 10,
+                            "col": 14,
+                            "index": 395
+                        },
+                        "end": {
+                            "row": 10,
+                            "col": 71,
+                            "index": 452
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 10,
+                    "col": 8,
+                    "index": 389
+                },
+                "end": {
+                    "row": 10,
+                    "col": 71,
+                    "index": 452
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 10,
+                "col": 1,
+                "index": 382
+            },
+            "end": {
+                "row": 10,
+                "col": 71,
+                "index": 452
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": true,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "Foo",
+                                        "start": {
+                                            "row": 11,
+                                            "col": 16,
+                                            "index": 469
+                                        },
+                                        "end": {
+                                            "row": 11,
+                                            "col": 19,
+                                            "index": 472
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 11,
+                                        "col": 16,
+                                        "index": 469
+                                    },
+                                    "end": {
+                                        "row": 11,
+                                        "col": 19,
+                                        "index": 472
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 11,
+                                "col": 14,
+                                "index": 467
+                            },
+                            "end": {
+                                "row": 11,
+                                "col": 21,
+                                "index": 474
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 11,
+                                "col": 24,
+                                "index": 477
+                            },
+                            "end": {
+                                "row": 11,
+                                "col": 27,
+                                "index": 480
+                            }
+                        },
+                        "start": {
+                            "row": 11,
+                            "col": 14,
+                            "index": 467
+                        },
+                        "end": {
+                            "row": 11,
+                            "col": 27,
+                            "index": 480
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 11,
+                    "col": 8,
+                    "index": 461
+                },
+                "end": {
+                    "row": 11,
+                    "col": 27,
+                    "index": 480
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 11,
+                "col": 1,
+                "index": 454
+            },
+            "end": {
+                "row": 11,
+                "col": 27,
+                "index": 480
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo",
+                                        "start": {
+                                            "row": 12,
+                                            "col": 16,
+                                            "index": 497
+                                        },
+                                        "end": {
+                                            "row": 12,
+                                            "col": 19,
+                                            "index": 500
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "ArrayPattern",
+                                        "elements": [
+                                            null,
+                                            null,
+                                            {
+                                                "kind": "Identifer",
+                                                "name": "qux7",
+                                                "start": {
+                                                    "row": 12,
+                                                    "col": 26,
+                                                    "index": 507
+                                                },
+                                                "end": {
+                                                    "row": 12,
+                                                    "col": 30,
+                                                    "index": 511
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 12,
+                                            "col": 21,
+                                            "index": 502
+                                        },
+                                        "end": {
+                                            "row": 12,
+                                            "col": 32,
+                                            "index": 513
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 12,
+                                        "col": 16,
+                                        "index": 497
+                                    },
+                                    "end": {
+                                        "row": 12,
+                                        "col": 32,
+                                        "index": 513
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 12,
+                                "col": 14,
+                                "index": 495
+                            },
+                            "end": {
+                                "row": 12,
+                                "col": 34,
+                                "index": 515
+                            }
+                        },
+                        "init": {
+                            "kind": "Identifer",
+                            "name": "bar",
+                            "start": {
+                                "row": 12,
+                                "col": 37,
+                                "index": 518
+                            },
+                            "end": {
+                                "row": 12,
+                                "col": 40,
+                                "index": 521
+                            }
+                        },
+                        "start": {
+                            "row": 12,
+                            "col": 14,
+                            "index": 495
+                        },
+                        "end": {
+                            "row": 12,
+                            "col": 40,
+                            "index": 521
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 12,
+                    "col": 8,
+                    "index": 489
+                },
+                "end": {
+                    "row": 12,
+                    "col": 40,
+                    "index": 521
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 12,
+                "col": 1,
+                "index": 482
+            },
+            "end": {
+                "row": 12,
+                "col": 40,
+                "index": 521
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 13,
+        "col": 1,
+        "index": 523
+    }
+}

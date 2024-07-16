@@ -1,0 +1,103 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "ObjectPattern",
+                        "properties": [
+                            {
+                                "kind": "ObjectPatternProperty",
+                                "computed": false,
+                                "shorted": true,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "x",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 3,
+                                        "index": 22
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 4,
+                                        "index": 23
+                                    }
+                                },
+                                "start": {
+                                    "row": 3,
+                                    "col": 3,
+                                    "index": 22
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 4,
+                                    "index": 23
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 6,
+                            "col": 2,
+                            "index": 52
+                        }
+                    },
+                    "init": {
+                        "kind": "ObjectExpression",
+                        "properties": [],
+                        "trailingComma": false,
+                        "start": {
+                            "row": 6,
+                            "col": 16,
+                            "index": 66
+                        },
+                        "end": {
+                            "row": 6,
+                            "col": 18,
+                            "index": 68
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 6,
+                        "col": 18,
+                        "index": 68
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 6,
+                "col": 18,
+                "index": 68
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 19,
+        "index": 69
+    }
+}

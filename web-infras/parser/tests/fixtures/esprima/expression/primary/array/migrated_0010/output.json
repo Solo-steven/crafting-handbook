@@ -1,0 +1,72 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "source",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        }
+                    },
+                    "init": {
+                        "kind": "StringLiteral",
+                        "value": "T\\u200D = []",
+                        "start": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 28,
+                            "index": 27
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 28,
+                        "index": 27
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 28,
+                "index": 27
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 29,
+        "index": 28
+    }
+}

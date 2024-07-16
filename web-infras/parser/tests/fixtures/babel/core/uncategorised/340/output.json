@@ -1,0 +1,113 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "MemberExpression",
+                "computed": false,
+                "optional": false,
+                "object": {
+                    "kind": "Identifer",
+                    "name": "foo",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 4,
+                        "index": 3
+                    }
+                },
+                "property": {
+                    "kind": "Identifer",
+                    "name": "in",
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 7,
+                "index": 6
+            }
+        },
+        {
+            "kind": "BlockStatement",
+            "body": [],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 7
+            },
+            "end": {
+                "row": 2,
+                "col": 3,
+                "index": 9
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "RegexLiteral",
+                "pattern": "foo",
+                "flag": "",
+                "start": {
+                    "row": 3,
+                    "col": 1,
+                    "index": 10
+                },
+                "end": {
+                    "row": 3,
+                    "col": 6,
+                    "index": 15
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 10
+            },
+            "end": {
+                "row": 3,
+                "col": 6,
+                "index": 15
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 6,
+        "index": 15
+    }
+}

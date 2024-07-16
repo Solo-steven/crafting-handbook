@@ -1,0 +1,205 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "Foo",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": false,
+                        "shorted": false,
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "\u0000",
+                            "start": {
+                                "row": 2,
+                                "col": 3,
+                                "index": 14
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 21
+                            }
+                        },
+                        "value": {
+                            "kind": "NumberLiteral",
+                            "value": "1",
+                            "start": {
+                                "row": 2,
+                                "col": 13,
+                                "index": 24
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 14,
+                                "index": 25
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 14
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 14,
+                            "index": 25
+                        }
+                    },
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "test",
+                            "start": {
+                                "row": 3,
+                                "col": 3,
+                                "index": 29
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 7,
+                                "index": 33
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [
+                                {
+                                    "kind": "ExpressionStatement",
+                                    "expr": {
+                                        "kind": "BinaryExpression",
+                                        "operator": "in",
+                                        "left": {
+                                            "kind": "PrivateName",
+                                            "name": "\u0000",
+                                            "start": {
+                                                "row": 4,
+                                                "col": 5,
+                                                "index": 42
+                                            },
+                                            "end": {
+                                                "row": 4,
+                                                "col": 12,
+                                                "index": 49
+                                            }
+                                        },
+                                        "right": {
+                                            "kind": "ObjectExpression",
+                                            "properties": [],
+                                            "trailingComma": false,
+                                            "start": {
+                                                "row": 4,
+                                                "col": 16,
+                                                "index": 53
+                                            },
+                                            "end": {
+                                                "row": 4,
+                                                "col": 18,
+                                                "index": 55
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 4,
+                                            "col": 5,
+                                            "index": 42
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 18,
+                                            "index": 55
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 4,
+                                        "col": 5,
+                                        "index": 42
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 18,
+                                        "index": 55
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 3,
+                                "col": 10,
+                                "index": 36
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 4,
+                                "index": 60
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 3,
+                            "index": 29
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 4,
+                            "index": 60
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 6,
+                    "col": 2,
+                    "index": 62
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 6,
+                "col": 2,
+                "index": 62
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 7,
+        "col": 1,
+        "index": 63
+    }
+}

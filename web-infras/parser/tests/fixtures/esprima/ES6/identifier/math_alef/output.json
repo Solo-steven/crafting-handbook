@@ -1,0 +1,59 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "𞸀",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        }
+                    },
+                    "init": null,
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 7,
+                "index": 6
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 7
+    }
+}

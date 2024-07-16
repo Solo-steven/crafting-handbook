@@ -1,0 +1,116 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "Identifer",
+                    "name": "x",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    }
+                },
+                "right": {
+                    "kind": "ObjectExpression",
+                    "properties": [
+                        {
+                            "kind": "ObjectAccessor",
+                            "key": {
+                                "kind": "StringLiteral",
+                                "value": "undef",
+                                "start": {
+                                    "row": 1,
+                                    "col": 11,
+                                    "index": 10
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 18,
+                                    "index": 17
+                                }
+                            },
+                            "params": [],
+                            "body": {
+                                "kind": "FunctionBody",
+                                "body": [],
+                                "start": {
+                                    "row": 1,
+                                    "col": 21,
+                                    "index": 20
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 23,
+                                    "index": 22
+                                }
+                            },
+                            "type": "get",
+                            "computed": false,
+                            "start": {
+                                "row": 1,
+                                "col": 7,
+                                "index": 6
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 23,
+                                "index": 22
+                            }
+                        }
+                    ],
+                    "trailingComma": false,
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 25,
+                        "index": 24
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 25,
+                    "index": 24
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 25,
+                "index": 24
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 25,
+        "index": 24
+    }
+}

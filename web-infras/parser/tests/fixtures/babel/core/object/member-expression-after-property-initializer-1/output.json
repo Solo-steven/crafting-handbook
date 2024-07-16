@@ -1,0 +1,186 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "ObjectPattern",
+                    "properties": [
+                        {
+                            "kind": "AssigmentPattern",
+                            "left": {
+                                "kind": "Identifer",
+                                "name": "a",
+                                "start": {
+                                    "row": 1,
+                                    "col": 3,
+                                    "index": 2
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 4,
+                                    "index": 3
+                                }
+                            },
+                            "right": {
+                                "kind": "NumberLiteral",
+                                "value": "42",
+                                "start": {
+                                    "row": 1,
+                                    "col": 7,
+                                    "index": 6
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 9,
+                                    "index": 8
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 3,
+                                "index": 2
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 9,
+                                "index": 8
+                            }
+                        },
+                        {
+                            "kind": "ObjectPatternProperty",
+                            "computed": false,
+                            "shorted": false,
+                            "key": {
+                                "kind": "Identifer",
+                                "name": "b",
+                                "start": {
+                                    "row": 1,
+                                    "col": 11,
+                                    "index": 10
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 12,
+                                    "index": 11
+                                }
+                            },
+                            "value": {
+                                "kind": "MemberExpression",
+                                "computed": false,
+                                "optional": false,
+                                "object": {
+                                    "kind": "Identifer",
+                                    "name": "test",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 14,
+                                        "index": 13
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 18,
+                                        "index": 17
+                                    }
+                                },
+                                "property": {
+                                    "kind": "Identifer",
+                                    "name": "d",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 19,
+                                        "index": 18
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 20,
+                                        "index": 19
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 14,
+                                    "index": 13
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 20,
+                                    "index": 19
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 11,
+                                "index": 10
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 20,
+                                "index": 19
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 21,
+                        "index": 20
+                    }
+                },
+                "right": {
+                    "kind": "ObjectExpression",
+                    "properties": [],
+                    "trailingComma": false,
+                    "start": {
+                        "row": 1,
+                        "col": 24,
+                        "index": 23
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 26,
+                        "index": 25
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 2,
+                    "index": 1
+                },
+                "end": {
+                    "row": 1,
+                    "col": 26,
+                    "index": 25
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 2,
+                "index": 1
+            },
+            "end": {
+                "row": 1,
+                "col": 26,
+                "index": 25
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 2,
+        "index": 1
+    },
+    "end": {
+        "row": 1,
+        "col": 27,
+        "index": 26
+    }
+}

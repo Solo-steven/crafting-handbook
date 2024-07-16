@@ -1,0 +1,13 @@
+{
+  "expect": "Failed",
+  "config": {
+    "plugins": [
+      [
+        "decorators",
+        {
+          "decoratorsBeforeExport": true
+        }
+      ]
+    ]
+  }
+}

@@ -1,0 +1,249 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": false,
+                        "shorted": true,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "x",
+                            "start": {
+                                "row": 1,
+                                "col": 11,
+                                "index": 10
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 12,
+                                "index": 11
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        }
+                    },
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": false,
+                        "shorted": true,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "y",
+                            "start": {
+                                "row": 1,
+                                "col": 14,
+                                "index": 13
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 15,
+                                "index": 14
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 18,
+                "index": 17
+            }
+        },
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "B",
+                "start": {
+                    "row": 3,
+                    "col": 7,
+                    "index": 25
+                },
+                "end": {
+                    "row": 3,
+                    "col": 8,
+                    "index": 26
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": false,
+                        "shorted": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "x",
+                            "start": {
+                                "row": 3,
+                                "col": 11,
+                                "index": 29
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 12,
+                                "index": 30
+                            }
+                        },
+                        "value": {
+                            "kind": "NumberLiteral",
+                            "value": "0",
+                            "start": {
+                                "row": 3,
+                                "col": 15,
+                                "index": 33
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 16,
+                                "index": 34
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 11,
+                            "index": 29
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 16,
+                            "index": 34
+                        }
+                    },
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": false,
+                        "shorted": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "y",
+                            "start": {
+                                "row": 3,
+                                "col": 18,
+                                "index": 36
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 19,
+                                "index": 37
+                            }
+                        },
+                        "value": {
+                            "kind": "NumberLiteral",
+                            "value": "1",
+                            "start": {
+                                "row": 3,
+                                "col": 22,
+                                "index": 40
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 23,
+                                "index": 41
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 18,
+                            "index": 36
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 23,
+                            "index": 41
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 3,
+                    "col": 9,
+                    "index": 27
+                },
+                "end": {
+                    "row": 3,
+                    "col": 26,
+                    "index": 44
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 19
+            },
+            "end": {
+                "row": 3,
+                "col": 26,
+                "index": 44
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 45
+    }
+}

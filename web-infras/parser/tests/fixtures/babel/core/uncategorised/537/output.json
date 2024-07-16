@@ -1,0 +1,100 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ForStatement",
+            "init": {
+                "kind": "VariableDeclaration",
+                "variant": "const",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "Identifer",
+                            "name": "x",
+                            "start": {
+                                "row": 1,
+                                "col": 11,
+                                "index": 10
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 12,
+                                "index": 11
+                            }
+                        },
+                        "init": {
+                            "kind": "NumberLiteral",
+                            "value": "0",
+                            "start": {
+                                "row": 1,
+                                "col": 15,
+                                "index": 14
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 16,
+                                "index": 15
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 16,
+                            "index": 15
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 5,
+                    "index": 4
+                },
+                "end": {
+                    "row": 1,
+                    "col": 16,
+                    "index": 15
+                }
+            },
+            "test": null,
+            "update": null,
+            "body": {
+                "kind": "EmptyStatement",
+                "start": {
+                    "row": 1,
+                    "col": 19,
+                    "index": 18
+                },
+                "end": {
+                    "row": 1,
+                    "col": 20,
+                    "index": 19
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 20,
+                "index": 19
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 20,
+        "index": 19
+    }
+}

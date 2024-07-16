@@ -1,0 +1,14 @@
+{
+    "kind": "Program",
+    "body": [],
+    "start": {
+        "row": 1,
+        "col": 9,
+        "index": 8
+    },
+    "end": {
+        "row": 1,
+        "col": 9,
+        "index": 8
+    }
+}

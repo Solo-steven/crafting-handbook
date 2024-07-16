@@ -1,0 +1,8 @@
+{
+  "expect": "Failed",
+  "config": {
+    "plugins": [
+      "typescript"
+    ]
+  }
+}

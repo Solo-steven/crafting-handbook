@@ -1,0 +1,102 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "ok",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        }
+                    },
+                    "init": {
+                        "kind": "CallExpression",
+                        "optional": false,
+                        "callee": {
+                            "kind": "Identifer",
+                            "name": "async",
+                            "start": {
+                                "row": 1,
+                                "col": 10,
+                                "index": 9
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 15,
+                                "index": 14
+                            }
+                        },
+                        "arguments": [
+                            {
+                                "kind": "Identifer",
+                                "name": "x",
+                                "start": {
+                                    "row": 1,
+                                    "col": 16,
+                                    "index": 15
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 17,
+                                    "index": 16
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 18,
+                "index": 17
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 18,
+        "index": 17
+    }
+}

@@ -1,0 +1,116 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": true,
+                "async": false,
+                "arguments": [],
+                "body": {
+                    "kind": "Identifer",
+                    "name": "x",
+                    "start": {
+                        "row": 1,
+                        "col": 10,
+                        "index": 9
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 11,
+                        "index": 10
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 11,
+                "index": 10
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": false,
+                "async": false,
+                "arguments": [
+                    {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 3,
+                            "col": 7,
+                            "index": 19
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 8,
+                            "index": 20
+                        }
+                    }
+                ],
+                "body": {
+                    "kind": "FunctionBody",
+                    "body": [],
+                    "start": {
+                        "row": 3,
+                        "col": 36,
+                        "index": 48
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 38,
+                        "index": 50
+                    }
+                },
+                "start": {
+                    "row": 3,
+                    "col": 1,
+                    "index": 13
+                },
+                "end": {
+                    "row": 3,
+                    "col": 38,
+                    "index": 50
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 13
+            },
+            "end": {
+                "row": 3,
+                "col": 38,
+                "index": 50
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 51
+    }
+}

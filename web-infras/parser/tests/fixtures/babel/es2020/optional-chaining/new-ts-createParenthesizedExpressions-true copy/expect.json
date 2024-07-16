@@ -1,0 +1,9 @@
+{
+  "expect": "Failed",
+  "config": {
+    "createParenthesizedExpressions": false,
+    "plugins": [
+      "typescript"
+    ]
+  }
+}

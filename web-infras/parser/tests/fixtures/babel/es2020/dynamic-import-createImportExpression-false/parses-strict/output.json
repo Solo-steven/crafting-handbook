@@ -1,0 +1,99 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 13,
+                "index": 12
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "Import",
+                    "name": "import",
+                    "start": {
+                        "row": 3,
+                        "col": 1,
+                        "index": 15
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 7,
+                        "index": 21
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "StringLiteral",
+                        "value": "test.js",
+                        "start": {
+                            "row": 3,
+                            "col": 8,
+                            "index": 22
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 17,
+                            "index": 31
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 3,
+                    "col": 1,
+                    "index": 15
+                },
+                "end": {
+                    "row": 3,
+                    "col": 18,
+                    "index": 32
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 15
+            },
+            "end": {
+                "row": 3,
+                "col": 18,
+                "index": 32
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 34
+    }
+}

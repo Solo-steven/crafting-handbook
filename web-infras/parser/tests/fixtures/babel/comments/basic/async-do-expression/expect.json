@@ -1,0 +1,9 @@
+{
+  "expect": "Pass",
+  "config": {
+    "plugins": [
+      "asyncDoExpressions",
+      "doExpressions"
+    ]
+  }
+}

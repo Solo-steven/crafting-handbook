@@ -1,0 +1,6 @@
+{
+  "expect": "Pass",
+  "config": {
+    "sourceFilename": "path/to/input-file.js"
+  }
+}

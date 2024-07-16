@@ -1,0 +1,111 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 13,
+                "index": 12
+            }
+        },
+        {
+            "kind": "TryStatement",
+            "block": {
+                "kind": "BlockStatement",
+                "body": [],
+                "start": {
+                    "row": 2,
+                    "col": 5,
+                    "index": 18
+                },
+                "end": {
+                    "row": 2,
+                    "col": 7,
+                    "index": 20
+                }
+            },
+            "handler": {
+                "kind": "CatchClause",
+                "param": {
+                    "kind": "Identifer",
+                    "name": "evil",
+                    "start": {
+                        "row": 2,
+                        "col": 15,
+                        "index": 28
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 19,
+                        "index": 32
+                    }
+                },
+                "body": {
+                    "kind": "BlockStatement",
+                    "body": [],
+                    "start": {
+                        "row": 2,
+                        "col": 21,
+                        "index": 34
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 23,
+                        "index": 36
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 8,
+                    "index": 21
+                },
+                "end": {
+                    "row": 2,
+                    "col": 23,
+                    "index": 36
+                }
+            },
+            "finalizer": null,
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 14
+            },
+            "end": {
+                "row": 2,
+                "col": 23,
+                "index": 36
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 37
+    }
+}

@@ -1,0 +1,148 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "foo",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        }
+                    },
+                    "init": {
+                        "kind": "FunctionExpression",
+                        "name": null,
+                        "generator": false,
+                        "async": false,
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 1,
+                                "col": 38,
+                                "index": 37
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 40,
+                                "index": 39
+                            }
+                        },
+                        "params": [
+                            {
+                                "kind": "ObjectPattern",
+                                "properties": [
+                                    {
+                                        "kind": "ObjectPatternProperty",
+                                        "computed": false,
+                                        "shorted": false,
+                                        "key": {
+                                            "kind": "Identifer",
+                                            "name": "async",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 24,
+                                                "index": 23
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 29,
+                                                "index": 28
+                                            }
+                                        },
+                                        "value": {
+                                            "kind": "Identifer",
+                                            "name": "bar",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 31,
+                                                "index": 30
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 34,
+                                                "index": 33
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 1,
+                                            "col": 24,
+                                            "index": 23
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 34,
+                                            "index": 33
+                                        }
+                                    }
+                                ],
+                                "start": {
+                                    "row": 1,
+                                    "col": 22,
+                                    "index": 21
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 36,
+                                    "index": 35
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 13,
+                            "index": 12
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 40,
+                            "index": 39
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 40,
+                        "index": 39
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 40,
+                "index": 39
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 41
+    }
+}

@@ -1,0 +1,86 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "TaggTemplateExpression",
+                "tag": {
+                    "kind": "Identifer",
+                    "name": "a",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    }
+                },
+                "quasi": {
+                    "kind": "TemplateLiteral",
+                    "quasis": [
+                        {
+                            "kind": "TemplateElement",
+                            "value": "`\\u{nicode}`",
+                            "tail": true,
+                            "start": {
+                                "row": 1,
+                                "col": 2,
+                                "index": 1
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 14,
+                                "index": 13
+                            }
+                        }
+                    ],
+                    "expressions": [],
+                    "start": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 14,
+                        "index": 13
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 2,
+                    "index": 1
+                },
+                "end": {
+                    "row": 1,
+                    "col": 14,
+                    "index": 13
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 2,
+                "index": 1
+            },
+            "end": {
+                "row": 1,
+                "col": 14,
+                "index": 13
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 2,
+        "index": 1
+    },
+    "end": {
+        "row": 1,
+        "col": 14,
+        "index": 13
+    }
+}

@@ -1,0 +1,218 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "o",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 6,
+                            "index": 5
+                        }
+                    },
+                    "init": {
+                        "kind": "ObjectExpression",
+                        "properties": [
+                            {
+                                "kind": "ObjectProperty",
+                                "computed": false,
+                                "shorted": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 11,
+                                        "index": 10
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 12,
+                                        "index": 11
+                                    }
+                                },
+                                "value": {
+                                    "kind": "NumberLiteral",
+                                    "value": "1",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 14,
+                                        "index": 13
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 15,
+                                        "index": 14
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 11,
+                                    "index": 10
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 15,
+                                    "index": 14
+                                }
+                            },
+                            {
+                                "kind": "ObjectMethodDefinition",
+                                "async": true,
+                                "generator": false,
+                                "computed": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "foo",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 23,
+                                        "index": 22
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 26,
+                                        "index": 25
+                                    }
+                                },
+                                "params": [
+                                    {
+                                        "kind": "Identifer",
+                                        "name": "promise",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 27,
+                                            "index": 26
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 34,
+                                            "index": 33
+                                        }
+                                    }
+                                ],
+                                "body": {
+                                    "kind": "FunctionBody",
+                                    "body": [
+                                        {
+                                            "kind": "ExpressionStatement",
+                                            "expr": {
+                                                "kind": "AwaitExpression",
+                                                "argument": {
+                                                    "kind": "Identifer",
+                                                    "name": "promise",
+                                                    "start": {
+                                                        "row": 1,
+                                                        "col": 44,
+                                                        "index": 43
+                                                    },
+                                                    "end": {
+                                                        "row": 1,
+                                                        "col": 51,
+                                                        "index": 50
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 1,
+                                                    "col": 38,
+                                                    "index": 37
+                                                },
+                                                "end": {
+                                                    "row": 1,
+                                                    "col": 51,
+                                                    "index": 50
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 1,
+                                                "col": 38,
+                                                "index": 37
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 51,
+                                                "index": 50
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 1,
+                                        "col": 36,
+                                        "index": 35
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 53,
+                                        "index": 52
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 17,
+                                    "index": 16
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 53,
+                                    "index": 52
+                                }
+                            }
+                        ],
+                        "trailingComma": false,
+                        "start": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 55,
+                            "index": 54
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 55,
+                        "index": 54
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 55,
+                "index": 54
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 55,
+        "index": 54
+    }
+}

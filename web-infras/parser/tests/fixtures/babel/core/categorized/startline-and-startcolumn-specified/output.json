@@ -1,0 +1,129 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "Identifer",
+                    "name": "call",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "NumberLiteral",
+                        "value": "1",
+                        "start": {
+                            "row": 1,
+                            "col": 6,
+                            "index": 5
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 8,
+                "index": 7
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "Identifer",
+                    "name": "run",
+                    "start": {
+                        "row": 2,
+                        "col": 1,
+                        "index": 9
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 4,
+                        "index": 12
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "NumberLiteral",
+                        "value": "2",
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 13
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 6,
+                            "index": 14
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 9
+                },
+                "end": {
+                    "row": 2,
+                    "col": 7,
+                    "index": 15
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 9
+            },
+            "end": {
+                "row": 2,
+                "col": 7,
+                "index": 15
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 17
+    }
+}

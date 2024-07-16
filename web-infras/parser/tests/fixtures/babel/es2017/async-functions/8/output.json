@@ -1,0 +1,132 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "ObjectPattern",
+                        "properties": [
+                            {
+                                "kind": "ObjectPatternProperty",
+                                "computed": false,
+                                "shorted": true,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "async",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 8,
+                                        "index": 7
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 13,
+                                        "index": 12
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 8,
+                                    "index": 7
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 13,
+                                    "index": 12
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        }
+                    },
+                    "init": {
+                        "kind": "CallExpression",
+                        "optional": false,
+                        "callee": {
+                            "kind": "Identifer",
+                            "name": "require",
+                            "start": {
+                                "row": 1,
+                                "col": 17,
+                                "index": 16
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 24,
+                                "index": 23
+                            }
+                        },
+                        "arguments": [
+                            {
+                                "kind": "StringLiteral",
+                                "value": "../lang/task",
+                                "start": {
+                                    "row": 1,
+                                    "col": 25,
+                                    "index": 24
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 39,
+                                    "index": 38
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 17,
+                            "index": 16
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 40,
+                            "index": 39
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 40,
+                        "index": 39
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 40,
+                "index": 39
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 40
+    }
+}

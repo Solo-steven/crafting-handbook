@@ -1,0 +1,126 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 13,
+                "index": 12
+            }
+        },
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "a",
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 6,
+                            "index": 19
+                        }
+                    },
+                    "init": {
+                        "kind": "NumberLiteral",
+                        "value": "1",
+                        "start": {
+                            "row": 2,
+                            "col": 9,
+                            "index": 22
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 10,
+                            "index": 23
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 5,
+                        "index": 18
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 10,
+                        "index": 23
+                    }
+                }
+            ],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 14
+            },
+            "end": {
+                "row": 2,
+                "col": 10,
+                "index": 23
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 3,
+                    "col": 1,
+                    "index": 25
+                },
+                "end": {
+                    "row": 3,
+                    "col": 13,
+                    "index": 37
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 25
+            },
+            "end": {
+                "row": 3,
+                "col": 13,
+                "index": 37
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 39
+    }
+}

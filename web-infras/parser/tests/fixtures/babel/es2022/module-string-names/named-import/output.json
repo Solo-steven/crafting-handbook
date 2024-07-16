@@ -1,0 +1,85 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ImportDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ImportSpecifier",
+                    "imported": {
+                        "kind": "StringLiteral",
+                        "value": "學而時習之，不亦說乎？",
+                        "start": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 22,
+                            "index": 21
+                        }
+                    },
+                    "local": {
+                        "kind": "Identifer",
+                        "name": "quotation",
+                        "start": {
+                            "row": 1,
+                            "col": 26,
+                            "index": 25
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 35,
+                            "index": 34
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 9,
+                        "index": 8
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 35,
+                        "index": 34
+                    }
+                }
+            ],
+            "source": {
+                "kind": "StringLiteral",
+                "value": "Confucius",
+                "start": {
+                    "row": 1,
+                    "col": 42,
+                    "index": 41
+                },
+                "end": {
+                    "row": 1,
+                    "col": 53,
+                    "index": 52
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 53,
+                "index": 52
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 54
+    }
+}

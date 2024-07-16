@@ -1,0 +1,72 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportDefaultDeclaration",
+            "declaration": {
+                "kind": "FunctionDeclaration",
+                "name": {
+                    "kind": "Identifer",
+                    "name": "bar",
+                    "start": {
+                        "row": 2,
+                        "col": 10,
+                        "index": 30
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 13,
+                        "index": 33
+                    }
+                },
+                "generator": false,
+                "async": true,
+                "body": {
+                    "kind": "FunctionBody",
+                    "body": [],
+                    "start": {
+                        "row": 2,
+                        "col": 16,
+                        "index": 36
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 18,
+                        "index": 38
+                    }
+                },
+                "params": [],
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 21
+                },
+                "end": {
+                    "row": 2,
+                    "col": 18,
+                    "index": 38
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 2,
+                "col": 18,
+                "index": 38
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 39
+    }
+}

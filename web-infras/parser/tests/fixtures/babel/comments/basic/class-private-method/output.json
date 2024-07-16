@@ -1,0 +1,120 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ClassExpression",
+                "id": null,
+                "superClass": null,
+                "body": {
+                    "kind": "ClassBody",
+                    "body": [
+                        {
+                            "kind": "ClassMethodDefinition",
+                            "async": false,
+                            "generator": false,
+                            "computed": false,
+                            "static": false,
+                            "key": {
+                                "kind": "PrivateName",
+                                "name": "f",
+                                "start": {
+                                    "row": 1,
+                                    "col": 34,
+                                    "index": 33
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 36,
+                                    "index": 35
+                                }
+                            },
+                            "params": [
+                                {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 54,
+                                        "index": 53
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 55,
+                                        "index": 54
+                                    }
+                                }
+                            ],
+                            "body": {
+                                "kind": "FunctionBody",
+                                "body": [],
+                                "start": {
+                                    "row": 1,
+                                    "col": 82,
+                                    "index": 81
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 93,
+                                    "index": 92
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 34,
+                                "index": 33
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 93,
+                                "index": 92
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 24,
+                        "index": 23
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 104,
+                        "index": 103
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                },
+                "end": {
+                    "row": 1,
+                    "col": 104,
+                    "index": 103
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 10,
+                "index": 9
+            },
+            "end": {
+                "row": 1,
+                "col": 104,
+                "index": 103
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 10,
+        "index": 9
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 116
+    }
+}

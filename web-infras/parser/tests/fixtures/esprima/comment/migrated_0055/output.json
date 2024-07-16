@@ -1,0 +1,56 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "WhileStatement",
+            "test": {
+                "kind": "BoolLterial",
+                "value": true,
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "body": {
+                "kind": "BlockStatement",
+                "body": [],
+                "start": {
+                    "row": 1,
+                    "col": 14,
+                    "index": 13
+                },
+                "end": {
+                    "row": 5,
+                    "col": 2,
+                    "index": 57
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 5,
+                "col": 2,
+                "index": 57
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 58
+    }
+}

@@ -1,0 +1,146 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ObjectExpression",
+                "properties": [
+                    {
+                        "kind": "ObjectProperty",
+                        "computed": false,
+                        "shorted": false,
+                        "key": {
+                            "kind": "StringLiteral",
+                            "value": "__proto__",
+                            "start": {
+                                "row": 1,
+                                "col": 4,
+                                "index": 3
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 15,
+                                "index": 14
+                            }
+                        },
+                        "value": {
+                            "kind": "NullLiteral",
+                            "start": {
+                                "row": 1,
+                                "col": 17,
+                                "index": 16
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 4,
+                            "index": 3
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        }
+                    },
+                    {
+                        "kind": "ObjectAccessor",
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "__proto__",
+                            "start": {
+                                "row": 1,
+                                "col": 27,
+                                "index": 26
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 36,
+                                "index": 35
+                            }
+                        },
+                        "params": [
+                            {
+                                "kind": "Identifer",
+                                "name": "x",
+                                "start": {
+                                    "row": 1,
+                                    "col": 37,
+                                    "index": 36
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 38,
+                                    "index": 37
+                                }
+                            }
+                        ],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 1,
+                                "col": 39,
+                                "index": 38
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 41,
+                                "index": 40
+                            }
+                        },
+                        "type": "set",
+                        "computed": false,
+                        "start": {
+                            "row": 1,
+                            "col": 23,
+                            "index": 22
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 41,
+                            "index": 40
+                        }
+                    }
+                ],
+                "trailingComma": false,
+                "start": {
+                    "row": 1,
+                    "col": 2,
+                    "index": 1
+                },
+                "end": {
+                    "row": 1,
+                    "col": 43,
+                    "index": 42
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 2,
+                "index": 1
+            },
+            "end": {
+                "row": 1,
+                "col": 43,
+                "index": 42
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 2,
+        "index": 1
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 44
+    }
+}

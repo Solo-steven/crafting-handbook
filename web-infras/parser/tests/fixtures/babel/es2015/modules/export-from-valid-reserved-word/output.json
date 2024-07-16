@@ -1,0 +1,73 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ExportSpecifier",
+                    "exported": {
+                        "kind": "Identifer",
+                        "name": "if",
+                        "start": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        }
+                    },
+                    "local": null,
+                    "start": {
+                        "row": 1,
+                        "col": 10,
+                        "index": 9
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 12,
+                        "index": 11
+                    }
+                }
+            ],
+            "declaration": null,
+            "source": {
+                "kind": 10114,
+                "value": "foo",
+                "start": {
+                    "row": 1,
+                    "col": 20,
+                    "index": 19
+                },
+                "end": {
+                    "row": 1,
+                    "col": 25,
+                    "index": 24
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 25,
+                "index": 24
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 25
+    }
+}

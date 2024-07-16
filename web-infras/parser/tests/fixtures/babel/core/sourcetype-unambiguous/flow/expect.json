@@ -1,0 +1,9 @@
+{
+  "expect": "Pass",
+  "config": {
+    "sourceType": "unambiguous",
+    "plugins": [
+      "flow"
+    ]
+  }
+}

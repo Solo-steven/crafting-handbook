@@ -1,0 +1,59 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "TemplateLiteral",
+                "quasis": [
+                    {
+                        "kind": "TemplateElement",
+                        "value": "`\\0YY`",
+                        "tail": true,
+                        "start": {
+                            "row": 1,
+                            "col": 1,
+                            "index": 0
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        }
+                    }
+                ],
+                "expressions": [],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 7,
+                "index": 6
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 7,
+        "index": 6
+    }
+}

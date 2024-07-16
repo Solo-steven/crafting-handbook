@@ -1,0 +1,161 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "BinaryExpression",
+                "operator": "/",
+                "left": {
+                    "kind": "BinaryExpression",
+                    "operator": "+",
+                    "left": {
+                        "kind": "ObjectExpression",
+                        "properties": [
+                            {
+                                "kind": "ObjectProperty",
+                                "computed": false,
+                                "shorted": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 3,
+                                        "index": 2
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 4,
+                                        "index": 3
+                                    }
+                                },
+                                "value": {
+                                    "kind": "ArrayExpression",
+                                    "elements": [
+                                        {
+                                            "kind": "NumberLiteral",
+                                            "value": "1",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 7,
+                                                "index": 6
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 8,
+                                                "index": 7
+                                            }
+                                        }
+                                    ],
+                                    "trailingComma": false,
+                                    "start": {
+                                        "row": 1,
+                                        "col": 6,
+                                        "index": 5
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 9,
+                                        "index": 8
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 3,
+                                    "index": 2
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 9,
+                                    "index": 8
+                                }
+                            }
+                        ],
+                        "trailingComma": false,
+                        "start": {
+                            "row": 1,
+                            "col": 2,
+                            "index": 1
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        }
+                    },
+                    "right": {
+                        "kind": "ArrayExpression",
+                        "elements": [],
+                        "trailingComma": false,
+                        "start": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 13,
+                            "index": 12
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    },
+                    "parentheses": true
+                },
+                "right": {
+                    "kind": "NumberLiteral",
+                    "value": "2",
+                    "start": {
+                        "row": 1,
+                        "col": 17,
+                        "index": 16
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 2,
+                    "index": 1
+                },
+                "end": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 2,
+                "index": 1
+            },
+            "end": {
+                "row": 1,
+                "col": 18,
+                "index": 17
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 2,
+        "index": 1
+    },
+    "end": {
+        "row": 1,
+        "col": 18,
+        "index": 17
+    }
+}

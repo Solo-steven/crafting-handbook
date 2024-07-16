@@ -1,0 +1,85 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "BlockStatement",
+            "body": [
+                {
+                    "kind": "LabledStatement",
+                    "label": {
+                        "kind": "Identifer",
+                        "name": "a",
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 4,
+                            "index": 5
+                        }
+                    },
+                    "body": {
+                        "kind": "SwitchStatement",
+                        "discriminant": {
+                            "kind": "Identifer",
+                            "name": "i",
+                            "start": {
+                                "row": 2,
+                                "col": 14,
+                                "index": 15
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 15,
+                                "index": 16
+                            }
+                        },
+                        "cases": [],
+                        "start": {
+                            "row": 2,
+                            "col": 6,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 4,
+                            "index": 23
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 3,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 4,
+                        "index": 23
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 4,
+                "col": 2,
+                "index": 25
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 2,
+        "index": 25
+    }
+}

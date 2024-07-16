@@ -1,0 +1,71 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ReturnStatement",
+            "argu": {
+                "kind": "BinaryExpression",
+                "operator": "/",
+                "left": {
+                    "kind": "ObjectExpression",
+                    "properties": [],
+                    "trailingComma": false,
+                    "start": {
+                        "row": 1,
+                        "col": 8,
+                        "index": 7
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 10,
+                        "index": 9
+                    }
+                },
+                "right": {
+                    "kind": "NumberLiteral",
+                    "value": "2",
+                    "start": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 14,
+                        "index": 13
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 14,
+                    "index": 13
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 14,
+                "index": 13
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 14,
+        "index": 13
+    }
+}

@@ -1,0 +1,70 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "WhileStatement",
+            "test": {
+                "kind": "NumberLiteral",
+                "value": "1",
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                }
+            },
+            "body": {
+                "kind": "ExpressionStatement",
+                "expr": {
+                    "kind": "RegexLiteral",
+                    "pattern": "foo",
+                    "flag": "",
+                    "start": {
+                        "row": 1,
+                        "col": 11,
+                        "index": 10
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 16,
+                        "index": 15
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 1,
+                    "col": 16,
+                    "index": 15
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 16,
+                "index": 15
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 16,
+        "index": 15
+    }
+}

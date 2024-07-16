@@ -1,0 +1,125 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "WhileStatement",
+            "test": {
+                "kind": "BoolLterial",
+                "value": true,
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "body": {
+                "kind": "BlockStatement",
+                "body": [
+                    {
+                        "kind": "IfStatement",
+                        "test": {
+                            "kind": "Identifer",
+                            "name": "x",
+                            "start": {
+                                "row": 2,
+                                "col": 9,
+                                "index": 23
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 24
+                            }
+                        },
+                        "conseqence": {
+                            "kind": "BreakStatement",
+                            "label": null,
+                            "start": {
+                                "row": 2,
+                                "col": 12,
+                                "index": 26
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 17,
+                                "index": 31
+                            }
+                        },
+                        "alternative": {
+                            "kind": "ExpressionStatement",
+                            "expr": {
+                                "kind": "Identifer",
+                                "name": "y",
+                                "start": {
+                                    "row": 4,
+                                    "col": 10,
+                                    "index": 47
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 11,
+                                    "index": 48
+                                }
+                            },
+                            "start": {
+                                "row": 4,
+                                "col": 10,
+                                "index": 47
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 11,
+                                "index": 48
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 19
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 11,
+                            "index": 48
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 14,
+                    "index": 13
+                },
+                "end": {
+                    "row": 5,
+                    "col": 2,
+                    "index": 51
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 5,
+                "col": 2,
+                "index": 51
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 52
+    }
+}

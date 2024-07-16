@@ -1,0 +1,72 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "Import",
+                    "name": "import",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "StringLiteral",
+                        "value": "test.js",
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 17,
+                            "index": 16
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 18,
+                "index": 17
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 19
+    }
+}

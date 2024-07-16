@@ -9,7 +9,7 @@ async function main() {
     run3partyTestCase(),
   ]);
   lexerReport();
-  parserReport();
+  await parserReport();
   thirdPartyReport();
 }
 

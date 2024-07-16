@@ -1,0 +1,73 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 6,
+                            "index": 5
+                        }
+                    },
+                    "init": {
+                        "kind": "RegexLiteral",
+                        "pattern": "[P QR]",
+                        "flag": "i",
+                        "start": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 18,
+                "index": 17
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 18,
+        "index": 17
+    }
+}

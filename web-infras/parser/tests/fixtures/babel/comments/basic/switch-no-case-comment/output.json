@@ -1,0 +1,43 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "SwitchStatement",
+            "discriminant": {
+                "kind": "Identifer",
+                "name": "c",
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                }
+            },
+            "cases": [],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 26,
+                "index": 25
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 32
+    }
+}

@@ -1,0 +1,100 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "Identifer",
+                    "name": "a",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    }
+                },
+                "right": {
+                    "kind": "SequenceExpression",
+                    "exprs": [
+                        {
+                            "kind": "Identifer",
+                            "name": "b",
+                            "start": {
+                                "row": 2,
+                                "col": 3,
+                                "index": 8
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 4,
+                                "index": 9
+                            }
+                        },
+                        {
+                            "kind": "Identifer",
+                            "name": "c",
+                            "start": {
+                                "row": 3,
+                                "col": 3,
+                                "index": 13
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 4,
+                                "index": 14
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 2,
+                        "index": 16
+                    },
+                    "parentheses": true
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 16
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 4,
+                "col": 2,
+                "index": 16
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 5,
+        "col": 1,
+        "index": 17
+    }
+}

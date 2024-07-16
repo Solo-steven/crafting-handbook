@@ -1,0 +1,8 @@
+{
+  "expect": "Pass",
+  "config": {
+    "plugins": [
+      "flow"
+    ]
+  }
+}

@@ -1,0 +1,130 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "Identifer",
+                    "name": "f",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "Identifer",
+                        "name": "a",
+                        "start": {
+                            "row": 1,
+                            "col": 3,
+                            "index": 2
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 4,
+                            "index": 3
+                        }
+                    },
+                    {
+                        "kind": "ArrowFunctionExpression",
+                        "expressionBody": true,
+                        "async": true,
+                        "arguments": [
+                            {
+                                "kind": "Identifer",
+                                "name": "promise",
+                                "start": {
+                                    "row": 1,
+                                    "col": 12,
+                                    "index": 11
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 19,
+                                    "index": 18
+                                }
+                            }
+                        ],
+                        "body": {
+                            "kind": "AwaitExpression",
+                            "argument": {
+                                "kind": "Identifer",
+                                "name": "promise",
+                                "start": {
+                                    "row": 1,
+                                    "col": 29,
+                                    "index": 28
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 36,
+                                    "index": 35
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 23,
+                                "index": 22
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 36,
+                                "index": 35
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 36,
+                            "index": 35
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 37,
+                    "index": 36
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 37,
+                "index": 36
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 37,
+        "index": 36
+    }
+}

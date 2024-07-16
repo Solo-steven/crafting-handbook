@@ -1,0 +1,507 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "MemberExpression",
+                    "computed": false,
+                    "optional": false,
+                    "object": {
+                        "kind": "Identifer",
+                        "name": "module",
+                        "start": {
+                            "row": 1,
+                            "col": 1,
+                            "index": 0
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        }
+                    },
+                    "property": {
+                        "kind": "Identifer",
+                        "name": "exports",
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 15,
+                        "index": 14
+                    }
+                },
+                "right": {
+                    "kind": "FunctionExpression",
+                    "name": null,
+                    "generator": false,
+                    "async": false,
+                    "body": {
+                        "kind": "FunctionBody",
+                        "body": [
+                            {
+                                "kind": "FunctionDeclaration",
+                                "name": {
+                                    "kind": "Identifer",
+                                    "name": "isConstant",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 14,
+                                        "index": 51
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 24,
+                                        "index": 61
+                                    }
+                                },
+                                "generator": false,
+                                "async": false,
+                                "body": {
+                                    "kind": "FunctionBody",
+                                    "body": [
+                                        {
+                                            "kind": "SwitchStatement",
+                                            "discriminant": {
+                                                "kind": "MemberExpression",
+                                                "computed": false,
+                                                "optional": false,
+                                                "object": {
+                                                    "kind": "Identifer",
+                                                    "name": "node",
+                                                    "start": {
+                                                        "row": 4,
+                                                        "col": 17,
+                                                        "index": 86
+                                                    },
+                                                    "end": {
+                                                        "row": 4,
+                                                        "col": 21,
+                                                        "index": 90
+                                                    }
+                                                },
+                                                "property": {
+                                                    "kind": "Identifer",
+                                                    "name": "type",
+                                                    "start": {
+                                                        "row": 4,
+                                                        "col": 22,
+                                                        "index": 91
+                                                    },
+                                                    "end": {
+                                                        "row": 4,
+                                                        "col": 26,
+                                                        "index": 95
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 4,
+                                                    "col": 17,
+                                                    "index": 86
+                                                },
+                                                "end": {
+                                                    "row": 4,
+                                                    "col": 26,
+                                                    "index": 95
+                                                }
+                                            },
+                                            "cases": [
+                                                {
+                                                    "kind": "SwitchCase",
+                                                    "test": {
+                                                        "kind": "StringLiteral",
+                                                        "value": "SequenceExpression",
+                                                        "start": {
+                                                            "row": 5,
+                                                            "col": 18,
+                                                            "index": 116
+                                                        },
+                                                        "end": {
+                                                            "row": 5,
+                                                            "col": 38,
+                                                            "index": 136
+                                                        }
+                                                    },
+                                                    "consequence": [
+                                                        {
+                                                            "kind": "ReturnStatement",
+                                                            "argu": {
+                                                                "kind": "CallExpression",
+                                                                "optional": false,
+                                                                "callee": {
+                                                                    "kind": "Identifer",
+                                                                    "name": "isConstant",
+                                                                    "start": {
+                                                                        "row": 6,
+                                                                        "col": 24,
+                                                                        "index": 161
+                                                                    },
+                                                                    "end": {
+                                                                        "row": 6,
+                                                                        "col": 34,
+                                                                        "index": 171
+                                                                    }
+                                                                },
+                                                                "arguments": [
+                                                                    {
+                                                                        "kind": "MemberExpression",
+                                                                        "computed": true,
+                                                                        "optional": false,
+                                                                        "object": {
+                                                                            "kind": "MemberExpression",
+                                                                            "computed": false,
+                                                                            "optional": false,
+                                                                            "object": {
+                                                                                "kind": "Identifer",
+                                                                                "name": "node",
+                                                                                "start": {
+                                                                                    "row": 6,
+                                                                                    "col": 35,
+                                                                                    "index": 172
+                                                                                },
+                                                                                "end": {
+                                                                                    "row": 6,
+                                                                                    "col": 39,
+                                                                                    "index": 176
+                                                                                }
+                                                                            },
+                                                                            "property": {
+                                                                                "kind": "Identifer",
+                                                                                "name": "expressions",
+                                                                                "start": {
+                                                                                    "row": 6,
+                                                                                    "col": 40,
+                                                                                    "index": 177
+                                                                                },
+                                                                                "end": {
+                                                                                    "row": 6,
+                                                                                    "col": 51,
+                                                                                    "index": 188
+                                                                                }
+                                                                            },
+                                                                            "start": {
+                                                                                "row": 6,
+                                                                                "col": 35,
+                                                                                "index": 172
+                                                                            },
+                                                                            "end": {
+                                                                                "row": 6,
+                                                                                "col": 51,
+                                                                                "index": 188
+                                                                            }
+                                                                        },
+                                                                        "property": {
+                                                                            "kind": "BinaryExpression",
+                                                                            "operator": "-",
+                                                                            "left": {
+                                                                                "kind": "MemberExpression",
+                                                                                "computed": false,
+                                                                                "optional": false,
+                                                                                "object": {
+                                                                                    "kind": "MemberExpression",
+                                                                                    "computed": false,
+                                                                                    "optional": false,
+                                                                                    "object": {
+                                                                                        "kind": "Identifer",
+                                                                                        "name": "node",
+                                                                                        "start": {
+                                                                                            "row": 6,
+                                                                                            "col": 52,
+                                                                                            "index": 189
+                                                                                        },
+                                                                                        "end": {
+                                                                                            "row": 6,
+                                                                                            "col": 56,
+                                                                                            "index": 193
+                                                                                        }
+                                                                                    },
+                                                                                    "property": {
+                                                                                        "kind": "Identifer",
+                                                                                        "name": "expressions",
+                                                                                        "start": {
+                                                                                            "row": 6,
+                                                                                            "col": 57,
+                                                                                            "index": 194
+                                                                                        },
+                                                                                        "end": {
+                                                                                            "row": 6,
+                                                                                            "col": 68,
+                                                                                            "index": 205
+                                                                                        }
+                                                                                    },
+                                                                                    "start": {
+                                                                                        "row": 6,
+                                                                                        "col": 52,
+                                                                                        "index": 189
+                                                                                    },
+                                                                                    "end": {
+                                                                                        "row": 6,
+                                                                                        "col": 68,
+                                                                                        "index": 205
+                                                                                    }
+                                                                                },
+                                                                                "property": {
+                                                                                    "kind": "Identifer",
+                                                                                    "name": "length",
+                                                                                    "start": {
+                                                                                        "row": 6,
+                                                                                        "col": 69,
+                                                                                        "index": 206
+                                                                                    },
+                                                                                    "end": {
+                                                                                        "row": 6,
+                                                                                        "col": 75,
+                                                                                        "index": 212
+                                                                                    }
+                                                                                },
+                                                                                "start": {
+                                                                                    "row": 6,
+                                                                                    "col": 52,
+                                                                                    "index": 189
+                                                                                },
+                                                                                "end": {
+                                                                                    "row": 6,
+                                                                                    "col": 75,
+                                                                                    "index": 212
+                                                                                }
+                                                                            },
+                                                                            "right": {
+                                                                                "kind": "NumberLiteral",
+                                                                                "value": "1",
+                                                                                "start": {
+                                                                                    "row": 6,
+                                                                                    "col": 78,
+                                                                                    "index": 215
+                                                                                },
+                                                                                "end": {
+                                                                                    "row": 6,
+                                                                                    "col": 79,
+                                                                                    "index": 216
+                                                                                }
+                                                                            },
+                                                                            "start": {
+                                                                                "row": 6,
+                                                                                "col": 52,
+                                                                                "index": 189
+                                                                            },
+                                                                            "end": {
+                                                                                "row": 6,
+                                                                                "col": 79,
+                                                                                "index": 216
+                                                                            }
+                                                                        },
+                                                                        "start": {
+                                                                            "row": 6,
+                                                                            "col": 35,
+                                                                            "index": 172
+                                                                        },
+                                                                        "end": {
+                                                                            "row": 6,
+                                                                            "col": 80,
+                                                                            "index": 217
+                                                                        }
+                                                                    }
+                                                                ],
+                                                                "start": {
+                                                                    "row": 6,
+                                                                    "col": 24,
+                                                                    "index": 161
+                                                                },
+                                                                "end": {
+                                                                    "row": 6,
+                                                                    "col": 81,
+                                                                    "index": 218
+                                                                }
+                                                            },
+                                                            "start": {
+                                                                "row": 6,
+                                                                "col": 17,
+                                                                "index": 154
+                                                            },
+                                                            "end": {
+                                                                "row": 6,
+                                                                "col": 81,
+                                                                "index": 218
+                                                            }
+                                                        }
+                                                    ],
+                                                    "start": {
+                                                        "row": 5,
+                                                        "col": 13,
+                                                        "index": 111
+                                                    },
+                                                    "end": {
+                                                        "row": 8,
+                                                        "col": 9,
+                                                        "index": 254
+                                                    }
+                                                }
+                                            ],
+                                            "start": {
+                                                "row": 4,
+                                                "col": 9,
+                                                "index": 78
+                                            },
+                                            "end": {
+                                                "row": 8,
+                                                "col": 10,
+                                                "index": 255
+                                            }
+                                        },
+                                        {
+                                            "kind": "ReturnStatement",
+                                            "argu": {
+                                                "kind": "BoolLterial",
+                                                "value": false,
+                                                "start": {
+                                                    "row": 10,
+                                                    "col": 16,
+                                                    "index": 280
+                                                },
+                                                "end": {
+                                                    "row": 10,
+                                                    "col": 21,
+                                                    "index": 285
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 10,
+                                                "col": 9,
+                                                "index": 273
+                                            },
+                                            "end": {
+                                                "row": 10,
+                                                "col": 21,
+                                                "index": 285
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 3,
+                                        "col": 31,
+                                        "index": 68
+                                    },
+                                    "end": {
+                                        "row": 11,
+                                        "col": 6,
+                                        "index": 292
+                                    }
+                                },
+                                "params": [
+                                    {
+                                        "kind": "Identifer",
+                                        "name": "node",
+                                        "start": {
+                                            "row": 3,
+                                            "col": 25,
+                                            "index": 62
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 29,
+                                            "index": 66
+                                        }
+                                    }
+                                ],
+                                "start": {
+                                    "row": 3,
+                                    "col": 5,
+                                    "index": 42
+                                },
+                                "end": {
+                                    "row": 11,
+                                    "col": 6,
+                                    "index": 292
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 36,
+                            "index": 35
+                        },
+                        "end": {
+                            "row": 13,
+                            "col": 2,
+                            "index": 295
+                        }
+                    },
+                    "params": [
+                        {
+                            "kind": "Identifer",
+                            "name": "context",
+                            "start": {
+                                "row": 1,
+                                "col": 27,
+                                "index": 26
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 34,
+                                "index": 33
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    },
+                    "end": {
+                        "row": 13,
+                        "col": 2,
+                        "index": 295
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 13,
+                    "col": 2,
+                    "index": 295
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 13,
+                "col": 2,
+                "index": 295
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 14,
+        "col": 1,
+        "index": 297
+    }
+}

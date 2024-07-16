@@ -1,0 +1,100 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "IfStatement",
+            "test": {
+                "kind": "Identifer",
+                "name": "x",
+                "start": {
+                    "row": 1,
+                    "col": 5,
+                    "index": 4
+                },
+                "end": {
+                    "row": 1,
+                    "col": 6,
+                    "index": 5
+                }
+            },
+            "conseqence": {
+                "kind": "BlockStatement",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "Identifer",
+                                "name": "doThat",
+                                "start": {
+                                    "row": 1,
+                                    "col": 29,
+                                    "index": 28
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 35,
+                                    "index": 34
+                                }
+                            },
+                            "arguments": [],
+                            "start": {
+                                "row": 1,
+                                "col": 29,
+                                "index": 28
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 37,
+                                "index": 36
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 29,
+                            "index": 28
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 37,
+                            "index": 36
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 39,
+                    "index": 38
+                }
+            },
+            "alternative": null,
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 39,
+                "index": 38
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 39,
+        "index": 38
+    }
+}

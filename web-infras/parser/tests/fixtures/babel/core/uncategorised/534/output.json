@@ -1,0 +1,113 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "eval",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        }
+                    },
+                    "init": {
+                        "kind": "NumberLiteral",
+                        "value": "42",
+                        "start": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 16,
+                            "index": 15
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 16,
+                        "index": 15
+                    }
+                },
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "arguments",
+                        "start": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 27,
+                            "index": 26
+                        }
+                    },
+                    "init": {
+                        "kind": "NumberLiteral",
+                        "value": "42",
+                        "start": {
+                            "row": 1,
+                            "col": 30,
+                            "index": 29
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 32,
+                            "index": 31
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 32,
+                        "index": 31
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 32,
+                "index": 31
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 32,
+        "index": 31
+    }
+}

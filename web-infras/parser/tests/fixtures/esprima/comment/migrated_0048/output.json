@@ -1,0 +1,129 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ObjectExpression",
+                "properties": [
+                    {
+                        "kind": "ObjectProperty",
+                        "computed": false,
+                        "shorted": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "p1",
+                            "start": {
+                                "row": 2,
+                                "col": 5,
+                                "index": 20
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 7,
+                                "index": 22
+                            }
+                        },
+                        "value": {
+                            "kind": "NullLiteral",
+                            "start": {
+                                "row": 2,
+                                "col": 9,
+                                "index": 24
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 13,
+                                "index": 28
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 20
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 13,
+                            "index": 28
+                        }
+                    },
+                    {
+                        "kind": "ObjectProperty",
+                        "computed": false,
+                        "shorted": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "p2",
+                            "start": {
+                                "row": 3,
+                                "col": 5,
+                                "index": 34
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 7,
+                                "index": 36
+                            }
+                        },
+                        "value": {
+                            "kind": "NullLiteral",
+                            "start": {
+                                "row": 3,
+                                "col": 9,
+                                "index": 38
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 13,
+                                "index": 42
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 34
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 13,
+                            "index": 42
+                        }
+                    }
+                ],
+                "trailingComma": false,
+                "start": {
+                    "row": 1,
+                    "col": 15,
+                    "index": 14
+                },
+                "end": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 44
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 15,
+                "index": 14
+            },
+            "end": {
+                "row": 4,
+                "col": 2,
+                "index": 44
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 15,
+        "index": 14
+    },
+    "end": {
+        "row": 5,
+        "col": 1,
+        "index": 46
+    }
+}

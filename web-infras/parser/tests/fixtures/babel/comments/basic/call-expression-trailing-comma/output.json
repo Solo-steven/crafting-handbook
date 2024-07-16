@@ -1,0 +1,86 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "Identifer",
+                    "name": "fn",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 3,
+                        "index": 2
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "Identifer",
+                        "name": "a",
+                        "start": {
+                            "row": 1,
+                            "col": 4,
+                            "index": 3
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        }
+                    },
+                    {
+                        "kind": "Identifer",
+                        "name": "b",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 26,
+                    "index": 25
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 26,
+                "index": 25
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 42
+    }
+}

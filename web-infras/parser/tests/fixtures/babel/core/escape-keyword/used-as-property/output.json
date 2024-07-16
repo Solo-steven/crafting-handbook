@@ -1,0 +1,117 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "a",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 6,
+                            "index": 5
+                        }
+                    },
+                    "init": {
+                        "kind": "ObjectExpression",
+                        "properties": [
+                            {
+                                "kind": "ObjectProperty",
+                                "computed": false,
+                                "shorted": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "br\u0000ak",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 3,
+                                        "index": 12
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 13,
+                                        "index": 22
+                                    }
+                                },
+                                "value": {
+                                    "kind": "NumberLiteral",
+                                    "value": "2",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 15,
+                                        "index": 24
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 16,
+                                        "index": 25
+                                    }
+                                },
+                                "start": {
+                                    "row": 2,
+                                    "col": 3,
+                                    "index": 12
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 16,
+                                    "index": 25
+                                }
+                            }
+                        ],
+                        "trailingComma": false,
+                        "start": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 2,
+                            "index": 27
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 2,
+                        "index": 27
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 3,
+                "col": 2,
+                "index": 27
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 29
+    }
+}

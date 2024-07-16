@@ -1,0 +1,132 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": true,
+                        "shorted": true,
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "x",
+                            "start": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 12,
+                                "index": 21
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 10,
+                            "index": 19
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 12,
+                            "index": 21
+                        }
+                    },
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": true,
+                        "shorted": false,
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "y",
+                            "start": {
+                                "row": 3,
+                                "col": 10,
+                                "index": 32
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 12,
+                                "index": 34
+                            }
+                        },
+                        "value": {
+                            "kind": "NumberLiteral",
+                            "value": "1",
+                            "start": {
+                                "row": 3,
+                                "col": 15,
+                                "index": 37
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 16,
+                                "index": 38
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 10,
+                            "index": 32
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 16,
+                            "index": 38
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 41
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 4,
+                "col": 2,
+                "index": 41
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 5,
+        "col": 1,
+        "index": 42
+    }
+}

@@ -1,0 +1,173 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": false,
+                "async": true,
+                "arguments": [],
+                "body": {
+                    "kind": "FunctionBody",
+                    "body": [
+                        {
+                            "kind": "ClassDeclaration",
+                            "id": {
+                                "kind": "Identifer",
+                                "name": "C",
+                                "start": {
+                                    "row": 2,
+                                    "col": 9,
+                                    "index": 22
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 10,
+                                    "index": 23
+                                }
+                            },
+                            "superClass": null,
+                            "body": {
+                                "kind": "ClassBody",
+                                "body": [
+                                    {
+                                        "kind": "ClassProperty",
+                                        "computed": false,
+                                        "static": false,
+                                        "shorted": false,
+                                        "key": {
+                                            "kind": "Identifer",
+                                            "name": "p",
+                                            "start": {
+                                                "row": 4,
+                                                "col": 5,
+                                                "index": 75
+                                            },
+                                            "end": {
+                                                "row": 4,
+                                                "col": 6,
+                                                "index": 76
+                                            }
+                                        },
+                                        "value": {
+                                            "kind": "AwaitExpression",
+                                            "argument": {
+                                                "kind": "UnaryExpression",
+                                                "operator": "+",
+                                                "argument": {
+                                                    "kind": "NumberLiteral",
+                                                    "value": "42",
+                                                    "start": {
+                                                        "row": 4,
+                                                        "col": 17,
+                                                        "index": 87
+                                                    },
+                                                    "end": {
+                                                        "row": 4,
+                                                        "col": 19,
+                                                        "index": 89
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 4,
+                                                    "col": 15,
+                                                    "index": 85
+                                                },
+                                                "end": {
+                                                    "row": 4,
+                                                    "col": 19,
+                                                    "index": 89
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 4,
+                                                "col": 9,
+                                                "index": 79
+                                            },
+                                            "end": {
+                                                "row": 4,
+                                                "col": 19,
+                                                "index": 89
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 4,
+                                            "col": 5,
+                                            "index": 75
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 19,
+                                            "index": 89
+                                        }
+                                    }
+                                ],
+                                "start": {
+                                    "row": 2,
+                                    "col": 11,
+                                    "index": 24
+                                },
+                                "end": {
+                                    "row": 5,
+                                    "col": 4,
+                                    "index": 94
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 3,
+                                "index": 16
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 4,
+                                "index": 94
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    },
+                    "end": {
+                        "row": 6,
+                        "col": 2,
+                        "index": 96
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 6,
+                    "col": 2,
+                    "index": 96
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 7,
+                "index": 6
+            },
+            "end": {
+                "row": 6,
+                "col": 2,
+                "index": 96
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 7,
+        "index": 6
+    },
+    "end": {
+        "row": 7,
+        "col": 1,
+        "index": 97
+    }
+}

@@ -1,0 +1,71 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ForOfStatement",
+            "await": false,
+            "left": {
+                "kind": "Identifer",
+                "name": "async",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                },
+                "parentheses": true
+            },
+            "right": {
+                "kind": "Identifer",
+                "name": "x",
+                "start": {
+                    "row": 1,
+                    "col": 17,
+                    "index": 16
+                },
+                "end": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                }
+            },
+            "body": {
+                "kind": "EmptyStatement",
+                "start": {
+                    "row": 1,
+                    "col": 19,
+                    "index": 18
+                },
+                "end": {
+                    "row": 1,
+                    "col": 20,
+                    "index": 19
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 20,
+                "index": 19
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 20
+    }
+}

@@ -1,0 +1,99 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ChainExpression",
+                "expression": {
+                    "kind": "MemberExpression",
+                    "computed": false,
+                    "optional": false,
+                    "object": {
+                        "kind": "CallExpression",
+                        "optional": true,
+                        "callee": {
+                            "kind": "Identifer",
+                            "name": "foo",
+                            "start": {
+                                "row": 1,
+                                "col": 1,
+                                "index": 0
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 4,
+                                "index": 3
+                            }
+                        },
+                        "arguments": [],
+                        "start": {
+                            "row": 1,
+                            "col": 1,
+                            "index": 0
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        }
+                    },
+                    "property": {
+                        "kind": "Identifer",
+                        "name": "bar",
+                        "start": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 12,
+                        "index": 11
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 12,
+                "index": 11
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 12
+    }
+}

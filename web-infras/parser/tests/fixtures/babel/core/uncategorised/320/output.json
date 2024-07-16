@@ -1,0 +1,70 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "BinaryExpression",
+                "operator": "+",
+                "left": {
+                    "kind": "NumberLiteral",
+                    "value": "123.",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    }
+                },
+                "right": {
+                    "kind": "NumberLiteral",
+                    "value": "2",
+                    "start": {
+                        "row": 1,
+                        "col": 6,
+                        "index": 5
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 7,
+                "index": 6
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 7,
+        "index": 6
+    }
+}

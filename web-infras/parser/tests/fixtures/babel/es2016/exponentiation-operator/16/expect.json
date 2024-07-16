@@ -1,0 +1,6 @@
+{
+  "expect": "Failed",
+  "config": {
+    "createParenthesizedExpressions": true
+  }
+}

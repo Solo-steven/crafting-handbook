@@ -1,3 +1,8 @@
+export interface ExpectConfig  {
+  expect: "Failed" | "Pass",
+  config: any,
+}
+
 /**
  * A Test Case that expect to be pass
  */

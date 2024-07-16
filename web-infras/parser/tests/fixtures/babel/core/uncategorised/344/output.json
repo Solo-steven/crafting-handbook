@@ -1,0 +1,113 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 13,
+                "index": 12
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "MemberExpression",
+                    "computed": false,
+                    "optional": false,
+                    "object": {
+                        "kind": "Identifer",
+                        "name": "object",
+                        "start": {
+                            "row": 2,
+                            "col": 1,
+                            "index": 14
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 7,
+                            "index": 20
+                        }
+                    },
+                    "property": {
+                        "kind": "Identifer",
+                        "name": "static",
+                        "start": {
+                            "row": 2,
+                            "col": 8,
+                            "index": 21
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 14,
+                            "index": 27
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 1,
+                        "index": 14
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 14,
+                        "index": 27
+                    }
+                },
+                "arguments": [],
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 14
+                },
+                "end": {
+                    "row": 2,
+                    "col": 16,
+                    "index": 29
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 14
+            },
+            "end": {
+                "row": 2,
+                "col": 16,
+                "index": 29
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 17,
+        "index": 30
+    }
+}

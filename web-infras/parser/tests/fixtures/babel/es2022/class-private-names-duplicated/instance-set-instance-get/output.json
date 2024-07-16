@@ -1,0 +1,161 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassAccessor",
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "x",
+                            "start": {
+                                "row": 2,
+                                "col": 7,
+                                "index": 16
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 9,
+                                "index": 18
+                            }
+                        },
+                        "params": [
+                            {
+                                "kind": "Identifer",
+                                "name": "_",
+                                "start": {
+                                    "row": 2,
+                                    "col": 10,
+                                    "index": 19
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 11,
+                                    "index": 20
+                                }
+                            }
+                        ],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 2,
+                                "col": 13,
+                                "index": 22
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 15,
+                                "index": 24
+                            }
+                        },
+                        "type": "set",
+                        "computed": false,
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 12
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 15,
+                            "index": 24
+                        }
+                    },
+                    {
+                        "kind": "ClassAccessor",
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "x",
+                            "start": {
+                                "row": 3,
+                                "col": 7,
+                                "index": 31
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 9,
+                                "index": 33
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 3,
+                                "col": 12,
+                                "index": 36
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 14,
+                                "index": 38
+                            }
+                        },
+                        "type": "get",
+                        "computed": false,
+                        "start": {
+                            "row": 3,
+                            "col": 3,
+                            "index": 27
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 14,
+                            "index": 38
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 40
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 4,
+                "col": 2,
+                "index": 40
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 2,
+        "index": 40
+    }
+}

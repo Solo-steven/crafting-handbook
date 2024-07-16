@@ -1,0 +1,9 @@
+{
+  "expect": "Pass",
+  "config": {
+    "plugins": [
+      "estree",
+      "decorators-legacy"
+    ]
+  }
+}

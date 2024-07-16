@@ -1,0 +1,14 @@
+{
+  "expect": "Pass",
+  "config": {
+    "plugins": [
+      "flow",
+      [
+        "estree",
+        {
+          "classFeatures": true
+        }
+      ]
+    ]
+  }
+}

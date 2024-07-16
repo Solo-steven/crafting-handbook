@@ -1,0 +1,7 @@
+{
+  "expect": "Pass",
+  "config": {
+    "allowNewTargetOutsideFunction": true,
+    "errorRecovery": false
+  }
+}

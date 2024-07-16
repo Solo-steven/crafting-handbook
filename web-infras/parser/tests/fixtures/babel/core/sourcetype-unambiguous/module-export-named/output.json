@@ -1,0 +1,74 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "FunctionDeclaration",
+                "name": {
+                    "kind": "Identifer",
+                    "name": "fn",
+                    "start": {
+                        "row": 1,
+                        "col": 17,
+                        "index": 16
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 19,
+                        "index": 18
+                    }
+                },
+                "generator": false,
+                "async": false,
+                "body": {
+                    "kind": "FunctionBody",
+                    "body": [],
+                    "start": {
+                        "row": 1,
+                        "col": 21,
+                        "index": 20
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 23,
+                        "index": 22
+                    }
+                },
+                "params": [],
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 23,
+                    "index": 22
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 23,
+                "index": 22
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 23
+    }
+}

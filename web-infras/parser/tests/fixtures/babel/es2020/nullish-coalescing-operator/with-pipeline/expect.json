@@ -1,0 +1,13 @@
+{
+  "expect": "Pass",
+  "config": {
+    "plugins": [
+      [
+        "pipelineOperator",
+        {
+          "proposal": "minimal"
+        }
+      ]
+    ]
+  }
+}

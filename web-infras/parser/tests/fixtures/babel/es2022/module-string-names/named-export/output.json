@@ -1,0 +1,130 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "quotation",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 16,
+                            "index": 15
+                        }
+                    },
+                    "init": {
+                        "kind": "StringLiteral",
+                        "value": "",
+                        "start": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 21,
+                        "index": 20
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 21,
+                "index": 20
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ExportSpecifier",
+                    "exported": {
+                        "kind": "Identifer",
+                        "name": "quotation",
+                        "start": {
+                            "row": 2,
+                            "col": 10,
+                            "index": 31
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 19,
+                            "index": 40
+                        }
+                    },
+                    "local": {
+                        "kind": "StringLiteral",
+                        "value": "學而時習之，不亦說乎？",
+                        "start": {
+                            "row": 2,
+                            "col": 23,
+                            "index": 44
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 36,
+                            "index": 57
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 10,
+                        "index": 31
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 36,
+                        "index": 57
+                    }
+                }
+            ],
+            "declaration": null,
+            "source": null,
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 22
+            },
+            "end": {
+                "row": 2,
+                "col": 36,
+                "index": 57
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 61
+    }
+}

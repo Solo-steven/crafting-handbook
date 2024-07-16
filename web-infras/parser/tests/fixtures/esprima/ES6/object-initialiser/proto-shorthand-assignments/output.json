@@ -1,0 +1,155 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "ObjectPattern",
+                    "properties": [
+                        {
+                            "kind": "AssigmentPattern",
+                            "left": {
+                                "kind": "Identifer",
+                                "name": "__proto__",
+                                "start": {
+                                    "row": 1,
+                                    "col": 3,
+                                    "index": 2
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 12,
+                                    "index": 11
+                                }
+                            },
+                            "right": {
+                                "kind": "NumberLiteral",
+                                "value": "0",
+                                "start": {
+                                    "row": 1,
+                                    "col": 15,
+                                    "index": 14
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 16,
+                                    "index": 15
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 3,
+                                "index": 2
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 16,
+                                "index": 15
+                            }
+                        },
+                        {
+                            "kind": "AssigmentPattern",
+                            "left": {
+                                "kind": "Identifer",
+                                "name": "__proto__",
+                                "start": {
+                                    "row": 1,
+                                    "col": 18,
+                                    "index": 17
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 27,
+                                    "index": 26
+                                }
+                            },
+                            "right": {
+                                "kind": "NumberLiteral",
+                                "value": "0",
+                                "start": {
+                                    "row": 1,
+                                    "col": 30,
+                                    "index": 29
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 31,
+                                    "index": 30
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 18,
+                                "index": 17
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 31,
+                                "index": 30
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 32,
+                        "index": 31
+                    }
+                },
+                "right": {
+                    "kind": "ObjectExpression",
+                    "properties": [],
+                    "trailingComma": false,
+                    "start": {
+                        "row": 1,
+                        "col": 35,
+                        "index": 34
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 37,
+                        "index": 36
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 2,
+                    "index": 1
+                },
+                "end": {
+                    "row": 1,
+                    "col": 37,
+                    "index": 36
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 2,
+                "index": 1
+            },
+            "end": {
+                "row": 1,
+                "col": 37,
+                "index": 36
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 2,
+        "index": 1
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 38
+    }
+}

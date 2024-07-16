@@ -1,0 +1,42 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "NumberLiteral",
+                "value": "42",
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 17
+                },
+                "end": {
+                    "row": 2,
+                    "col": 3,
+                    "index": 19
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 17
+            },
+            "end": {
+                "row": 2,
+                "col": 3,
+                "index": 19
+            }
+        }
+    ],
+    "start": {
+        "row": 2,
+        "col": 1,
+        "index": 17
+    },
+    "end": {
+        "row": 2,
+        "col": 3,
+        "index": 19
+    }
+}

@@ -1,0 +1,57 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "BlockStatement",
+            "body": [],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 3,
+                "index": 2
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "RegexLiteral",
+                "pattern": "foo",
+                "flag": "",
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 3
+                },
+                "end": {
+                    "row": 2,
+                    "col": 6,
+                    "index": 8
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 3
+            },
+            "end": {
+                "row": 2,
+                "col": 6,
+                "index": 8
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 6,
+        "index": 8
+    }
+}

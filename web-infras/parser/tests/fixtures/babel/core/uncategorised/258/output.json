@@ -1,0 +1,165 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "LabledStatement",
+            "label": {
+                "kind": "Identifer",
+                "name": "target1",
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "body": {
+                "kind": "LabledStatement",
+                "label": {
+                    "kind": "Identifer",
+                    "name": "target2",
+                    "start": {
+                        "row": 1,
+                        "col": 10,
+                        "index": 9
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 17,
+                        "index": 16
+                    }
+                },
+                "body": {
+                    "kind": "LabledStatement",
+                    "label": {
+                        "kind": "Identifer",
+                        "name": "target3",
+                        "start": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 26,
+                            "index": 25
+                        }
+                    },
+                    "body": {
+                        "kind": "WhileStatement",
+                        "test": {
+                            "kind": "BoolLterial",
+                            "value": true,
+                            "start": {
+                                "row": 1,
+                                "col": 35,
+                                "index": 34
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 39,
+                                "index": 38
+                            }
+                        },
+                        "body": {
+                            "kind": "BlockStatement",
+                            "body": [
+                                {
+                                    "kind": "ContinueStatement",
+                                    "label": {
+                                        "kind": "Identifer",
+                                        "name": "target1",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 52,
+                                            "index": 51
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 59,
+                                            "index": 58
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 43,
+                                        "index": 42
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 59,
+                                        "index": 58
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 41,
+                                "index": 40
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 62,
+                                "index": 61
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 28,
+                            "index": 27
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 62,
+                            "index": 61
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 19,
+                        "index": 18
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 62,
+                        "index": 61
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                },
+                "end": {
+                    "row": 1,
+                    "col": 62,
+                    "index": 61
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 62,
+                "index": 61
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 62,
+        "index": 61
+    }
+}

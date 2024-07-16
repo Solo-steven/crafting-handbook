@@ -1,0 +1,12 @@
+{
+  "expect": "Pass",
+  "config": {
+    "plugins": [
+      "flow",
+      "jsx",
+      "estree",
+      "importAssertions"
+    ],
+    "sourceType": "module"
+  }
+}

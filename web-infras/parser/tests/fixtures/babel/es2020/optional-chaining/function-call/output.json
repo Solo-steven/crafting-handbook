@@ -1,0 +1,435 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ChainExpression",
+                "expression": {
+                    "kind": "CallExpression",
+                    "optional": true,
+                    "callee": {
+                        "kind": "Identifer",
+                        "name": "func",
+                        "start": {
+                            "row": 1,
+                            "col": 1,
+                            "index": 0
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        }
+                    },
+                    "arguments": [],
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 9,
+                        "index": 8
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 9,
+                "index": 8
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ChainExpression",
+                "expression": {
+                    "kind": "CallExpression",
+                    "optional": true,
+                    "callee": {
+                        "kind": "Identifer",
+                        "name": "func",
+                        "start": {
+                            "row": 3,
+                            "col": 1,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 14
+                        }
+                    },
+                    "arguments": [
+                        {
+                            "kind": "Identifer",
+                            "name": "a",
+                            "start": {
+                                "row": 3,
+                                "col": 8,
+                                "index": 17
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 9,
+                                "index": 18
+                            }
+                        },
+                        {
+                            "kind": "Identifer",
+                            "name": "b",
+                            "start": {
+                                "row": 3,
+                                "col": 11,
+                                "index": 20
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 12,
+                                "index": 21
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 3,
+                        "col": 1,
+                        "index": 10
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 13,
+                        "index": 22
+                    }
+                },
+                "start": {
+                    "row": 3,
+                    "col": 1,
+                    "index": 10
+                },
+                "end": {
+                    "row": 3,
+                    "col": 13,
+                    "index": 22
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 10
+            },
+            "end": {
+                "row": 3,
+                "col": 13,
+                "index": 22
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ChainExpression",
+                "expression": {
+                    "kind": "CallExpression",
+                    "optional": true,
+                    "callee": {
+                        "kind": "MemberExpression",
+                        "computed": false,
+                        "optional": true,
+                        "object": {
+                            "kind": "Identifer",
+                            "name": "a",
+                            "start": {
+                                "row": 5,
+                                "col": 1,
+                                "index": 24
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 2,
+                                "index": 25
+                            }
+                        },
+                        "property": {
+                            "kind": "Identifer",
+                            "name": "func",
+                            "start": {
+                                "row": 5,
+                                "col": 4,
+                                "index": 27
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 8,
+                                "index": 31
+                            }
+                        },
+                        "start": {
+                            "row": 5,
+                            "col": 1,
+                            "index": 24
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 8,
+                            "index": 31
+                        }
+                    },
+                    "arguments": [],
+                    "start": {
+                        "row": 5,
+                        "col": 1,
+                        "index": 24
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 12,
+                        "index": 35
+                    }
+                },
+                "start": {
+                    "row": 5,
+                    "col": 1,
+                    "index": 24
+                },
+                "end": {
+                    "row": 5,
+                    "col": 12,
+                    "index": 35
+                }
+            },
+            "start": {
+                "row": 5,
+                "col": 1,
+                "index": 24
+            },
+            "end": {
+                "row": 5,
+                "col": 12,
+                "index": 35
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ChainExpression",
+                "expression": {
+                    "kind": "CallExpression",
+                    "optional": true,
+                    "callee": {
+                        "kind": "MemberExpression",
+                        "computed": false,
+                        "optional": true,
+                        "object": {
+                            "kind": "Identifer",
+                            "name": "a",
+                            "start": {
+                                "row": 7,
+                                "col": 1,
+                                "index": 37
+                            },
+                            "end": {
+                                "row": 7,
+                                "col": 2,
+                                "index": 38
+                            }
+                        },
+                        "property": {
+                            "kind": "Identifer",
+                            "name": "func",
+                            "start": {
+                                "row": 7,
+                                "col": 4,
+                                "index": 40
+                            },
+                            "end": {
+                                "row": 7,
+                                "col": 8,
+                                "index": 44
+                            }
+                        },
+                        "start": {
+                            "row": 7,
+                            "col": 1,
+                            "index": 37
+                        },
+                        "end": {
+                            "row": 7,
+                            "col": 8,
+                            "index": 44
+                        }
+                    },
+                    "arguments": [
+                        {
+                            "kind": "Identifer",
+                            "name": "a",
+                            "start": {
+                                "row": 7,
+                                "col": 11,
+                                "index": 47
+                            },
+                            "end": {
+                                "row": 7,
+                                "col": 12,
+                                "index": 48
+                            }
+                        },
+                        {
+                            "kind": "Identifer",
+                            "name": "b",
+                            "start": {
+                                "row": 7,
+                                "col": 14,
+                                "index": 50
+                            },
+                            "end": {
+                                "row": 7,
+                                "col": 15,
+                                "index": 51
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 7,
+                        "col": 1,
+                        "index": 37
+                    },
+                    "end": {
+                        "row": 7,
+                        "col": 16,
+                        "index": 52
+                    }
+                },
+                "start": {
+                    "row": 7,
+                    "col": 1,
+                    "index": 37
+                },
+                "end": {
+                    "row": 7,
+                    "col": 16,
+                    "index": 52
+                }
+            },
+            "start": {
+                "row": 7,
+                "col": 1,
+                "index": 37
+            },
+            "end": {
+                "row": 7,
+                "col": 16,
+                "index": 52
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ChainExpression",
+                "expression": {
+                    "kind": "CallExpression",
+                    "optional": true,
+                    "callee": {
+                        "kind": "MemberExpression",
+                        "computed": false,
+                        "optional": false,
+                        "object": {
+                            "kind": "Identifer",
+                            "name": "a",
+                            "start": {
+                                "row": 9,
+                                "col": 1,
+                                "index": 54
+                            },
+                            "end": {
+                                "row": 9,
+                                "col": 2,
+                                "index": 55
+                            }
+                        },
+                        "property": {
+                            "kind": "Identifer",
+                            "name": "func",
+                            "start": {
+                                "row": 9,
+                                "col": 3,
+                                "index": 56
+                            },
+                            "end": {
+                                "row": 9,
+                                "col": 7,
+                                "index": 60
+                            }
+                        },
+                        "start": {
+                            "row": 9,
+                            "col": 1,
+                            "index": 54
+                        },
+                        "end": {
+                            "row": 9,
+                            "col": 7,
+                            "index": 60
+                        }
+                    },
+                    "arguments": [],
+                    "start": {
+                        "row": 9,
+                        "col": 1,
+                        "index": 54
+                    },
+                    "end": {
+                        "row": 9,
+                        "col": 11,
+                        "index": 64
+                    }
+                },
+                "start": {
+                    "row": 9,
+                    "col": 1,
+                    "index": 54
+                },
+                "end": {
+                    "row": 9,
+                    "col": 11,
+                    "index": 64
+                }
+            },
+            "start": {
+                "row": 9,
+                "col": 1,
+                "index": 54
+            },
+            "end": {
+                "row": 9,
+                "col": 11,
+                "index": 64
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 9,
+        "col": 11,
+        "index": 64
+    }
+}

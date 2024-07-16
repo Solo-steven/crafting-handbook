@@ -1,0 +1,84 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "BlockStatement",
+            "body": [
+                {
+                    "kind": "ThrowStatement",
+                    "argu": {
+                        "kind": "Identifer",
+                        "name": "error",
+                        "start": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 3,
+                        "index": 2
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 14,
+                        "index": 13
+                    }
+                },
+                {
+                    "kind": "ExpressionStatement",
+                    "expr": {
+                        "kind": "Identifer",
+                        "name": "error",
+                        "start": {
+                            "row": 2,
+                            "col": 1,
+                            "index": 14
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 6,
+                            "index": 19
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 1,
+                        "index": 14
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 6,
+                        "index": 19
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 2,
+                "col": 9,
+                "index": 22
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 9,
+        "index": 22
+    }
+}

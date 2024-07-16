@@ -1,0 +1,14 @@
+{
+  "expect": "Pass",
+  "config": {
+    "BABEL_8_BREAKING": false,
+    "plugins": [
+      [
+        "estree",
+        {
+          "classFeatures": true
+        }
+      ]
+    ]
+  }
+}

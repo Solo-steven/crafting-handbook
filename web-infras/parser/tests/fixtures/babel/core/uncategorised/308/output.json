@@ -1,0 +1,84 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "WhileStatement",
+            "test": {
+                "kind": "BoolLterial",
+                "value": true,
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "body": {
+                "kind": "BlockStatement",
+                "body": [
+                    {
+                        "kind": "BreakStatement",
+                        "label": {
+                            "kind": "Identifer",
+                            "name": "there",
+                            "start": {
+                                "row": 2,
+                                "col": 1,
+                                "index": 32
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 6,
+                                "index": 37
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 16,
+                            "index": 15
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 14,
+                    "index": 13
+                },
+                "end": {
+                    "row": 2,
+                    "col": 9,
+                    "index": 40
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 2,
+                "col": 9,
+                "index": 40
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 9,
+        "index": 40
+    }
+}

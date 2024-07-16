@@ -1,0 +1,72 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "node",
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 64
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 9,
+                            "index": 68
+                        }
+                    },
+                    "init": {
+                        "kind": "StringLiteral",
+                        "value": "shouldHaveFilenameLocProp",
+                        "start": {
+                            "row": 2,
+                            "col": 12,
+                            "index": 71
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 39,
+                            "index": 98
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 5,
+                        "index": 64
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 39,
+                        "index": 98
+                    }
+                }
+            ],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 60
+            },
+            "end": {
+                "row": 2,
+                "col": 39,
+                "index": 98
+            }
+        }
+    ],
+    "start": {
+        "row": 2,
+        "col": 1,
+        "index": 60
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 100
+    }
+}

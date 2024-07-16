@@ -1,0 +1,279 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "generator": true,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "YieldExpression",
+                            "argument": {
+                                "kind": "ArrowFunctionExpression",
+                                "expressionBody": true,
+                                "async": false,
+                                "arguments": [
+                                    {
+                                        "kind": "Identifer",
+                                        "name": "a",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 10,
+                                            "index": 25
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 11,
+                                            "index": 26
+                                        }
+                                    }
+                                ],
+                                "body": {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 15,
+                                        "index": 30
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 16,
+                                        "index": 31
+                                    }
+                                },
+                                "start": {
+                                    "row": 2,
+                                    "col": 10,
+                                    "index": 25
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 16,
+                                    "index": 31
+                                }
+                            },
+                            "delegate": false,
+                            "start": {
+                                "row": 2,
+                                "col": 4,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 16,
+                                "index": 31
+                            },
+                            "parentheses": true
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 4,
+                            "index": 19
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 16,
+                            "index": 31
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "YieldExpression",
+                            "argument": {
+                                "kind": "ArrowFunctionExpression",
+                                "expressionBody": true,
+                                "async": true,
+                                "arguments": [
+                                    {
+                                        "kind": "Identifer",
+                                        "name": "a",
+                                        "start": {
+                                            "row": 3,
+                                            "col": 16,
+                                            "index": 49
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 17,
+                                            "index": 50
+                                        }
+                                    }
+                                ],
+                                "body": {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 21,
+                                        "index": 54
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 22,
+                                        "index": 55
+                                    }
+                                },
+                                "start": {
+                                    "row": 3,
+                                    "col": 16,
+                                    "index": 49
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 22,
+                                    "index": 55
+                                }
+                            },
+                            "delegate": false,
+                            "start": {
+                                "row": 3,
+                                "col": 4,
+                                "index": 37
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 22,
+                                "index": 55
+                            },
+                            "parentheses": true
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 4,
+                            "index": 37
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 22,
+                            "index": 55
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "YieldExpression",
+                            "argument": {
+                                "kind": "ArrowFunctionExpression",
+                                "expressionBody": true,
+                                "async": true,
+                                "arguments": [
+                                    {
+                                        "kind": "Identifer",
+                                        "name": "a",
+                                        "start": {
+                                            "row": 4,
+                                            "col": 17,
+                                            "index": 74
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 18,
+                                            "index": 75
+                                        }
+                                    }
+                                ],
+                                "body": {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 4,
+                                        "col": 23,
+                                        "index": 80
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 24,
+                                        "index": 81
+                                    }
+                                },
+                                "start": {
+                                    "row": 4,
+                                    "col": 16,
+                                    "index": 73
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 24,
+                                    "index": 81
+                                }
+                            },
+                            "delegate": false,
+                            "start": {
+                                "row": 4,
+                                "col": 4,
+                                "index": 61
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 24,
+                                "index": 81
+                            },
+                            "parentheses": true
+                        },
+                        "start": {
+                            "row": 4,
+                            "col": 4,
+                            "index": 61
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 24,
+                            "index": 81
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 15,
+                    "index": 14
+                },
+                "end": {
+                    "row": 5,
+                    "col": 2,
+                    "index": 85
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 5,
+                "col": 2,
+                "index": 85
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 86
+    }
+}

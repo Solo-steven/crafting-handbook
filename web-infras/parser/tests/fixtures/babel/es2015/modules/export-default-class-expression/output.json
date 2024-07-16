@@ -1,0 +1,71 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportDefaultDeclaration",
+            "declaration": {
+                "kind": "ClassExpression",
+                "id": {
+                    "kind": "Identifer",
+                    "name": "Foo",
+                    "start": {
+                        "row": 1,
+                        "col": 23,
+                        "index": 22
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 26,
+                        "index": 25
+                    }
+                },
+                "superClass": null,
+                "body": {
+                    "kind": "ClassBody",
+                    "body": [],
+                    "start": {
+                        "row": 1,
+                        "col": 27,
+                        "index": 26
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 29,
+                        "index": 28
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 17,
+                    "index": 16
+                },
+                "end": {
+                    "row": 1,
+                    "col": 29,
+                    "index": 28
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 29,
+                "index": 28
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 31
+    }
+}

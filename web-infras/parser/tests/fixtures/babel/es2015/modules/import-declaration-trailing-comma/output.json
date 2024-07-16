@@ -1,0 +1,72 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ImportDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ImportSpecifier",
+                    "imported": {
+                        "kind": "Identifer",
+                        "name": "Foo",
+                        "start": {
+                            "row": 2,
+                            "col": 13,
+                            "index": 21
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 16,
+                            "index": 24
+                        }
+                    },
+                    "local": null,
+                    "start": {
+                        "row": 2,
+                        "col": 13,
+                        "index": 21
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 16,
+                        "index": 24
+                    }
+                }
+            ],
+            "source": {
+                "kind": "StringLiteral",
+                "value": "foo",
+                "start": {
+                    "row": 5,
+                    "col": 19,
+                    "index": 70
+                },
+                "end": {
+                    "row": 5,
+                    "col": 24,
+                    "index": 75
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 5,
+                "col": 24,
+                "index": 75
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 77
+    }
+}

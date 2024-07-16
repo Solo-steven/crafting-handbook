@@ -1,0 +1,16 @@
+{
+  "expect": "Pass",
+  "config": {
+    "BABEL_8_BREAKING": false,
+    "plugins": [
+      "flow",
+      "jsx",
+      [
+        "estree",
+        {
+          "classFeatures": true
+        }
+      ]
+    ]
+  }
+}

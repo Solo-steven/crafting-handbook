@@ -1,0 +1,72 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "SequenceExpression",
+                "exprs": [
+                    {
+                        "kind": "Identifer",
+                        "name": "a",
+                        "start": {
+                            "row": 1,
+                            "col": 28,
+                            "index": 27
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 29,
+                            "index": 28
+                        }
+                    },
+                    {
+                        "kind": "Identifer",
+                        "name": "b",
+                        "start": {
+                            "row": 1,
+                            "col": 47,
+                            "index": 46
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 48,
+                            "index": 47
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                },
+                "end": {
+                    "row": 1,
+                    "col": 58,
+                    "index": 57
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 18,
+                "index": 17
+            },
+            "end": {
+                "row": 1,
+                "col": 58,
+                "index": 57
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 18,
+        "index": 17
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 85
+    }
+}

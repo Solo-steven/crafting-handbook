@@ -1,0 +1,114 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "ObjectPattern",
+                        "properties": [
+                            {
+                                "kind": "AssigmentPattern",
+                                "left": {
+                                    "kind": "Identifer",
+                                    "name": "async",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 9,
+                                        "index": 8
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 14,
+                                        "index": 13
+                                    }
+                                },
+                                "right": {
+                                    "kind": "BoolLterial",
+                                    "value": true,
+                                    "start": {
+                                        "row": 1,
+                                        "col": 17,
+                                        "index": 16
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 21,
+                                        "index": 20
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 9,
+                                    "index": 8
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 21,
+                                    "index": 20
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 23,
+                            "index": 22
+                        }
+                    },
+                    "init": {
+                        "kind": "Identifer",
+                        "name": "foo",
+                        "start": {
+                            "row": 1,
+                            "col": 26,
+                            "index": 25
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 29,
+                            "index": 28
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 29,
+                        "index": 28
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 29,
+                "index": 28
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 30
+    }
+}

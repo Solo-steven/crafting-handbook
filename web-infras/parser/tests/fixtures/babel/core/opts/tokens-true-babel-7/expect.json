@@ -1,0 +1,7 @@
+{
+  "expect": "Pass",
+  "config": {
+    "BABEL_8_BREAKING": false,
+    "tokens": true
+  }
+}

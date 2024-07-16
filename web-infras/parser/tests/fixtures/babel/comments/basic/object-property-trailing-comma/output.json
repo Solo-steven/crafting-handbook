@@ -1,0 +1,203 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "obj",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        }
+                    },
+                    "init": {
+                        "kind": "ObjectExpression",
+                        "properties": [
+                            {
+                                "kind": "ObjectProperty",
+                                "computed": false,
+                                "shorted": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 3,
+                                        "index": 14
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 4,
+                                        "index": 15
+                                    }
+                                },
+                                "value": {
+                                    "kind": "StringLiteral",
+                                    "value": "1",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 6,
+                                        "index": 17
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 9,
+                                        "index": 20
+                                    }
+                                },
+                                "start": {
+                                    "row": 2,
+                                    "col": 3,
+                                    "index": 14
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 9,
+                                    "index": 20
+                                }
+                            },
+                            {
+                                "kind": "ObjectProperty",
+                                "computed": false,
+                                "shorted": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "b",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 3,
+                                        "index": 37
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 4,
+                                        "index": 38
+                                    }
+                                },
+                                "value": {
+                                    "kind": "StringLiteral",
+                                    "value": "2",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 6,
+                                        "index": 40
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 9,
+                                        "index": 43
+                                    }
+                                },
+                                "start": {
+                                    "row": 3,
+                                    "col": 3,
+                                    "index": 37
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 9,
+                                    "index": 43
+                                }
+                            },
+                            {
+                                "kind": "ObjectProperty",
+                                "computed": false,
+                                "shorted": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "c",
+                                    "start": {
+                                        "row": 4,
+                                        "col": 3,
+                                        "index": 60
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 4,
+                                        "index": 61
+                                    }
+                                },
+                                "value": {
+                                    "kind": "StringLiteral",
+                                    "value": "3",
+                                    "start": {
+                                        "row": 4,
+                                        "col": 6,
+                                        "index": 63
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 9,
+                                        "index": 66
+                                    }
+                                },
+                                "start": {
+                                    "row": 4,
+                                    "col": 3,
+                                    "index": 60
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 9,
+                                    "index": 66
+                                }
+                            }
+                        ],
+                        "trailingComma": true,
+                        "start": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 2,
+                            "index": 82
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 2,
+                        "index": 82
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 5,
+                "col": 2,
+                "index": 82
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 97
+    }
+}

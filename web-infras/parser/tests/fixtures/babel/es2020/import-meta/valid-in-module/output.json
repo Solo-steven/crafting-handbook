@@ -1,0 +1,460 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        }
+                    },
+                    "init": {
+                        "kind": "MetaProperty",
+                        "meta": {
+                            "kind": "Identifer",
+                            "name": "import",
+                            "start": {
+                                "row": 1,
+                                "col": 11,
+                                "index": 10
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 17,
+                                "index": 16
+                            }
+                        },
+                        "property": {
+                            "kind": "Identifer",
+                            "name": "meta",
+                            "start": {
+                                "row": 1,
+                                "col": 18,
+                                "index": 17
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 22,
+                                "index": 21
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 22,
+                            "index": 21
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 22,
+                        "index": 21
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 22,
+                "index": 21
+            }
+        },
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "url",
+                        "start": {
+                            "row": 2,
+                            "col": 7,
+                            "index": 29
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 10,
+                            "index": 32
+                        }
+                    },
+                    "init": {
+                        "kind": "MemberExpression",
+                        "computed": false,
+                        "optional": false,
+                        "object": {
+                            "kind": "MetaProperty",
+                            "meta": {
+                                "kind": "Identifer",
+                                "name": "import",
+                                "start": {
+                                    "row": 2,
+                                    "col": 13,
+                                    "index": 35
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 19,
+                                    "index": 41
+                                }
+                            },
+                            "property": {
+                                "kind": "Identifer",
+                                "name": "meta",
+                                "start": {
+                                    "row": 2,
+                                    "col": 20,
+                                    "index": 42
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 24,
+                                    "index": 46
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 13,
+                                "index": 35
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 24,
+                                "index": 46
+                            }
+                        },
+                        "property": {
+                            "kind": "Identifer",
+                            "name": "url",
+                            "start": {
+                                "row": 2,
+                                "col": 25,
+                                "index": 47
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 28,
+                                "index": 50
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 13,
+                            "index": 35
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 28,
+                            "index": 50
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 7,
+                        "index": 29
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 28,
+                        "index": 50
+                    }
+                }
+            ],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 23
+            },
+            "end": {
+                "row": 2,
+                "col": 28,
+                "index": 50
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "MetaProperty",
+                "meta": {
+                    "kind": "Identifer",
+                    "name": "import",
+                    "start": {
+                        "row": 3,
+                        "col": 1,
+                        "index": 52
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 7,
+                        "index": 58
+                    }
+                },
+                "property": {
+                    "kind": "Identifer",
+                    "name": "meta",
+                    "start": {
+                        "row": 3,
+                        "col": 8,
+                        "index": 59
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 12,
+                        "index": 63
+                    }
+                },
+                "start": {
+                    "row": 3,
+                    "col": 1,
+                    "index": 52
+                },
+                "end": {
+                    "row": 3,
+                    "col": 12,
+                    "index": 63
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 52
+            },
+            "end": {
+                "row": 3,
+                "col": 12,
+                "index": 63
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "MemberExpression",
+                "computed": false,
+                "optional": false,
+                "object": {
+                    "kind": "MetaProperty",
+                    "meta": {
+                        "kind": "Identifer",
+                        "name": "import",
+                        "start": {
+                            "row": 4,
+                            "col": 1,
+                            "index": 65
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 7,
+                            "index": 71
+                        }
+                    },
+                    "property": {
+                        "kind": "Identifer",
+                        "name": "meta",
+                        "start": {
+                            "row": 4,
+                            "col": 8,
+                            "index": 72
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 12,
+                            "index": 76
+                        }
+                    },
+                    "start": {
+                        "row": 4,
+                        "col": 1,
+                        "index": 65
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 12,
+                        "index": 76
+                    }
+                },
+                "property": {
+                    "kind": "Identifer",
+                    "name": "url",
+                    "start": {
+                        "row": 4,
+                        "col": 13,
+                        "index": 77
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 16,
+                        "index": 80
+                    }
+                },
+                "start": {
+                    "row": 4,
+                    "col": 1,
+                    "index": 65
+                },
+                "end": {
+                    "row": 4,
+                    "col": 16,
+                    "index": 80
+                }
+            },
+            "start": {
+                "row": 4,
+                "col": 1,
+                "index": 65
+            },
+            "end": {
+                "row": 4,
+                "col": 16,
+                "index": 80
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "MemberExpression",
+                    "computed": false,
+                    "optional": false,
+                    "object": {
+                        "kind": "MetaProperty",
+                        "meta": {
+                            "kind": "Identifer",
+                            "name": "import",
+                            "start": {
+                                "row": 5,
+                                "col": 1,
+                                "index": 82
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 7,
+                                "index": 88
+                            }
+                        },
+                        "property": {
+                            "kind": "Identifer",
+                            "name": "meta",
+                            "start": {
+                                "row": 5,
+                                "col": 8,
+                                "index": 89
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 12,
+                                "index": 93
+                            }
+                        },
+                        "start": {
+                            "row": 5,
+                            "col": 1,
+                            "index": 82
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 12,
+                            "index": 93
+                        }
+                    },
+                    "property": {
+                        "kind": "Identifer",
+                        "name": "couldBeMutable",
+                        "start": {
+                            "row": 5,
+                            "col": 13,
+                            "index": 94
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 27,
+                            "index": 108
+                        }
+                    },
+                    "start": {
+                        "row": 5,
+                        "col": 1,
+                        "index": 82
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 27,
+                        "index": 108
+                    }
+                },
+                "right": {
+                    "kind": "BoolLterial",
+                    "value": true,
+                    "start": {
+                        "row": 5,
+                        "col": 30,
+                        "index": 111
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 34,
+                        "index": 115
+                    }
+                },
+                "start": {
+                    "row": 5,
+                    "col": 1,
+                    "index": 82
+                },
+                "end": {
+                    "row": 5,
+                    "col": 34,
+                    "index": 115
+                }
+            },
+            "start": {
+                "row": 5,
+                "col": 1,
+                "index": 82
+            },
+            "end": {
+                "row": 5,
+                "col": 34,
+                "index": 115
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 117
+    }
+}

@@ -1,0 +1,115 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "SwitchStatement",
+            "discriminant": {
+                "kind": "Identifer",
+                "name": "a",
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                }
+            },
+            "cases": [
+                {
+                    "kind": "SwitchCase",
+                    "test": {
+                        "kind": "NumberLiteral",
+                        "value": "1",
+                        "start": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        }
+                    },
+                    "consequence": [
+                        {
+                            "kind": "BlockStatement",
+                            "body": [],
+                            "start": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 23,
+                                "index": 22
+                            }
+                        },
+                        {
+                            "kind": "ExpressionStatement",
+                            "expr": {
+                                "kind": "RegexLiteral",
+                                "pattern": "foo",
+                                "flag": "",
+                                "start": {
+                                    "row": 2,
+                                    "col": 1,
+                                    "index": 23
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 8,
+                                    "index": 30
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 1,
+                                "index": 23
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 8,
+                                "index": 30
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 7,
+                        "index": 29
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 2,
+                "col": 8,
+                "index": 30
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 8,
+        "index": 30
+    }
+}

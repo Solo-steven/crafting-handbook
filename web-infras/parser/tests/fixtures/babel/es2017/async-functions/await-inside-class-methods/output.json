@@ -1,0 +1,161 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": true,
+                "async": false,
+                "arguments": [],
+                "body": {
+                    "kind": "ClassExpression",
+                    "id": null,
+                    "superClass": null,
+                    "body": {
+                        "kind": "ClassBody",
+                        "body": [
+                            {
+                                "kind": "ClassMethodDefinition",
+                                "async": true,
+                                "generator": false,
+                                "computed": false,
+                                "static": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "m",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 9,
+                                        "index": 22
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 10,
+                                        "index": 23
+                                    }
+                                },
+                                "params": [],
+                                "body": {
+                                    "kind": "FunctionBody",
+                                    "body": [
+                                        {
+                                            "kind": "ExpressionStatement",
+                                            "expr": {
+                                                "kind": "AwaitExpression",
+                                                "argument": {
+                                                    "kind": "NumberLiteral",
+                                                    "value": "42",
+                                                    "start": {
+                                                        "row": 2,
+                                                        "col": 21,
+                                                        "index": 34
+                                                    },
+                                                    "end": {
+                                                        "row": 2,
+                                                        "col": 23,
+                                                        "index": 36
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 2,
+                                                    "col": 15,
+                                                    "index": 28
+                                                },
+                                                "end": {
+                                                    "row": 2,
+                                                    "col": 23,
+                                                    "index": 36
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 2,
+                                                "col": 15,
+                                                "index": 28
+                                            },
+                                            "end": {
+                                                "row": 2,
+                                                "col": 23,
+                                                "index": 36
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 2,
+                                        "col": 13,
+                                        "index": 26
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 25,
+                                        "index": 38
+                                    }
+                                },
+                                "start": {
+                                    "row": 2,
+                                    "col": 3,
+                                    "index": 16
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 25,
+                                    "index": 38
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 13,
+                            "index": 12
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 2,
+                            "index": 40
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 2,
+                        "index": 40
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 3,
+                    "col": 2,
+                    "index": 40
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 3,
+                "col": 2,
+                "index": 40
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 41
+    }
+}

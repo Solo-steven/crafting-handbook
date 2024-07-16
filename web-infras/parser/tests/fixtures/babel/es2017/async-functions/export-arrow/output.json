@@ -1,0 +1,86 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportDefaultDeclaration",
+            "declaration": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": true,
+                "async": true,
+                "arguments": [],
+                "body": {
+                    "kind": "AwaitExpression",
+                    "argument": {
+                        "kind": "CallExpression",
+                        "optional": false,
+                        "callee": {
+                            "kind": "Identifer",
+                            "name": "foo",
+                            "start": {
+                                "row": 1,
+                                "col": 34,
+                                "index": 33
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 37,
+                                "index": 36
+                            }
+                        },
+                        "arguments": [],
+                        "start": {
+                            "row": 1,
+                            "col": 34,
+                            "index": 33
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 39,
+                            "index": 38
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 28,
+                        "index": 27
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 39,
+                        "index": 38
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 22,
+                    "index": 21
+                },
+                "end": {
+                    "row": 1,
+                    "col": 39,
+                    "index": 38
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 39,
+                "index": 38
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 39
+    }
+}

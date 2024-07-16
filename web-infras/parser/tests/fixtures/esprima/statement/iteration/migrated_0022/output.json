@@ -1,0 +1,197 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ForInStatement",
+            "left": {
+                "kind": "VariableDeclaration",
+                "variant": "var",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "Identifer",
+                            "name": "a",
+                            "start": {
+                                "row": 1,
+                                "col": 10,
+                                "index": 9
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 11,
+                                "index": 10
+                            }
+                        },
+                        "init": {
+                            "kind": "AssigmentExpression",
+                            "operator": "=",
+                            "left": {
+                                "kind": "Identifer",
+                                "name": "b",
+                                "start": {
+                                    "row": 1,
+                                    "col": 14,
+                                    "index": 13
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 15,
+                                    "index": 14
+                                }
+                            },
+                            "right": {
+                                "kind": "AssigmentExpression",
+                                "operator": "=",
+                                "left": {
+                                    "kind": "Identifer",
+                                    "name": "c",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 18,
+                                        "index": 17
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 19,
+                                        "index": 18
+                                    }
+                                },
+                                "right": {
+                                    "kind": "BinaryExpression",
+                                    "operator": "in",
+                                    "left": {
+                                        "kind": "Identifer",
+                                        "name": "d",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 23,
+                                            "index": 22
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 24,
+                                            "index": 23
+                                        }
+                                    },
+                                    "right": {
+                                        "kind": "Identifer",
+                                        "name": "e",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 28,
+                                            "index": 27
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 29,
+                                            "index": 28
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 23,
+                                        "index": 22
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 29,
+                                        "index": 28
+                                    },
+                                    "parentheses": true
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 18,
+                                    "index": 17
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 29,
+                                    "index": 28
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 14,
+                                "index": 13
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 29,
+                                "index": 28
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 29,
+                            "index": 28
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 6,
+                    "index": 5
+                },
+                "end": {
+                    "row": 1,
+                    "col": 29,
+                    "index": 28
+                }
+            },
+            "right": {
+                "kind": "Identifer",
+                "name": "z",
+                "start": {
+                    "row": 1,
+                    "col": 34,
+                    "index": 33
+                },
+                "end": {
+                    "row": 1,
+                    "col": 35,
+                    "index": 34
+                }
+            },
+            "body": {
+                "kind": "EmptyStatement",
+                "start": {
+                    "row": 1,
+                    "col": 36,
+                    "index": 35
+                },
+                "end": {
+                    "row": 1,
+                    "col": 37,
+                    "index": 36
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 37,
+                "index": 36
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 37,
+        "index": 36
+    }
+}

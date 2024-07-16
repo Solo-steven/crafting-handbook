@@ -236,6 +236,9 @@ export function createLexer(code: string) {
       isEscape = char === "\\" && !isEscape;
       eatChar();
     }
+    if(isEOF()) {
+      throw lexicalError("regex unterminate stop")
+    }
     pattern = getSliceStringFromCode(startIndex, getCurrentIndex());
     // eat `/`
     eatChar();
@@ -358,6 +361,7 @@ export function createLexer(code: string) {
    */
   function skipWhiteSpaceChangeLine(): void {
     loop: while (context.cursor.pos < code.length) {
+      let counter = 0
       switch (getChar()) {
         case "\n":
           eatChangeLine();
@@ -366,6 +370,18 @@ export function createLexer(code: string) {
         case "\t":
           eatChar();
           break;
+        case "/":  {
+          const next = getChar(1);
+          if(next === "/") {
+            readComment();
+            return skipWhiteSpaceChangeLine();
+          }
+          if(next === "*") {
+            readCommentBlock();
+            return skipWhiteSpaceChangeLine();
+          }
+          // fall thorugh
+        }
         default:
           break loop;
       }
@@ -489,12 +505,12 @@ export function createLexer(code: string) {
         // '/' '// comment' '/* comments */'
         const next = getChar(1);
         switch (next) {
-          case "/":
-            // start with "//"
-            return readComment();
-          case "*":
-            // start with "/*"
-            return readCommentBlock();
+          // case "/":
+          //   // start with "//"
+          //   return readComment();
+          // case "*":
+          //   // start with "/*"
+          //   return readCommentBlock();
           case "=":
             // start with "/="
             eatChar(2);
@@ -907,30 +923,29 @@ export function createLexer(code: string) {
       }
       eatChar();
     }
-    return finishToken(SyntaxKinds.Comment);
+    return;
   }
   function readCommentBlock() {
     // eat /*
+    let flag = false;
     eatChar(2);
     while (!isEOF()) {
       const char = getChar();
       if (char === "\n") {
         eatChangeLine();
+        flag = true;
         continue;
       }
       if (char === "*") {
         if (getChar(1) === "/") {
           eatChar(2);
-          break;
+          return flag;
         }
       }
       eatChar();
     }
-    if (isEOF()) {
       // TODO: error message
       throw new Error();
-    }
-    return finishToken(SyntaxKinds.BlockComment);
   }
   /** ===========================================================
    *                Literal state mahcine
@@ -1006,7 +1021,9 @@ export function createLexer(code: string) {
         eatChar();
         return readNumberLiteralWithBase(isHex);
       }
-      return finishToken(SyntaxKinds.NumberLiteral);
+      if(next !== "E" && next !== "e") {
+        return finishToken(SyntaxKinds.NumberLiteral);
+      }
     }
     // Start With Non 0
     readDigitalHelper();

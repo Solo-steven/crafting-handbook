@@ -1,0 +1,467 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "IfStatement",
+            "test": {
+                "kind": "BinaryExpression",
+                "operator": "||",
+                "left": {
+                    "kind": "BinaryExpression",
+                    "operator": "===",
+                    "left": {
+                        "kind": "MemberExpression",
+                        "computed": true,
+                        "optional": false,
+                        "object": {
+                            "kind": "Identifer",
+                            "name": "args",
+                            "start": {
+                                "row": 1,
+                                "col": 5,
+                                "index": 4
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 9,
+                                "index": 8
+                            }
+                        },
+                        "property": {
+                            "kind": "NumberLiteral",
+                            "value": "0",
+                            "start": {
+                                "row": 1,
+                                "col": 10,
+                                "index": 9
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 11,
+                                "index": 10
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        }
+                    },
+                    "right": {
+                        "kind": "NumberLiteral",
+                        "value": "1",
+                        "start": {
+                            "row": 1,
+                            "col": 17,
+                            "index": 16
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    }
+                },
+                "right": {
+                    "kind": "BinaryExpression",
+                    "operator": "||",
+                    "left": {
+                        "kind": "BinaryExpression",
+                        "operator": "===",
+                        "left": {
+                            "kind": "MemberExpression",
+                            "computed": true,
+                            "optional": false,
+                            "object": {
+                                "kind": "Identifer",
+                                "name": "args",
+                                "start": {
+                                    "row": 1,
+                                    "col": 51,
+                                    "index": 50
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 55,
+                                    "index": 54
+                                }
+                            },
+                            "property": {
+                                "kind": "NumberLiteral",
+                                "value": "0",
+                                "start": {
+                                    "row": 1,
+                                    "col": 56,
+                                    "index": 55
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 57,
+                                    "index": 56
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 51,
+                                "index": 50
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 58,
+                                "index": 57
+                            }
+                        },
+                        "right": {
+                            "kind": "NumberLiteral",
+                            "value": "2",
+                            "start": {
+                                "row": 1,
+                                "col": 63,
+                                "index": 62
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 64,
+                                "index": 63
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 51,
+                            "index": 50
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 64,
+                            "index": 63
+                        }
+                    },
+                    "right": {
+                        "kind": "BinaryExpression",
+                        "operator": "===",
+                        "left": {
+                            "kind": "MemberExpression",
+                            "computed": true,
+                            "optional": false,
+                            "object": {
+                                "kind": "Identifer",
+                                "name": "args",
+                                "start": {
+                                    "row": 1,
+                                    "col": 69,
+                                    "index": 68
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 73,
+                                    "index": 72
+                                }
+                            },
+                            "property": {
+                                "kind": "NumberLiteral",
+                                "value": "0",
+                                "start": {
+                                    "row": 1,
+                                    "col": 74,
+                                    "index": 73
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 75,
+                                    "index": 74
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 69,
+                                "index": 68
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 76,
+                                "index": 75
+                            }
+                        },
+                        "right": {
+                            "kind": "NumberLiteral",
+                            "value": "3",
+                            "start": {
+                                "row": 1,
+                                "col": 81,
+                                "index": 80
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 82,
+                                "index": 81
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 69,
+                            "index": 68
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 82,
+                            "index": 81
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 51,
+                        "index": 50
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 82,
+                        "index": 81
+                    },
+                    "parentheses": true
+                },
+                "start": {
+                    "row": 1,
+                    "col": 5,
+                    "index": 4
+                },
+                "end": {
+                    "row": 1,
+                    "col": 82,
+                    "index": 81
+                }
+            },
+            "conseqence": {
+                "kind": "BlockStatement",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "AssigmentExpression",
+                            "operator": "=",
+                            "left": {
+                                "kind": "Identifer",
+                                "name": "output",
+                                "start": {
+                                    "row": 2,
+                                    "col": 3,
+                                    "index": 88
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 9,
+                                    "index": 94
+                                }
+                            },
+                            "right": {
+                                "kind": "BinaryExpression",
+                                "operator": "+",
+                                "left": {
+                                    "kind": "MemberExpression",
+                                    "computed": true,
+                                    "optional": false,
+                                    "object": {
+                                        "kind": "Identifer",
+                                        "name": "args",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 12,
+                                            "index": 97
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 16,
+                                            "index": 101
+                                        }
+                                    },
+                                    "property": {
+                                        "kind": "NumberLiteral",
+                                        "value": "0",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 17,
+                                            "index": 102
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 18,
+                                            "index": 103
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 2,
+                                        "col": 12,
+                                        "index": 97
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 19,
+                                        "index": 104
+                                    }
+                                },
+                                "right": {
+                                    "kind": "NumberLiteral",
+                                    "value": "10",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 22,
+                                        "index": 107
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 24,
+                                        "index": 109
+                                    }
+                                },
+                                "start": {
+                                    "row": 2,
+                                    "col": 12,
+                                    "index": 97
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 24,
+                                    "index": 109
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 3,
+                                "index": 88
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 24,
+                                "index": 109
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 88
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 24,
+                            "index": 109
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 85,
+                    "index": 84
+                },
+                "end": {
+                    "row": 3,
+                    "col": 2,
+                    "index": 112
+                }
+            },
+            "alternative": {
+                "kind": "BlockStatement",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "AssigmentExpression",
+                            "operator": "=",
+                            "left": {
+                                "kind": "Identifer",
+                                "name": "output",
+                                "start": {
+                                    "row": 4,
+                                    "col": 3,
+                                    "index": 122
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 9,
+                                    "index": 128
+                                }
+                            },
+                            "right": {
+                                "kind": "NumberLiteral",
+                                "value": "20",
+                                "start": {
+                                    "row": 4,
+                                    "col": 12,
+                                    "index": 131
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 14,
+                                    "index": 133
+                                }
+                            },
+                            "start": {
+                                "row": 4,
+                                "col": 3,
+                                "index": 122
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 14,
+                                "index": 133
+                            }
+                        },
+                        "start": {
+                            "row": 4,
+                            "col": 3,
+                            "index": 122
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 14,
+                            "index": 133
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 3,
+                    "col": 8,
+                    "index": 118
+                },
+                "end": {
+                    "row": 5,
+                    "col": 2,
+                    "index": 136
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 5,
+                "col": 2,
+                "index": 136
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 137
+    }
+}

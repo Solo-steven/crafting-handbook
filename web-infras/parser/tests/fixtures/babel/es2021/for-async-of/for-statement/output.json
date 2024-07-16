@@ -1,0 +1,88 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ForStatement",
+            "init": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": false,
+                "async": true,
+                "arguments": [
+                    {
+                        "kind": "Identifer",
+                        "name": "of",
+                        "start": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        }
+                    }
+                ],
+                "body": {
+                    "kind": "FunctionBody",
+                    "body": [],
+                    "start": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 20,
+                        "index": 19
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                },
+                "end": {
+                    "row": 1,
+                    "col": 20,
+                    "index": 19
+                }
+            },
+            "test": null,
+            "update": null,
+            "body": {
+                "kind": "EmptyStatement",
+                "start": {
+                    "row": 1,
+                    "col": 23,
+                    "index": 22
+                },
+                "end": {
+                    "row": 1,
+                    "col": 24,
+                    "index": 23
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 24,
+                "index": 23
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 24
+    }
+}

@@ -1,0 +1,127 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "NumberLiteral",
+                "value": "1",
+                "start": {
+                    "row": 2,
+                    "col": 2,
+                    "index": 8
+                },
+                "end": {
+                    "row": 2,
+                    "col": 3,
+                    "index": 9
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 2,
+                "col": 2,
+                "index": 8
+            },
+            "end": {
+                "row": 2,
+                "col": 3,
+                "index": 9
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "NumberLiteral",
+                "value": "2",
+                "start": {
+                    "row": 5,
+                    "col": 2,
+                    "index": 24
+                },
+                "end": {
+                    "row": 5,
+                    "col": 3,
+                    "index": 25
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 5,
+                "col": 2,
+                "index": 24
+            },
+            "end": {
+                "row": 5,
+                "col": 3,
+                "index": 25
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "NumberLiteral",
+                "value": "3",
+                "start": {
+                    "row": 9,
+                    "col": 3,
+                    "index": 44
+                },
+                "end": {
+                    "row": 9,
+                    "col": 4,
+                    "index": 45
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 9,
+                "col": 3,
+                "index": 44
+            },
+            "end": {
+                "row": 9,
+                "col": 4,
+                "index": 45
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "NumberLiteral",
+                "value": "4",
+                "start": {
+                    "row": 12,
+                    "col": 13,
+                    "index": 62
+                },
+                "end": {
+                    "row": 12,
+                    "col": 14,
+                    "index": 63
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 12,
+                "col": 13,
+                "index": 62
+            },
+            "end": {
+                "row": 12,
+                "col": 14,
+                "index": 63
+            }
+        }
+    ],
+    "start": {
+        "row": 2,
+        "col": 2,
+        "index": 8
+    },
+    "end": {
+        "row": 13,
+        "col": 1,
+        "index": 66
+    }
+}

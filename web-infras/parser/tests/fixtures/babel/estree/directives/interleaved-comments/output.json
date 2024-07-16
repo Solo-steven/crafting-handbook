@@ -1,0 +1,69 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 6
+                },
+                "end": {
+                    "row": 2,
+                    "col": 13,
+                    "index": 18
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 6
+            },
+            "end": {
+                "row": 2,
+                "col": 13,
+                "index": 18
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 4,
+                    "col": 1,
+                    "index": 26
+                },
+                "end": {
+                    "row": 4,
+                    "col": 13,
+                    "index": 38
+                }
+            },
+            "start": {
+                "row": 4,
+                "col": 1,
+                "index": 26
+            },
+            "end": {
+                "row": 4,
+                "col": 13,
+                "index": 38
+            }
+        }
+    ],
+    "start": {
+        "row": 2,
+        "col": 1,
+        "index": 6
+    },
+    "end": {
+        "row": 5,
+        "col": 1,
+        "index": 40
+    }
+}

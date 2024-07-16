@@ -1,0 +1,225 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ClassExpression",
+                "id": null,
+                "superClass": null,
+                "body": {
+                    "kind": "ClassBody",
+                    "body": [
+                        {
+                            "kind": "ClassMethodDefinition",
+                            "async": false,
+                            "generator": false,
+                            "computed": false,
+                            "static": false,
+                            "key": {
+                                "kind": "Identifer",
+                                "name": "f",
+                                "start": {
+                                    "row": 1,
+                                    "col": 34,
+                                    "index": 33
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 35,
+                                    "index": 34
+                                }
+                            },
+                            "params": [
+                                {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 53,
+                                        "index": 52
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 54,
+                                        "index": 53
+                                    }
+                                }
+                            ],
+                            "body": {
+                                "kind": "FunctionBody",
+                                "body": [],
+                                "start": {
+                                    "row": 1,
+                                    "col": 81,
+                                    "index": 80
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 92,
+                                    "index": 91
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 34,
+                                "index": 33
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 92,
+                                "index": 91
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 24,
+                        "index": 23
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 103,
+                        "index": 102
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                },
+                "end": {
+                    "row": 1,
+                    "col": 103,
+                    "index": 102
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 10,
+                "index": 9
+            },
+            "end": {
+                "row": 1,
+                "col": 103,
+                "index": 102
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ClassExpression",
+                "id": null,
+                "superClass": null,
+                "body": {
+                    "kind": "ClassBody",
+                    "body": [
+                        {
+                            "kind": "ClassMethodDefinition",
+                            "async": false,
+                            "generator": false,
+                            "computed": false,
+                            "static": false,
+                            "key": {
+                                "kind": "PrivateName",
+                                "name": "f",
+                                "start": {
+                                    "row": 2,
+                                    "col": 26,
+                                    "index": 139
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 28,
+                                    "index": 141
+                                }
+                            },
+                            "params": [
+                                {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 46,
+                                        "index": 159
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 47,
+                                        "index": 160
+                                    }
+                                }
+                            ],
+                            "body": {
+                                "kind": "FunctionBody",
+                                "body": [],
+                                "start": {
+                                    "row": 2,
+                                    "col": 74,
+                                    "index": 187
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 85,
+                                    "index": 198
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 26,
+                                "index": 139
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 85,
+                                "index": 198
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 2,
+                        "col": 16,
+                        "index": 129
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 95,
+                        "index": 208
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 2,
+                    "index": 115
+                },
+                "end": {
+                    "row": 2,
+                    "col": 95,
+                    "index": 208
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 2,
+                "col": 2,
+                "index": 115
+            },
+            "end": {
+                "row": 2,
+                "col": 95,
+                "index": 208
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 10,
+        "index": 9
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 220
+    }
+}

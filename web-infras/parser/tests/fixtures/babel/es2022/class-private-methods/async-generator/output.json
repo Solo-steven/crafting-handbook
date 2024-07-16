@@ -1,0 +1,531 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "Foo",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": true,
+                        "generator": true,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "readLines",
+                            "start": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 21
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 20,
+                                "index": 31
+                            }
+                        },
+                        "params": [
+                            {
+                                "kind": "Identifer",
+                                "name": "path",
+                                "start": {
+                                    "row": 2,
+                                    "col": 21,
+                                    "index": 32
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 25,
+                                    "index": 36
+                                }
+                            }
+                        ],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [
+                                {
+                                    "kind": "VariableDeclaration",
+                                    "variant": "let",
+                                    "declarations": [
+                                        {
+                                            "kind": "VariableDeclarator",
+                                            "id": {
+                                                "kind": "Identifer",
+                                                "name": "file",
+                                                "start": {
+                                                    "row": 3,
+                                                    "col": 9,
+                                                    "index": 48
+                                                },
+                                                "end": {
+                                                    "row": 3,
+                                                    "col": 13,
+                                                    "index": 52
+                                                }
+                                            },
+                                            "init": {
+                                                "kind": "AwaitExpression",
+                                                "argument": {
+                                                    "kind": "CallExpression",
+                                                    "optional": false,
+                                                    "callee": {
+                                                        "kind": "Identifer",
+                                                        "name": "fileOpen",
+                                                        "start": {
+                                                            "row": 3,
+                                                            "col": 22,
+                                                            "index": 61
+                                                        },
+                                                        "end": {
+                                                            "row": 3,
+                                                            "col": 30,
+                                                            "index": 69
+                                                        }
+                                                    },
+                                                    "arguments": [
+                                                        {
+                                                            "kind": "Identifer",
+                                                            "name": "path",
+                                                            "start": {
+                                                                "row": 3,
+                                                                "col": 31,
+                                                                "index": 70
+                                                            },
+                                                            "end": {
+                                                                "row": 3,
+                                                                "col": 35,
+                                                                "index": 74
+                                                            }
+                                                        }
+                                                    ],
+                                                    "start": {
+                                                        "row": 3,
+                                                        "col": 22,
+                                                        "index": 61
+                                                    },
+                                                    "end": {
+                                                        "row": 3,
+                                                        "col": 36,
+                                                        "index": 75
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 3,
+                                                    "col": 16,
+                                                    "index": 55
+                                                },
+                                                "end": {
+                                                    "row": 3,
+                                                    "col": 36,
+                                                    "index": 75
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 3,
+                                                "col": 9,
+                                                "index": 48
+                                            },
+                                            "end": {
+                                                "row": 3,
+                                                "col": 36,
+                                                "index": 75
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 3,
+                                        "col": 5,
+                                        "index": 44
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 36,
+                                        "index": 75
+                                    }
+                                },
+                                {
+                                    "kind": "TryStatement",
+                                    "block": {
+                                        "kind": "BlockStatement",
+                                        "body": [
+                                            {
+                                                "kind": "WhileStatement",
+                                                "test": {
+                                                    "kind": "UnaryExpression",
+                                                    "operator": "!",
+                                                    "argument": {
+                                                        "kind": "MemberExpression",
+                                                        "computed": false,
+                                                        "optional": false,
+                                                        "object": {
+                                                            "kind": "Identifer",
+                                                            "name": "file",
+                                                            "start": {
+                                                                "row": 6,
+                                                                "col": 15,
+                                                                "index": 102
+                                                            },
+                                                            "end": {
+                                                                "row": 6,
+                                                                "col": 19,
+                                                                "index": 106
+                                                            }
+                                                        },
+                                                        "property": {
+                                                            "kind": "Identifer",
+                                                            "name": "EOF",
+                                                            "start": {
+                                                                "row": 6,
+                                                                "col": 20,
+                                                                "index": 107
+                                                            },
+                                                            "end": {
+                                                                "row": 6,
+                                                                "col": 23,
+                                                                "index": 110
+                                                            }
+                                                        },
+                                                        "start": {
+                                                            "row": 6,
+                                                            "col": 15,
+                                                            "index": 102
+                                                        },
+                                                        "end": {
+                                                            "row": 6,
+                                                            "col": 23,
+                                                            "index": 110
+                                                        }
+                                                    },
+                                                    "start": {
+                                                        "row": 6,
+                                                        "col": 14,
+                                                        "index": 101
+                                                    },
+                                                    "end": {
+                                                        "row": 6,
+                                                        "col": 23,
+                                                        "index": 110
+                                                    }
+                                                },
+                                                "body": {
+                                                    "kind": "BlockStatement",
+                                                    "body": [
+                                                        {
+                                                            "kind": "ExpressionStatement",
+                                                            "expr": {
+                                                                "kind": "YieldExpression",
+                                                                "argument": {
+                                                                    "kind": "AwaitExpression",
+                                                                    "argument": {
+                                                                        "kind": "CallExpression",
+                                                                        "optional": false,
+                                                                        "callee": {
+                                                                            "kind": "MemberExpression",
+                                                                            "computed": false,
+                                                                            "optional": false,
+                                                                            "object": {
+                                                                                "kind": "Identifer",
+                                                                                "name": "file",
+                                                                                "start": {
+                                                                                    "row": 7,
+                                                                                    "col": 21,
+                                                                                    "index": 134
+                                                                                },
+                                                                                "end": {
+                                                                                    "row": 7,
+                                                                                    "col": 25,
+                                                                                    "index": 138
+                                                                                }
+                                                                            },
+                                                                            "property": {
+                                                                                "kind": "Identifer",
+                                                                                "name": "readLine",
+                                                                                "start": {
+                                                                                    "row": 7,
+                                                                                    "col": 26,
+                                                                                    "index": 139
+                                                                                },
+                                                                                "end": {
+                                                                                    "row": 7,
+                                                                                    "col": 34,
+                                                                                    "index": 147
+                                                                                }
+                                                                            },
+                                                                            "start": {
+                                                                                "row": 7,
+                                                                                "col": 21,
+                                                                                "index": 134
+                                                                            },
+                                                                            "end": {
+                                                                                "row": 7,
+                                                                                "col": 34,
+                                                                                "index": 147
+                                                                            }
+                                                                        },
+                                                                        "arguments": [],
+                                                                        "start": {
+                                                                            "row": 7,
+                                                                            "col": 21,
+                                                                            "index": 134
+                                                                        },
+                                                                        "end": {
+                                                                            "row": 7,
+                                                                            "col": 36,
+                                                                            "index": 149
+                                                                        }
+                                                                    },
+                                                                    "start": {
+                                                                        "row": 7,
+                                                                        "col": 15,
+                                                                        "index": 128
+                                                                    },
+                                                                    "end": {
+                                                                        "row": 7,
+                                                                        "col": 36,
+                                                                        "index": 149
+                                                                    }
+                                                                },
+                                                                "delegate": false,
+                                                                "start": {
+                                                                    "row": 7,
+                                                                    "col": 9,
+                                                                    "index": 122
+                                                                },
+                                                                "end": {
+                                                                    "row": 7,
+                                                                    "col": 36,
+                                                                    "index": 149
+                                                                }
+                                                            },
+                                                            "start": {
+                                                                "row": 7,
+                                                                "col": 9,
+                                                                "index": 122
+                                                            },
+                                                            "end": {
+                                                                "row": 7,
+                                                                "col": 36,
+                                                                "index": 149
+                                                            }
+                                                        }
+                                                    ],
+                                                    "start": {
+                                                        "row": 6,
+                                                        "col": 25,
+                                                        "index": 112
+                                                    },
+                                                    "end": {
+                                                        "row": 8,
+                                                        "col": 8,
+                                                        "index": 158
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 6,
+                                                    "col": 7,
+                                                    "index": 94
+                                                },
+                                                "end": {
+                                                    "row": 8,
+                                                    "col": 8,
+                                                    "index": 158
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 5,
+                                            "col": 9,
+                                            "index": 86
+                                        },
+                                        "end": {
+                                            "row": 9,
+                                            "col": 6,
+                                            "index": 164
+                                        }
+                                    },
+                                    "handler": null,
+                                    "finalizer": {
+                                        "kind": "BlockStatement",
+                                        "body": [
+                                            {
+                                                "kind": "ExpressionStatement",
+                                                "expr": {
+                                                    "kind": "AwaitExpression",
+                                                    "argument": {
+                                                        "kind": "CallExpression",
+                                                        "optional": false,
+                                                        "callee": {
+                                                            "kind": "MemberExpression",
+                                                            "computed": false,
+                                                            "optional": false,
+                                                            "object": {
+                                                                "kind": "Identifer",
+                                                                "name": "file",
+                                                                "start": {
+                                                                    "row": 10,
+                                                                    "col": 13,
+                                                                    "index": 187
+                                                                },
+                                                                "end": {
+                                                                    "row": 10,
+                                                                    "col": 17,
+                                                                    "index": 191
+                                                                }
+                                                            },
+                                                            "property": {
+                                                                "kind": "Identifer",
+                                                                "name": "close",
+                                                                "start": {
+                                                                    "row": 10,
+                                                                    "col": 18,
+                                                                    "index": 192
+                                                                },
+                                                                "end": {
+                                                                    "row": 10,
+                                                                    "col": 23,
+                                                                    "index": 197
+                                                                }
+                                                            },
+                                                            "start": {
+                                                                "row": 10,
+                                                                "col": 13,
+                                                                "index": 187
+                                                            },
+                                                            "end": {
+                                                                "row": 10,
+                                                                "col": 23,
+                                                                "index": 197
+                                                            }
+                                                        },
+                                                        "arguments": [],
+                                                        "start": {
+                                                            "row": 10,
+                                                            "col": 13,
+                                                            "index": 187
+                                                        },
+                                                        "end": {
+                                                            "row": 10,
+                                                            "col": 25,
+                                                            "index": 199
+                                                        }
+                                                    },
+                                                    "start": {
+                                                        "row": 10,
+                                                        "col": 7,
+                                                        "index": 181
+                                                    },
+                                                    "end": {
+                                                        "row": 10,
+                                                        "col": 25,
+                                                        "index": 199
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 10,
+                                                    "col": 7,
+                                                    "index": 181
+                                                },
+                                                "end": {
+                                                    "row": 10,
+                                                    "col": 25,
+                                                    "index": 199
+                                                }
+                                            }
+                                        ],
+                                        "start": {
+                                            "row": 9,
+                                            "col": 15,
+                                            "index": 173
+                                        },
+                                        "end": {
+                                            "row": 11,
+                                            "col": 6,
+                                            "index": 206
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 5,
+                                        "col": 5,
+                                        "index": 82
+                                    },
+                                    "end": {
+                                        "row": 11,
+                                        "col": 6,
+                                        "index": 206
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 2,
+                                "col": 27,
+                                "index": 38
+                            },
+                            "end": {
+                                "row": 12,
+                                "col": 4,
+                                "index": 210
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 14
+                        },
+                        "end": {
+                            "row": 12,
+                            "col": 4,
+                            "index": 210
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 13,
+                    "col": 2,
+                    "index": 212
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 13,
+                "col": 2,
+                "index": 212
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 14,
+        "col": 1,
+        "index": 213
+    }
+}

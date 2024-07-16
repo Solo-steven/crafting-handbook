@@ -1,0 +1,57 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "IfStatement",
+            "test": {
+                "kind": "Identifer",
+                "name": "a",
+                "start": {
+                    "row": 2,
+                    "col": 16,
+                    "index": 25
+                },
+                "end": {
+                    "row": 2,
+                    "col": 17,
+                    "index": 26
+                }
+            },
+            "conseqence": {
+                "kind": "BlockStatement",
+                "body": [],
+                "start": {
+                    "row": 2,
+                    "col": 19,
+                    "index": 28
+                },
+                "end": {
+                    "row": 2,
+                    "col": 21,
+                    "index": 30
+                }
+            },
+            "alternative": null,
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 10
+            },
+            "end": {
+                "row": 2,
+                "col": 21,
+                "index": 30
+            }
+        }
+    ],
+    "start": {
+        "row": 2,
+        "col": 1,
+        "index": 10
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 31
+    }
+}

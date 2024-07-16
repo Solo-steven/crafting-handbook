@@ -1,0 +1,221 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "Fails",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "superClass": {
+                "kind": "ClassExpression",
+                "id": null,
+                "superClass": null,
+                "body": {
+                    "kind": "ClassBody",
+                    "body": [
+                        {
+                            "kind": "ClassMethodDefinition",
+                            "async": false,
+                            "generator": false,
+                            "computed": false,
+                            "static": false,
+                            "key": {
+                                "kind": "Identifer",
+                                "name": "c",
+                                "start": {
+                                    "row": 1,
+                                    "col": 29,
+                                    "index": 28
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 30,
+                                    "index": 29
+                                }
+                            },
+                            "params": [],
+                            "body": {
+                                "kind": "FunctionBody",
+                                "body": [],
+                                "start": {
+                                    "row": 1,
+                                    "col": 32,
+                                    "index": 31
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 34,
+                                    "index": 33
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 29,
+                                "index": 28
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 34,
+                                "index": 33
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 27,
+                        "index": 26
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 36,
+                        "index": 35
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 21,
+                    "index": 20
+                },
+                "end": {
+                    "row": 1,
+                    "col": 36,
+                    "index": 35
+                }
+            },
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": false,
+                        "shorted": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "c",
+                            "start": {
+                                "row": 2,
+                                "col": 3,
+                                "index": 40
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 4,
+                                "index": 41
+                            }
+                        },
+                        "value": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "MemberExpression",
+                                "computed": false,
+                                "optional": false,
+                                "object": {
+                                    "kind": "Super",
+                                    "name": "super",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 7,
+                                        "index": 44
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 12,
+                                        "index": 49
+                                    }
+                                },
+                                "property": {
+                                    "kind": "Identifer",
+                                    "name": "c",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 13,
+                                        "index": 50
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 14,
+                                        "index": 51
+                                    }
+                                },
+                                "start": {
+                                    "row": 2,
+                                    "col": 7,
+                                    "index": 44
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 14,
+                                    "index": 51
+                                }
+                            },
+                            "arguments": [],
+                            "start": {
+                                "row": 2,
+                                "col": 7,
+                                "index": 44
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 16,
+                                "index": 53
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 40
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 16,
+                            "index": 53
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 37,
+                    "index": 36
+                },
+                "end": {
+                    "row": 3,
+                    "col": 2,
+                    "index": 56
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 3,
+                "col": 2,
+                "index": 56
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 57
+    }
+}

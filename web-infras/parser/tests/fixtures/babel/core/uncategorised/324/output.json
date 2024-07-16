@@ -1,0 +1,71 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "IfStatement",
+            "test": {
+                "kind": "NumberLiteral",
+                "value": "1",
+                "start": {
+                    "row": 1,
+                    "col": 4,
+                    "index": 3
+                },
+                "end": {
+                    "row": 1,
+                    "col": 5,
+                    "index": 4
+                }
+            },
+            "conseqence": {
+                "kind": "ExpressionStatement",
+                "expr": {
+                    "kind": "RegexLiteral",
+                    "pattern": "  foo",
+                    "flag": "",
+                    "start": {
+                        "row": 1,
+                        "col": 6,
+                        "index": 5
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 6,
+                    "index": 5
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "alternative": null,
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 13,
+                "index": 12
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 13,
+        "index": 12
+    }
+}

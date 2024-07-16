@@ -1,5 +1,6 @@
 ## fixture files
 **/tests/fixtures/**/*.json
+**/tests/fixtures/**/*.js
 ## tsconfig
 **/tsconfig.json
 **/tsconfig.build.json

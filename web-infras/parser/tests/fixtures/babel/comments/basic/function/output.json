@@ -1,0 +1,147 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 1,
+                    "col": 26,
+                    "index": 25
+                },
+                "end": {
+                    "row": 1,
+                    "col": 27,
+                    "index": 26
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [],
+                "start": {
+                    "row": 1,
+                    "col": 73,
+                    "index": 72
+                },
+                "end": {
+                    "row": 1,
+                    "col": 84,
+                    "index": 83
+                }
+            },
+            "params": [
+                {
+                    "kind": "Identifer",
+                    "name": "a",
+                    "start": {
+                        "row": 1,
+                        "col": 45,
+                        "index": 44
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 46,
+                        "index": 45
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 9,
+                "index": 8
+            },
+            "end": {
+                "row": 1,
+                "col": 84,
+                "index": 83
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "FunctionExpression",
+                "name": {
+                    "kind": "Identifer",
+                    "name": "f",
+                    "start": {
+                        "row": 2,
+                        "col": 27,
+                        "index": 118
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 28,
+                        "index": 119
+                    }
+                },
+                "generator": false,
+                "async": false,
+                "body": {
+                    "kind": "FunctionBody",
+                    "body": [],
+                    "start": {
+                        "row": 2,
+                        "col": 74,
+                        "index": 165
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 85,
+                        "index": 176
+                    }
+                },
+                "params": [
+                    {
+                        "kind": "Identifer",
+                        "name": "a",
+                        "start": {
+                            "row": 2,
+                            "col": 46,
+                            "index": 137
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 47,
+                            "index": 138
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 10,
+                    "index": 101
+                },
+                "end": {
+                    "row": 2,
+                    "col": 85,
+                    "index": 176
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 2,
+                "col": 10,
+                "index": 101
+            },
+            "end": {
+                "row": 2,
+                "col": 85,
+                "index": 176
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 9,
+        "index": 8
+    },
+    "end": {
+        "row": 5,
+        "col": 1,
+        "index": 189
+    }
+}

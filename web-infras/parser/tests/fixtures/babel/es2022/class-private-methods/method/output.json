@@ -1,0 +1,147 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "Hotel",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "getBanned",
+                            "start": {
+                                "row": 2,
+                                "col": 3,
+                                "index": 16
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 13,
+                                "index": 26
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [
+                                {
+                                    "kind": "ReturnStatement",
+                                    "argu": {
+                                        "kind": "CallExpression",
+                                        "optional": false,
+                                        "callee": {
+                                            "kind": "Identifer",
+                                            "name": "violentPeople",
+                                            "start": {
+                                                "row": 3,
+                                                "col": 12,
+                                                "index": 42
+                                            },
+                                            "end": {
+                                                "row": 3,
+                                                "col": 25,
+                                                "index": 55
+                                            }
+                                        },
+                                        "arguments": [],
+                                        "start": {
+                                            "row": 3,
+                                            "col": 12,
+                                            "index": 42
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 27,
+                                            "index": 57
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 3,
+                                        "col": 5,
+                                        "index": 35
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 27,
+                                        "index": 57
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 2,
+                                "col": 16,
+                                "index": 29
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 4,
+                                "index": 62
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 16
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 4,
+                            "index": 62
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                },
+                "end": {
+                    "row": 5,
+                    "col": 2,
+                    "index": 64
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 5,
+                "col": 2,
+                "index": 64
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 65
+    }
+}

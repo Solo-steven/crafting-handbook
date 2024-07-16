@@ -1,0 +1,116 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "ObjectPattern",
+                        "properties": [
+                            {
+                                "kind": "ObjectPatternProperty",
+                                "computed": false,
+                                "shorted": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "async",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 9,
+                                        "index": 8
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 14,
+                                        "index": 13
+                                    }
+                                },
+                                "value": {
+                                    "kind": "Identifer",
+                                    "name": "foo",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 16,
+                                        "index": 15
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 19,
+                                        "index": 18
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 9,
+                                    "index": 8
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 19,
+                                    "index": 18
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        }
+                    },
+                    "init": {
+                        "kind": "Identifer",
+                        "name": "bar",
+                        "start": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 27,
+                            "index": 26
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 27,
+                        "index": 26
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 27,
+                "index": 26
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 28
+    }
+}

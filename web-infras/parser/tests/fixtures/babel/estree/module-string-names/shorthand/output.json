@@ -1,0 +1,73 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ExportSpecifier",
+                    "exported": {
+                        "kind": "StringLiteral",
+                        "value": "foo",
+                        "start": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        }
+                    },
+                    "local": null,
+                    "start": {
+                        "row": 1,
+                        "col": 10,
+                        "index": 9
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 15,
+                        "index": 14
+                    }
+                }
+            ],
+            "declaration": null,
+            "source": {
+                "kind": 10114,
+                "value": "module-a",
+                "start": {
+                    "row": 1,
+                    "col": 23,
+                    "index": 22
+                },
+                "end": {
+                    "row": 1,
+                    "col": 33,
+                    "index": 32
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 33,
+                "index": 32
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 34
+    }
+}

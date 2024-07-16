@@ -1,0 +1,70 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ForInStatement",
+            "left": {
+                "kind": "Identifer",
+                "name": "x",
+                "start": {
+                    "row": 1,
+                    "col": 6,
+                    "index": 5
+                },
+                "end": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                }
+            },
+            "right": {
+                "kind": "Identifer",
+                "name": "let",
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 1,
+                    "col": 14,
+                    "index": 13
+                }
+            },
+            "body": {
+                "kind": "BlockStatement",
+                "body": [],
+                "start": {
+                    "row": 1,
+                    "col": 16,
+                    "index": 15
+                },
+                "end": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 18,
+                "index": 17
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 18
+    }
+}

@@ -1,0 +1,300 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "obj",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        }
+                    },
+                    "init": {
+                        "kind": "AssigmentExpression",
+                        "operator": "=",
+                        "left": {
+                            "kind": "ObjectPattern",
+                            "properties": [
+                                {
+                                    "kind": "AssigmentPattern",
+                                    "left": {
+                                        "kind": "Identifer",
+                                        "name": "foo",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 3,
+                                            "index": 16
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 6,
+                                            "index": 19
+                                        }
+                                    },
+                                    "right": {
+                                        "kind": "NumberLiteral",
+                                        "value": "123",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 9,
+                                            "index": 22
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 12,
+                                            "index": 25
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 2,
+                                        "col": 3,
+                                        "index": 16
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 12,
+                                        "index": 25
+                                    }
+                                },
+                                {
+                                    "kind": "ObjectPatternProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "bar",
+                                        "start": {
+                                            "row": 3,
+                                            "col": 3,
+                                            "index": 29
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 6,
+                                            "index": 32
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "AssigmentPattern",
+                                        "left": {
+                                            "kind": "Identifer",
+                                            "name": "x",
+                                            "start": {
+                                                "row": 3,
+                                                "col": 8,
+                                                "index": 34
+                                            },
+                                            "end": {
+                                                "row": 3,
+                                                "col": 9,
+                                                "index": 35
+                                            }
+                                        },
+                                        "right": {
+                                            "kind": "NumberLiteral",
+                                            "value": "123",
+                                            "start": {
+                                                "row": 3,
+                                                "col": 12,
+                                                "index": 38
+                                            },
+                                            "end": {
+                                                "row": 3,
+                                                "col": 15,
+                                                "index": 41
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 3,
+                                            "col": 8,
+                                            "index": 34
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 15,
+                                            "index": 41
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 3,
+                                        "col": 3,
+                                        "index": 29
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 15,
+                                        "index": 41
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 13,
+                                "index": 12
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 2,
+                                "index": 44
+                            }
+                        },
+                        "right": {
+                            "kind": "ObjectExpression",
+                            "properties": [
+                                {
+                                    "kind": "ObjectProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "foo",
+                                        "start": {
+                                            "row": 4,
+                                            "col": 7,
+                                            "index": 49
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 10,
+                                            "index": 52
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "NumberLiteral",
+                                        "value": "24",
+                                        "start": {
+                                            "row": 4,
+                                            "col": 12,
+                                            "index": 54
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 14,
+                                            "index": 56
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 4,
+                                        "col": 7,
+                                        "index": 49
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 14,
+                                        "index": 56
+                                    }
+                                },
+                                {
+                                    "kind": "ObjectProperty",
+                                    "computed": false,
+                                    "shorted": false,
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "bar",
+                                        "start": {
+                                            "row": 4,
+                                            "col": 16,
+                                            "index": 58
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 19,
+                                            "index": 61
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "NumberLiteral",
+                                        "value": "45",
+                                        "start": {
+                                            "row": 4,
+                                            "col": 21,
+                                            "index": 63
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 23,
+                                            "index": 65
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 4,
+                                        "col": 16,
+                                        "index": 58
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 23,
+                                        "index": 65
+                                    }
+                                }
+                            ],
+                            "trailingComma": false,
+                            "start": {
+                                "row": 4,
+                                "col": 5,
+                                "index": 47
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 25,
+                                "index": 67
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 13,
+                            "index": 12
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 25,
+                            "index": 67
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 25,
+                        "index": 67
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 4,
+                "col": 25,
+                "index": 67
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 5,
+        "col": 1,
+        "index": 69
+    }
+}

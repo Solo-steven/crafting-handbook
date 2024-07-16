@@ -1,0 +1,160 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "Hotel",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": true,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "evil",
+                            "start": {
+                                "row": 2,
+                                "col": 9,
+                                "index": 22
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 14,
+                                "index": 27
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [
+                                {
+                                    "kind": "ExpressionStatement",
+                                    "expr": {
+                                        "kind": "AwaitExpression",
+                                        "argument": {
+                                            "kind": "CallExpression",
+                                            "optional": false,
+                                            "callee": {
+                                                "kind": "Identifer",
+                                                "name": "notReally",
+                                                "start": {
+                                                    "row": 3,
+                                                    "col": 11,
+                                                    "index": 42
+                                                },
+                                                "end": {
+                                                    "row": 3,
+                                                    "col": 20,
+                                                    "index": 51
+                                                }
+                                            },
+                                            "arguments": [],
+                                            "start": {
+                                                "row": 3,
+                                                "col": 11,
+                                                "index": 42
+                                            },
+                                            "end": {
+                                                "row": 3,
+                                                "col": 22,
+                                                "index": 53
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 3,
+                                            "col": 5,
+                                            "index": 36
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 22,
+                                            "index": 53
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 3,
+                                        "col": 5,
+                                        "index": 36
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 22,
+                                        "index": 53
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 2,
+                                "col": 17,
+                                "index": 30
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 4,
+                                "index": 58
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 16
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 4,
+                            "index": 58
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                },
+                "end": {
+                    "row": 5,
+                    "col": 2,
+                    "index": 60
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 5,
+                "col": 2,
+                "index": 60
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 61
+    }
+}

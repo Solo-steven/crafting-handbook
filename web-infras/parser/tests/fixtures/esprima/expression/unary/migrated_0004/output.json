@@ -1,0 +1,57 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "UpdateExpression",
+                "operator": "++",
+                "prefix": true,
+                "argument": {
+                    "kind": "Identifer",
+                    "name": "arguments",
+                    "start": {
+                        "row": 1,
+                        "col": 3,
+                        "index": 2
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 12,
+                        "index": 11
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 12,
+                "index": 11
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 12,
+        "index": 11
+    }
+}

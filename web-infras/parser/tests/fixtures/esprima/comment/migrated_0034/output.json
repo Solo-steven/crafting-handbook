@@ -1,0 +1,177 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "MemberExpression",
+                    "computed": false,
+                    "optional": false,
+                    "object": {
+                        "kind": "FunctionExpression",
+                        "name": null,
+                        "generator": false,
+                        "async": false,
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [
+                                {
+                                    "kind": "VariableDeclaration",
+                                    "variant": "var",
+                                    "declarations": [
+                                        {
+                                            "kind": "VariableDeclarator",
+                                            "id": {
+                                                "kind": "Identifer",
+                                                "name": "version",
+                                                "start": {
+                                                    "row": 1,
+                                                    "col": 18,
+                                                    "index": 17
+                                                },
+                                                "end": {
+                                                    "row": 1,
+                                                    "col": 25,
+                                                    "index": 24
+                                                }
+                                            },
+                                            "init": {
+                                                "kind": "NumberLiteral",
+                                                "value": "1",
+                                                "start": {
+                                                    "row": 1,
+                                                    "col": 28,
+                                                    "index": 27
+                                                },
+                                                "end": {
+                                                    "row": 1,
+                                                    "col": 29,
+                                                    "index": 28
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 1,
+                                                "col": 18,
+                                                "index": 17
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 29,
+                                                "index": 28
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 1,
+                                        "col": 14,
+                                        "index": 13
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 29,
+                                        "index": 28
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 12,
+                                "index": 11
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 43,
+                                "index": 42
+                            }
+                        },
+                        "params": [],
+                        "start": {
+                            "row": 1,
+                            "col": 2,
+                            "index": 1
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 43,
+                            "index": 42
+                        },
+                        "parentheses": true
+                    },
+                    "property": {
+                        "kind": "Identifer",
+                        "name": "call",
+                        "start": {
+                            "row": 1,
+                            "col": 45,
+                            "index": 44
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 49,
+                            "index": 48
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 49,
+                        "index": 48
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "ThisExpression",
+                        "name": "this",
+                        "start": {
+                            "row": 1,
+                            "col": 50,
+                            "index": 49
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 54,
+                            "index": 53
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 2,
+                    "index": 1
+                },
+                "end": {
+                    "row": 1,
+                    "col": 55,
+                    "index": 54
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 2,
+                "index": 1
+            },
+            "end": {
+                "row": 1,
+                "col": 55,
+                "index": 54
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 2,
+        "index": 1
+    },
+    "end": {
+        "row": 1,
+        "col": 55,
+        "index": 54
+    }
+}

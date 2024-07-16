@@ -1,0 +1,185 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "LabledStatement",
+            "label": {
+                "kind": "Identifer",
+                "name": "foo",
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                }
+            },
+            "body": {
+                "kind": "SwitchStatement",
+                "discriminant": {
+                    "kind": "BoolLterial",
+                    "value": false,
+                    "start": {
+                        "row": 1,
+                        "col": 47,
+                        "index": 46
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 52,
+                        "index": 51
+                    }
+                },
+                "cases": [
+                    {
+                        "kind": "SwitchCase",
+                        "test": {
+                            "kind": "BoolLterial",
+                            "value": false,
+                            "start": {
+                                "row": 2,
+                                "col": 22,
+                                "index": 89
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 27,
+                                "index": 94
+                            }
+                        },
+                        "consequence": [
+                            {
+                                "kind": "BreakStatement",
+                                "label": {
+                                    "kind": "Identifer",
+                                    "name": "foo",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 18,
+                                        "index": 126
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 21,
+                                        "index": 129
+                                    }
+                                },
+                                "start": {
+                                    "row": 3,
+                                    "col": 5,
+                                    "index": 113
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 10,
+                                    "index": 118
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 2,
+                            "col": 11,
+                            "index": 78
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 12,
+                            "index": 150
+                        }
+                    },
+                    {
+                        "kind": "SwitchCase",
+                        "test": null,
+                        "consequence": [],
+                        "start": {
+                            "row": 4,
+                            "col": 12,
+                            "index": 150
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 5,
+                            "index": 178
+                        }
+                    },
+                    {
+                        "kind": "SwitchCase",
+                        "test": {
+                            "kind": "BoolLterial",
+                            "value": false,
+                            "start": {
+                                "row": 5,
+                                "col": 17,
+                                "index": 190
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 22,
+                                "index": 195
+                            }
+                        },
+                        "consequence": [
+                            {
+                                "kind": "BlockStatement",
+                                "body": [],
+                                "start": {
+                                    "row": 5,
+                                    "col": 39,
+                                    "index": 212
+                                },
+                                "end": {
+                                    "row": 5,
+                                    "col": 49,
+                                    "index": 222
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 5,
+                            "col": 5,
+                            "index": 178
+                        },
+                        "end": {
+                            "row": 6,
+                            "col": 3,
+                            "index": 232
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 26,
+                    "index": 25
+                },
+                "end": {
+                    "row": 6,
+                    "col": 4,
+                    "index": 233
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 8,
+                "index": 7
+            },
+            "end": {
+                "row": 6,
+                "col": 4,
+                "index": 233
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 8,
+        "index": 7
+    },
+    "end": {
+        "row": 7,
+        "col": 1,
+        "index": 234
+    }
+}

@@ -1,0 +1,99 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "UpdateExpression",
+                "operator": "++",
+                "prefix": false,
+                "argument": {
+                    "kind": "Identifer",
+                    "name": "x",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 4,
+                    "index": 3
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 4,
+                "index": 3
+            }
+        },
+        {
+            "kind": "BlockStatement",
+            "body": [],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 4
+            },
+            "end": {
+                "row": 2,
+                "col": 3,
+                "index": 6
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "RegexLiteral",
+                "pattern": "foo",
+                "flag": "",
+                "start": {
+                    "row": 3,
+                    "col": 1,
+                    "index": 7
+                },
+                "end": {
+                    "row": 3,
+                    "col": 6,
+                    "index": 12
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 7
+            },
+            "end": {
+                "row": 3,
+                "col": 6,
+                "index": 12
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 6,
+        "index": 12
+    }
+}

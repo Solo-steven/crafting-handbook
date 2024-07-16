@@ -128,6 +128,7 @@ import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
 import { ExpectToken, ScopeContext, FunctionContext } from "./type";
 import { LookaheadToken } from "../lexer/type";
+import { isContext } from "vm";
 /**
  * Context for parser. composeed by several parts:
  * ## ScopeContext
@@ -302,6 +303,13 @@ export function createParser(code: string) {
     return lexer.getLineTerminatorFlag();
   }
   /**
+   * Private API for parser, just wrapper of lexer methid, check
+   * is current token contain a unicode esc.
+   */
+  function getEscFlag(): boolean {
+    return lexer.getEscFlag();
+  }
+  /**
    * Private API for parser, is current token kind match the
    * given token kind ?
    * @param {SyntaxKinds | Array<SyntaxKinds>} kind
@@ -322,10 +330,7 @@ export function createParser(code: string) {
    * @returns {boolean}
    */
   function isContextKeyword(value: string): boolean {
-    if (getSourceValue() === value && getToken() === SyntaxKinds.Identifier) {
-      if (lexer.getEscFlag()) {
-        throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
-      }
+    if (getSourceValue() === value && getToken() === SyntaxKinds.Identifier && !lexer.getEscFlag()) {
       return true;
     }
     return false;
@@ -1570,6 +1575,9 @@ export function createParser(code: string) {
   }
   function parseThrowStatement() {
     const { start } = expect(SyntaxKinds.ThrowKeyword);
+    if(getLineTerminatorFlag()) {
+      throw createMessageError("TODO, line break not allow");
+    }
     const expr = parseExpressionAllowIn();
     shouldInsertSemi();
     return Factory.createThrowStatement(expr, start, cloneSourcePosition(expr.end));
@@ -1655,7 +1663,7 @@ export function createParser(code: string) {
       }
       if (
         // variable declarations binding pattern but but have init.
-        isBindingPattern &&
+        (isBindingPattern || variant === "const") &&
         !match(SyntaxKinds.AssginOperator) &&
         // variable declaration in for statement can existed with `of`, `in` operator
         !inForInit
@@ -1806,10 +1814,12 @@ export function createParser(code: string) {
   ) {
     if (isInStrictMode()) {
       if (name) {
+        checkPatternContainArgumentOrEval(name);
         if (name.name === "yield" || name.name === "let" || PreserveWordSet.has(name.name)) {
           throw createMessageError("unexepct keyword in parameter list in strict mode");
         }
       }
+      checkFunctionParamIsDuplicate(params);
       for (const param of params) {
         checkPatternContainArgumentOrEval(param);
         checkBindingPatternValueWithCallbacks(
@@ -1939,13 +1949,9 @@ export function createParser(code: string) {
       );
     }
     nextToken();
-    checkFunctionParamDuplicateAndSetSimpleListContext(params);
+    setContextIfParamsIsSimpleParameterList(params);
     existFunctionParameter();
     return params;
-  }
-  function checkFunctionParamDuplicateAndSetSimpleListContext(params: Array<Pattern>) {
-    checkFunctionParamIsDuplicate(params);
-    setContextIfParamsIsSimpleParameterList(params);
   }
   /**
    * Helper function for check if parameter list is simple
@@ -2520,6 +2526,7 @@ export function createParser(code: string) {
       const start = getStartPosition();
       nextToken();
       const argument = parseLeftHandSideExpression();
+      checkExpressionAsLeftValue(argument);
       return Factory.createUpdateExpression(
         argument,
         operator,
@@ -2529,10 +2536,11 @@ export function createParser(code: string) {
       );
     }
     const argument = parseLeftHandSideExpression();
-    if (match(UpdateOperators)) {
+    if (match(UpdateOperators) && !getLineTerminatorFlag()) {
       const operator = getToken() as UpdateOperatorKinds;
       const end = getEndPosition();
       nextToken();
+      checkExpressionAsLeftValue(argument);
       return Factory.createUpdateExpression(
         argument,
         operator,
@@ -2592,6 +2600,13 @@ export function createParser(code: string) {
       );
     }
     return base;
+  }
+  function checkExpressionAsLeftValue(expression: Expression) {
+    if(isPattern(expression)) {
+      checkPatternContainArgumentOrEval(expression);
+      return;
+    }
+    throw createMessageError(ErrorMessageMap.invalid_left_value);
   }
   /**
    * Parse CallExpression
@@ -2804,9 +2819,9 @@ export function createParser(code: string) {
           exitFunctionScope();
           return arrowExpr;
         }
-        // case 1 async function ==> must be async function <id> () {}
-        if (isContextKeyword("async") && canParseAsArrowFunction()) {
-          if (kind === SyntaxKinds.FunctionKeyword) {
+        if (getSourceValue() === "async" && canParseAsArrowFunction()) {
+          // case 1 async function ==> must be async function <id> () {}
+          if (kind === SyntaxKinds.FunctionKeyword && !getEscFlag()) {
             const { value, start, end } = expect(SyntaxKinds.Identifier);
             if (getLineTerminatorFlag()) {
               return Factory.createIdentifier(value, start, end);
@@ -2820,6 +2835,7 @@ export function createParser(code: string) {
           // 2.second case is not change line after async, making it become async arrow
           //   function.
           if (kind === SyntaxKinds.ParenthesesLeftPunctuator) {
+            const containEsc = getEscFlag();
             const id = parseIdentifer();
             const meta = parseArguments();
             if (flag || !match(SyntaxKinds.ArrowOperator)) {
@@ -2830,6 +2846,9 @@ export function createParser(code: string) {
                 cloneSourcePosition(id.start),
                 meta.end,
               );
+            }
+            if(containEsc) {
+              throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
             }
             enterArrowFunctionScope(true);
             const arrowFunExpr = parseArrowFunctionExpression(meta);
@@ -2850,6 +2869,9 @@ export function createParser(code: string) {
             // async followed by flag
             if (flag) {
               return parseIdentifer();
+            }
+            if(getEscFlag()) {
+              throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
             }
             nextToken();
             enterArrowFunctionScope(true);
@@ -3255,22 +3277,23 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.MultiplyOperator)) {
       return true;
     }
-    const currentValue = getSourceValue();
     const { kind, lineTerminatorFlag: flag } = lookahead();
     const isLookAheadValidatePropertyNameStart =
       Keywords.find((keyword) => keyword === kind) ||
       kind === SyntaxKinds.Identifier ||
+      kind === SyntaxKinds.PrivateName ||
       kind === SyntaxKinds.StringLiteral ||
       kind === SyntaxKinds.NumberLiteral ||
       kind === SyntaxKinds.BracketLeftPunctuator ||
       kind === SyntaxKinds.MultiplyOperator;
-    if (currentValue === "set" && isLookAheadValidatePropertyNameStart) {
+    if (isContextKeyword("set") && isLookAheadValidatePropertyNameStart) {
       return true;
     }
-    if (currentValue === "get" && isLookAheadValidatePropertyNameStart) {
+    if (isContextKeyword("get") && isLookAheadValidatePropertyNameStart) {
       return true;
     }
-    if (currentValue === "async" && isLookAheadValidatePropertyNameStart && !flag) {
+    if (isContextKeyword("async") && isLookAheadValidatePropertyNameStart && !flag) {
+      console.log("Should be")
       return true;
     }
     return false;
@@ -3664,7 +3687,7 @@ export function createParser(code: string) {
     if (isMultiSpread && trailingComma)
       throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
     // check as function params
-    checkFunctionParamDuplicateAndSetSimpleListContext(params);
+    setContextIfParamsIsSimpleParameterList(params);
     return params;
   }
   function checkArrowFunctionParamsDefaultExpressionContext(params: Array<Pattern>) {

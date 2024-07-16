@@ -1,0 +1,282 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "test",
+                            "start": {
+                                "row": 2,
+                                "col": 3,
+                                "index": 12
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 7,
+                                "index": 16
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 4,
+                                "index": 54
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 12
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 4,
+                            "index": 54
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 7,
+                    "col": 2,
+                    "index": 82
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 7,
+                "col": 2,
+                "index": 82
+            }
+        },
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "B",
+                "start": {
+                    "row": 9,
+                    "col": 7,
+                    "index": 90
+                },
+                "end": {
+                    "row": 9,
+                    "col": 8,
+                    "index": 91
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "test",
+                            "start": {
+                                "row": 10,
+                                "col": 3,
+                                "index": 96
+                            },
+                            "end": {
+                                "row": 10,
+                                "col": 7,
+                                "index": 100
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 10,
+                                "col": 10,
+                                "index": 103
+                            },
+                            "end": {
+                                "row": 12,
+                                "col": 4,
+                                "index": 138
+                            }
+                        },
+                        "start": {
+                            "row": 10,
+                            "col": 3,
+                            "index": 96
+                        },
+                        "end": {
+                            "row": 12,
+                            "col": 4,
+                            "index": 138
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 9,
+                    "col": 9,
+                    "index": 92
+                },
+                "end": {
+                    "row": 13,
+                    "col": 2,
+                    "index": 140
+                }
+            },
+            "start": {
+                "row": 9,
+                "col": 1,
+                "index": 84
+            },
+            "end": {
+                "row": 13,
+                "col": 2,
+                "index": 140
+            }
+        },
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "C",
+                "start": {
+                    "row": 15,
+                    "col": 7,
+                    "index": 148
+                },
+                "end": {
+                    "row": 15,
+                    "col": 8,
+                    "index": 149
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "test",
+                            "start": {
+                                "row": 16,
+                                "col": 3,
+                                "index": 154
+                            },
+                            "end": {
+                                "row": 16,
+                                "col": 7,
+                                "index": 158
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 16,
+                                "col": 10,
+                                "index": 161
+                            },
+                            "end": {
+                                "row": 16,
+                                "col": 12,
+                                "index": 163
+                            }
+                        },
+                        "start": {
+                            "row": 16,
+                            "col": 3,
+                            "index": 154
+                        },
+                        "end": {
+                            "row": 16,
+                            "col": 12,
+                            "index": 163
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 15,
+                    "col": 9,
+                    "index": 150
+                },
+                "end": {
+                    "row": 18,
+                    "col": 2,
+                    "index": 193
+                }
+            },
+            "start": {
+                "row": 15,
+                "col": 1,
+                "index": 142
+            },
+            "end": {
+                "row": 18,
+                "col": 2,
+                "index": 193
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 19,
+        "col": 1,
+        "index": 194
+    }
+}

@@ -1,0 +1,99 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "BinaryExpression",
+                "operator": "<",
+                "left": {
+                    "kind": "Identifer",
+                    "name": "a",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    }
+                },
+                "right": {
+                    "kind": "UnaryExpression",
+                    "operator": "!",
+                    "argument": {
+                        "kind": "UpdateExpression",
+                        "operator": "--",
+                        "prefix": true,
+                        "argument": {
+                            "kind": "Identifer",
+                            "name": "b",
+                            "start": {
+                                "row": 1,
+                                "col": 8,
+                                "index": 7
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 9,
+                                "index": 8
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 4,
+                        "index": 3
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 9,
+                        "index": 8
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 9,
+                "index": 8
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 9
+    }
+}

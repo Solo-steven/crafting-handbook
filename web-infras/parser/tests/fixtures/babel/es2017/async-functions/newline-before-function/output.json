@@ -1,0 +1,86 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "Identifer",
+                "name": "async",
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 6,
+                    "index": 5
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 6,
+                "index": 5
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "foo",
+                "start": {
+                    "row": 2,
+                    "col": 10,
+                    "index": 15
+                },
+                "end": {
+                    "row": 2,
+                    "col": 13,
+                    "index": 18
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [],
+                "start": {
+                    "row": 2,
+                    "col": 16,
+                    "index": 21
+                },
+                "end": {
+                    "row": 2,
+                    "col": 19,
+                    "index": 24
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 6
+            },
+            "end": {
+                "row": 2,
+                "col": 19,
+                "index": 24
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 25
+    }
+}

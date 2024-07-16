@@ -1,0 +1,158 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "Identifer",
+                    "name": "x",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    }
+                },
+                "right": {
+                    "kind": "ObjectExpression",
+                    "properties": [
+                        {
+                            "kind": "ObjectProperty",
+                            "computed": false,
+                            "shorted": false,
+                            "key": {
+                                "kind": "Identifer",
+                                "name": "x",
+                                "start": {
+                                    "row": 1,
+                                    "col": 7,
+                                    "index": 6
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 8,
+                                    "index": 7
+                                }
+                            },
+                            "value": {
+                                "kind": "NumberLiteral",
+                                "value": "1",
+                                "start": {
+                                    "row": 1,
+                                    "col": 10,
+                                    "index": 9
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 11,
+                                    "index": 10
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 7,
+                                "index": 6
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 11,
+                                "index": 10
+                            }
+                        },
+                        {
+                            "kind": "ObjectProperty",
+                            "computed": false,
+                            "shorted": false,
+                            "key": {
+                                "kind": "Identifer",
+                                "name": "x",
+                                "start": {
+                                    "row": 1,
+                                    "col": 13,
+                                    "index": 12
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 14,
+                                    "index": 13
+                                }
+                            },
+                            "value": {
+                                "kind": "NumberLiteral",
+                                "value": "2",
+                                "start": {
+                                    "row": 1,
+                                    "col": 16,
+                                    "index": 15
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 17,
+                                    "index": 16
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 13,
+                                "index": 12
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 17,
+                                "index": 16
+                            }
+                        }
+                    ],
+                    "trailingComma": false,
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 19,
+                        "index": 18
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 19,
+                    "index": 18
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 19,
+                "index": 18
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 19,
+        "index": 18
+    }
+}

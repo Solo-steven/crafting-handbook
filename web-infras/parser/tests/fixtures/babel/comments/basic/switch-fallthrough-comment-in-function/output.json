@@ -1,0 +1,203 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "bar",
+                "start": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "SwitchStatement",
+                        "discriminant": {
+                            "kind": "Identifer",
+                            "name": "foo",
+                            "start": {
+                                "row": 2,
+                                "col": 12,
+                                "index": 31
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 15,
+                                "index": 34
+                            }
+                        },
+                        "cases": [
+                            {
+                                "kind": "SwitchCase",
+                                "test": {
+                                    "kind": "NumberLiteral",
+                                    "value": "1",
+                                    "start": {
+                                        "row": 4,
+                                        "col": 14,
+                                        "index": 66
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 15,
+                                        "index": 67
+                                    }
+                                },
+                                "consequence": [],
+                                "start": {
+                                    "row": 4,
+                                    "col": 9,
+                                    "index": 61
+                                },
+                                "end": {
+                                    "row": 6,
+                                    "col": 9,
+                                    "index": 106
+                                }
+                            },
+                            {
+                                "kind": "SwitchCase",
+                                "test": {
+                                    "kind": "NumberLiteral",
+                                    "value": "2",
+                                    "start": {
+                                        "row": 6,
+                                        "col": 14,
+                                        "index": 111
+                                    },
+                                    "end": {
+                                        "row": 6,
+                                        "col": 15,
+                                        "index": 112
+                                    }
+                                },
+                                "consequence": [
+                                    {
+                                        "kind": "ExpressionStatement",
+                                        "expr": {
+                                            "kind": "CallExpression",
+                                            "optional": false,
+                                            "callee": {
+                                                "kind": "Identifer",
+                                                "name": "doIt",
+                                                "start": {
+                                                    "row": 7,
+                                                    "col": 13,
+                                                    "index": 126
+                                                },
+                                                "end": {
+                                                    "row": 7,
+                                                    "col": 17,
+                                                    "index": 130
+                                                }
+                                            },
+                                            "arguments": [],
+                                            "start": {
+                                                "row": 7,
+                                                "col": 13,
+                                                "index": 126
+                                            },
+                                            "end": {
+                                                "row": 7,
+                                                "col": 19,
+                                                "index": 132
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 7,
+                                            "col": 13,
+                                            "index": 126
+                                        },
+                                        "end": {
+                                            "row": 7,
+                                            "col": 19,
+                                            "index": 132
+                                        }
+                                    }
+                                ],
+                                "start": {
+                                    "row": 6,
+                                    "col": 9,
+                                    "index": 106
+                                },
+                                "end": {
+                                    "row": 8,
+                                    "col": 5,
+                                    "index": 138
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 24
+                        },
+                        "end": {
+                            "row": 8,
+                            "col": 6,
+                            "index": 139
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 19,
+                    "index": 18
+                },
+                "end": {
+                    "row": 9,
+                    "col": 2,
+                    "index": 141
+                }
+            },
+            "params": [
+                {
+                    "kind": "Identifer",
+                    "name": "foo",
+                    "start": {
+                        "row": 1,
+                        "col": 14,
+                        "index": 13
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 17,
+                        "index": 16
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 9,
+                "col": 2,
+                "index": 141
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 10,
+        "col": 1,
+        "index": 142
+    }
+}

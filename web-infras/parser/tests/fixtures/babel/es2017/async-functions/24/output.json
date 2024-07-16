@@ -1,0 +1,119 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "obj",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        }
+                    },
+                    "init": {
+                        "kind": "ObjectExpression",
+                        "properties": [
+                            {
+                                "kind": "ObjectMethodDefinition",
+                                "async": false,
+                                "generator": false,
+                                "computed": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "async",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 13,
+                                        "index": 12
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 18,
+                                        "index": 17
+                                    }
+                                },
+                                "params": [],
+                                "body": {
+                                    "kind": "FunctionBody",
+                                    "body": [],
+                                    "start": {
+                                        "row": 1,
+                                        "col": 21,
+                                        "index": 20
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 23,
+                                        "index": 22
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 13,
+                                    "index": 12
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 23,
+                                    "index": 22
+                                }
+                            }
+                        ],
+                        "trailingComma": false,
+                        "start": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 25,
+                            "index": 24
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 25,
+                        "index": 24
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 25,
+                "index": 24
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 1,
+        "col": 26,
+        "index": 25
+    }
+}

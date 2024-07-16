@@ -1,0 +1,262 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "nonTrailing",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        }
+                    },
+                    "init": {
+                        "kind": "ArrayExpression",
+                        "elements": [
+                            {
+                                "kind": "StringLiteral",
+                                "value": "One",
+                                "start": {
+                                    "row": 2,
+                                    "col": 3,
+                                    "index": 24
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 8,
+                                    "index": 29
+                                }
+                            },
+                            {
+                                "kind": "StringLiteral",
+                                "value": "Two",
+                                "start": {
+                                    "row": 4,
+                                    "col": 3,
+                                    "index": 50
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 8,
+                                    "index": 55
+                                }
+                            }
+                        ],
+                        "trailingComma": false,
+                        "start": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        },
+                        "end": {
+                            "row": 6,
+                            "col": 2,
+                            "index": 76
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 6,
+                        "col": 2,
+                        "index": 76
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 6,
+                "col": 2,
+                "index": 76
+            }
+        },
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "trailingAfterComma",
+                        "start": {
+                            "row": 8,
+                            "col": 7,
+                            "index": 84
+                        },
+                        "end": {
+                            "row": 8,
+                            "col": 25,
+                            "index": 102
+                        }
+                    },
+                    "init": {
+                        "kind": "ArrayExpression",
+                        "elements": [
+                            {
+                                "kind": "StringLiteral",
+                                "value": "One",
+                                "start": {
+                                    "row": 9,
+                                    "col": 3,
+                                    "index": 109
+                                },
+                                "end": {
+                                    "row": 9,
+                                    "col": 8,
+                                    "index": 114
+                                }
+                            },
+                            {
+                                "kind": "StringLiteral",
+                                "value": "Two",
+                                "start": {
+                                    "row": 11,
+                                    "col": 3,
+                                    "index": 135
+                                },
+                                "end": {
+                                    "row": 11,
+                                    "col": 8,
+                                    "index": 140
+                                }
+                            }
+                        ],
+                        "trailingComma": true,
+                        "start": {
+                            "row": 8,
+                            "col": 28,
+                            "index": 105
+                        },
+                        "end": {
+                            "row": 13,
+                            "col": 2,
+                            "index": 162
+                        }
+                    },
+                    "start": {
+                        "row": 8,
+                        "col": 7,
+                        "index": 84
+                    },
+                    "end": {
+                        "row": 13,
+                        "col": 2,
+                        "index": 162
+                    }
+                }
+            ],
+            "start": {
+                "row": 8,
+                "col": 1,
+                "index": 78
+            },
+            "end": {
+                "row": 13,
+                "col": 2,
+                "index": 162
+            }
+        },
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "trailingAfterArray",
+                        "start": {
+                            "row": 15,
+                            "col": 7,
+                            "index": 170
+                        },
+                        "end": {
+                            "row": 15,
+                            "col": 25,
+                            "index": 188
+                        }
+                    },
+                    "init": {
+                        "kind": "ArrayExpression",
+                        "elements": [
+                            {
+                                "kind": "StringLiteral",
+                                "value": "One",
+                                "start": {
+                                    "row": 16,
+                                    "col": 3,
+                                    "index": 195
+                                },
+                                "end": {
+                                    "row": 16,
+                                    "col": 8,
+                                    "index": 200
+                                }
+                            }
+                        ],
+                        "trailingComma": true,
+                        "start": {
+                            "row": 15,
+                            "col": 28,
+                            "index": 191
+                        },
+                        "end": {
+                            "row": 18,
+                            "col": 2,
+                            "index": 220
+                        }
+                    },
+                    "start": {
+                        "row": 15,
+                        "col": 7,
+                        "index": 170
+                    },
+                    "end": {
+                        "row": 18,
+                        "col": 2,
+                        "index": 220
+                    }
+                }
+            ],
+            "start": {
+                "row": 15,
+                "col": 1,
+                "index": 164
+            },
+            "end": {
+                "row": 18,
+                "col": 2,
+                "index": 220
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 19,
+        "col": 1,
+        "index": 230
+    }
+}

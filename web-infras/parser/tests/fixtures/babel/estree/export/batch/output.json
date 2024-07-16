@@ -1,0 +1,43 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportAllDeclaration",
+            "exported": null,
+            "source": {
+                "kind": "StringLiteral",
+                "value": "foo",
+                "start": {
+                    "row": 1,
+                    "col": 15,
+                    "index": 14
+                },
+                "end": {
+                    "row": 1,
+                    "col": 20,
+                    "index": 19
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 20,
+                "index": 19
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 21
+    }
+}

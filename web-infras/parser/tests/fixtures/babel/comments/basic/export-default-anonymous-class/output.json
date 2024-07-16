@@ -1,0 +1,104 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportDefaultDeclaration",
+            "declaration": {
+                "kind": "ClassDeclaration",
+                "id": null,
+                "superClass": null,
+                "body": {
+                    "kind": "ClassBody",
+                    "body": [
+                        {
+                            "kind": "ClassMethodDefinition",
+                            "async": false,
+                            "generator": false,
+                            "computed": false,
+                            "static": false,
+                            "key": {
+                                "kind": "Identifer",
+                                "name": "method1",
+                                "start": {
+                                    "row": 8,
+                                    "col": 5,
+                                    "index": 103
+                                },
+                                "end": {
+                                    "row": 8,
+                                    "col": 12,
+                                    "index": 110
+                                }
+                            },
+                            "params": [],
+                            "body": {
+                                "kind": "FunctionBody",
+                                "body": [],
+                                "start": {
+                                    "row": 8,
+                                    "col": 14,
+                                    "index": 112
+                                },
+                                "end": {
+                                    "row": 9,
+                                    "col": 6,
+                                    "index": 119
+                                }
+                            },
+                            "start": {
+                                "row": 8,
+                                "col": 5,
+                                "index": 103
+                            },
+                            "end": {
+                                "row": 9,
+                                "col": 6,
+                                "index": 119
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 4,
+                        "col": 22,
+                        "index": 57
+                    },
+                    "end": {
+                        "row": 10,
+                        "col": 2,
+                        "index": 121
+                    }
+                },
+                "start": {
+                    "row": 4,
+                    "col": 16,
+                    "index": 51
+                },
+                "end": {
+                    "row": 10,
+                    "col": 2,
+                    "index": 121
+                }
+            },
+            "start": {
+                "row": 4,
+                "col": 1,
+                "index": 36
+            },
+            "end": {
+                "row": 10,
+                "col": 2,
+                "index": 121
+            }
+        }
+    ],
+    "start": {
+        "row": 4,
+        "col": 1,
+        "index": 36
+    },
+    "end": {
+        "row": 11,
+        "col": 1,
+        "index": 122
+    }
+}

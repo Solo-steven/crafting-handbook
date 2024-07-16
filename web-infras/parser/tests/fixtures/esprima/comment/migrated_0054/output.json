@@ -1,0 +1,104 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "a",
+                "start": {
+                    "row": 1,
+                    "col": 15,
+                    "index": 14
+                },
+                "end": {
+                    "row": 1,
+                    "col": 16,
+                    "index": 15
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "FunctionDeclaration",
+                        "name": {
+                            "kind": "Identifer",
+                            "name": "o",
+                            "start": {
+                                "row": 1,
+                                "col": 33,
+                                "index": 32
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 34,
+                                "index": 33
+                            }
+                        },
+                        "generator": false,
+                        "async": false,
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 1,
+                                "col": 37,
+                                "index": 36
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 39,
+                                "index": 38
+                            }
+                        },
+                        "params": [],
+                        "start": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 39,
+                            "index": 38
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 19,
+                    "index": 18
+                },
+                "end": {
+                    "row": 1,
+                    "col": 40,
+                    "index": 39
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 1,
+                "col": 6,
+                "index": 5
+            },
+            "end": {
+                "row": 1,
+                "col": 40,
+                "index": 39
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 6,
+        "index": 5
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 40
+    }
+}

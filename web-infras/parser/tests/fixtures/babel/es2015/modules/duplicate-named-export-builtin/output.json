@@ -1,0 +1,117 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "toString",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        }
+                    },
+                    "init": {
+                        "kind": "NumberLiteral",
+                        "value": "1",
+                        "start": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 19,
+                        "index": 18
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 19,
+                "index": 18
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ExportSpecifier",
+                    "exported": {
+                        "kind": "Identifer",
+                        "name": "toString",
+                        "start": {
+                            "row": 3,
+                            "col": 10,
+                            "index": 30
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 18,
+                            "index": 38
+                        }
+                    },
+                    "local": null,
+                    "start": {
+                        "row": 3,
+                        "col": 10,
+                        "index": 30
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 18,
+                        "index": 38
+                    }
+                }
+            ],
+            "declaration": null,
+            "source": null,
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 21
+            },
+            "end": {
+                "row": 3,
+                "col": 18,
+                "index": 38
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 42
+    }
+}

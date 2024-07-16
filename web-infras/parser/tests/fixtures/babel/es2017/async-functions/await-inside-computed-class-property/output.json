@@ -1,0 +1,133 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": true,
+                "async": true,
+                "arguments": [],
+                "body": {
+                    "kind": "ClassExpression",
+                    "id": null,
+                    "superClass": null,
+                    "body": {
+                        "kind": "ClassBody",
+                        "body": [
+                            {
+                                "kind": "ClassMethodDefinition",
+                                "async": false,
+                                "generator": false,
+                                "computed": false,
+                                "static": false,
+                                "key": {
+                                    "kind": "AwaitExpression",
+                                    "argument": {
+                                        "kind": "NumberLiteral",
+                                        "value": "42",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 10,
+                                            "index": 29
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 12,
+                                            "index": 31
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 2,
+                                        "col": 4,
+                                        "index": 23
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 12,
+                                        "index": 31
+                                    }
+                                },
+                                "params": [],
+                                "body": {
+                                    "kind": "FunctionBody",
+                                    "body": [],
+                                    "start": {
+                                        "row": 2,
+                                        "col": 16,
+                                        "index": 35
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 19,
+                                        "index": 38
+                                    }
+                                },
+                                "start": {
+                                    "row": 2,
+                                    "col": 4,
+                                    "index": 23
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 19,
+                                    "index": 38
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 2,
+                            "index": 40
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 2,
+                        "index": 40
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 3,
+                    "col": 2,
+                    "index": 40
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 7,
+                "index": 6
+            },
+            "end": {
+                "row": 3,
+                "col": 2,
+                "index": 40
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 7,
+        "index": 6
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 41
+    }
+}
