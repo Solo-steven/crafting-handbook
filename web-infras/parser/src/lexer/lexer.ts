@@ -236,8 +236,8 @@ export function createLexer(code: string) {
       isEscape = char === "\\" && !isEscape;
       eatChar();
     }
-    if(isEOF()) {
-      throw lexicalError("regex unterminate stop")
+    if (isEOF()) {
+      throw lexicalError("regex unterminate stop");
     }
     pattern = getSliceStringFromCode(startIndex, getCurrentIndex());
     // eat `/`
@@ -361,7 +361,7 @@ export function createLexer(code: string) {
    */
   function skipWhiteSpaceChangeLine(): void {
     loop: while (context.cursor.pos < code.length) {
-      let counter = 0
+      let counter = 0;
       switch (getChar()) {
         case "\n":
           eatChangeLine();
@@ -370,13 +370,13 @@ export function createLexer(code: string) {
         case "\t":
           eatChar();
           break;
-        case "/":  {
+        case "/": {
           const next = getChar(1);
-          if(next === "/") {
+          if (next === "/") {
             readComment();
             return skipWhiteSpaceChangeLine();
           }
-          if(next === "*") {
+          if (next === "*") {
             readCommentBlock();
             return skipWhiteSpaceChangeLine();
           }
@@ -944,8 +944,8 @@ export function createLexer(code: string) {
       }
       eatChar();
     }
-      // TODO: error message
-      throw new Error();
+    // TODO: error message
+    throw new Error();
   }
   /** ===========================================================
    *                Literal state mahcine
@@ -1021,7 +1021,7 @@ export function createLexer(code: string) {
         eatChar();
         return readNumberLiteralWithBase(isHex);
       }
-      if(next !== "E" && next !== "e") {
+      if (next !== "E" && next !== "e") {
         return finishToken(SyntaxKinds.NumberLiteral);
       }
     }

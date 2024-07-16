@@ -74,7 +74,7 @@ function getFailedKindCount(failedTestCases: Array<FailedTestCasesResult>) {
 
 function filterSkipTestCase(skipTestCases: Array<SkipTestCaseResult>) {
   const ignoreSet = new Set(TempIgnoreCases);
-  return skipTestCases.filter(testCase => !ignoreSet.has(testCase.fileId));
+  return skipTestCases.filter((testCase) => !ignoreSet.has(testCase.fileId));
 }
 
 function report(testResult: TestResult) {
@@ -109,30 +109,30 @@ function report(testResult: TestResult) {
 
 function getTestCaseSet(testResult: TestResult) {
   return {
-    pass: new Set(testResult.passResult.map(result => result.fileId)),
-    failed: new Set(testResult.failedResult.map(result => result.fileId)),
-    skip: new Set(testResult.skipResult.map(result => result.fileId)),
-  }
+    pass: new Set(testResult.passResult.map((result) => result.fileId)),
+    failed: new Set(testResult.failedResult.map((result) => result.fileId)),
+    skip: new Set(testResult.skipResult.map((result) => result.fileId)),
+  };
 }
 
 async function compareReport(testResult: TestResult) {
-    const lastTestResult: TestResult = JSON.parse(await readFile("./result.json", { encoding: "utf-8" }));
-    const lastSet = getTestCaseSet(lastTestResult);
-    const curSet = getTestCaseSet(testResult);
-    const moreFailed = [];
-    for(const val of curSet.failed) {
-      if(!(lastSet.failed.has(val))) {
-        moreFailed.push(val);
-      }
+  const lastTestResult: TestResult = JSON.parse(await readFile("./result.json", { encoding: "utf-8" }));
+  const lastSet = getTestCaseSet(lastTestResult);
+  const curSet = getTestCaseSet(testResult);
+  const moreFailed = [];
+  for (const val of curSet.failed) {
+    if (!lastSet.failed.has(val)) {
+      moreFailed.push(val);
     }
-    if(moreFailed.length > 0) {
-      console.log(chalk.bold("=========== Regression Parser Test Case ==========="));
-      console.log(`== ${chalk.red("More Failed Test Case")} : ${moreFailed.length}`);
-      for (const failedcase of moreFailed) {
-        console.log(`  |---> File: ${failedcase}`);
-      }
+  }
+  if (moreFailed.length > 0) {
+    console.log(chalk.bold("=========== Regression Parser Test Case ==========="));
+    console.log(`== ${chalk.red("More Failed Test Case")} : ${moreFailed.length}`);
+    for (const failedcase of moreFailed) {
+      console.log(`  |---> File: ${failedcase}`);
     }
-    console.log(lastSet.failed.size, curSet.failed.size)
+  }
+  console.log(lastSet.failed.size, curSet.failed.size);
 }
 
 async function stroeResult(testResult: TestResult) {
@@ -142,7 +142,7 @@ async function stroeResult(testResult: TestResult) {
 export default async function runParserTestCases() {
   const testSuite = await getTestSuite();
   const testResult = await runTestSuit(testSuite, isUpdate);
-   //  await stroeResult(testResult);
+  //  await stroeResult(testResult);
   return async () => {
     report(testResult);
     await compareReport(testResult);

@@ -1575,7 +1575,7 @@ export function createParser(code: string) {
   }
   function parseThrowStatement() {
     const { start } = expect(SyntaxKinds.ThrowKeyword);
-    if(getLineTerminatorFlag()) {
+    if (getLineTerminatorFlag()) {
       throw createMessageError("TODO, line break not allow");
     }
     const expr = parseExpressionAllowIn();
@@ -2602,7 +2602,7 @@ export function createParser(code: string) {
     return base;
   }
   function checkExpressionAsLeftValue(expression: Expression) {
-    if(isPattern(expression)) {
+    if (isPattern(expression)) {
       checkPatternContainArgumentOrEval(expression);
       return;
     }
@@ -2847,7 +2847,7 @@ export function createParser(code: string) {
                 meta.end,
               );
             }
-            if(containEsc) {
+            if (containEsc) {
               throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
             }
             enterArrowFunctionScope(true);
@@ -2870,7 +2870,7 @@ export function createParser(code: string) {
             if (flag) {
               return parseIdentifer();
             }
-            if(getEscFlag()) {
+            if (getEscFlag()) {
               throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
             }
             nextToken();
@@ -3293,7 +3293,7 @@ export function createParser(code: string) {
       return true;
     }
     if (isContextKeyword("async") && isLookAheadValidatePropertyNameStart && !flag) {
-      console.log("Should be")
+      console.log("Should be");
       return true;
     }
     return false;

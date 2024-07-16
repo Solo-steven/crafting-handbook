@@ -25,12 +25,7 @@ async function recursivelyFindTestCase(
     if (isDir) {
       const nextJsDirPath = path.join(jsDirPath, fileName);
       subDir.push(
-        recursivelyFindTestCase(
-          nextJsDirPath,
-          expectPassTestCases,
-          expectFailedTestCases,
-          getFileIdCallback,
-        ),
+        recursivelyFindTestCase(nextJsDirPath, expectPassTestCases, expectFailedTestCases, getFileIdCallback),
       );
       continue;
     }
@@ -39,19 +34,19 @@ async function recursivelyFindTestCase(
     }
     const jsFilePath = path.join(jsDirPath, fileName);
     const expectFilePath = path.join(jsDirPath, "expect.json");
-    const expectFileString = await readFile(expectFilePath, { encoding: "utf-8"});
+    const expectFileString = await readFile(expectFilePath, { encoding: "utf-8" });
     const expectObj: ExpectConfig = JSON.parse(expectFileString);
     const fileNameWithoutExtend = fileName.split(".")[0];
     const fileNameRenameToOutputArray = fileNameWithoutExtend.split("/");
     fileNameRenameToOutputArray.pop();
-    const fileNameRenameToOutput = fileNameRenameToOutputArray.join("/")
+    const fileNameRenameToOutput = fileNameRenameToOutputArray.join("/");
     const jsonFilePath = path.join(jsDirPath, `${fileNameRenameToOutput}/output.json`);
-    if(expectObj.expect === "Failed") {
+    if (expectObj.expect === "Failed") {
       expectFailedTestCases.push({
         jsFilePath,
         fileId: getFileIdCallback(jsDirPath),
       });
-    }else {
+    } else {
       expectPassTestCases.push({
         jsFilePath,
         jsonFilePath,
@@ -99,12 +94,7 @@ export async function getTestSuite(): Promise<TestSuite> {
   const expectPassTestCases: Array<ExpectPassTestCase> = [];
   const expectFailedTestCases: Array<ExpectPassTestCase> = [];
   await Promise.all([
-    recursivelyFindTestCase(
-      babelJsRoot,
-      expectPassTestCases,
-      expectFailedTestCases,
-      babelTestCaseGetFileId,
-    ),
+    recursivelyFindTestCase(babelJsRoot, expectPassTestCases, expectFailedTestCases, babelTestCaseGetFileId),
     // recursivelyFindTestCase(
     //   modelCheckingJsRoot,
     //   modelCheckingJsonRoot,

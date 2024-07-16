@@ -1,6 +1,6 @@
-export interface ExpectConfig  {
-  expect: "Failed" | "Pass",
-  config: any,
+export interface ExpectConfig {
+  expect: "Failed" | "Pass";
+  config: any;
 }
 
 /**
