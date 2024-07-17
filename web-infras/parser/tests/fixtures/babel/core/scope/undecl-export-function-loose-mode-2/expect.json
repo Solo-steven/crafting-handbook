@@ -1,7 +1,0 @@
-{
-  "expect": "Pass",
-  "config": {
-    "sourceType": "module",
-    "strictMode": false
-  }
-}

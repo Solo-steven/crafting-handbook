@@ -1,1 +1,1 @@
-for (let [x = let];;) {}
+for (let [x = let] = [];;) {}

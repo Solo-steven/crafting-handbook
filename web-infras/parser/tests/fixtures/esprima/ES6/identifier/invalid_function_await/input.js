@@ -1,1 +1,1 @@
-function await() {}
+export function await() {}

@@ -1789,7 +1789,7 @@ export function createParser(code: string) {
     }
     const params = parseFunctionParam();
     const body = parseFunctionBody();
-    checkFunctionNameAndParamsInCurrentFunctionStrictMode(name, params);
+    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(name, params);
     return Factory.createFunction(
       name,
       body,
@@ -1808,7 +1808,7 @@ export function createParser(code: string) {
    * @param name
    * @param params
    */
-  function checkFunctionNameAndParamsInCurrentFunctionStrictMode(
+  function checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(
     name: Identifier | null,
     params: Array<Pattern>,
   ) {
@@ -1832,6 +1832,8 @@ export function createParser(code: string) {
           (_, _1) => void 0,
         );
       }
+    }else if(!isCurrentFunctionParameterListSimple()) {
+      checkFunctionParamIsDuplicate(params);
     }
   }
   /**
@@ -3293,7 +3295,6 @@ export function createParser(code: string) {
       return true;
     }
     if (isContextKeyword("async") && isLookAheadValidatePropertyNameStart && !flag) {
-      console.log("Should be");
       return true;
     }
     return false;
@@ -3459,7 +3460,7 @@ export function createParser(code: string) {
     const body = parseFunctionBody();
     // when is in class there we do not need to check parameter list and function name in body strcit mode
     // by the function `checkFunctionNameAndParamsInCurrentFunctionStrictMode`
-    if (!inClass) checkFunctionNameAndParamsInCurrentFunctionStrictMode(null, parmas);
+    if (!inClass) checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, parmas);
     exitFunctionScope();
     /**
      * Step 2: semantic and more concise syntax check instead just throw a unexpect
@@ -3486,7 +3487,7 @@ export function createParser(code: string) {
     }
     if (isIdentifer(withPropertyName)) {
       if (withPropertyName.name === "constructor" && isInClassScope()) {
-        if (isAsync || generator || isStatic || type !== "method") {
+        if (isAsync || generator || type !== "method") {
           throw createMessageError(
             ErrorMessageMap.constructor_can_not_be_async_or_generator_or_method_incorrect,
           );
@@ -3648,11 +3649,11 @@ export function createParser(code: string) {
     let isExpression = false;
     if (match(SyntaxKinds.BracesLeftPunctuator)) {
       body = parseFunctionBody();
-      checkFunctionNameAndParamsInCurrentFunctionStrictMode(null, functionArguments);
     } else {
       body = parseAssignmentExpressionInheritIn();
       isExpression = true;
     }
+    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, functionArguments);
     context.lastArrowExprPosition = {
       start: metaData.start,
       end: body.end,

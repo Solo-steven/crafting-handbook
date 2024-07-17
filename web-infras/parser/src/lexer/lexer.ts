@@ -1007,6 +1007,7 @@ export function createLexer(code: string) {
       eatChar();
       const next = getChar();
       if (next === ".") {
+        eatChar();
         return readDotStartFloat();
       }
       if (next === "b" || next === "B") {
@@ -1054,8 +1055,6 @@ export function createLexer(code: string) {
    * @returns {SyntaxKinds}
    */
   function readDotStartFloat(): SyntaxKinds {
-    // eat '.'
-    eatChar();
     readDigitalHelper();
     return finishToken(SyntaxKinds.NumberLiteral);
   }
@@ -1064,9 +1063,30 @@ export function createLexer(code: string) {
    * @returns {void}
    */
   function readDigitalHelper(): void {
-    // since `isDigital` will check eof for us.
-    while (isDigital()) {
+    let seprator = false;
+    let isStart = true;
+    while (!isEOF()) {
+      const char = getChar();
+      if (char === "_") {
+        if(isStart) {
+          throw lexicalError("TODO: Can not start with _");
+        }
+        eatChar();
+        if(seprator) {
+          throw lexicalError("TODO: double __");
+        }
+        seprator = true;
+        continue;
+      }
+      if (!isDigital()) {
+        break;
+      }
+      seprator = false;
+      isStart = false;
       eatChar();
+    }
+    if (seprator) {
+      throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
     }
   }
   /**
@@ -1115,7 +1135,7 @@ export function createLexer(code: string) {
       return false;
     }
     const code = char.charCodeAt(0);
-    return code >= 48 && code <= 56;
+    return code >= 48 && code <= 55;
   }
   /**
    * Sub state machine helper for reading a different base number
@@ -1125,19 +1145,26 @@ export function createLexer(code: string) {
    */
   function readNumberLiteralWithBase(stopper: () => boolean) {
     let seprator = false;
+    let isStart = true;
     const startIndex = getCurrentIndex();
     while (!isEOF()) {
       const char = getChar();
       if (char === "_") {
+        if(isStart) {
+          throw lexicalError("TODO: Can not start with _");
+        }
         eatChar();
+        if(seprator) {
+          throw lexicalError("TODO: double __");
+        }
         seprator = true;
         continue;
-      } else {
-        seprator = false;
       }
       if (!stopper()) {
         break;
       }
+      seprator = false;
+      isStart = false;
       eatChar();
     }
     if (seprator) {
