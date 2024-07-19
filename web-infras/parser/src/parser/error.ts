@@ -48,6 +48,7 @@ export const ErrorMessageMap = {
   // strict mode problem
   unexpect_keyword_in_stric_mode: "unexpect keyword in strict mode",
   illegal_use_strict_in_non_simple_parameter_list: "illegal use strict in non simple parameter list",
+  with_statement_can_not_use_in_strict_mode: "with statement can not use in strict mode",
   // invalid change line char
   no_line_break_is_allowed_before_arrow: "No line break is allowed before '=>'",
   no_line_break_is_allowed_before_async: "No line break is allowed before `async`",

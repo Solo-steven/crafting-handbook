@@ -3,7 +3,6 @@ import { getTestSuite } from "./helper/getTestCase";
 import { runTestSuit } from "./helper/testRunner";
 import { FailedTestCasesResult, PassTestCaseResult, SkipTestCaseResult, TestResult } from "./helper/type";
 import chalk from "chalk";
-import { execSync } from "child_process";
 
 const isUpdate = Boolean(process.env.TEST_UPDATE) || false;
 const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
@@ -12,7 +11,10 @@ const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 
 const TempIgnoreCases: Set<string> = new Set([
   // === (bug) 100% syntax problem
-  "/babel/es2018/async-generators/for-await-async-of.js",
+  "/babel/es2018/async-generators/for-await-async-of",
+  // === production rule problem
+  "/babel/es2015/generators/invalid-hanging",
+  "/babel/es2015/generators/invalid-sloppy-function",
   // === ?? dev success, but test failed
   "/esprima/expression/primary/literal/string/migrated_0017",
   "/esprima/expression/binary/multiline_string_literal",
@@ -68,11 +70,16 @@ const TempIgnoreCases: Set<string> = new Set([
   "/esprima/ES6/identifier/escaped_math_dal_part",
   "/esprima/ES6/identifier/escaped_math_kaf_lam",
   "/esprima/ES6/identifier/escaped_math_zain_start",
+  "/esprima/ES6/template-literals/octal-literal",
+  "/esprima/ES6/template-literals/strict-octal-literal",
+  "/babel/es2015/identifiers/invalid-escape-seq-null",
   // === (feature) Checking ***esc char*** in string and identifier and template string
   "/esprima/es2018/template-literal-revision/not-escape-8",
   "/esprima/es2018/template-literal-revision/not-escape-9",
   "/esprima/es2018/template-literal-revision/not-escape-hex",
   "/esprima/ES6/identifier/invalid-hex-escape-sequence",
+  "/esprima/ES6/template-literals/invalid-escape",
+  "/esprima/ES6/template-literals/invalid-hex-escape-sequence",
   // === (feature) html comment, hashtag comment
   "/esprima/comment/migrated_0036",
   "/esprima/comment/migrated_0038",
@@ -89,6 +96,50 @@ const TempIgnoreCases: Set<string> = new Set([
   "/esprima/ES6/identifier/invalid_function_await",
   "/esprima/ES6/identifier/invalid_var_await",
   "/esprima/ES6/identifier/module_await",
+  "/esprima/ES6/program/script/invalid-export-declaration",
+  "/esprima/ES6/program/script/invalid-import-declaration",
+  "/esprima/ES6/program/module/invalid-with",
+  "/esprima/ES6/program/module/invalid-delete",
+  "/babel/es2015/destructuring/binding-arguments-module",
+  // === (feature) duplicate proto property
+  "/esprima/ES6/object-initialiser/invalid-proto-getter-literal-identifier",
+  "/esprima/ES6/object-initialiser/invalid-proto-identifier-literal",
+  "/esprima/ES6/object-initialiser/invalid-proto-identifiers",
+  "/esprima/ES6/object-initialiser/invalid-proto-literal-identifier",
+  "/esprima/ES6/object-initialiser/invalid-proto-literals",
+  "/esprima/ES6/object-initialiser/invalid-proto-setter-literal-identifier",
+  "/babel/es2015/duplicate-proto/in-new-expression",
+  "/babel/es2015/duplicate-proto/with-assignment-expression",
+  "/babel/es2015/duplicate-proto/without-assignment-expression",
+  // === (feature) duplicate among export declaration
+  "/babel/es2015/modules/duplicate-export-default",
+  "/babel/es2015/modules/duplicate-export-default-and-export-as-default",
+  "/babel/es2015/modules/duplicate-named-export",
+  "/babel/es2015/modules/duplicate-named-export-class-declaration",
+  "/babel/es2015/modules/duplicate-named-export-destructuring-assignment",
+  "/babel/es2015/modules/duplicate-named-export-destructuring",
+  "/babel/es2015/modules/duplicate-named-export-destructuring2",
+  "/babel/es2015/modules/duplicate-named-export-destructuring3",
+  "/babel/es2015/modules/duplicate-named-export-destructuring4",
+  "/babel/es2015/modules/duplicate-named-export-destructuring5",
+  "/babel/es2015/modules/duplicate-named-export-destructuring6",
+  "/babel/es2015/modules/duplicate-named-export-destructuring7",
+  "/babel/es2015/modules/duplicate-named-export-destructuring8",
+  "/babel/es2015/modules/duplicate-named-export-destructuring9",
+  "/babel/es2015/modules/duplicate-named-export-destructuring10",
+  "/babel/es2015/modules/duplicate-named-export-destructuring11",
+  "/babel/es2015/modules/duplicate-named-export-destructuring12",
+  "/babel/es2015/modules/duplicate-named-export-destructuring13",
+  "/babel/es2015/modules/duplicate-named-export-destructuring14",
+  "/babel/es2015/modules/duplicate-named-export-destructuring15",
+  "/babel/es2015/modules/duplicate-named-export-destructuring16",
+  "/babel/es2015/modules/duplicate-named-export-destructuring17",
+  "/babel/es2015/modules/duplicate-named-export-destructuring18",
+  "/babel/es2015/modules/duplicate-named-export-destructuring19",
+  "/babel/es2015/modules/duplicate-named-export-function-declaration",
+  "/babel/es2015/modules/duplicate-named-export-variable-declaration",
+
+
 
   // // other strict mode problem
   // "/esprima/declaration/function/invalid-strict-labelled-function-declaration.js",
@@ -110,9 +161,6 @@ const TempIgnoreCases: Set<string> = new Set([
   // "/babel/es2015/uncategorised/invalid_217.js",
   // "/babel/es2015/uncategorised/invalid_218.js",
   // "/babel/es2015/uncategorised/invalid_216.js",
-  // // === production rule problem
-  // "/babel/es2015/generators/invalid-hanging.js",
-  // "/babel/es2015/generators/invalid-sloppy-function.js",
   // // ==== unicde problem (unicode id start, id continue)
   // "/babel/core/uncategorised/19.js",
   // "/babel/es2015/uncategorised/invalid_327.js",

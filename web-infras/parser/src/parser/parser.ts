@@ -123,6 +123,7 @@ import {
   CallExpression,
   isNumnerLiteral,
   isFunctionExpression,
+  isPrivateName,
 } from "web-infra-common";
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
@@ -1552,7 +1553,10 @@ export function createParser(code: string) {
       nextToken();
       if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
         nextToken();
-        const param = parseBindingElement();
+        // catch clause should not have init
+        const param = parseBindingElement(false);
+        // should check param is duplicate or not.
+        checkFunctionParamIsDuplicate([param]);
         expect(SyntaxKinds.ParenthesesRightPunctuator);
         const body = parseBlockStatement();
         handler = Factory.createCatchClause(param, body, catchKeywordStart, cloneSourcePosition(body.end));
@@ -1583,6 +1587,9 @@ export function createParser(code: string) {
     return Factory.createThrowStatement(expr, start, cloneSourcePosition(expr.end));
   }
   function parseWithStatement(): WithStatement {
+    if(isInStrictMode()) {
+      throw createMessageError(ErrorMessageMap.with_statement_can_not_use_in_strict_mode);
+    }
     const { start } = expect(SyntaxKinds.WithKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const object = parseExpressionAllowIn();
@@ -1811,6 +1818,7 @@ export function createParser(code: string) {
   function checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(
     name: Identifier | null,
     params: Array<Pattern>,
+    isArrow = false,
   ) {
     if (isInStrictMode()) {
       if (name) {
@@ -1832,7 +1840,7 @@ export function createParser(code: string) {
           (_, _1) => void 0,
         );
       }
-    }else if(!isCurrentFunctionParameterListSimple()) {
+    }else if(!isCurrentFunctionParameterListSimple() || isArrow) {
       checkFunctionParamIsDuplicate(params);
     }
   }
@@ -2049,9 +2057,9 @@ export function createParser(code: string) {
     }
     let superClass: Expression | null = null;
     if (match(SyntaxKinds.ExtendsKeyword)) {
+      enterClassScope(true);
       nextToken();
       superClass = parseLeftHandSideExpression();
-      enterClassScope(true);
     } else {
       enterClassScope(false);
     }
@@ -3039,9 +3047,13 @@ export function createParser(code: string) {
   function parseImportMeta() {
     const { start, end } = expect(SyntaxKinds.ImportKeyword);
     expect(SyntaxKinds.DotOperator);
+    const ecaFlag = getEscFlag();
     const property = parseIdentifer();
     if (property.name !== "meta") {
       throw createMessageError(ErrorMessageMap.import_meta_invalid_property);
+    }
+    if(ecaFlag) {
+      throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
     }
     return Factory.createMetaProperty(
       Factory.createIdentifier("import", start, end),
@@ -3458,9 +3470,7 @@ export function createParser(code: string) {
     enterFunctionScope(isAsync, generator);
     const parmas = parseFunctionParam();
     const body = parseFunctionBody();
-    // when is in class there we do not need to check parameter list and function name in body strcit mode
-    // by the function `checkFunctionNameAndParamsInCurrentFunctionStrictMode`
-    if (!inClass) checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, parmas);
+    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, parmas);
     exitFunctionScope();
     /**
      * Step 2: semantic and more concise syntax check instead just throw a unexpect
@@ -3499,6 +3509,17 @@ export function createParser(code: string) {
           start as SourcePosition,
           cloneSourcePosition(body.end),
         );
+      }
+    }
+    if(!isPrivateName(withPropertyName) && type === "method") {
+      let valueOfName;
+      if(isStringLiteral(withPropertyName)) {
+        valueOfName = withPropertyName.value;
+      }else if (isIdentifer(withPropertyName)) {
+        valueOfName = withPropertyName.name;
+      }
+      if(valueOfName && valueOfName === "prototype" && isStatic) {
+        throw createMessageError("");
       }
     }
     /**
@@ -3653,7 +3674,7 @@ export function createParser(code: string) {
       body = parseAssignmentExpressionInheritIn();
       isExpression = true;
     }
-    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, functionArguments);
+    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, functionArguments, true);
     context.lastArrowExprPosition = {
       start: metaData.start,
       end: body.end,
@@ -4310,8 +4331,11 @@ export function createParser(code: string) {
    * ==================================================================================
    */
   function expectFormKeyword() {
-    if (getSourceValue() !== "from") {
+    if (getSourceValue() !== "from" ) {
       throw createUnexpectError(SyntaxKinds.Identifier, "expect from keyword");
+    }
+    if(getEscFlag()) {
+      throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
     }
     nextToken();
   }
@@ -4399,7 +4423,7 @@ export function createParser(code: string) {
    */
   function parseImportNamespaceSpecifier(): ImportNamespaceSpecifier {
     const { start } = expect(SyntaxKinds.MultiplyOperator);
-    if (getSourceValue() !== "as") {
+    if (!isContextKeyword("as")) {
       throw createMessageError("import namespace specifier must has 'as'");
     }
     nextToken();
@@ -4433,7 +4457,7 @@ export function createParser(code: string) {
       }
       if (match([SyntaxKinds.Identifier, ...Keywords])) {
         const imported = parseIdentiferWithKeyword();
-        if (getSourceValue() !== "as") {
+        if (!isContextKeyword("as")) {
           // @ts-ignore
           if (KeywordLiteralMapSyntaxKind[imported.name]) {
             throw createMessageError(ErrorMessageMap.keyword_can_not_use_in_imported_when_just_a_specifier);
@@ -4460,7 +4484,7 @@ export function createParser(code: string) {
         );
       } else if (match(SyntaxKinds.StringLiteral)) {
         const imported = parseStringLiteral();
-        if (getSourceValue() !== "as") {
+        if (!isContextKeyword("as")) {
           specifiers.push(
             Factory.createImportSpecifier(
               imported,
@@ -4565,6 +4589,7 @@ export function createParser(code: string) {
     expect(SyntaxKinds.BracesLeftPunctuator);
     const specifier: Array<ExportSpecifier> = [];
     let isStart = true;
+    let isMatchKeyword = false
     while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
       if (isStart) {
         isStart = false;
@@ -4575,10 +4600,13 @@ export function createParser(code: string) {
         break;
       }
       // TODO: reafacor into parseModuleName ?
+      if(match(Keywords)) {
+        isMatchKeyword = true;
+      }
       const exported = match([SyntaxKinds.Identifier, ...Keywords])
         ? parseIdentiferWithKeyword()
         : parseStringLiteral();
-      if (getSourceValue() === "as") {
+      if (isContextKeyword("as")) {
         nextToken();
         const local = match([SyntaxKinds.Identifier, ...Keywords])
           ? parseIdentiferWithKeyword()
@@ -4607,6 +4635,10 @@ export function createParser(code: string) {
     if (getSourceValue() === "from") {
       nextToken();
       source = parseStringLiteral();
+    }else {
+      if(isMatchKeyword) {
+        throw new Error();
+      }
     }
     shouldInsertSemi();
     const end = source
@@ -4619,7 +4651,7 @@ export function createParser(code: string) {
   function parseExportAllDeclaration(start: SourcePosition): ExportAllDeclaration {
     expect(SyntaxKinds.MultiplyOperator);
     let exported: Identifier | null = null;
-    if (getSourceValue() === "as") {
+    if (isContextKeyword("as")) {
       nextToken();
       exported = parseIdentiferWithKeyword();
     } else {
