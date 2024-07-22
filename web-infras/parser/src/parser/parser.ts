@@ -1587,7 +1587,7 @@ export function createParser(code: string) {
     return Factory.createThrowStatement(expr, start, cloneSourcePosition(expr.end));
   }
   function parseWithStatement(): WithStatement {
-    if(isInStrictMode()) {
+    if (isInStrictMode()) {
       throw createMessageError(ErrorMessageMap.with_statement_can_not_use_in_strict_mode);
     }
     const { start } = expect(SyntaxKinds.WithKeyword);
@@ -1818,7 +1818,7 @@ export function createParser(code: string) {
   function checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(
     name: Identifier | null,
     params: Array<Pattern>,
-    isArrow = false,
+    focusCheck = false,
   ) {
     if (isInStrictMode()) {
       if (name) {
@@ -1840,7 +1840,7 @@ export function createParser(code: string) {
           (_, _1) => void 0,
         );
       }
-    }else if(!isCurrentFunctionParameterListSimple() || isArrow) {
+    } else if (!isCurrentFunctionParameterListSimple() || focusCheck) {
       checkFunctionParamIsDuplicate(params);
     }
   }
@@ -2829,7 +2829,7 @@ export function createParser(code: string) {
           exitFunctionScope();
           return arrowExpr;
         }
-        if (getSourceValue() === "async" && canParseAsArrowFunction()) {
+        if (getSourceValue() === "async") {
           // case 1 async function ==> must be async function <id> () {}
           if (kind === SyntaxKinds.FunctionKeyword && !getEscFlag()) {
             const { value, start, end } = expect(SyntaxKinds.Identifier);
@@ -2838,66 +2838,74 @@ export function createParser(code: string) {
             }
             return parseFunctionExpression(true);
           }
-          // case 2 `async` `(`
-          // There might be two case :
-          // 1.frist case is there are line change after async, which make this case into
-          //   call expression
-          // 2.second case is not change line after async, making it become async arrow
-          //   function.
-          if (kind === SyntaxKinds.ParenthesesLeftPunctuator) {
-            const containEsc = getEscFlag();
-            const id = parseIdentifer();
-            const meta = parseArguments();
-            if (flag || !match(SyntaxKinds.ArrowOperator)) {
-              return Factory.createCallExpression(
-                id,
-                meta.nodes,
-                false,
-                cloneSourcePosition(id.start),
-                meta.end,
-              );
+          if (canParseAsArrowFunction()) {
+            // case 2 `async` `(`
+            // There might be two case :
+            // 1.frist case is there are line change after async, which make this case into
+            //   call expression
+            // 2.second case is not change line after async, making it become async arrow
+            //   function.
+            if (kind === SyntaxKinds.ParenthesesLeftPunctuator) {
+              const containEsc = getEscFlag();
+              const id = parseIdentifer();
+              const meta = parseArguments();
+              if (flag || !match(SyntaxKinds.ArrowOperator)) {
+                return Factory.createCallExpression(
+                  id,
+                  meta.nodes,
+                  false,
+                  cloneSourcePosition(id.start),
+                  meta.end,
+                );
+              }
+              if (containEsc) {
+                throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
+              }
+              enterArrowFunctionScope(true);
+              const arrowFunExpr = parseArrowFunctionExpression(meta);
+              exitFunctionScope();
+              return arrowFunExpr;
             }
-            if (containEsc) {
-              throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
+            // case 3: `async` `Identifer` ...
+            // There might be two case :
+            // 1.frist case is there are line change after async, or there is no arrow operator,
+            //  which make this case into async as identifier
+            // 2.second case is not change line after async, making it become async arrow
+            //   function.
+            if (
+              kind === SyntaxKinds.Identifier ||
+              kind === SyntaxKinds.YieldKeyword ||
+              kind === SyntaxKinds.AwaitKeyword
+            ) {
+              // async followed by line break
+              if (flag) {
+                return parseIdentifer();
+              }
+              const isAsyncContainUnicode = getEscFlag();
+              const { start, end } = expect(SyntaxKinds.Identifier); // eat async
+              const { kind: maybeArrowToken } = lookahead();
+              // there is no arrow operator.
+              if (maybeArrowToken !== SyntaxKinds.ArrowOperator) {
+                return Factory.createIdentifier("async", start, end);
+              }
+              if (isAsyncContainUnicode) {
+                throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
+              }
+              enterArrowFunctionScope(true);
+              const argus = [parseIdentifer()];
+              if (getLineTerminatorFlag()) {
+                throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_async);
+              }
+              // TODO: check arrow operator
+              const arrowExpr = parseArrowFunctionExpression({
+                nodes: argus,
+                start: argus[0].start,
+                end: argus[0].end,
+                trailingComma: false,
+              });
+              exitFunctionScope();
+              return arrowExpr;
             }
-            enterArrowFunctionScope(true);
-            const arrowFunExpr = parseArrowFunctionExpression(meta);
-            exitFunctionScope();
-            return arrowFunExpr;
-          }
-          // case 3: `async` `Identifer` ...
-          // There might be two case :
-          // 1.frist case is there are line change after async, which make this case into
-          //   async as identifier
-          // 2.second case is not change line after async, making it become async arrow
-          //   function.
-          if (
-            kind === SyntaxKinds.Identifier ||
-            kind === SyntaxKinds.YieldKeyword ||
-            kind === SyntaxKinds.AwaitKeyword
-          ) {
-            // async followed by flag
-            if (flag) {
-              return parseIdentifer();
-            }
-            if (getEscFlag()) {
-              throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
-            }
-            nextToken();
-            enterArrowFunctionScope(true);
-            const argus = [parseIdentifer()];
-            if (getLineTerminatorFlag()) {
-              throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_async);
-            }
-            // TODO: check arrow operator
-            const arrowExpr = parseArrowFunctionExpression({
-              nodes: argus,
-              start: argus[0].start,
-              end: argus[0].end,
-              trailingComma: false,
-            });
-            exitFunctionScope();
-            return arrowExpr;
           }
         }
         return parseIdentifer();
@@ -3052,7 +3060,7 @@ export function createParser(code: string) {
     if (property.name !== "meta") {
       throw createMessageError(ErrorMessageMap.import_meta_invalid_property);
     }
-    if(ecaFlag) {
+    if (ecaFlag) {
       throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
     }
     return Factory.createMetaProperty(
@@ -3470,7 +3478,7 @@ export function createParser(code: string) {
     enterFunctionScope(isAsync, generator);
     const parmas = parseFunctionParam();
     const body = parseFunctionBody();
-    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, parmas);
+    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, parmas, true);
     exitFunctionScope();
     /**
      * Step 2: semantic and more concise syntax check instead just throw a unexpect
@@ -3511,14 +3519,14 @@ export function createParser(code: string) {
         );
       }
     }
-    if(!isPrivateName(withPropertyName) && type === "method") {
+    if (!isPrivateName(withPropertyName) && type === "method") {
       let valueOfName;
-      if(isStringLiteral(withPropertyName)) {
+      if (isStringLiteral(withPropertyName)) {
         valueOfName = withPropertyName.value;
-      }else if (isIdentifer(withPropertyName)) {
+      } else if (isIdentifer(withPropertyName)) {
         valueOfName = withPropertyName.name;
       }
-      if(valueOfName && valueOfName === "prototype" && isStatic) {
+      if (valueOfName && valueOfName === "prototype" && isStatic) {
         throw createMessageError("");
       }
     }
@@ -3703,47 +3711,19 @@ export function createParser(code: string) {
     trailingComma: boolean,
   ): Array<Pattern> {
     const params = functionArguments.map((node) => exprToPattern(node, true)) as Array<Pattern>;
-    checkArrowFunctionParamsDefaultExpressionContext(params);
-    if (isCurrentFunctionAsync()) checkArrowFunctionParamsContainInValidAwait(params);
+    if (
+      isCurrentFunctionAsync() ||
+      isParentFunctionAsync() ||
+      isParentFunctionGenerator() ||
+      isInStrictMode()
+    )
+      checkArrowFunctionParamsContainInValidAwait(params);
     const isMultiSpread = checkArrowFunctionParamsSpreadElementRule(params);
     if (isMultiSpread && trailingComma)
       throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
     // check as function params
     setContextIfParamsIsSimpleParameterList(params);
     return params;
-  }
-  function checkArrowFunctionParamsDefaultExpressionContext(params: Array<Pattern>) {
-    for (const param of params) {
-      if (isAssignmentPattern(param)) {
-        const workList = [param.right];
-        while (workList.length > 0) {
-          const currentExpr = workList.pop()!;
-          switch (currentExpr.kind) {
-            case SyntaxKinds.AwaitExpression:
-              // parent scope is async, no matter current scope is async or not
-              // await expression can not call
-              throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
-            case SyntaxKinds.YieldExpression:
-              // parent scope is generator, arrow expression must not generator,
-              // so yield is not illegal
-              throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
-            case SyntaxKinds.BinaryExpression:
-              const binaryNode = currentExpr as BinaryExpression;
-              workList.push(binaryNode.left, binaryNode.right);
-              break;
-            case SyntaxKinds.MemberExpression:
-              const memberNode = currentExpr as MemberExpression;
-              workList.push(memberNode.object);
-              break;
-            case SyntaxKinds.CallExpression:
-              const callNode = currentExpr as CallExpression;
-              workList.push(...callNode.arguments);
-            default:
-              break;
-          }
-        }
-      }
-    }
   }
   function checkArrowFunctionParamsSpreadElementRule(params: Array<Pattern>) {
     let flag = false;
@@ -3760,7 +3740,86 @@ export function createParser(code: string) {
     });
     return flag;
   }
+  function checkExpressionsContainAwaitOrYieldUsage(initWorkList: Array<Expression>) {
+    const workList = [...initWorkList];
+    while (workList.length > 0) {
+      const currentExpr = workList.pop()!;
+      switch (currentExpr.kind) {
+        case SyntaxKinds.Identifier: {
+          if (currentExpr.name === "await" && (isCurrentFunctionAsync() || isParentFunctionAsync())) {
+            throw createMessageError(
+              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+            );
+          }
+          if (currentExpr.name === "yield" && (isParentFunctionGenerator() || isInStrictMode())) {
+            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+          }
+          break;
+        }
+        case SyntaxKinds.ArrayExpression: {
+          workList.push(...(currentExpr.elements.filter((ele) => !!ele) as Array<Expression>));
+          break;
+        }
+        case SyntaxKinds.ObjectExpression: {
+          for (const property of currentExpr.properties) {
+            if (isSpreadElement(property)) {
+              workList.push(property.argument);
+              continue;
+            }
+            if (isObjectProperty(property)) {
+              if (property.shorted) {
+                workList.push(property.key);
+                continue;
+              }
+              if (property.computed) {
+                workList.push(property.key);
+              }
+              if (property.value) {
+                workList.push(property.value);
+              }
+            }
+          }
+          break;
+        }
+        case SyntaxKinds.BinaryExpression:
+          workList.push(currentExpr.left);
+          workList.push(currentExpr.right);
+          break;
+        case SyntaxKinds.UnaryExpression:
+          workList.push(currentExpr.argument);
+          break;
+        case SyntaxKinds.UpdateExpression:
+          workList.push(currentExpr.argument);
+          break;
+        case SyntaxKinds.AwaitExpression:
+          // parent scope is async, no matter current scope is async or not
+          // await expression can not call
+          throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
+        case SyntaxKinds.YieldExpression:
+          // parent scope is generator, arrow expression must not generator,
+          // so yield is not illegal
+          throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
+        case SyntaxKinds.BinaryExpression:
+          const binaryNode = currentExpr as BinaryExpression;
+          workList.push(binaryNode.left, binaryNode.right);
+          break;
+        case SyntaxKinds.MemberExpression:
+          const memberNode = currentExpr as MemberExpression;
+          workList.push(memberNode.object);
+          break;
+        case SyntaxKinds.NewExpression:
+        case SyntaxKinds.CallExpression:
+          workList.push(...currentExpr.arguments);
+          break;
+        case SyntaxKinds.AssigmentExpression:
+          workList.push(currentExpr.right);
+        default:
+          break;
+      }
+    }
+  }
   function checkArrowFunctionParamsContainInValidAwait(params: Array<Pattern>) {
+    const expressionWorkList: Array<Expression> = [];
     params.forEach((param) =>
       checkBindingPatternValueWithCallbacks(
         param,
@@ -3779,9 +3838,11 @@ export function createParser(code: string) {
             if (expr.arguments.length > 0) addToWorkList(...expr.arguments);
             return;
           }
+          expressionWorkList.push(expr);
         },
       ),
     );
+    checkExpressionsContainAwaitOrYieldUsage(expressionWorkList);
   }
   /** ================================================================================
    *  Parse JSX
@@ -4331,10 +4392,10 @@ export function createParser(code: string) {
    * ==================================================================================
    */
   function expectFormKeyword() {
-    if (getSourceValue() !== "from" ) {
+    if (getSourceValue() !== "from") {
       throw createUnexpectError(SyntaxKinds.Identifier, "expect from keyword");
     }
-    if(getEscFlag()) {
+    if (getEscFlag()) {
       throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
     }
     nextToken();
@@ -4589,7 +4650,7 @@ export function createParser(code: string) {
     expect(SyntaxKinds.BracesLeftPunctuator);
     const specifier: Array<ExportSpecifier> = [];
     let isStart = true;
-    let isMatchKeyword = false
+    let isMatchKeyword = false;
     while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
       if (isStart) {
         isStart = false;
@@ -4600,7 +4661,7 @@ export function createParser(code: string) {
         break;
       }
       // TODO: reafacor into parseModuleName ?
-      if(match(Keywords)) {
+      if (match(Keywords)) {
         isMatchKeyword = true;
       }
       const exported = match([SyntaxKinds.Identifier, ...Keywords])
@@ -4635,8 +4696,8 @@ export function createParser(code: string) {
     if (getSourceValue() === "from") {
       nextToken();
       source = parseStringLiteral();
-    }else {
-      if(isMatchKeyword) {
+    } else {
+      if (isMatchKeyword) {
         throw new Error();
       }
     }

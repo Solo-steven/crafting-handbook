@@ -10,15 +10,16 @@ const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 // const isCI = Boolean(process.env.TEST_CI) || false;
 
 const TempIgnoreCases: Set<string> = new Set([
-  // === (bug) 100% syntax problem
-  "/babel/es2018/async-generators/for-await-async-of",
-  // === production rule problem
+  // === (feature) better error progation
+  // === (To be verify) production rule problem (function can not in for loop ..etc)
   "/babel/es2015/generators/invalid-hanging",
   "/babel/es2015/generators/invalid-sloppy-function",
+  "/babel/es2017/async-functions/invalid-inside-loop",
+  "/babel/es2017/async-functions/invalid-generator-inside-loop",
   // === ?? dev success, but test failed
   "/esprima/expression/primary/literal/string/migrated_0017",
   "/esprima/expression/binary/multiline_string_literal",
-  // ==== (feature) bigint literal problem 
+  // ==== (feature) bigint literal problem
   "/babel/es2020/bigint/invalid-decimal",
   "/babel/es2020/bigint/invalid-e",
   "/babel/es2020/bigint/invalid-non-octal-decimal-int",
@@ -101,6 +102,8 @@ const TempIgnoreCases: Set<string> = new Set([
   "/esprima/ES6/program/module/invalid-with",
   "/esprima/ES6/program/module/invalid-delete",
   "/babel/es2015/destructuring/binding-arguments-module",
+  // === (feature) top level await
+  "/babel/es2017/async-functions/allow-await-outside-function",
   // === (feature) duplicate proto property
   "/esprima/ES6/object-initialiser/invalid-proto-getter-literal-identifier",
   "/esprima/ES6/object-initialiser/invalid-proto-identifier-literal",
@@ -111,6 +114,7 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2015/duplicate-proto/in-new-expression",
   "/babel/es2015/duplicate-proto/with-assignment-expression",
   "/babel/es2015/duplicate-proto/without-assignment-expression",
+  "/babel/es2017/async-call/parenthesized-argument-object-double-proto",
   // === (feature) duplicate among export declaration
   "/babel/es2015/modules/duplicate-export-default",
   "/babel/es2015/modules/duplicate-export-default-and-export-as-default",
@@ -138,33 +142,84 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2015/modules/duplicate-named-export-destructuring19",
   "/babel/es2015/modules/duplicate-named-export-function-declaration",
   "/babel/es2015/modules/duplicate-named-export-variable-declaration",
-
-
-
-  // // other strict mode problem
-  // "/esprima/declaration/function/invalid-strict-labelled-function-declaration.js",
-  // // ===  duplicate Proto check on onject.
-  // "/babel/es2015/uncategorised/invalid_349.js",
-  // // === number literal non stop problem
-  // "/babel/es2015/uncategorised/invalid_201.js",
-  // "/babel/es2015/uncategorised/invalid_205.js",
-  // // === duplicate of `constructor` in class problem
-  // "/babel/es2015/uncategorised/invalid_125.js",
-  // //  ==== unicode and excap char im template problem
-  // "/esprima/ES6/template-literals/invalid-escape.js",
-  // "/esprima/ES6/template-literals/invalid-hex-escape-sequence.js",
-  // "/esprima/ES6/template-literals/invalid_octal-literal.js",
-  // "/esprima/ES6/template-literals/invalid_strict-octal-literal.js",
-  // "/babel/es2015/uncategorised/invalid_339.js",
-  // "/babel/es2015/uncategorised/invalid_290.js",
-  // "/babel/es2015/uncategorised/invalid_219.js",
-  // "/babel/es2015/uncategorised/invalid_217.js",
-  // "/babel/es2015/uncategorised/invalid_218.js",
-  // "/babel/es2015/uncategorised/invalid_216.js",
-  // // ==== unicde problem (unicode id start, id continue)
-  // "/babel/core/uncategorised/19.js",
-  // "/babel/es2015/uncategorised/invalid_327.js",
-  // "/babel/es2015/uncategorised/319.js",
+  // === (feature) parse class static block
+  "/babel/es2022/class-static-block/await-binding-in-arrow-function-in-static-block copy",
+  "/babel/es2022/class-static-block/await-binding-in-function-in-static-block",
+  "/babel/es2022/class-static-block/await-binding-in-initializer-in-static-block",
+  "/babel/es2022/class-static-block/basic",
+  "/babel/es2022/class-static-block/directive-like-literal",
+  "/babel/es2022/class-static-block/duplicate-function-var-name",
+  "/babel/es2022/class-static-block/empty-statement",
+  "/babel/es2022/class-static-block/lexical-scope",
+  "/babel/es2022/class-static-block/multiple-static-block",
+  "/babel/es2022/class-static-block/nested-control-flow",
+  "/babel/es2022/class-static-block/re-declare-var",
+  "/babel/es2022/class-static-block/super-property",
+  // === (feature) class private name duplicate
+  "/babel/es2022/class-private-names-duplicated/instance-field-instance-field",
+  "/babel/es2022/class-private-names-duplicated/instance-field-instance-get",
+  "/babel/es2022/class-private-names-duplicated/instance-field-instance-method",
+  "/babel/es2022/class-private-names-duplicated/instance-field-instance-set",
+  "/babel/es2022/class-private-names-duplicated/instance-field-static-field",
+  "/babel/es2022/class-private-names-duplicated/instance-field-static-get",
+  "/babel/es2022/class-private-names-duplicated/instance-field-static-method",
+  "/babel/es2022/class-private-names-duplicated/instance-field-static-set",
+  "/babel/es2022/class-private-names-duplicated/instance-get-instance-field",
+  "/babel/es2022/class-private-names-duplicated/instance-get-instance-get",
+  "/babel/es2022/class-private-names-duplicated/instance-get-instance-method",
+  "/babel/es2022/class-private-names-duplicated/instance-get-static-field",
+  "/babel/es2022/class-private-names-duplicated/instance-get-static-get",
+  "/babel/es2022/class-private-names-duplicated/instance-get-static-method",
+  "/babel/es2022/class-private-names-duplicated/instance-get-static-set",
+  "/babel/es2022/class-private-names-duplicated/instance-method-instance-field",
+  "/babel/es2022/class-private-names-duplicated/instance-method-instance-get",
+  "/babel/es2022/class-private-names-duplicated/instance-method-instance-method",
+  "/babel/es2022/class-private-names-duplicated/instance-method-instance-set",
+  "/babel/es2022/class-private-names-duplicated/instance-method-static-field",
+  "/babel/es2022/class-private-names-duplicated/instance-method-static-get",
+  "/babel/es2022/class-private-names-duplicated/instance-method-static-method",
+  "/babel/es2022/class-private-names-duplicated/instance-method-static-set",
+  "/babel/es2022/class-private-names-duplicated/instance-set-instance-field",
+  "/babel/es2022/class-private-names-duplicated/instance-set-instance-method",
+  "/babel/es2022/class-private-names-duplicated/instance-set-instance-set",
+  "/babel/es2022/class-private-names-duplicated/instance-set-static-field",
+  "/babel/es2022/class-private-names-duplicated/instance-set-static-get",
+  "/babel/es2022/class-private-names-duplicated/instance-set-static-method",
+  "/babel/es2022/class-private-names-duplicated/instance-set-static-set",
+  "/babel/es2022/class-private-names-duplicated/static-field-instance-field",
+  "/babel/es2022/class-private-names-duplicated/static-field-instance-set",
+  "/babel/es2022/class-private-names-duplicated/static-field-static-field",
+  "/babel/es2022/class-private-names-duplicated/static-field-static-set",
+  "/babel/es2022/class-private-names-duplicated/static-field-static-set",
+  "/babel/es2022/class-private-names-duplicated/static-field-static-method",
+  "/babel/es2022/class-private-names-duplicated/static-get-instance-field",
+  "/babel/es2022/class-private-names-duplicated/static-get-instance-set",
+  "/babel/es2022/class-private-names-duplicated/static-get-instance-method",
+  "/babel/es2022/class-private-names-duplicated/static-get-static-field",
+  "/babel/es2022/class-private-names-duplicated/static-get-static-method",
+  "/babel/es2022/class-private-names-duplicated/static-get-static-get",
+  "/babel/es2022/class-private-names-duplicated/static-method-instance-get",
+  "/babel/es2022/class-private-names-duplicated/static-method-instance-field",
+  "/babel/es2022/class-private-names-duplicated/static-method-instance-method",
+  "/babel/es2022/class-private-names-duplicated/static-method-instance-set",
+  "/babel/es2022/class-private-names-duplicated/static-method-static-get",
+  "/babel/es2022/class-private-names-duplicated/static-method-static-method",
+  "/babel/es2022/class-private-names-duplicated/static-method-static-set",
+  "/babel/es2022/class-private-names-duplicated/static-set-instance-field",
+  "/babel/es2022/class-private-names-duplicated/static-set-instance-get",
+  "/babel/es2022/class-private-names-duplicated/static-set-instance-set",
+  "/babel/es2022/class-private-names-duplicated/static-set-static-method",
+  "/babel/es2022/class-private-names-duplicated/static-set-static-field",
+  "/babel/es2022/class-private-names-duplicated/static-set-static-set",
+  "/babel/es2022/class-private-names-duplicated/static-set-instance-method",
+  "/babel/es2022/class-private-names-duplicated/static-method-static-field",
+  "/babel/es2022/class-private-names-duplicated/static-get-instance-get",
+  "/babel/es2022/class-private-names-duplicated/static-field-static-get",
+  "/babel/es2022/class-private-names-duplicated/static-field-instance-method",
+  "/babel/es2022/class-private-names-duplicated/static-field-instance-get",
+  // === (feature) regex flag check
+  "/babel/es2024/regexp-unicode-sets/vu-error",
+  "/babel/es2024/regexp-unicode-sets/uv-error",
 ]);
 
 function getFailedKindCount(failedTestCases: Array<FailedTestCasesResult>) {
@@ -217,25 +272,26 @@ async function report(testResult: TestResult) {
       console.log(`  |---> File ${(failedcase as any).reason}: ${failedcase.fileId}`);
     }
   }
-  await stroeResult({
-    passResult, 
-    failedResult: [...expectFailedButPass, ...expectPassButFailed],
-    skipResult,
-  })
+  // await stroeResult({
+  //   failedResult: [...expectFailedButPass, ...expectPassButFailed],
+  //   skipResult,
+  // });
 }
 
-function getTestCaseSet(testResult: TestResult) {
+function getTestCaseSet(testResult: Pick<TestResult, "failedResult" | "skipResult">) {
   return {
-    pass: new Set(testResult.passResult.map((result) => result.fileId)),
     failed: new Set(testResult.failedResult.map((result) => result.fileId)),
-    skip: new Set(testResult.skipResult.map((result) => result.fileId)),
   };
 }
 
 async function compareReport(testResult: TestResult) {
   const lastTestResult: TestResult = JSON.parse(await readFile("./result.json", { encoding: "utf-8" }));
   const lastSet = getTestCaseSet(lastTestResult);
-  const curSet = getTestCaseSet(testResult);
+  const { expectFailedButPass, expectPassButFailed } = getFailedKindCount(testResult.failedResult);
+  const curSet = getTestCaseSet({
+    failedResult: [...expectFailedButPass, ...expectPassButFailed],
+    skipResult: testResult.skipResult,
+  });
   const moreFailed = [];
   for (const val of curSet.failed) {
     if (!lastSet.failed.has(val)) {
@@ -248,10 +304,13 @@ async function compareReport(testResult: TestResult) {
     for (const failedcase of moreFailed) {
       console.log(`  |---> File: ${failedcase}`);
     }
+  } else {
+    console.log(chalk.bold("=========== No Regression ==========="));
   }
 }
 
-async function stroeResult(testResult: TestResult) {
+async function stroeResult(testResult: Pick<TestResult, "failedResult" | "skipResult">) {
+  console.log();
   await writeFile("./result.json", JSON.stringify(testResult, null, 2));
 }
 
@@ -260,6 +319,6 @@ export default async function runParserTestCases() {
   const testResult = await runTestSuit(testSuite, isUpdate);
   return async () => {
     await report(testResult);
-   // await compareReport(testResult);
+    await compareReport(testResult);
   };
 }

@@ -1068,11 +1068,11 @@ export function createLexer(code: string) {
     while (!isEOF()) {
       const char = getChar();
       if (char === "_") {
-        if(isStart) {
+        if (isStart) {
           throw lexicalError("TODO: Can not start with _");
         }
         eatChar();
-        if(seprator) {
+        if (seprator) {
           throw lexicalError("TODO: double __");
         }
         seprator = true;
@@ -1150,11 +1150,11 @@ export function createLexer(code: string) {
     while (!isEOF()) {
       const char = getChar();
       if (char === "_") {
-        if(isStart) {
+        if (isStart) {
           throw lexicalError("TODO: Can not start with _");
         }
         eatChar();
-        if(seprator) {
+        if (seprator) {
           throw lexicalError("TODO: double __");
         }
         seprator = true;
