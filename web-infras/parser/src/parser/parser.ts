@@ -125,16 +125,13 @@ import {
   isFunctionExpression,
   isPrivateName,
 } from "web-infra-common";
-import { ErrorMessageMap } from "./error";
-import { createLexer } from "../lexer/index";
 import { ExpectToken, ScopeContext, FunctionContext } from "./type";
-import {
-  ArrowExpressionErrorScope,
-  createExpressionErrorRecorder,
-  ExpressionErrorKind,
-  StrictModeExpressionErrorScope,
-} from "./scope/expressionScope";
+import { ErrorMessageMap } from "./error";
 import { LookaheadToken } from "../lexer/type";
+import { createLexer } from "../lexer/index";
+import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } from "./scope/arrowExprScope";
+import { createStrictModeScopeRecorder, StrictModeScope } from "./scope/strictModeScope";
+import { ExpressionScopeKind } from "./scope/type";
 /**
  * Context for parser. composeed by several parts:
  * ## ScopeContext
@@ -212,7 +209,9 @@ const KeywordSet = new Set(LexicalLiteral.keywords);
 export function createParser(code: string) {
   const lexer = createLexer(code);
   const context = createContext();
-  const exprScope = createExpressionErrorRecorder();
+  // const exprScope = createExpressionErrorRecorder();
+  const strictModeScopeRecorder = createStrictModeScopeRecorder();
+  const asyncArrowExprScopeRecorder = createAsyncArrowExpressionScopeRecorder();
   /** ===========================================================
    *              Public API for Parser
    *  ===========================================================
@@ -517,8 +516,8 @@ export function createParser(code: string) {
    */
   function enterFunctionScope(isAsync: boolean = false, isGenerator: boolean = false) {
     const lastScope = helperFindLastFunctionContext();
-    exprScope.enterBlankArrowExpressionScope();
-    exprScope.enterRHSStrictModeScope();
+    asyncArrowExprScopeRecorder.enterBlankAsyncArrowExpressionScope();
+    strictModeScopeRecorder.enterRHSStrictModeScope();
     context.scopeContext.push({
       type: "FunctionContext",
       isArrow: false,
@@ -534,8 +533,8 @@ export function createParser(code: string) {
    * `enterFunctionScope` comment
    */
   function exitFunctionScope() {
-    exprScope.exitArrowExpressionScope();
-    exprScope.exitStrictModeScope();
+    asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
+    strictModeScopeRecorder.exitStrictModeScope();
     context.scopeContext.pop();
   }
   /**
@@ -570,11 +569,16 @@ export function createParser(code: string) {
   function exitBlockScope() {
     context.scopeContext.pop();
   }
-  function parseWithArrowExpressionScope<T>(callback: () => T): [T, ArrowExpressionErrorScope] {
-    exprScope.enterArrowExpressionScope();
+  function recordScope(kind: ExpressionScopeKind, position: SourcePosition) {
+    strictModeScopeRecorder.record(kind, position);
+     asyncArrowExprScopeRecorder.record(kind, position)
+   }
+  function parseWithArrowExpressionScope<T>(callback: () => T): [T, AsyncArrowExpressionScope] {
+    asyncArrowExprScopeRecorder.enterAsyncArrowExpressionScope();
     const result = callback();
-    const scope = exprScope.getCurrentArrowExpressionScope();
-    exprScope.exitArrowExpressionScope();
+    // since we parse with enter and exit, scope is not null
+    const scope = asyncArrowExprScopeRecorder.getCurrentAsyncArrowExpressionScope()!;
+    asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
     return [result, scope];
   }
   function enterArrowFunctionBodyScope(isAsync: boolean = false) {
@@ -592,35 +596,48 @@ export function createParser(code: string) {
   function exitArrowFunctionBodyScope() {
     context.scopeContext.pop();
   }
-  function parseWithCatpureLayer<T>(callback: () => T): [T, StrictModeExpressionErrorScope] {
-    exprScope.enterCatpureStrictModeScope();
+  function parseWithCatpureLayer<T>(callback: () => T): [T, StrictModeScope] {
+    strictModeScopeRecorder.enterCatpureStrictModeScope();
     const result = callback();
-    const scope = exprScope.getCurrentStrictModeScope();
-    exprScope.exitStrictModeScope();
+    const scope = strictModeScopeRecorder.getCurrentStrictModeScope();
+    strictModeScopeRecorder.exitStrictModeScope();
     return [result, scope];
   }
   function parseWithLHSLayer<T>(callback: () => T): T {
-    exprScope.enterLHSStrictModeScope();
+    strictModeScopeRecorder.enterLHSStrictModeScope();
     const result = callback();
-    exprScope.exitStrictModeScope();
+    strictModeScopeRecorder.exitStrictModeScope();
     return result;
   }
-  function parseWithLHSLayerReturnScope<T>(callback: () => T): [T, StrictModeExpressionErrorScope] {
-    exprScope.enterLHSStrictModeScope();
+  function parseWithLHSLayerReturnScope<T>(callback: () => T): [T, StrictModeScope] {
+    strictModeScopeRecorder.enterLHSStrictModeScope();
     const result = callback();
-    const scope = exprScope.getCurrentStrictModeScope();
-    exprScope.exitStrictModeScope();
+    const scope = strictModeScopeRecorder.getCurrentStrictModeScope();
+    strictModeScopeRecorder.exitStrictModeScope();
     return [result, scope];
   }
   function parseWithRHSLayer<T>(callback: () => T): T {
-    exprScope.enterRHSStrictModeScope();
+    strictModeScopeRecorder.enterRHSStrictModeScope();
     const result = callback();
-    exprScope.exitStrictModeScope();
+    strictModeScopeRecorder.exitStrictModeScope();
     return result;
   }
-  function checkStrictModeScopeError(scope: StrictModeExpressionErrorScope) {
-    if(isInStrictMode() && exprScope.isStrictModeScopeViolateStrictMode(scope)) {
+  function checkStrictModeScopeError(scope: StrictModeScope) {
+    if(isInStrictMode() && strictModeScopeRecorder.isStrictModeScopeViolateStrictMode(scope)) {
       throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+    }
+  }
+  function checkAsyncArrowExprScopeError(scope: AsyncArrowExpressionScope) {
+    if(asyncArrowExprScopeRecorder.isAsyncArrowExpressionScopeHaveError(scope)) {
+      if(scope.awaitExpressionInParameter.length > 0) {
+        throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
+      }
+      if(scope.yieldExpressionInParameter.length > 0) {
+        throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
+      }
+      if(scope.awaitIdentifier.length > 0) {
+        throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+      }
     }
   }
   /**
@@ -791,14 +808,14 @@ export function createParser(code: string) {
    */
   function enterClassScope(isExtend: boolean = false) {
     context.classContext.push([isExtend]);
-    exprScope.enterBlankArrowExpressionScope();
+    asyncArrowExprScopeRecorder.enterBlankAsyncArrowExpressionScope();
   }
   /**
    * Private API called when finish parse class scope.
    */
   function existClassScope() {
     context.classContext.pop();
-    exprScope.exitArrowExpressionScope();
+    asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
   }
   /**
    * Private API to know is current scope under class scope.
@@ -1768,9 +1785,7 @@ export function createParser(code: string) {
       return [name, params];
     });
     const body = parseFunctionBody();
-    if (scope && isInStrictMode() && exprScope.isStrictModeScopeViolateStrictMode(scope)) {
-      throw new Error("TODO: Better error for invalid");
-    }
+    checkStrictModeScopeError(scope);
     checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(name, params, false, scope);
     return Factory.createFunction(
       name,
@@ -1794,7 +1809,7 @@ export function createParser(code: string) {
     name: Identifier | null,
     params: Array<Pattern>,
     focusCheck: boolean,
-    scope: StrictModeExpressionErrorScope,
+    scope: StrictModeScope,
   ) {
     if (isInStrictMode()) {
       if (name) {
@@ -1809,9 +1824,7 @@ export function createParser(code: string) {
         }
       }
       checkFunctionParamIsDuplicate(params);
-      if (exprScope.isStrictModeScopeViolateStrictMode(scope)) {
-        throw new Error("TODO: Better ERROR. Strict mode check");
-      }
+      checkStrictModeScopeError(scope);
     } else if (!isCurrentFunctionParameterListSimple() || focusCheck) {
       checkFunctionParamIsDuplicate(params);
     }
@@ -1826,41 +1839,41 @@ export function createParser(code: string) {
    * @returns {Identifier | null}
    */
   function parseFunctionName(isExpression: boolean): Identifier | null {
-    exprScope.enterLHSStrictModeScope();
-    let name: Identifier | null = null;
-    // there we do not just using parseIdentifier function as the reason above
-    // let can be function name as other place
-    if (match([SyntaxKinds.Identifier, SyntaxKinds.LetKeyword])) {
-      name = parseIdentifer();
-    } else {
-      if (match(SyntaxKinds.AwaitKeyword)) {
-        // for function expression, can await treat as function name is dep on current scope.
-        if (isExpression && isCurrentFunctionAsync()) {
-          throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+    return parseWithLHSLayer(() => {
+      let name: Identifier | null = null;
+      // there we do not just using parseIdentifier function as the reason above
+      // let can be function name as other place
+      if (match([SyntaxKinds.Identifier, SyntaxKinds.LetKeyword])) {
+        name = parseIdentifer();
+      } else {
+        if (match(SyntaxKinds.AwaitKeyword)) {
+          // for function expression, can await treat as function name is dep on current scope.
+          if (isExpression && isCurrentFunctionAsync()) {
+            throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+          }
+          // for function declaration, can await treat as function name is dep on parent scope.
+          if (!isExpression && isParentFunctionAsync()) {
+            throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+          }
+          name = parseIdentiferWithKeyword();
+        } else if (match(SyntaxKinds.YieldKeyword)) {
+          // for function expression, can yield treat as function name is dep on current scope.
+          if (isExpression && isCurrentFunctionGenerator()) {
+            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+          }
+          // for function declaration, can yield treat as function name is  dep on parent scope.
+          if (!isExpression && isParentFunctionGenerator()) {
+            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+          }
+          // if in strict mode, yield can not be function name.
+          if (isInStrictMode()) {
+            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+          }
+          name = parseIdentiferWithKeyword();
         }
-        // for function declaration, can await treat as function name is dep on parent scope.
-        if (!isExpression && isParentFunctionAsync()) {
-          throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
-        }
-        name = parseIdentiferWithKeyword();
-      } else if (match(SyntaxKinds.YieldKeyword)) {
-        // for function expression, can yield treat as function name is dep on current scope.
-        if (isExpression && isCurrentFunctionGenerator()) {
-          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-        }
-        // for function declaration, can yield treat as function name is  dep on parent scope.
-        if (!isExpression && isParentFunctionGenerator()) {
-          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-        }
-        // if in strict mode, yield can not be function name.
-        if (isInStrictMode()) {
-          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-        }
-        name = parseIdentiferWithKeyword();
       }
-    }
-    exprScope.exitStrictModeScope();
-    return name;
+      return name;
+    });
   }
   /**
    * Parse Function Body
@@ -2107,9 +2120,7 @@ export function createParser(code: string) {
     if (match([SyntaxKinds.AssginOperator])) {
       nextToken();
       const [value, scope] = parseWithCatpureLayer(parseAssignmentExpressionAllowIn);
-      if (exprScope.isStrictModeScopeViolateStrictMode(scope)) {
-        throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
-      }
+      checkStrictModeScopeError(scope);
       shouldInsertSemi();
       return Factory.createClassProperty(
         key,
@@ -2266,9 +2277,7 @@ export function createParser(code: string) {
     if (!isPattern) {
       return left as Expression;
     }
-    if (isInStrictMode() && exprScope.isStrictModeScopeViolateStrictMode(scope)) {
-      throw createMessageError("TODO ERROR: Better");
-    }
+    checkStrictModeScopeError(scope);
     const operator = getToken();
     nextToken();
     const right = parseAssignmentExpressionInheritIn();
@@ -2326,7 +2335,7 @@ export function createParser(code: string) {
     if (isInParameter()) {
       throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
     }
-    exprScope.record(ExpressionErrorKind.YieldExpressionInParameter, start);
+    recordScope(ExpressionScopeKind.YieldExpressionInParameter, start);
     return Factory.createYieldExpression(
       argument,
       delegate,
@@ -2379,12 +2388,15 @@ export function createParser(code: string) {
    * @returns {Expression}
    */
   function parseBinaryExpression(): Expression {
-    const atom = parseUnaryExpression();
+    let atom = parseUnaryOrPrivateName();
     if (shouldEarlyReturn(atom)) {
       return atom;
     }
     if (match(BinaryOperators)) {
-      return parseBinaryOps(atom);
+      atom = parseBinaryOps(atom);
+    }
+    if(isPrivateName(atom)) {
+      throw createMessageError(ErrorMessageMap.private_name_wrong_used);
     }
     return atom;
   }
@@ -2457,12 +2469,12 @@ export function createParser(code: string) {
         break;
       }
       nextToken();
-      let right = parseUnaryExpression();
+      let right = parseUnaryOrPrivateName();
       const nextOp = getToken();
-      checkNullishAndExpontOperation(currentOp, left, nextOp);
       if (isBinaryOps(nextOp) && getBinaryPrecedence(nextOp) > getBinaryPrecedence(currentOp)) {
         right = parseBinaryOps(right, getBinaryPrecedence(nextOp));
       }
+      helperCheckBinaryExpr(currentOp, nextOp, left, right);
       left = Factory.createBinaryExpression(
         left,
         right,
@@ -2473,7 +2485,10 @@ export function createParser(code: string) {
     }
     return left;
   }
-  function checkNullishAndExpontOperation(currentOps: SyntaxKinds, left: Expression, nextOps: SyntaxKinds) {
+  function helperCheckBinaryExpr(currentOps: SyntaxKinds, nextOps: SyntaxKinds,left: Expression, right: Expression) {
+    if(isPrivateName(right) || (isPrivateName(left) && currentOps !== SyntaxKinds.InKeyword)) {
+      throw createMessageError(ErrorMessageMap.private_name_wrong_used);
+    }
     if (left.parentheses) {
       return;
     }
@@ -2497,6 +2512,12 @@ export function createParser(code: string) {
       throw createMessageError(ErrorMessageMap.nullish_require_parans);
     }
   }
+  function parseUnaryOrPrivateName(): Expression {
+    if(match(SyntaxKinds.PrivateName)) {
+      return parsePrivateName();
+    }
+    return parseUnaryExpression();
+  }
   function parseUnaryExpression(): Expression {
     if (match(UnaryOperators)) {
       const operator = getToken() as UnaryOperatorKinds;
@@ -2516,7 +2537,7 @@ export function createParser(code: string) {
     }
     const start = getStartPosition();
     nextToken();
-    exprScope.record(ExpressionErrorKind.AwaitExpressionImParameter, start);
+    recordScope(ExpressionScopeKind.AwaitExpressionImParameter, start);
     const argu = parseUnaryExpression();
     return Factory.createAwaitExpression(argu, start, cloneSourcePosition(argu.end));
   }
@@ -2535,13 +2556,9 @@ export function createParser(code: string) {
         cloneSourcePosition(argument.end),
       );
     }
-    const [argument, scope] = parseWithCatpureLayer(() => {
-      return parseLeftHandSideExpression();
-    });
+    const [argument, scope] = parseWithCatpureLayer(parseLeftHandSideExpression);
     if (match(UpdateOperators) && !getLineTerminatorFlag()) {
-      if (isInStrictMode() && exprScope.isStrictModeScopeViolateStrictMode(scope)) {
-        throw createMessageError("TODO ERROR: Should have better error for LHS");
-      }
+      checkStrictModeScopeError(scope);
       checkExpressionAsLeftValue(argument);
       const operator = getToken() as UpdateOperatorKinds;
       const end = getEndPosition();
@@ -2801,7 +2818,8 @@ export function createParser(code: string) {
         return parseCoverExpressionORArrowFunction();
       // TODO: consider wrap as function or default case ?
       case SyntaxKinds.PrivateName:
-        return parsePrivateName();
+        throw createMessageError(ErrorMessageMap.private_name_wrong_used);
+        // return parsePrivateName();
       case SyntaxKinds.Identifier:
       case SyntaxKinds.LetKeyword:
       case SyntaxKinds.AwaitKeyword:
@@ -2964,7 +2982,7 @@ export function createParser(code: string) {
           throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
         }
         const { value, start, end } = expect(SyntaxKinds.YieldKeyword);
-        exprScope.record(ExpressionErrorKind.YieldIdentifier, start);
+        recordScope(ExpressionScopeKind.YieldIdentifier, start);
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
@@ -2975,7 +2993,7 @@ export function createParser(code: string) {
           throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
         }
         const { value, start, end } = expect(SyntaxKinds.AwaitKeyword);
-        exprScope.record(ExpressionErrorKind.AwaitIdentifier, start);
+        recordScope(ExpressionScopeKind.AwaitIdentifier, start);
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
@@ -2986,7 +3004,7 @@ export function createParser(code: string) {
           throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
         }
         const { value, start, end } = expect(SyntaxKinds.LetKeyword);
-        exprScope.record(ExpressionErrorKind.LetIdentifiier, start);
+        recordScope(ExpressionScopeKind.LetIdentifiier, start);
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
@@ -2997,19 +3015,19 @@ export function createParser(code: string) {
           if (isInStrictMode() || isInClassScope()) {
             throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
           }
-          exprScope.record(ExpressionErrorKind.PresveredWordIdentifier, start);
+          recordScope(ExpressionScopeKind.PresveredWordIdentifier, start);
         }
         if (value === "arguments") {
-          if (isInStrictMode() && exprScope.isInLHS()) {
+          if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
             throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
           }
-          exprScope.record(ExpressionErrorKind.ArgumentsIdentifier, start);
+          recordScope(ExpressionScopeKind.ArgumentsIdentifier, start);
         }
         if (value === "eval") {
-          if (isInStrictMode() && exprScope.isInLHS()) {
+          if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
             throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
           }
-          exprScope.record(ExpressionErrorKind.EvalIdentifier, start);
+          recordScope(ExpressionScopeKind.EvalIdentifier, start);
         }
         identifer = Factory.createIdentifier(value, start, end);
         break;
@@ -3330,22 +3348,22 @@ export function createParser(code: string) {
   function recordIdentifierValue(propertyName: ModuleItem) {
     if (isIdentifer(propertyName)) {
       if (propertyName.name === "await") {
-        exprScope.record(ExpressionErrorKind.AwaitIdentifier, propertyName.start);
+        recordScope(ExpressionScopeKind.AwaitIdentifier, propertyName.start);
       }
       if (propertyName.name === "yield") {
-        exprScope.record(ExpressionErrorKind.YieldIdentifier, propertyName.start);
+        recordScope(ExpressionScopeKind.YieldIdentifier, propertyName.start);
       }
       if (propertyName.name === "arguments") {
-        exprScope.record(ExpressionErrorKind.ArgumentsIdentifier, propertyName.start);
+        recordScope(ExpressionScopeKind.ArgumentsIdentifier, propertyName.start);
       }
       if (propertyName.name === "eval") {
-        exprScope.record(ExpressionErrorKind.EvalIdentifier, propertyName.start);
+        recordScope(ExpressionScopeKind.EvalIdentifier, propertyName.start);
       }
       if (propertyName.name === "let") {
-        exprScope.record(ExpressionErrorKind.LetIdentifiier, propertyName.start);
+        recordScope(ExpressionScopeKind.LetIdentifiier, propertyName.start);
       }
       if (PreserveWordSet.has(propertyName.name)) {
-        exprScope.record(ExpressionErrorKind.PresveredWordIdentifier, propertyName.start);
+        recordScope(ExpressionScopeKind.PresveredWordIdentifier, propertyName.start);
       }
     }
   }
@@ -3730,8 +3748,8 @@ export function createParser(code: string) {
    */
   function parseArrowFunctionExpression(
     metaData: ASTArrayWithMetaData<Expression> & { trailingComma: boolean },
-    strictModeScope: StrictModeExpressionErrorScope,
-    arrowExprScope: ArrowExpressionErrorScope,
+    strictModeScope: StrictModeScope,
+    arrowExprScope: AsyncArrowExpressionScope,
   ): ArrorFunctionExpression {
     if (!match(SyntaxKinds.ArrowOperator)) {
       throw createUnexpectError(SyntaxKinds.ArrowOperator);
@@ -3782,8 +3800,8 @@ export function createParser(code: string) {
   function argumentToFunctionParams(
     functionArguments: Array<Expression>,
     trailingComma: boolean,
-    strictModeScope: StrictModeExpressionErrorScope,
-    arrowExprScope: ArrowExpressionErrorScope,
+    strictModeScope: StrictModeScope,
+    arrowExprScope: AsyncArrowExpressionScope,
   ): Array<Pattern> {
     const params = functionArguments.map((node) => exprToPattern(node, true)) as Array<Pattern>;
     if (
@@ -3792,14 +3810,8 @@ export function createParser(code: string) {
       isParentFunctionGenerator() ||
       isInStrictMode()
     ) {
-      const isError = exprScope.isArrowExpressionScopeHaveError(arrowExprScope);
-      if (isError) {
-        throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
-      }
-      const strictModeError = exprScope.isStrictModeScopeViolateStrictMode(strictModeScope);
-      if (isInStrictMode() && strictModeError) {
-        throw new Error("TODO: Better Error, Voilate strict mode");
-      }
+      checkAsyncArrowExprScopeError(arrowExprScope);
+      checkStrictModeScopeError(strictModeScope);
     }
     const isMultiSpread = checkArrowFunctionParamsSpreadElementRule(params);
     if (isMultiSpread && trailingComma)
@@ -4321,28 +4333,28 @@ export function createParser(code: string) {
   function checkPropertyNameAsSigleNameBinding(propertyName: PropertyName) {
     if (isIdentifer(propertyName)) {
       if (propertyName.name === "yield") {
-        exprScope.record(ExpressionErrorKind.YieldIdentifier, propertyName.start);
+        recordScope(ExpressionScopeKind.YieldIdentifier, propertyName.start);
       }
       if (propertyName.name === "await") {
-        exprScope.record(ExpressionErrorKind.AwaitIdentifier, propertyName.start);
+        recordScope(ExpressionScopeKind.AwaitIdentifier, propertyName.start);
       }
       if (propertyName.name === "arguments") {
-        if (isInStrictMode() && exprScope.isInLHS()) {
+        if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
           throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
         }
-        exprScope.record(ExpressionErrorKind.ArgumentsIdentifier, propertyName.start);
+        recordScope(ExpressionScopeKind.ArgumentsIdentifier, propertyName.start);
       }
       if (propertyName.name === "eval") {
-        if (isInStrictMode() && exprScope.isInLHS()) {
+        if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
           throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
         }
-        exprScope.record(ExpressionErrorKind.EvalIdentifier, propertyName.start);
+        recordScope(ExpressionScopeKind.EvalIdentifier, propertyName.start);
       }
       if (propertyName.name === "let") {
         if (isInStrictMode()) {
           throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
         }
-        exprScope.record(ExpressionErrorKind.LetIdentifiier, propertyName.start);
+        recordScope(ExpressionScopeKind.LetIdentifiier, propertyName.start);
       }
     }
   }

@@ -17,6 +17,7 @@ export const ErrorMessageMap = {
   super_can_not_call_if_not_in_class: "super can not be called if not in class block",
   super_must_be_followed_by_an_argument_list_or_member_access:
     "'super' must be followed by an argument list or member access.",
+  private_name_wrong_used: "Private names are only allowed in property accesses or or in left hand side of `in` expressions",
   // spread, rest element
   rest_element_should_be_last_property: "RestElement should be the lastest property",
   rest_element_can_not_end_with_comma: "RestElement can not concat with comma",

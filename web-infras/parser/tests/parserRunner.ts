@@ -272,10 +272,10 @@ async function report(testResult: TestResult) {
       console.log(`  |---> File ${(failedcase as any).reason}: ${failedcase.fileId}`);
     }
   }
-  // await stroeResult({
-  //   failedResult: [...expectFailedButPass, ...expectPassButFailed],
-  //   skipResult,
-  // });
+  await stroeResult({
+    failedResult: [...expectFailedButPass, ...expectPassButFailed],
+    skipResult,
+  });
 }
 
 function getTestCaseSet(testResult: Pick<TestResult, "failedResult" | "skipResult">) {
