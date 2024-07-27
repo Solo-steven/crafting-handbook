@@ -47,6 +47,8 @@ export const ErrorMessageMap = {
     "function argument list can not have trailing comma when is empty",
   // strict mode problem
   unexpect_keyword_in_stric_mode: "unexpect keyword in strict mode",
+  argument_can_not_use_as_binding_identifier: "",
+  eval_can_not_use_as_binding_identifier: "",
   illegal_use_strict_in_non_simple_parameter_list: "illegal use strict in non simple parameter list",
   with_statement_can_not_use_in_strict_mode: "with statement can not use in strict mode",
   // invalid change line char

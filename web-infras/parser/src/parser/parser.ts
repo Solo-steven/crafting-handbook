@@ -128,8 +128,13 @@ import {
 import { ErrorMessageMap } from "./error";
 import { createLexer } from "../lexer/index";
 import { ExpectToken, ScopeContext, FunctionContext } from "./type";
+import {
+  ArrowExpressionErrorScope,
+  createExpressionErrorRecorder,
+  ExpressionErrorKind,
+  StrictModeExpressionErrorScope,
+} from "./scope/expressionScope";
 import { LookaheadToken } from "../lexer/type";
-import { isContext } from "vm";
 /**
  * Context for parser. composeed by several parts:
  * ## ScopeContext
@@ -164,12 +169,7 @@ import { isContext } from "vm";
  * @member {Set<any>} propertiesInitSet
  */
 interface Context {
-  maybeArrow: boolean;
   maybeArrowStart: number;
-  lastArrowExprPosition: {
-    start: SourcePosition;
-    end: SourcePosition;
-  } | null;
   scopeContext: Array<ScopeContext>;
   classContext: Array<[boolean]>;
   inOperatorStack: Array<boolean>;
@@ -189,9 +189,7 @@ function createContext(): Context {
   return {
     scopeContext: [],
     classContext: [],
-    maybeArrow: false,
     maybeArrowStart: -1,
-    lastArrowExprPosition: null,
     inOperatorStack: [],
     propertiesInitSet: new Set(),
   };
@@ -214,6 +212,7 @@ const KeywordSet = new Set(LexicalLiteral.keywords);
 export function createParser(code: string) {
   const lexer = createLexer(code);
   const context = createContext();
+  const exprScope = createExpressionErrorRecorder();
   /** ===========================================================
    *              Public API for Parser
    *  ===========================================================
@@ -518,6 +517,8 @@ export function createParser(code: string) {
    */
   function enterFunctionScope(isAsync: boolean = false, isGenerator: boolean = false) {
     const lastScope = helperFindLastFunctionContext();
+    exprScope.enterBlankArrowExpressionScope();
+    exprScope.enterRHSStrictModeScope();
     context.scopeContext.push({
       type: "FunctionContext",
       isArrow: false,
@@ -529,24 +530,13 @@ export function createParser(code: string) {
     });
   }
   /**
-   * Private API called when enter arrow function scope, called when
-   *  - **Arrow function** : called before parseArrowFunction, in a lot of place.
-   *
-   * Different from `enterFunctionScope`, arrow function can not be a generator,
-   * so it's scope value of generator is always be false.
-   * @param isAsync
+   * Private API called  when exist a function scope, refer to
+   * `enterFunctionScope` comment
    */
-  function enterArrowFunctionScope(isAsync: boolean = false) {
-    const lastScope = helperFindLastFunctionContext();
-    context.scopeContext.push({
-      type: "FunctionContext",
-      isArrow: true,
-      isAsync,
-      isGenerator: false,
-      inParameter: false,
-      inStrict: lastScope ? lastScope.inStrict : false,
-      isSimpleParameter: true,
-    });
+  function exitFunctionScope() {
+    exprScope.exitArrowExpressionScope();
+    exprScope.exitStrictModeScope();
+    context.scopeContext.pop();
   }
   /**
    * Private API called when start parse moduleItem in `parseProgram`, different from
@@ -563,11 +553,7 @@ export function createParser(code: string) {
       isSimpleParameter: true,
     });
   }
-  /**
-   * Private API called  when exist a function scope, refer to
-   * `enterFunctionScope` comment
-   */
-  function exitFunctionScope() {
+  function exitProgram() {
     context.scopeContext.pop();
   }
   /**
@@ -583,6 +569,59 @@ export function createParser(code: string) {
    */
   function exitBlockScope() {
     context.scopeContext.pop();
+  }
+  function parseWithArrowExpressionScope<T>(callback: () => T): [T, ArrowExpressionErrorScope] {
+    exprScope.enterArrowExpressionScope();
+    const result = callback();
+    const scope = exprScope.getCurrentArrowExpressionScope();
+    exprScope.exitArrowExpressionScope();
+    return [result, scope];
+  }
+  function enterArrowFunctionBodyScope(isAsync: boolean = false) {
+    const lastScope = helperFindLastFunctionContext();
+    context.scopeContext.push({
+      type: "FunctionContext",
+      isArrow: true,
+      isAsync,
+      isGenerator: false,
+      inParameter: false,
+      inStrict: lastScope ? lastScope.inStrict : false,
+      isSimpleParameter: true,
+    });
+  }
+  function exitArrowFunctionBodyScope() {
+    context.scopeContext.pop();
+  }
+  function parseWithCatpureLayer<T>(callback: () => T): [T, StrictModeExpressionErrorScope] {
+    exprScope.enterCatpureStrictModeScope();
+    const result = callback();
+    const scope = exprScope.getCurrentStrictModeScope();
+    exprScope.exitStrictModeScope();
+    return [result, scope];
+  }
+  function parseWithLHSLayer<T>(callback: () => T): T {
+    exprScope.enterLHSStrictModeScope();
+    const result = callback();
+    exprScope.exitStrictModeScope();
+    return result;
+  }
+  function parseWithLHSLayerReturnScope<T>(callback: () => T): [T, StrictModeExpressionErrorScope] {
+    exprScope.enterLHSStrictModeScope();
+    const result = callback();
+    const scope = exprScope.getCurrentStrictModeScope();
+    exprScope.exitStrictModeScope();
+    return [result, scope];
+  }
+  function parseWithRHSLayer<T>(callback: () => T): T {
+    exprScope.enterRHSStrictModeScope();
+    const result = callback();
+    exprScope.exitStrictModeScope();
+    return result;
+  }
+  function checkStrictModeScopeError(scope: StrictModeExpressionErrorScope) {
+    if(isInStrictMode() && exprScope.isStrictModeScopeViolateStrictMode(scope)) {
+      throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+    }
   }
   /**
    * Helper function for other context Private API to get this closest
@@ -752,12 +791,14 @@ export function createParser(code: string) {
    */
   function enterClassScope(isExtend: boolean = false) {
     context.classContext.push([isExtend]);
+    exprScope.enterBlankArrowExpressionScope();
   }
   /**
    * Private API called when finish parse class scope.
    */
   function existClassScope() {
     context.classContext.pop();
+    exprScope.exitArrowExpressionScope();
   }
   /**
    * Private API to know is current scope under class scope.
@@ -817,7 +858,7 @@ export function createParser(code: string) {
     if (context.propertiesInitSet.size > 0) {
       throw new Error();
     }
-    exitFunctionScope();
+    exitProgram();
     return Factory.createProgram(
       body,
       body.length === 0 ? getStartPosition() : cloneSourcePosition(body[0].start),
@@ -1013,7 +1054,6 @@ export function createParser(code: string) {
    */
   function exprToPattern(expr: Expression, isBinding: boolean): Pattern {
     const pattern = exprToPatternImpl(expr, isBinding);
-    checkPatternContainArgumentOrEval(pattern);
     return pattern;
   }
   function exprToPatternImpl(node: ModuleItem, isBinding: boolean = false): Pattern {
@@ -1652,22 +1692,12 @@ export function createParser(code: string) {
         }
         nextToken();
       }
-      const id = parseBindingElement(false);
+      const [id, scope] = parseWithCatpureLayer(() => parseBindingElement(false));
       const isBindingPattern = !isIdentifer(id);
-      // custom logical for check is lexical binding have let identifier ?
-      if (variableKind === "lexical" || isInStrictMode()) {
-        checkBindingPatternValueWithCallbacks(
-          id,
-          (value) => {
-            if (value === "let") {
-              throw createMessageError(
-                ErrorMessageMap.let_keyword_can_not_use_as_identifier_in_lexical_binding,
-              );
-            }
-          },
-          (_, _1) => void 0,
-        );
+      if (variableKind === "lexical" && scope.kind !== "RHSLayer" && scope.letIdentifier.length > 0) {
+        throw new Error("TODO ERROR: Better");
       }
+      // custom logical for check is lexical binding have let identifier ?
       if (
         // variable declarations binding pattern but but have init.
         (isBindingPattern || variant === "const") &&
@@ -1709,67 +1739,6 @@ export function createParser(code: string) {
       declarations[declarations.length - 1].end,
     );
   }
-  /**
-   * Helper function for check is pattern contain certin identifier value.
-   *
-   * ## VariableDeclaration
-   * Take look at parseIdentifier, you can seems parseIdentifier allow let as identifier when is not
-   * strict mode, but parseVariableDeclaration maybe is LexicalBindingDeclaration, so parseVariableDeclaration
-   * needs to implement its own logical about check if there existed let identifier in LexicalBinding.
-   *
-   * ## FunctionParam
-   * when parse function param, we do not know is function body contain use strict directive, so we
-   * need to check if function parameter list and function name is illegal in current function scope
-   * or not.
-   * @param {Pattern} pattern
-   */
-  function checkBindingPatternValueWithCallbacks(
-    pattern: Pattern,
-    patternValueCallback: (value: string) => void,
-    rightHandSideCallback: (expr: Expression, addToWorkList: (...pattern: Array<Pattern>) => void) => void,
-  ) {
-    const workList = [pattern];
-    const addToWorkList = (...pattern: Array<Pattern>) => workList.push(...pattern);
-    while (workList.length > 0) {
-      const currentPat = workList.pop()!;
-      switch (currentPat.kind) {
-        case SyntaxKinds.ArrayPattern:
-          const elements = currentPat.elements.filter((ele) => !!ele) as Array<Pattern>;
-          if (elements.length > 0) addToWorkList(...elements);
-          break;
-        case SyntaxKinds.Identifier:
-          patternValueCallback(currentPat.name);
-          break;
-        case SyntaxKinds.RestElement:
-          addToWorkList(currentPat.argument);
-          break;
-        case SyntaxKinds.AssignmentPattern:
-          addToWorkList(currentPat.left);
-          rightHandSideCallback(currentPat.right, addToWorkList);
-          break;
-        case SyntaxKinds.ObjectPattern: {
-          for (const property of currentPat.properties) {
-            if (isObjectPatternProperty(property)) {
-              if (!property.value) {
-                if (isIdentifer(property.key)) {
-                  workList.push(property.key);
-                }
-                continue;
-              }
-              if (isPattern(property.value)) {
-                addToWorkList(property.value);
-                continue;
-              }
-              rightHandSideCallback(property.value, addToWorkList);
-            } else {
-              addToWorkList(property);
-            }
-          }
-          break;
-        }
-      }
-    }
-  }
   function parseFunctionDeclaration(isAsync: boolean) {
     enterFunctionScope(isAsync);
     const func = parseFunction(false);
@@ -1790,13 +1759,19 @@ export function createParser(code: string) {
       setCurrentFunctionContextAsGenerator();
       nextToken();
     }
-    const name = parseFunctionName(isExpression);
-    if (!name && !isExpression) {
-      throw createMessageError(ErrorMessageMap.function_declaration_must_have_name);
-    }
-    const params = parseFunctionParam();
+    const [[name, params], scope] = parseWithCatpureLayer(() => {
+      const name = parseFunctionName(isExpression);
+      if (!name && !isExpression) {
+        throw createMessageError(ErrorMessageMap.function_declaration_must_have_name);
+      }
+      const params = parseFunctionParam();
+      return [name, params];
+    });
     const body = parseFunctionBody();
-    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(name, params);
+    if (scope && isInStrictMode() && exprScope.isStrictModeScopeViolateStrictMode(scope)) {
+      throw new Error("TODO: Better error for invalid");
+    }
+    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(name, params, false, scope);
     return Factory.createFunction(
       name,
       body,
@@ -1818,27 +1793,24 @@ export function createParser(code: string) {
   function checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(
     name: Identifier | null,
     params: Array<Pattern>,
-    focusCheck = false,
+    focusCheck: boolean,
+    scope: StrictModeExpressionErrorScope,
   ) {
     if (isInStrictMode()) {
       if (name) {
-        checkPatternContainArgumentOrEval(name);
-        if (name.name === "yield" || name.name === "let" || PreserveWordSet.has(name.name)) {
+        if (
+          name.name === "arugments" ||
+          name.name === "eval" ||
+          name.name === "yield" ||
+          name.name === "let" ||
+          PreserveWordSet.has(name.name)
+        ) {
           throw createMessageError("unexepct keyword in parameter list in strict mode");
         }
       }
       checkFunctionParamIsDuplicate(params);
-      for (const param of params) {
-        checkPatternContainArgumentOrEval(param);
-        checkBindingPatternValueWithCallbacks(
-          param,
-          (value) => {
-            if (value === "yield" || value === "let" || PreserveWordSet.has(value)) {
-              throw createMessageError("unexepct keyword in parameter list in strict mode");
-            }
-          },
-          (_, _1) => void 0,
-        );
+      if (exprScope.isStrictModeScopeViolateStrictMode(scope)) {
+        throw new Error("TODO: Better ERROR. Strict mode check");
       }
     } else if (!isCurrentFunctionParameterListSimple() || focusCheck) {
       checkFunctionParamIsDuplicate(params);
@@ -1854,38 +1826,40 @@ export function createParser(code: string) {
    * @returns {Identifier | null}
    */
   function parseFunctionName(isExpression: boolean): Identifier | null {
+    exprScope.enterLHSStrictModeScope();
     let name: Identifier | null = null;
     // there we do not just using parseIdentifier function as the reason above
     // let can be function name as other place
     if (match([SyntaxKinds.Identifier, SyntaxKinds.LetKeyword])) {
       name = parseIdentifer();
+    } else {
+      if (match(SyntaxKinds.AwaitKeyword)) {
+        // for function expression, can await treat as function name is dep on current scope.
+        if (isExpression && isCurrentFunctionAsync()) {
+          throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+        }
+        // for function declaration, can await treat as function name is dep on parent scope.
+        if (!isExpression && isParentFunctionAsync()) {
+          throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+        }
+        name = parseIdentiferWithKeyword();
+      } else if (match(SyntaxKinds.YieldKeyword)) {
+        // for function expression, can yield treat as function name is dep on current scope.
+        if (isExpression && isCurrentFunctionGenerator()) {
+          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+        }
+        // for function declaration, can yield treat as function name is  dep on parent scope.
+        if (!isExpression && isParentFunctionGenerator()) {
+          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+        }
+        // if in strict mode, yield can not be function name.
+        if (isInStrictMode()) {
+          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+        }
+        name = parseIdentiferWithKeyword();
+      }
     }
-    if (match(SyntaxKinds.AwaitKeyword)) {
-      // for function expression, can await treat as function name is dep on current scope.
-      if (isExpression && isCurrentFunctionAsync()) {
-        throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
-      }
-      // for function declaration, can await treat as function name is dep on parent scope.
-      if (!isExpression && isParentFunctionAsync()) {
-        throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
-      }
-      name = parseIdentiferWithKeyword();
-    }
-    if (match(SyntaxKinds.YieldKeyword)) {
-      // for function expression, can yield treat as function name is dep on current scope.
-      if (isExpression && isCurrentFunctionGenerator()) {
-        throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-      }
-      // for function declaration, can yield treat as function name is  dep on parent scope.
-      if (!isExpression && isParentFunctionGenerator()) {
-        throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-      }
-      // if in strict mode, yield can not be function name.
-      if (isInStrictMode()) {
-        throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-      }
-      name = parseIdentiferWithKeyword();
-    }
+    exprScope.exitStrictModeScope();
     return name;
   }
   /**
@@ -2132,7 +2106,10 @@ export function createParser(code: string) {
     }
     if (match([SyntaxKinds.AssginOperator])) {
       nextToken();
-      const value = parseAssignmentExpressionAllowIn();
+      const [value, scope] = parseWithCatpureLayer(parseAssignmentExpressionAllowIn);
+      if (exprScope.isStrictModeScopeViolateStrictMode(scope)) {
+        throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+      }
       shouldInsertSemi();
       return Factory.createClassProperty(
         key,
@@ -2279,16 +2256,24 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.YieldKeyword) && isCurrentFunctionGenerator()) {
       return parseYieldExpression();
     }
-    let leftExpr = parseConditionalExpression();
-    if (!match(AssigmentOperators)) {
-      return leftExpr;
+    const [[left, isPattern], scope] = parseWithCatpureLayer(() => {
+      let leftExpr = parseConditionalExpression();
+      if (!match(AssigmentOperators)) {
+        return [leftExpr, false];
+      }
+      return [exprToPattern(leftExpr, false), true];
+    });
+    if (!isPattern) {
+      return left as Expression;
     }
-    const left = exprToPattern(leftExpr, false);
+    if (isInStrictMode() && exprScope.isStrictModeScopeViolateStrictMode(scope)) {
+      throw createMessageError("TODO ERROR: Better");
+    }
     const operator = getToken();
     nextToken();
     const right = parseAssignmentExpressionInheritIn();
     return Factory.createAssignmentExpression(
-      left,
+      left as Pattern,
       right,
       operator as AssigmentOperatorKinds,
       cloneSourcePosition(left.start),
@@ -2341,6 +2326,7 @@ export function createParser(code: string) {
     if (isInParameter()) {
       throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
     }
+    exprScope.record(ExpressionErrorKind.YieldExpressionInParameter, start);
     return Factory.createYieldExpression(
       argument,
       delegate,
@@ -2520,22 +2506,26 @@ export function createParser(code: string) {
       return Factory.createUnaryExpression(argument, operator, start, cloneSourcePosition(argument.end));
     }
     if (match(SyntaxKinds.AwaitKeyword) && isCurrentFunctionAsync()) {
-      if (isInParameter()) {
-        throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
-      }
-      const start = getStartPosition();
-      nextToken();
-      const argu = parseUnaryExpression();
-      return Factory.createAwaitExpression(argu, start, cloneSourcePosition(argu.end));
+      return parseAwaitExpression();
     }
     return parseUpdateExpression();
+  }
+  function parseAwaitExpression() {
+    if (isInParameter()) {
+      throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
+    }
+    const start = getStartPosition();
+    nextToken();
+    exprScope.record(ExpressionErrorKind.AwaitExpressionImParameter, start);
+    const argu = parseUnaryExpression();
+    return Factory.createAwaitExpression(argu, start, cloneSourcePosition(argu.end));
   }
   function parseUpdateExpression(): Expression {
     if (match(UpdateOperators)) {
       const operator = getToken() as UpdateOperatorKinds;
       const start = getStartPosition();
       nextToken();
-      const argument = parseLeftHandSideExpression();
+      const argument = parseWithLHSLayer(parseLeftHandSideExpression);
       checkExpressionAsLeftValue(argument);
       return Factory.createUpdateExpression(
         argument,
@@ -2545,12 +2535,17 @@ export function createParser(code: string) {
         cloneSourcePosition(argument.end),
       );
     }
-    const argument = parseLeftHandSideExpression();
+    const [argument, scope] = parseWithCatpureLayer(() => {
+      return parseLeftHandSideExpression();
+    });
     if (match(UpdateOperators) && !getLineTerminatorFlag()) {
+      if (isInStrictMode() && exprScope.isStrictModeScopeViolateStrictMode(scope)) {
+        throw createMessageError("TODO ERROR: Should have better error for LHS");
+      }
+      checkExpressionAsLeftValue(argument);
       const operator = getToken() as UpdateOperatorKinds;
       const end = getEndPosition();
       nextToken();
-      checkExpressionAsLeftValue(argument);
       return Factory.createUpdateExpression(
         argument,
         operator,
@@ -2613,7 +2608,6 @@ export function createParser(code: string) {
   }
   function checkExpressionAsLeftValue(expression: Expression) {
     if (isPattern(expression)) {
-      checkPatternContainArgumentOrEval(expression);
       return;
     }
     throw createMessageError(ErrorMessageMap.invalid_left_value);
@@ -2815,18 +2809,24 @@ export function createParser(code: string) {
         const { kind, lineTerminatorFlag: flag } = lookahead();
         // case 0: identifier `=>` ...
         if (kind === SyntaxKinds.ArrowOperator && canParseAsArrowFunction()) {
-          enterArrowFunctionScope();
-          const argus = [parseIdentifer()];
+          const [[argus, strictModeScope], arrowExprScope] = parseWithArrowExpressionScope(() =>
+            parseWithLHSLayerReturnScope(() => [parseIdentifer()]),
+          );
           if (getLineTerminatorFlag()) {
             throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_arrow);
           }
-          const arrowExpr = parseArrowFunctionExpression({
-            nodes: argus,
-            start: argus[0].start,
-            end: argus[0].end,
-            trailingComma: false,
-          });
-          exitFunctionScope();
+          enterArrowFunctionBodyScope();
+          const arrowExpr = parseArrowFunctionExpression(
+            {
+              nodes: argus,
+              start: argus[0].start,
+              end: argus[0].end,
+              trailingComma: false,
+            },
+            strictModeScope,
+            arrowExprScope,
+          );
+          exitArrowFunctionBodyScope();
           return arrowExpr;
         }
         if (getSourceValue() === "async") {
@@ -2848,7 +2848,9 @@ export function createParser(code: string) {
             if (kind === SyntaxKinds.ParenthesesLeftPunctuator) {
               const containEsc = getEscFlag();
               const id = parseIdentifer();
-              const meta = parseArguments();
+              const [[meta, strictModeScope], arrowExprScope] = parseWithArrowExpressionScope(() =>
+                parseWithCatpureLayer(parseArguments),
+              );
               if (flag || !match(SyntaxKinds.ArrowOperator)) {
                 return Factory.createCallExpression(
                   id,
@@ -2861,9 +2863,9 @@ export function createParser(code: string) {
               if (containEsc) {
                 throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
               }
-              enterArrowFunctionScope(true);
-              const arrowFunExpr = parseArrowFunctionExpression(meta);
-              exitFunctionScope();
+              enterArrowFunctionBodyScope(true);
+              const arrowFunExpr = parseArrowFunctionExpression(meta, strictModeScope, arrowExprScope);
+              exitArrowFunctionBodyScope();
               return arrowFunExpr;
             }
             // case 3: `async` `Identifer` ...
@@ -2891,19 +2893,25 @@ export function createParser(code: string) {
               if (isAsyncContainUnicode) {
                 throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
               }
-              enterArrowFunctionScope(true);
-              const argus = [parseIdentifer()];
+              const [[argus, strictModeScope], arrowExprScope] = parseWithArrowExpressionScope(() =>
+                parseWithCatpureLayer(() => [parseIdentifer()]),
+              );
               if (getLineTerminatorFlag()) {
                 throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_async);
               }
               // TODO: check arrow operator
-              const arrowExpr = parseArrowFunctionExpression({
-                nodes: argus,
-                start: argus[0].start,
-                end: argus[0].end,
-                trailingComma: false,
-              });
-              exitFunctionScope();
+              enterArrowFunctionBodyScope(true);
+              const arrowExpr = parseArrowFunctionExpression(
+                {
+                  nodes: argus,
+                  start: argus[0].start,
+                  end: argus[0].end,
+                  trailingComma: false,
+                },
+                strictModeScope,
+                arrowExprScope,
+              );
+              exitArrowFunctionBodyScope();
               return arrowExpr;
             }
           }
@@ -2946,40 +2954,71 @@ export function createParser(code: string) {
       SyntaxKinds.YieldKeyword,
       SyntaxKinds.LetKeyword,
     ]);
-    if (match(SyntaxKinds.YieldKeyword)) {
+    // sematic check for a binding identifier
+    let identifer: Identifier;
+    switch (getToken()) {
       // for most of yield keyword, if it should treat as identifier,
       // it should not in generator function.
-      if (!isCurrentFunctionGenerator() && !isInStrictMode()) {
+      case SyntaxKinds.YieldKeyword: {
+        if (isCurrentFunctionGenerator() || isInStrictMode()) {
+          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+        }
         const { value, start, end } = expect(SyntaxKinds.YieldKeyword);
-        return Factory.createIdentifier(value, start, end);
+        exprScope.record(ExpressionErrorKind.YieldIdentifier, start);
+        identifer = Factory.createIdentifier(value, start, end);
+        break;
       }
-      throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-    }
-    if (match(SyntaxKinds.AwaitKeyword)) {
       // for most of await keyword, if it should treat as identifier,
       // it should not in async function.
-      if (!isCurrentFunctionAsync()) {
+      case SyntaxKinds.AwaitKeyword: {
+        if (isCurrentFunctionAsync()) {
+          throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+        }
         const { value, start, end } = expect(SyntaxKinds.AwaitKeyword);
-        return Factory.createIdentifier(value, start, end);
+        exprScope.record(ExpressionErrorKind.AwaitIdentifier, start);
+        identifer = Factory.createIdentifier(value, start, end);
+        break;
       }
-      throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
-    }
-    if (match(SyntaxKinds.LetKeyword)) {
       // let maybe treat as identifier in not strict mode, and not lexical binding declaration.
       // so lexical binding declaration should implement it's own checker logical with parseIdentifierWithKeyword
-      if (!isInStrictMode() && !isInClassScope()) {
+      case SyntaxKinds.LetKeyword: {
+        if (isInStrictMode() || isInClassScope()) {
+          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+        }
         const { value, start, end } = expect(SyntaxKinds.LetKeyword);
-        return Factory.createIdentifier(value, start, end);
+        exprScope.record(ExpressionErrorKind.LetIdentifiier, start);
+        identifer = Factory.createIdentifier(value, start, end);
+        break;
       }
-      throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
-    }
-    const { value, start, end } = expect(SyntaxKinds.Identifier);
-    if (isInStrictMode() || isInClassScope()) {
-      if (PreserveWordSet.has(value)) {
-        throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+      case SyntaxKinds.Identifier: {
+        const { value, start, end } = expect(SyntaxKinds.Identifier);
+        const isPreserveWord = PreserveWordSet.has(value);
+        if (isPreserveWord) {
+          if (isInStrictMode() || isInClassScope()) {
+            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+          }
+          exprScope.record(ExpressionErrorKind.PresveredWordIdentifier, start);
+        }
+        if (value === "arguments") {
+          if (isInStrictMode() && exprScope.isInLHS()) {
+            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+          }
+          exprScope.record(ExpressionErrorKind.ArgumentsIdentifier, start);
+        }
+        if (value === "eval") {
+          if (isInStrictMode() && exprScope.isInLHS()) {
+            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+          }
+          exprScope.record(ExpressionErrorKind.EvalIdentifier, start);
+        }
+        identifer = Factory.createIdentifier(value, start, end);
+        break;
+      }
+      default: {
+        throw createUnreachError();
       }
     }
-    return Factory.createIdentifier(value, start, end);
+    return identifer;
   }
   /**
    * Relatedly loose function for parseIdentifier, it not only can parse identifier,
@@ -3257,6 +3296,7 @@ export function createParser(code: string) {
         cloneSourcePosition(expr.end),
       );
     }
+    recordIdentifierValue(propertyName);
     if (match(SyntaxKinds.AssginOperator)) {
       nextToken();
       const expr = parseAssignmentExpressionAllowIn();
@@ -3286,6 +3326,28 @@ export function createParser(code: string) {
       cloneSourcePosition(propertyName.start),
       cloneSourcePosition(propertyName.end),
     );
+  }
+  function recordIdentifierValue(propertyName: ModuleItem) {
+    if (isIdentifer(propertyName)) {
+      if (propertyName.name === "await") {
+        exprScope.record(ExpressionErrorKind.AwaitIdentifier, propertyName.start);
+      }
+      if (propertyName.name === "yield") {
+        exprScope.record(ExpressionErrorKind.YieldIdentifier, propertyName.start);
+      }
+      if (propertyName.name === "arguments") {
+        exprScope.record(ExpressionErrorKind.ArgumentsIdentifier, propertyName.start);
+      }
+      if (propertyName.name === "eval") {
+        exprScope.record(ExpressionErrorKind.EvalIdentifier, propertyName.start);
+      }
+      if (propertyName.name === "let") {
+        exprScope.record(ExpressionErrorKind.LetIdentifiier, propertyName.start);
+      }
+      if (PreserveWordSet.has(propertyName.name)) {
+        exprScope.record(ExpressionErrorKind.PresveredWordIdentifier, propertyName.start);
+      }
+    }
   }
   /**
    * This is a helper function for object expression and class for determiate is property
@@ -3476,9 +3538,9 @@ export function createParser(code: string) {
       start = cloneSourcePosition(withPropertyName.start);
     }
     enterFunctionScope(isAsync, generator);
-    const parmas = parseFunctionParam();
+    const [parmas, scope] = parseWithCatpureLayer(parseFunctionParam);
     const body = parseFunctionBody();
-    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, parmas, true);
+    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, parmas, true, scope);
     exitFunctionScope();
     /**
      * Step 2: semantic and more concise syntax check instead just throw a unexpect
@@ -3623,7 +3685,8 @@ export function createParser(code: string) {
   function parseCoverExpressionORArrowFunction() {
     const possibleBeArrow = canParseAsArrowFunction();
     expectButNotEat(SyntaxKinds.ParenthesesLeftPunctuator);
-    const { start, end, nodes, trailingComma } = parseArguments();
+    const [[{ start, end, nodes, trailingComma }, strictModeScope], arrowExprScope] =
+      parseWithArrowExpressionScope(() => parseWithCatpureLayer(parseArguments));
     if (!possibleBeArrow || !match(SyntaxKinds.ArrowOperator)) {
       // transfor to sequence or signal expression
       for (const element of nodes) {
@@ -3637,7 +3700,6 @@ export function createParser(code: string) {
       if (nodes.length === 1) {
         nodes[0].parentheses = true;
         if (nodes[0].kind === SyntaxKinds.ArrowFunctionExpression) {
-          context.lastArrowExprPosition = null;
         }
         return nodes[0];
       }
@@ -3645,10 +3707,13 @@ export function createParser(code: string) {
       seq.parentheses = true;
       return seq;
     }
-    context.maybeArrow = false;
-    enterArrowFunctionScope();
-    const arrowExpr = parseArrowFunctionExpression({ start, end, nodes, trailingComma });
-    exitFunctionScope();
+    enterArrowFunctionBodyScope();
+    const arrowExpr = parseArrowFunctionExpression(
+      { start, end, nodes, trailingComma },
+      strictModeScope,
+      arrowExprScope,
+    );
+    exitArrowFunctionBodyScope();
     return arrowExpr;
   }
   /**
@@ -3665,6 +3730,8 @@ export function createParser(code: string) {
    */
   function parseArrowFunctionExpression(
     metaData: ASTArrayWithMetaData<Expression> & { trailingComma: boolean },
+    strictModeScope: StrictModeExpressionErrorScope,
+    arrowExprScope: ArrowExpressionErrorScope,
   ): ArrorFunctionExpression {
     if (!match(SyntaxKinds.ArrowOperator)) {
       throw createUnexpectError(SyntaxKinds.ArrowOperator);
@@ -3673,7 +3740,12 @@ export function createParser(code: string) {
       throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_arrow);
     }
     nextToken();
-    const functionArguments = argumentToFunctionParams(metaData.nodes, metaData.trailingComma);
+    const functionArguments = argumentToFunctionParams(
+      metaData.nodes,
+      metaData.trailingComma,
+      strictModeScope,
+      arrowExprScope,
+    );
     let body: Expression | FunctionBody | undefined;
     let isExpression = false;
     if (match(SyntaxKinds.BracesLeftPunctuator)) {
@@ -3682,11 +3754,12 @@ export function createParser(code: string) {
       body = parseAssignmentExpressionInheritIn();
       isExpression = true;
     }
-    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, functionArguments, true);
-    context.lastArrowExprPosition = {
-      start: metaData.start,
-      end: body.end,
-    };
+    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(
+      null,
+      functionArguments,
+      true,
+      strictModeScope,
+    );
     return Factory.createArrowExpression(
       isExpression,
       body,
@@ -3709,6 +3782,8 @@ export function createParser(code: string) {
   function argumentToFunctionParams(
     functionArguments: Array<Expression>,
     trailingComma: boolean,
+    strictModeScope: StrictModeExpressionErrorScope,
+    arrowExprScope: ArrowExpressionErrorScope,
   ): Array<Pattern> {
     const params = functionArguments.map((node) => exprToPattern(node, true)) as Array<Pattern>;
     if (
@@ -3716,8 +3791,16 @@ export function createParser(code: string) {
       isParentFunctionAsync() ||
       isParentFunctionGenerator() ||
       isInStrictMode()
-    )
-      checkArrowFunctionParamsContainInValidAwait(params);
+    ) {
+      const isError = exprScope.isArrowExpressionScopeHaveError(arrowExprScope);
+      if (isError) {
+        throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+      }
+      const strictModeError = exprScope.isStrictModeScopeViolateStrictMode(strictModeScope);
+      if (isInStrictMode() && strictModeError) {
+        throw new Error("TODO: Better Error, Voilate strict mode");
+      }
+    }
     const isMultiSpread = checkArrowFunctionParamsSpreadElementRule(params);
     if (isMultiSpread && trailingComma)
       throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
@@ -3739,110 +3822,6 @@ export function createParser(code: string) {
       }
     });
     return flag;
-  }
-  function checkExpressionsContainAwaitOrYieldUsage(initWorkList: Array<Expression>) {
-    const workList = [...initWorkList];
-    while (workList.length > 0) {
-      const currentExpr = workList.pop()!;
-      switch (currentExpr.kind) {
-        case SyntaxKinds.Identifier: {
-          if (currentExpr.name === "await" && (isCurrentFunctionAsync() || isParentFunctionAsync())) {
-            throw createMessageError(
-              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
-            );
-          }
-          if (currentExpr.name === "yield" && (isParentFunctionGenerator() || isInStrictMode())) {
-            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-          }
-          break;
-        }
-        case SyntaxKinds.ArrayExpression: {
-          workList.push(...(currentExpr.elements.filter((ele) => !!ele) as Array<Expression>));
-          break;
-        }
-        case SyntaxKinds.ObjectExpression: {
-          for (const property of currentExpr.properties) {
-            if (isSpreadElement(property)) {
-              workList.push(property.argument);
-              continue;
-            }
-            if (isObjectProperty(property)) {
-              if (property.shorted) {
-                workList.push(property.key);
-                continue;
-              }
-              if (property.computed) {
-                workList.push(property.key);
-              }
-              if (property.value) {
-                workList.push(property.value);
-              }
-            }
-          }
-          break;
-        }
-        case SyntaxKinds.BinaryExpression:
-          workList.push(currentExpr.left);
-          workList.push(currentExpr.right);
-          break;
-        case SyntaxKinds.UnaryExpression:
-          workList.push(currentExpr.argument);
-          break;
-        case SyntaxKinds.UpdateExpression:
-          workList.push(currentExpr.argument);
-          break;
-        case SyntaxKinds.AwaitExpression:
-          // parent scope is async, no matter current scope is async or not
-          // await expression can not call
-          throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
-        case SyntaxKinds.YieldExpression:
-          // parent scope is generator, arrow expression must not generator,
-          // so yield is not illegal
-          throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
-        case SyntaxKinds.BinaryExpression:
-          const binaryNode = currentExpr as BinaryExpression;
-          workList.push(binaryNode.left, binaryNode.right);
-          break;
-        case SyntaxKinds.MemberExpression:
-          const memberNode = currentExpr as MemberExpression;
-          workList.push(memberNode.object);
-          break;
-        case SyntaxKinds.NewExpression:
-        case SyntaxKinds.CallExpression:
-          workList.push(...currentExpr.arguments);
-          break;
-        case SyntaxKinds.AssigmentExpression:
-          workList.push(currentExpr.right);
-        default:
-          break;
-      }
-    }
-  }
-  function checkArrowFunctionParamsContainInValidAwait(params: Array<Pattern>) {
-    const expressionWorkList: Array<Expression> = [];
-    params.forEach((param) =>
-      checkBindingPatternValueWithCallbacks(
-        param,
-        (patternVal) => {
-          if (patternVal === "await") {
-            if (isInStrictMode() || isCurrentFunctionAsync()) {
-              throw createMessageError(
-                ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
-              );
-            }
-            return;
-          }
-        },
-        (expr, addToWorkList) => {
-          if (isArrowFunctionExpression(expr)) {
-            if (expr.arguments.length > 0) addToWorkList(...expr.arguments);
-            return;
-          }
-          expressionWorkList.push(expr);
-        },
-      ),
-    );
-    checkExpressionsContainAwaitOrYieldUsage(expressionWorkList);
   }
   /** ================================================================================
    *  Parse JSX
@@ -4185,14 +4164,13 @@ export function createParser(code: string) {
     ]);
     let left: Pattern | undefined;
     if (match(BindingIdentifierSyntaxKindArray)) {
-      left = parseIdentifer();
-      checkPatternContainArgumentOrEval(left);
+      left = parseBindingIdentifier();
     } else {
       left = parseBindingPattern();
     }
     if (match(SyntaxKinds.AssginOperator) && shouldParseAssignment) {
       nextToken();
-      const right = parseAssignmentExpressionAllowIn();
+      const right = parseWithRHSLayer(parseAssignmentExpressionAllowIn);
       return Factory.createAssignmentPattern(
         left,
         right,
@@ -4206,8 +4184,7 @@ export function createParser(code: string) {
     const { start } = expect([SyntaxKinds.SpreadOperator]);
     let id: Pattern | null = null;
     if (match(BindingIdentifierSyntaxKindArray)) {
-      id = parseIdentifer();
-      checkPatternContainArgumentOrEval(id);
+      id = parseBindingIdentifier();
     }
     if (match([SyntaxKinds.BracesLeftPunctuator, SyntaxKinds.BracketLeftPunctuator])) {
       if (allowPattern) {
@@ -4224,6 +4201,9 @@ export function createParser(code: string) {
     }
     return Factory.createRestElement(id, start, cloneSourcePosition(id.end));
   }
+  function parseBindingIdentifier() {
+    return parseWithLHSLayer(parseIdentifer);
+  }
   /**
    * Parse BindingPattern
    * ```
@@ -4232,11 +4212,13 @@ export function createParser(code: string) {
    * ```
    */
   function parseBindingPattern(): ObjectPattern | ArrayPattern {
-    expectButNotEat([SyntaxKinds.BracesLeftPunctuator, SyntaxKinds.BracketLeftPunctuator]);
-    if (match(SyntaxKinds.BracesLeftPunctuator)) {
-      return parseObjectPattern();
-    }
-    return parseArrayPattern();
+    return parseWithLHSLayer(() => {
+      expectButNotEat([SyntaxKinds.BracesLeftPunctuator, SyntaxKinds.BracketLeftPunctuator]);
+      if (match(SyntaxKinds.BracesLeftPunctuator)) {
+        return parseObjectPattern();
+      }
+      return parseArrayPattern();
+    });
   }
   /** Parse Object Pattern
    * ```
@@ -4282,23 +4264,7 @@ export function createParser(code: string) {
       // parse Object pattern property
       const isComputedRef = { isComputed: false };
       const propertyName = parsePropertyName(isComputedRef);
-      if (match(SyntaxKinds.AssginOperator)) {
-        nextToken();
-        const expr = parseAssignmentExpressionAllowIn();
-        if (!isPattern(propertyName)) {
-          throw createMessageError("assignment pattern left value can only allow identifier or pattern");
-        }
-        properties.push(
-          Factory.createAssignmentPattern(
-            propertyName,
-            expr,
-            cloneSourcePosition(propertyName.start),
-            cloneSourcePosition(expr.end),
-          ),
-        );
-        continue;
-      }
-      if (match(SyntaxKinds.ColonPunctuator)) {
+      if (isComputedRef.isComputed || match(SyntaxKinds.ColonPunctuator)) {
         nextToken();
         const pattern = parseBindingElement();
         properties.push(
@@ -4309,6 +4275,23 @@ export function createParser(code: string) {
             false,
             cloneSourcePosition(propertyName.start),
             cloneSourcePosition(pattern.end),
+          ),
+        );
+        continue;
+      }
+      checkPropertyNameAsSigleNameBinding(propertyName);
+      if (match(SyntaxKinds.AssginOperator)) {
+        nextToken();
+        const expr = parseWithRHSLayer(parseAssignmentExpressionAllowIn);
+        if (!isPattern(propertyName)) {
+          throw createMessageError("assignment pattern left value can only allow identifier or pattern");
+        }
+        properties.push(
+          Factory.createAssignmentPattern(
+            propertyName,
+            expr,
+            cloneSourcePosition(propertyName.start),
+            cloneSourcePosition(expr.end),
           ),
         );
         continue;
@@ -4333,8 +4316,35 @@ export function createParser(code: string) {
     }
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
     const objectPattern = Factory.createObjectPattern(properties, start, end);
-    checkPatternContainArgumentOrEval(objectPattern);
     return objectPattern;
+  }
+  function checkPropertyNameAsSigleNameBinding(propertyName: PropertyName) {
+    if (isIdentifer(propertyName)) {
+      if (propertyName.name === "yield") {
+        exprScope.record(ExpressionErrorKind.YieldIdentifier, propertyName.start);
+      }
+      if (propertyName.name === "await") {
+        exprScope.record(ExpressionErrorKind.AwaitIdentifier, propertyName.start);
+      }
+      if (propertyName.name === "arguments") {
+        if (isInStrictMode() && exprScope.isInLHS()) {
+          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+        }
+        exprScope.record(ExpressionErrorKind.ArgumentsIdentifier, propertyName.start);
+      }
+      if (propertyName.name === "eval") {
+        if (isInStrictMode() && exprScope.isInLHS()) {
+          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+        }
+        exprScope.record(ExpressionErrorKind.EvalIdentifier, propertyName.start);
+      }
+      if (propertyName.name === "let") {
+        if (isInStrictMode()) {
+          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+        }
+        exprScope.record(ExpressionErrorKind.LetIdentifiier, propertyName.start);
+      }
+    }
   }
   function parseArrayPattern(): ArrayPattern {
     const { start } = expect(SyntaxKinds.BracketLeftPunctuator);
@@ -4360,31 +4370,12 @@ export function createParser(code: string) {
         }
         break;
       }
-      elements.push(parseBindingElement());
+      const pattern = parseBindingElement();
+      elements.push(pattern);
     }
     const { end } = expect(SyntaxKinds.BracketRightPunctuator);
     const arrayPattern = Factory.createArrayPattern(elements, start, end);
-    checkPatternContainArgumentOrEval(arrayPattern);
     return arrayPattern;
-  }
-  /**
-   * Whenever we need to parse a
-   * @param pattern
-   * @returns
-   */
-  function checkPatternContainArgumentOrEval(pattern: Pattern) {
-    if (!isInStrictMode()) {
-      return;
-    }
-    checkBindingPatternValueWithCallbacks(
-      pattern,
-      (val) => {
-        if (val === "arguments" || val === "eval") {
-          throw new Error();
-        }
-      },
-      (_, _1) => void 0,
-    );
   }
   /** ================================================================================
    *  Parse Import Declaration
