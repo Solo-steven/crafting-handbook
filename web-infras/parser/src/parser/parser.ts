@@ -124,11 +124,15 @@ import {
   isNumnerLiteral,
   isFunctionExpression,
   isPrivateName,
+  isFunctionDeclaration,
+  isClassExpression,
+  isExpressionStatement,
 } from "web-infra-common";
 import { ExpectToken, ScopeContext, FunctionContext } from "./type";
 import { ErrorMessageMap } from "./error";
 import { LookaheadToken } from "../lexer/type";
 import { createLexer } from "../lexer/index";
+import { createClassScopeRecorder } from "./scope/classScope";
 import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } from "./scope/arrowExprScope";
 import { createStrictModeScopeRecorder, StrictModeScope } from "./scope/strictModeScope";
 import { ExpressionScopeKind } from "./scope/type";
@@ -168,7 +172,6 @@ import { ExpressionScopeKind } from "./scope/type";
 interface Context {
   maybeArrowStart: number;
   scopeContext: Array<ScopeContext>;
-  classContext: Array<[boolean]>;
   inOperatorStack: Array<boolean>;
   propertiesInitSet: Set<any>;
 }
@@ -185,7 +188,6 @@ interface ASTArrayWithMetaData<T> {
 function createContext(): Context {
   return {
     scopeContext: [],
-    classContext: [],
     maybeArrowStart: -1,
     inOperatorStack: [],
     propertiesInitSet: new Set(),
@@ -209,7 +211,7 @@ const KeywordSet = new Set(LexicalLiteral.keywords);
 export function createParser(code: string) {
   const lexer = createLexer(code);
   const context = createContext();
-  // const exprScope = createExpressionErrorRecorder();
+  const classScopeRecorder = createClassScopeRecorder();
   const strictModeScopeRecorder = createStrictModeScopeRecorder();
   const asyncArrowExprScopeRecorder = createAsyncArrowExpressionScopeRecorder();
   /** ===========================================================
@@ -807,14 +809,20 @@ export function createParser(code: string) {
    * @param {boolean} isExtend
    */
   function enterClassScope(isExtend: boolean = false) {
-    context.classContext.push([isExtend]);
+    classScopeRecorder.enterClassScope(isExtend);
     asyncArrowExprScopeRecorder.enterBlankAsyncArrowExpressionScope();
   }
   /**
    * Private API called when finish parse class scope.
    */
   function existClassScope() {
-    context.classContext.pop();
+    if(classScopeRecorder.isDuplicatePrivateName()) {
+      throw createMessageError(ErrorMessageMap.private_name_duplicate);
+    }
+    if(classScopeRecorder.isUndeinfedPrivateName()) {
+      throw createMessageError(ErrorMessageMap.private_name_undeinfed);
+    }
+    classScopeRecorder.exitClassScope();
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
   }
   /**
@@ -822,17 +830,29 @@ export function createParser(code: string) {
    * @returns {boolean}
    */
   function isInClassScope(): boolean {
-    return context.classContext.length > 0;
+    return classScopeRecorder.isInClassScope();
   }
   /**
    * Private API to know is current class scope have extend.
    * @returns {boolean}
    */
   function isCurrentClassExtend(): boolean {
-    if (context.classContext.length === 0) {
-      return false;
-    }
-    return context.classContext[context.classContext.length - 1][0];
+    return classScopeRecorder.isCurrentClassExtend();
+  }
+  function recordDefiniedPrivateName(name: string) {
+    return classScopeRecorder.recordDefiniedPrivateName(name);
+  }
+  function recordUndefinedPrivateName(name: string) {
+    return classScopeRecorder.recordUndefinedPrivateName(name);
+  }
+  function enterDelete() {
+    classScopeRecorder.enterDelete();
+  }
+  function exitDelete() {
+    classScopeRecorder.exitDelete();
+  }
+  function isInDelete() {
+    return classScopeRecorder.isCurrentInDelete();
   }
   /**
    * Private API to know is current function scope is in strict mode,
@@ -1104,8 +1124,9 @@ export function createParser(code: string) {
       }
       case SyntaxKinds.SpreadElement: {
         const spreadElementNode = node as SpreadElement;
+        const argument = exprToPatternImpl(spreadElementNode.argument, isBinding) as Pattern;
         return Factory.createRestElement(
-          exprToPatternImpl(spreadElementNode.argument, isBinding) as Pattern,
+          argument,
           spreadElementNode.start,
           spreadElementNode.end,
         );
@@ -1150,6 +1171,9 @@ export function createParser(code: string) {
           if (isRestElement(transformElement)) {
             if (index !== objecExpressionNode.properties.length - 1 || objecExpressionNode.trailingComma) {
               throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
+            }
+            if(!isBinding && !isIdentifer(transformElement.argument) && !isMemberExpression(transformElement.argument)) {
+              throw createMessageError(ErrorMessageMap.rest_operator_must_be_followed_by_an_assignable_reference_in_assignment_contexts);
             }
           }
           properties.push(transformElement);
@@ -1568,27 +1592,29 @@ export function createParser(code: string) {
     }
     const label = parseIdentifer();
     expect(SyntaxKinds.ColonPunctuator);
-    if (match(SyntaxKinds.FunctionKeyword)) {
-      const delcar = parseFunctionDeclaration(false);
-      if (delcar.generator) {
+    const labeled = match(SyntaxKinds.FunctionKeyword) ? parseFunctionDeclaration(false) : parseStatement();
+    staticSematicEarlyErrorForLabelStatement(labeled);
+    return Factory.createLabeledStatement(
+      label,
+      labeled,
+      cloneSourcePosition(label.start),
+      cloneSourcePosition(labeled.end),
+    );
+  }
+  function staticSematicEarlyErrorForLabelStatement(labeled: Statement | FunctionDeclaration) {
+    if(isFunctionDeclaration(labeled)) {
+      if(labeled.generator) {
         throw createMessageError(
           ErrorMessageMap.lable_statement_can_not_have_function_declaration_is_generator,
         );
       }
-      return Factory.createLabeledStatement(
-        label,
-        delcar,
-        cloneSourcePosition(label.start),
-        cloneSourcePosition(delcar.end),
-      );
-    } else {
-      const statement = parseStatement();
-      return Factory.createLabeledStatement(
-        label,
-        statement,
-        cloneSourcePosition(label.start),
-        cloneSourcePosition(statement.end),
-      );
+      if(isInStrictMode()) {
+        throw createMessageError("");
+      }
+    }else {
+      if(isExpressionStatement(labeled) && (isClassExpression(labeled.expr) || isFunctionExpression(labeled.expr))) {
+          throw createMessageError("");
+      }
     }
   }
   function parseReturnStatement(): ReturnStatement {
@@ -2095,11 +2121,7 @@ export function createParser(code: string) {
    */
   function parseClassElement(): ClassElement {
     // parse static modifier
-    let isStatic = false;
-    if (isContextKeyword("static") && lookahead().kind !== SyntaxKinds.ParenthesesLeftPunctuator) {
-      nextToken();
-      isStatic = true;
-    }
+    const isStatic = checkIsMethodStartWithStaticModifier();
     if (checkIsMethodStartWithModifier()) {
       return parseMethodDefintion(true, undefined, isStatic) as ClassMethodDefinition;
     }
@@ -2111,12 +2133,14 @@ export function createParser(code: string) {
     let key: PropertyName | PrivateName | undefined;
     if (match(SyntaxKinds.PrivateName)) {
       key = parsePrivateName();
+      recordDefiniedPrivateName(key.name);
     } else {
       key = parsePropertyName(isComputedRef);
     }
     if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
       return parseMethodDefintion(true, key, isStatic) as ClassMethodDefinition;
     }
+    helperSematicCheckClassPropertyName(key, isComputedRef.isComputed, isStatic);
     if (match([SyntaxKinds.AssginOperator])) {
       nextToken();
       const [value, scope] = parseWithCatpureLayer(parseAssignmentExpressionAllowIn);
@@ -2142,6 +2166,45 @@ export function createParser(code: string) {
       cloneSourcePosition(key.start),
       cloneSourcePosition(key.end),
     );
+  }
+  function checkIsMethodStartWithStaticModifier() {
+    const { kind } = lookahead();
+    if (isContextKeyword("static")) {
+      switch (kind) {
+        // static <name>
+        // static get/set/async
+        case SyntaxKinds.Identifier:
+        case SyntaxKinds.PrivateName:
+        // static [<compute-name>]
+        case SyntaxKinds.BracketLeftPunctuator:
+        // static *
+        case SyntaxKinds.MultiplyOperator:
+          nextToken();
+          return true;
+        default:
+          // static for/if ...etc
+          if(Keywords.find(kw => kw=== kind)) return true;
+          return false
+      }
+    }
+    return false;
+  }
+  function helperSematicCheckClassPropertyName(propertyName: PropertyName | PrivateName, isComputed: boolean, isStatic: boolean) {
+    if(isComputed) return;
+    let value;
+    if(isPrivateName(propertyName) || isIdentifer(propertyName)) {
+      value = propertyName.name;
+    }else if(isStringLiteral(propertyName)) {
+      value = propertyName.value;
+    }
+    if(value) {
+      if(value === "constructor") {
+        throw createMessageError(ErrorMessageMap.constructor_can_not_be_class_property_name);
+      }
+      if(value === "prototype" && isStatic) {
+        throw createMessageError(ErrorMessageMap.prototype_can_not_be_static);
+      }
+    }
   }
   /** ====================================================================
    *  Parse Expression
@@ -2514,16 +2577,26 @@ export function createParser(code: string) {
   }
   function parseUnaryOrPrivateName(): Expression {
     if(match(SyntaxKinds.PrivateName)) {
-      return parsePrivateName();
+      const privateName = parsePrivateName();
+      recordUndefinedPrivateName(privateName.name);
+      return privateName;
     }
     return parseUnaryExpression();
   }
   function parseUnaryExpression(): Expression {
     if (match(UnaryOperators)) {
       const operator = getToken() as UnaryOperatorKinds;
+      const isDelete = operator === SyntaxKinds.DeleteKeyword;
       const start = getStartPosition();
       nextToken();
-      const argument = parseUnaryExpression();
+      let argument;
+      if(isDelete) {
+        enterDelete();
+        argument = parseUnaryExpression();
+        exitDelete();
+      }else {
+        argument = parseUnaryExpression();
+      }
       return Factory.createUnaryExpression(argument, operator, start, cloneSourcePosition(argument.end));
     }
     if (match(SyntaxKinds.AwaitKeyword) && isCurrentFunctionAsync()) {
@@ -2721,7 +2794,8 @@ export function createParser(code: string) {
     // because optional means that last token is `?.`
     if (match(SyntaxKinds.DotOperator) && !optional) {
       expect(SyntaxKinds.DotOperator);
-      const property = parseIdentiferWithKeyword();
+      const property = parseMemberExpressionProperty();
+
       return Factory.createMemberExpression(
         false,
         base,
@@ -2747,7 +2821,7 @@ export function createParser(code: string) {
     } else {
       // because parseLeftHandSideExpression would eat optional mark (QustionDotToken) frist, so maybe there
       // is not dot or `[` for start a member expression, so we can check optional is
-      const property = parseIdentiferWithKeyword();
+      const property = parseMemberExpressionProperty();
       return Factory.createMemberExpression(
         false,
         base,
@@ -2757,6 +2831,19 @@ export function createParser(code: string) {
         cloneSourcePosition(property.end),
       );
     }
+  }
+  function parseMemberExpressionProperty() {
+    let property: Expression | PrivateName;
+    if(match(SyntaxKinds.PrivateName)) {
+      property = parsePrivateName();
+      recordUndefinedPrivateName(property.name);
+      if(isInDelete()) {
+        throw createMessageError(ErrorMessageMap.delete_private_name);
+      }
+    }else {
+      property = parseIdentiferWithKeyword();
+    }
+    return property;
   }
   function parseTagTemplateExpression(base: Expression) {
     const quasi = parseTemplateLiteral();
@@ -3049,6 +3136,9 @@ export function createParser(code: string) {
   }
   function parsePrivateName() {
     const { value, start, end } = expect(SyntaxKinds.PrivateName);
+    if(!isInClassScope()) {
+      throw createMessageError(ErrorMessageMap.private_field_can_not_use_in_object);          // semantics check for private
+    }
     return Factory.createPrivateName(value, start, end);
   }
   function parseNullLiteral() {
@@ -3181,7 +3271,7 @@ export function createParser(code: string) {
       return parseNewExpression();
     }
     let base = parsePrimaryExpression();
-    if (isCallExpression(base)) {
+    if (isCallExpression(base) && !base.parentheses) {
       throw createMessageError(ErrorMessageMap.import_call_is_not_allow_as_new_expression_called);
     }
     // TODO: refactor this loop to with function -> parseNewExpressionCallee ?
@@ -3208,6 +3298,9 @@ export function createParser(code: string) {
     }
     const { start: keywordStart, end: keywordEnd } = expect([SyntaxKinds.SuperKeyword]);
     if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
+      if(!classScopeRecorder.isInCtor()) {
+        throw createMessageError("");
+      }
       const { nodes, end: argusEnd } = parseArguments();
       return Factory.createCallExpression(
         Factory.createSuper(keywordStart, keywordEnd),
@@ -3217,10 +3310,39 @@ export function createParser(code: string) {
         argusEnd,
       );
     }
-    if (match(SyntaxKinds.DotOperator) || match(SyntaxKinds.BracketLeftPunctuator)) {
-      return Factory.createSuper(keywordStart, keywordEnd);
+    let property: Expression;
+    let isComputed = false;
+    let end: SourcePosition;
+    switch (getToken()) {
+      case SyntaxKinds.DotOperator:{
+        nextToken();
+        if(match(SyntaxKinds.PrivateName)) {
+          // TODO: error
+        }
+        property = parseIdentiferWithKeyword();
+        end = cloneSourcePosition(property.end);
+        break;
+      }
+      case SyntaxKinds.BracketLeftPunctuator: {
+        nextToken();
+        property = parseExpressionAllowIn();
+        isComputed = true;
+        ({ end } = expect(SyntaxKinds.BracketRightPunctuator));
+        break;
+      }
+      case SyntaxKinds.QustionDotOperator:
+        throw createMessageError("");
+      default:
+        throw createMessageError(ErrorMessageMap.super_must_be_followed_by_an_argument_list_or_member_access);
     }
-    throw createMessageError(ErrorMessageMap.super_must_be_followed_by_an_argument_list_or_member_access);
+    return Factory.createMemberExpression(
+        isComputed,
+        Factory.createSuper(keywordStart, keywordEnd),
+        property,
+        false,
+        cloneSourcePosition(keywordStart),
+        end,
+    )
   }
   function parseThisExpression() {
     const { start, end } = expect([SyntaxKinds.ThisKeyword]);
@@ -3547,6 +3669,7 @@ export function createParser(code: string) {
       }
       if (match(SyntaxKinds.PrivateName)) {
         withPropertyName = parsePrivateName();
+        recordDefiniedPrivateName(withPropertyName.name);
       } else {
         const isComputedRef = { isComputed: false };
         withPropertyName = parsePropertyName(isComputedRef);
@@ -3555,65 +3678,32 @@ export function createParser(code: string) {
     } else {
       start = cloneSourcePosition(withPropertyName.start);
     }
+    const isCtor = helperIsPropertyNameIsCtor(withPropertyName);
+    if(isCtor) classScopeRecorder.enterCtor();
     enterFunctionScope(isAsync, generator);
     const [parmas, scope] = parseWithCatpureLayer(parseFunctionParam);
     const body = parseFunctionBody();
     checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, parmas, true, scope);
     exitFunctionScope();
+    if(isCtor) classScopeRecorder.exitCtor();
     /**
      * Step 2: semantic and more concise syntax check instead just throw a unexpect
      * token error.
      */
-    if (type === "get" && parmas.length > 0) {
-      throw createMessageError(ErrorMessageMap.getter_should_never_has_params);
-    }
-    if (type === "set") {
-      if (parmas.length !== 1) {
-        throw createMessageError(ErrorMessageMap.setter_should_has_only_one_params);
-      }
-      for (const param of parmas) {
-        if (isRestElement(param)) {
-          throw createMessageError(ErrorMessageMap.setter_can_not_have_rest_element_as_argument);
-        }
-      }
-    }
-    if (type === "get" && (isAsync || generator)) {
-      throw createMessageError(ErrorMessageMap.getter_can_not_be_async_or_generator);
-    }
-    if (type === "set" && (isAsync || generator)) {
-      throw createMessageError(ErrorMessageMap.setter_can_not_be_async_or_generator);
-    }
-    if (isIdentifer(withPropertyName)) {
-      if (withPropertyName.name === "constructor" && isInClassScope()) {
-        if (isAsync || generator || type !== "method") {
-          throw createMessageError(
-            ErrorMessageMap.constructor_can_not_be_async_or_generator_or_method_incorrect,
-          );
-        }
-        return Factory.createClassConstructor(
-          withPropertyName,
-          body,
-          parmas,
-          start as SourcePosition,
-          cloneSourcePosition(body.end),
-        );
-      }
-    }
-    if (!isPrivateName(withPropertyName) && type === "method") {
-      let valueOfName;
-      if (isStringLiteral(withPropertyName)) {
-        valueOfName = withPropertyName.value;
-      } else if (isIdentifer(withPropertyName)) {
-        valueOfName = withPropertyName.name;
-      }
-      if (valueOfName && valueOfName === "prototype" && isStatic) {
-        throw createMessageError("");
-      }
-    }
+    helperSematicCheckMethodPropertyName(withPropertyName, inClass, isStatic, computed, isAsync, generator, parmas, type);
     /**
      * Step 3 return based on type, if accessor or methodDefintion
      */
     if (inClass) {
+      if(isCtor) {
+        return Factory.createClassConstructor(
+          withPropertyName as ClassConstructor['key'], 
+          body, 
+          parmas, 
+          start as SourcePosition, 
+          cloneSourcePosition(body.end)
+        );
+      }
       if (type === "set" || type === "get") {
         return Factory.createClassAccessor(
           withPropertyName,
@@ -3658,6 +3748,57 @@ export function createParser(code: string) {
       start ? start : cloneSourcePosition(withPropertyName.start),
       cloneSourcePosition(body.end),
     );
+  }
+  function helperIsPropertyNameIsCtor(propertyName: PropertyName) {
+    return (isIdentifer(propertyName) && propertyName.name === "constructor");
+  }
+  function helperSematicCheckMethodPropertyName(propertyName: PropertyName, isClass: boolean, isStatic: boolean, isComputed: boolean, isAsync: boolean, isGenerator: boolean, params: Array<Pattern> , type: MethodDefinition["type"] ) {
+    // general check
+    if (type === "get" && params.length > 0) {
+      throw createMessageError(ErrorMessageMap.getter_should_never_has_params);
+    }
+    if (type === "set") {
+      if (params.length !== 1) {
+        throw createMessageError(ErrorMessageMap.setter_should_has_only_one_params);
+      }
+      for (const param of params) {
+        if (isRestElement(param)) {
+          throw createMessageError(ErrorMessageMap.setter_can_not_have_rest_element_as_argument);
+        }
+      }
+    }
+    if (type === "get" && (isAsync || isGenerator)) {
+      throw createMessageError(ErrorMessageMap.getter_can_not_be_async_or_generator);
+    }
+    if (type === "set" && (isAsync || isGenerator)) {
+      throw createMessageError(ErrorMessageMap.setter_can_not_be_async_or_generator);
+    }
+    // class check
+    if(isClass && !isComputed) {
+      let valueOfName: string | undefined, isPrivate = false, fromLiteral = false;
+      if (isStringLiteral(propertyName)) {
+        valueOfName = propertyName.value;
+        fromLiteral = true;
+      } else if (isIdentifer(propertyName)) {
+        valueOfName = propertyName.name;
+      }else if (isPrivateName(propertyName)) {
+        valueOfName = propertyName.name;
+        isPrivate = true;
+      }
+      if (valueOfName === "constructor" && !fromLiteral) {
+          if (isAsync || isGenerator || type !== "method") {
+            throw createMessageError(
+              ErrorMessageMap.constructor_can_not_be_async_or_generator_or_method_incorrect,
+            );
+          }
+          if(isPrivate) {
+            throw createMessageError(ErrorMessageMap.constructor_name_as_private_name);
+          }
+      }
+      if (valueOfName === "prototype" && !isPrivate && type === "method" && isStatic ) {
+          throw createMessageError(ErrorMessageMap.prototype_can_not_be_static);
+      }
+    }
   }
   function parseArrayExpression() {
     const { start } = expect(SyntaxKinds.BracketLeftPunctuator);
@@ -3720,6 +3861,9 @@ export function createParser(code: string) {
         if (nodes[0].kind === SyntaxKinds.ArrowFunctionExpression) {
         }
         return nodes[0];
+      }
+      if(nodes.length === 0) {
+        throw createMessageError(ErrorMessageMap.paran_expr_can_not_be_empty);
       }
       const seq = Factory.createSequenceExpression(nodes, start, end);
       seq.parentheses = true;
@@ -4261,13 +4405,9 @@ export function createParser(code: string) {
       // parse Rest property
       if (match(SyntaxKinds.SpreadOperator)) {
         properties.push(parseRestElement(false));
-        // sematic check, Rest Property Must be last,
-        // TODO, we can done is without lookahead,
         if (
-          !(
-            match(SyntaxKinds.BracesRightPunctuator) ||
+            !match(SyntaxKinds.BracesRightPunctuator) ||
             (match(SyntaxKinds.CommaToken) && lookahead().kind === SyntaxKinds.BracesRightPunctuator)
-          )
         ) {
           throw createMessageError(ErrorMessageMap.rest_element_should_be_last_property);
         }
@@ -4519,62 +4659,34 @@ export function createParser(code: string) {
       if (match(SyntaxKinds.BracesRightPunctuator) || match(SyntaxKinds.EOFToken)) {
         break;
       }
-      if (match([SyntaxKinds.Identifier, ...Keywords])) {
-        const imported = parseIdentiferWithKeyword();
-        if (!isContextKeyword("as")) {
-          // @ts-ignore
-          if (KeywordLiteralMapSyntaxKind[imported.name]) {
-            throw createMessageError(ErrorMessageMap.keyword_can_not_use_in_imported_when_just_a_specifier);
-          }
-          specifiers.push(
-            Factory.createImportSpecifier(
-              imported,
-              null,
-              cloneSourcePosition(imported.start),
-              cloneSourcePosition(imported.end),
-            ),
-          );
-          continue;
+      const imported = parseModuleExportName();
+      if (!isContextKeyword("as")) {
+        // @ts-ignore
+        if (isIdentifer(imported) && KeywordLiteralMapSyntaxKind[imported.name]) {
+          throw createMessageError(ErrorMessageMap.keyword_can_not_use_in_imported_when_just_a_specifier);
+        }else if (isStringLiteral(imported)) {
+          throw createMessageError(ErrorMessageMap.string_literal_cannot_be_used_as_an_imported_binding);
         }
-        nextToken();
-        const local = parseIdentifer();
         specifiers.push(
           Factory.createImportSpecifier(
             imported,
-            local,
+            null,
             cloneSourcePosition(imported.start),
-            cloneSourcePosition(local.end),
+            cloneSourcePosition(imported.end),
           ),
         );
-      } else if (match(SyntaxKinds.StringLiteral)) {
-        const imported = parseStringLiteral();
-        if (!isContextKeyword("as")) {
-          specifiers.push(
-            Factory.createImportSpecifier(
-              imported,
-              null,
-              cloneSourcePosition(imported.start),
-              cloneSourcePosition(imported.end),
-            ),
-          );
-          continue;
-        }
-        nextToken();
-        const local = parseIdentifer();
-        specifiers.push(
-          Factory.createImportSpecifier(
-            imported,
-            local,
-            cloneSourcePosition(imported.start),
-            cloneSourcePosition(local.end),
-          ),
-        );
-      } else {
-        throw createUnexpectError(
-          SyntaxKinds.Identifier,
-          "import specifier must start with strinhLiteral or identifer",
-        );
+        continue;
       }
+      nextToken();
+      const local = parseIdentifer();
+      specifiers.push(
+        Factory.createImportSpecifier(
+          imported,
+          local,
+          cloneSourcePosition(imported.start),
+          cloneSourcePosition(local.end),
+        ),
+      );
     }
     expect(SyntaxKinds.BracesRightPunctuator);
   }
@@ -4667,14 +4779,10 @@ export function createParser(code: string) {
       if (match(Keywords)) {
         isMatchKeyword = true;
       }
-      const exported = match([SyntaxKinds.Identifier, ...Keywords])
-        ? parseIdentiferWithKeyword()
-        : parseStringLiteral();
+      const exported = parseModuleExportName();
       if (isContextKeyword("as")) {
         nextToken();
-        const local = match([SyntaxKinds.Identifier, ...Keywords])
-          ? parseIdentiferWithKeyword()
-          : parseStringLiteral();
+        const local = parseModuleExportName();
         specifier.push(
           Factory.createExportSpecifier(
             exported,
@@ -4703,6 +4811,7 @@ export function createParser(code: string) {
       if (isMatchKeyword) {
         throw new Error();
       }
+      staticSematicEarlyErrorForExportName(specifier);
     }
     shouldInsertSemi();
     const end = source
@@ -4712,12 +4821,24 @@ export function createParser(code: string) {
         : specifier[specifier.length - 1].end;
     return Factory.createExportNamedDeclaration(specifier, null, source, start, cloneSourcePosition(end));
   }
+  /**
+   * Static Sematic Check based on 
+   * - 16.2.3.1 Static Semantics: Early Errors
+   * @param specifiers 
+   */
+  function staticSematicEarlyErrorForExportName(specifiers: Array<ExportSpecifier>) {
+    for(const specifier of specifiers) {
+      if(isStringLiteral(specifier.exported)) {
+        throw createMessageError(ErrorMessageMap.string_literal_cannot_be_used_as_an_exported_binding_without_from);
+      }
+    }
+  }
   function parseExportAllDeclaration(start: SourcePosition): ExportAllDeclaration {
     expect(SyntaxKinds.MultiplyOperator);
-    let exported: Identifier | null = null;
+    let exported: Identifier | StringLiteral | null = null;
     if (isContextKeyword("as")) {
       nextToken();
-      exported = parseIdentiferWithKeyword();
+      exported = parseModuleExportName();
     } else {
       exported = null;
     }
@@ -4725,5 +4846,11 @@ export function createParser(code: string) {
     const source = parseStringLiteral();
     shouldInsertSemi();
     return Factory.createExportAllDeclaration(exported, source, start, cloneSourcePosition(source.end));
+  }
+  function parseModuleExportName() {
+    if(match(SyntaxKinds.StringLiteral)) {
+      return parseStringLiteral();
+    }
+    return parseIdentiferWithKeyword();
   }
 }

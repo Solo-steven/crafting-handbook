@@ -1,0 +1,238 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ImportDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ImportSpecifier",
+                    "imported": {
+                        "kind": "StringLiteral",
+                        "value": "foo",
+                        "start": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        }
+                    },
+                    "local": {
+                        "kind": "Identifer",
+                        "name": "bar",
+                        "start": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 22,
+                            "index": 21
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 10,
+                        "index": 9
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 22,
+                        "index": 21
+                    }
+                },
+                {
+                    "kind": "ImportSpecifier",
+                    "imported": {
+                        "kind": "StringLiteral",
+                        "value": "default",
+                        "start": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 33,
+                            "index": 32
+                        }
+                    },
+                    "local": {
+                        "kind": "Identifer",
+                        "name": "qux",
+                        "start": {
+                            "row": 1,
+                            "col": 37,
+                            "index": 36
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 40,
+                            "index": 39
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 24,
+                        "index": 23
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 40,
+                        "index": 39
+                    }
+                }
+            ],
+            "source": {
+                "kind": "StringLiteral",
+                "value": "module-a",
+                "start": {
+                    "row": 1,
+                    "col": 48,
+                    "index": 47
+                },
+                "end": {
+                    "row": 1,
+                    "col": 58,
+                    "index": 57
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 58,
+                "index": 57
+            }
+        },
+        {
+            "kind": "ExportAllDeclaration",
+            "exported": {
+                "kind": "StringLiteral",
+                "value": "foo",
+                "start": {
+                    "row": 2,
+                    "col": 13,
+                    "index": 71
+                },
+                "end": {
+                    "row": 2,
+                    "col": 18,
+                    "index": 76
+                }
+            },
+            "source": {
+                "kind": "StringLiteral",
+                "value": "module-b",
+                "start": {
+                    "row": 2,
+                    "col": 24,
+                    "index": 82
+                },
+                "end": {
+                    "row": 2,
+                    "col": 34,
+                    "index": 92
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 59
+            },
+            "end": {
+                "row": 2,
+                "col": 34,
+                "index": 92
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ExportSpecifier",
+                    "exported": {
+                        "kind": "Identifer",
+                        "name": "default",
+                        "start": {
+                            "row": 3,
+                            "col": 10,
+                            "index": 103
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 17,
+                            "index": 110
+                        }
+                    },
+                    "local": {
+                        "kind": "StringLiteral",
+                        "value": "quux",
+                        "start": {
+                            "row": 3,
+                            "col": 21,
+                            "index": 114
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 27,
+                            "index": 120
+                        }
+                    },
+                    "start": {
+                        "row": 3,
+                        "col": 10,
+                        "index": 103
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 27,
+                        "index": 120
+                    }
+                }
+            ],
+            "declaration": null,
+            "source": {
+                "kind": 10114,
+                "value": "module-b",
+                "start": {
+                    "row": 3,
+                    "col": 35,
+                    "index": 128
+                },
+                "end": {
+                    "row": 3,
+                    "col": 45,
+                    "index": 138
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 94
+            },
+            "end": {
+                "row": 3,
+                "col": 45,
+                "index": 138
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 140
+    }
+}

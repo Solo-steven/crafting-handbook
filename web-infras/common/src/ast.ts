@@ -228,7 +228,7 @@ export interface NewExpression extends ExpressionModuleItem {
 export interface MemberExpression extends ExpressionModuleItem {
     kind: SyntaxKinds.MemberExpression;
     object: Expression;
-    property: Expression;
+    property: Expression | PrivateName;
     computed: boolean;
     optional: boolean;
 }
@@ -547,7 +547,7 @@ export interface ExportDefaultDeclaration extends ModuleItem {
 }
 export interface ExportAllDeclaration extends ModuleItem {
     kind: SyntaxKinds.ExportAllDeclaration;
-    exported: Identifier | null;
+    exported: Identifier | StringLiteral | null;
     source: StringLiteral;
 }
 export type ExportDeclaration = ExportNamedDeclarations | ExportDefaultDeclaration | ExportAllDeclaration;

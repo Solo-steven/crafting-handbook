@@ -48,7 +48,7 @@ export type FailedTestCasesResult = {
     }
   | {
       kind: "ExpectPassButFailed";
-      reason: string;
+      reason: string | Error;
     }
 );
 /**

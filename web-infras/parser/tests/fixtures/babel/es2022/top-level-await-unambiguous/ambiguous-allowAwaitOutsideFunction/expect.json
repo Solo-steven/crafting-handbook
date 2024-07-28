@@ -1,6 +1,0 @@
-{
-  "expect": "Pass",
-  "config": {
-    "allowAwaitOutsideFunction": true
-  }
-}

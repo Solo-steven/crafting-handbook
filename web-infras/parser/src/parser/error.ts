@@ -18,12 +18,19 @@ export const ErrorMessageMap = {
   super_must_be_followed_by_an_argument_list_or_member_access:
     "'super' must be followed by an argument list or member access.",
   private_name_wrong_used: "Private names are only allowed in property accesses or or in left hand side of `in` expressions",
+  private_name_duplicate: "Private name duplicate.",
+  private_name_undeinfed: "Private name undeinfed",
+  constructor_name_as_private_name: "constructor can not be private name",
+  constructor_can_not_be_class_property_name: "constructor can not used as class property name",
+  prototype_can_not_be_static: "Classes may not have static property named prototype",
+  delete_private_name: "Can not delete a private name",
   // spread, rest element
   rest_element_should_be_last_property: "RestElement should be the lastest property",
   rest_element_can_not_end_with_comma: "RestElement can not concat with comma",
   rest_element_can_not_use_in_cover: "rest element can not use in cover expression",
   rest_element_must_be_either_binding_identifier_or_binding_pattern:
     "rest element must be either binding identifier to binding pattern.",
+  rest_operator_must_be_followed_by_an_assignable_reference_in_assignment_contexts: "`...` must be followed by an assignable reference in assignment contexts",
   invalid_rest_element_with_pattern_in_object_pattern: "invalid rest element with pattern in object pattern",
   // binding pattern, assignment pattern
   destructing_pattern_must_need_initializer: "destucturing pattern must have a initializer",
@@ -60,6 +67,9 @@ export const ErrorMessageMap = {
     "Nullish coalescing operator(??) requires parens when mixing with logical operators",
   expont_operator_need_parans:
     "Illegal expression. Wrap left hand side or entire exponentiation in parentheses",
+  // modules export, import
+  string_literal_cannot_be_used_as_an_exported_binding_without_from: "A string literal cannot be used as an exported binding without `from`",
+  string_literal_cannot_be_used_as_an_imported_binding: "A string literal cannot be used as an imported binding",
   // other
   function_declaration_must_have_name: "Function delcaration must have function name",
   new_expression_cant_using_optional_chain: "New expression can not using optional chain in callee",
@@ -85,4 +95,5 @@ export const ErrorMessageMap = {
     "let keyword can not used as identifier in lexical binding",
   import_call_is_not_allow_as_new_expression_called: "import call is not allowed as new expression called",
   invalid_esc_char_in_keyword: "keyword can not contain any esc flag.",
+  paran_expr_can_not_be_empty: "paran expression can not be empty",
 };

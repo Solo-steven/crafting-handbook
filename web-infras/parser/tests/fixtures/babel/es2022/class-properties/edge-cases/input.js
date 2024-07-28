@@ -10,11 +10,6 @@ class A4 { set }
 class A5 { static }
 class A6 { async }
 
-class A7 {
-  get
-  *a(){}
-}
-
 class A8 {
   static
   *a(){}

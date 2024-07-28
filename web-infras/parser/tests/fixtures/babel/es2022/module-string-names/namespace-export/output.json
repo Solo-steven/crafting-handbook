@@ -1,0 +1,56 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportAllDeclaration",
+            "exported": {
+                "kind": "StringLiteral",
+                "value": "忠恕。",
+                "start": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                },
+                "end": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                }
+            },
+            "source": {
+                "kind": "StringLiteral",
+                "value": "Confucius",
+                "start": {
+                    "row": 1,
+                    "col": 24,
+                    "index": 23
+                },
+                "end": {
+                    "row": 1,
+                    "col": 35,
+                    "index": 34
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 35,
+                "index": 34
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 36
+    }
+}
