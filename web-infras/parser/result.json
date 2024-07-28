@@ -12,13 +12,13 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/escape-string/invalid-decimal-escape-strict-directive-function/input.js",
-      "fileId": "/babel/core/escape-string/invalid-decimal-escape-strict-directive-function"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/escape-template/non-octal-eight/input.js",
+      "fileId": "/babel/core/escape-template/non-octal-eight"
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/escape-template/non-octal-eight/input.js",
-      "fileId": "/babel/core/escape-template/non-octal-eight"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/escape-string/invalid-decimal-escape-strict-directive-function/input.js",
+      "fileId": "/babel/core/escape-string/invalid-decimal-escape-strict-directive-function"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -57,13 +57,13 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/categorized/invalid-fn-decl-labeled-inside-loop/input.js",
-      "fileId": "/babel/core/categorized/invalid-fn-decl-labeled-inside-loop"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/108/input.js",
+      "fileId": "/babel/core/uncategorised/108"
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/108/input.js",
-      "fileId": "/babel/core/uncategorised/108"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/categorized/invalid-fn-decl-labeled-inside-loop/input.js",
+      "fileId": "/babel/core/categorized/invalid-fn-decl-labeled-inside-loop"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -82,23 +82,23 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/359/input.js",
-      "fileId": "/babel/core/uncategorised/359"
-    },
-    {
-      "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/358/input.js",
       "fileId": "/babel/core/uncategorised/358"
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/363/input.js",
-      "fileId": "/babel/core/uncategorised/363"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/359/input.js",
+      "fileId": "/babel/core/uncategorised/359"
     },
     {
       "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/362/input.js",
       "fileId": "/babel/core/uncategorised/362"
+    },
+    {
+      "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/363/input.js",
+      "fileId": "/babel/core/uncategorised/363"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -112,23 +112,13 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/411/input.js",
-      "fileId": "/babel/core/uncategorised/411"
-    },
-    {
-      "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/409/input.js",
       "fileId": "/babel/core/uncategorised/409"
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/427/input.js",
-      "fileId": "/babel/core/uncategorised/427"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/426/input.js",
-      "fileId": "/babel/core/uncategorised/426"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/411/input.js",
+      "fileId": "/babel/core/uncategorised/411"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -137,13 +127,13 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/441/input.js",
-      "fileId": "/babel/core/uncategorised/441"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/426/input.js",
+      "fileId": "/babel/core/uncategorised/426"
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/446/input.js",
-      "fileId": "/babel/core/uncategorised/446"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/427/input.js",
+      "fileId": "/babel/core/uncategorised/427"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -157,18 +147,33 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/449/input.js",
-      "fileId": "/babel/core/uncategorised/449"
-    },
-    {
-      "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/450/input.js",
       "fileId": "/babel/core/uncategorised/450"
     },
     {
       "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/449/input.js",
+      "fileId": "/babel/core/uncategorised/449"
+    },
+    {
+      "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/446/input.js",
+      "fileId": "/babel/core/uncategorised/446"
+    },
+    {
+      "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/451/input.js",
+      "fileId": "/babel/core/uncategorised/451"
+    },
+    {
+      "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/454/input.js",
       "fileId": "/babel/core/uncategorised/454"
+    },
+    {
+      "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/441/input.js",
+      "fileId": "/babel/core/uncategorised/441"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -192,8 +197,8 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/461/input.js",
-      "fileId": "/babel/core/uncategorised/461"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/462/input.js",
+      "fileId": "/babel/core/uncategorised/462"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -202,13 +207,8 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/451/input.js",
-      "fileId": "/babel/core/uncategorised/451"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/462/input.js",
-      "fileId": "/babel/core/uncategorised/462"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/464/input.js",
+      "fileId": "/babel/core/uncategorised/464"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -222,13 +222,13 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/464/input.js",
-      "fileId": "/babel/core/uncategorised/464"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/463/input.js",
+      "fileId": "/babel/core/uncategorised/463"
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/463/input.js",
-      "fileId": "/babel/core/uncategorised/463"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/461/input.js",
+      "fileId": "/babel/core/uncategorised/461"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -304,10 +304,6 @@
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/regression/use-strict-with-pre-semi/input.js"
     },
     {
-      "fileId": "/babel/comments/basic/class-static-block",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/comments/basic/class-static-block/input.js"
-    },
-    {
       "fileId": "/babel/estree/dynamic-import/import-assertions",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/estree/dynamic-import/import-assertions/input.js"
     },
@@ -316,20 +312,24 @@
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/estree/class-private-property/typescript/input.js"
     },
     {
-      "fileId": "/babel/estree/import-assertions/valid-syntax-with-attributes",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/estree/import-assertions/valid-syntax-with-attributes/input.js"
+      "fileId": "/babel/comments/basic/class-static-block",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/comments/basic/class-static-block/input.js"
     },
     {
       "fileId": "/babel/estree/export/decorator-before-export",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/estree/export/decorator-before-export/input.js"
     },
     {
-      "fileId": "/babel/estree/import-attributes/valid-syntax-with-attributes",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/estree/import-attributes/valid-syntax-with-attributes/input.js"
+      "fileId": "/babel/estree/import-assertions/valid-syntax-with-attributes",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/estree/import-assertions/valid-syntax-with-attributes/input.js"
     },
     {
       "fileId": "/babel/estree/dynamic-import/import-attributes",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/estree/dynamic-import/import-attributes/input.js"
+    },
+    {
+      "fileId": "/babel/estree/import-attributes/valid-syntax-with-attributes",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/estree/import-attributes/valid-syntax-with-attributes/input.js"
     },
     {
       "fileId": "/babel/core/categorized/not-directive",

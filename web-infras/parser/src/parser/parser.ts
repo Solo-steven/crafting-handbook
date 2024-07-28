@@ -132,7 +132,7 @@ import { ExpectToken, ScopeContext, FunctionContext } from "./type";
 import { ErrorMessageMap } from "./error";
 import { LookaheadToken } from "../lexer/type";
 import { createLexer } from "../lexer/index";
-import { createClassScopeRecorder } from "./scope/classScope";
+import { createClassScopeRecorder, PrivateNameDefKind } from "./scope/classScope";
 import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } from "./scope/arrowExprScope";
 import { createStrictModeScopeRecorder, StrictModeScope } from "./scope/strictModeScope";
 import { ExpressionScopeKind } from "./scope/type";
@@ -839,11 +839,11 @@ export function createParser(code: string) {
   function isCurrentClassExtend(): boolean {
     return classScopeRecorder.isCurrentClassExtend();
   }
-  function recordDefiniedPrivateName(name: string) {
-    return classScopeRecorder.recordDefiniedPrivateName(name);
+  function usePrivateName(name: string, type: PrivateNameDefKind = "other") {
+    return classScopeRecorder.usePrivateName(name, type);
   }
-  function recordUndefinedPrivateName(name: string) {
-    return classScopeRecorder.recordUndefinedPrivateName(name);
+  function defPrivateName(name: string, type: PrivateNameDefKind = "other") {
+    return classScopeRecorder.defPrivateName(name, type);
   }
   function enterDelete() {
     classScopeRecorder.enterDelete();
@@ -2142,7 +2142,7 @@ export function createParser(code: string) {
     let key: PropertyName | PrivateName | undefined;
     if (match(SyntaxKinds.PrivateName)) {
       key = parsePrivateName();
-      recordDefiniedPrivateName(key.name);
+      defPrivateName(key.name);
     } else {
       key = parsePropertyName(isComputedRef);
     }
@@ -2596,7 +2596,7 @@ export function createParser(code: string) {
   function parseUnaryOrPrivateName(): Expression {
     if (match(SyntaxKinds.PrivateName)) {
       const privateName = parsePrivateName();
-      recordUndefinedPrivateName(privateName.name);
+      usePrivateName(privateName.name);
       return privateName;
     }
     return parseUnaryExpression();
@@ -2854,7 +2854,7 @@ export function createParser(code: string) {
     let property: Expression | PrivateName;
     if (match(SyntaxKinds.PrivateName)) {
       property = parsePrivateName();
-      recordUndefinedPrivateName(property.name);
+      usePrivateName(property.name);
       if (isInDelete()) {
         throw createMessageError(ErrorMessageMap.delete_private_name);
       }
@@ -3687,7 +3687,7 @@ export function createParser(code: string) {
       }
       if (match(SyntaxKinds.PrivateName)) {
         withPropertyName = parsePrivateName();
-        recordDefiniedPrivateName(withPropertyName.name);
+        defPrivateName(withPropertyName.name, type === "method" ? "other" : isStatic ? `static-${type}` : type);
       } else {
         const isComputedRef = { isComputed: false };
         withPropertyName = parsePropertyName(isComputedRef);
