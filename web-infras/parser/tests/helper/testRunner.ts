@@ -53,7 +53,7 @@ async function runExpectPassTestCase(
   ]);
   const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString());
   const expectASTString = astBuffer.toString();
-  if (resultASTString  === null || expectASTString !== resultASTString) {
+  if (resultASTString === null || expectASTString !== resultASTString) {
     failedResult.push({
       kind: "ExpectPassButFailed",
       filePath: testCase.jsFilePath,

@@ -274,7 +274,6 @@ const TempIgnoreCases: Set<string> = new Set([
   // === (feature) class scope for yield and await expression.
   "/babel/es2022/class-properties/await-in-computed-property-in-params-of-async-arrow",
   "/babel/es2022/class-properties/yield-in-class-property-in-generator",
-  
 ]);
 
 function getFailedKindCount(failedTestCases: Array<FailedTestCasesResult>) {
