@@ -1,45 +1,42 @@
-
 export type PrivateNameDefKind = "get" | "set" | "other" | "static-get" | "static-set";
 interface ClassScope {
   isExtend: boolean;
   isInCtor: boolean;
   isInDelete: boolean;
   undefinedPrivateName: Set<string>;
-  undefinedPrivateNameKinds: Map<string, Set<PrivateNameDefKind>>,
+  undefinedPrivateNameKinds: Map<string, Set<PrivateNameDefKind>>;
   definiedPrivateName: Set<string>;
-  definedPrivateNameKinds: Map<string, Set<PrivateNameDefKind>>
+  definedPrivateNameKinds: Map<string, Set<PrivateNameDefKind>>;
   duplicatePrivateName: Set<string>;
 }
 
-
 function isPrivateNameExist(scope: ClassScope, name: string, type: PrivateNameDefKind) {
-    if(scope.definiedPrivateName.has(name)) {
-        switch(type) {
-            case "other": {
-                const kinds = scope.definedPrivateNameKinds.get(name)!;
-                return kinds.size > 0;
-            }
-            case "set": {
-                const kinds = scope.definedPrivateNameKinds.get(name)!;
-                return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("get")));
-            }
-            case "get": {
-                const kinds = scope.definedPrivateNameKinds.get(name)!;
-                return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("set")));
-            }
-            case "static-get": {
-                const kinds = scope.definedPrivateNameKinds.get(name)!;
-                return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("static-set")));
-            }
-            case "static-set": {
-                const kinds = scope.definedPrivateNameKinds.get(name)!;
-                return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("static-get")));
-            }
-        }
+  if (scope.definiedPrivateName.has(name)) {
+    switch (type) {
+      case "other": {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        return kinds.size > 0;
+      }
+      case "set": {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("get")));
+      }
+      case "get": {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("set")));
+      }
+      case "static-get": {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("static-set")));
+      }
+      case "static-set": {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("static-get")));
+      }
     }
-    return false;
   }
-
+  return false;
+}
 
 export function createClassScopeRecorder() {
   const classScopes: Array<ClassScope> = [];
@@ -112,26 +109,26 @@ export function createClassScopeRecorder() {
     const scope = helperGetCurrentClassScope();
     let isDuplicate = false;
     if (scope) {
-      if(isPrivateNameExist(scope,name, type)) {
+      if (isPrivateNameExist(scope, name, type)) {
         scope.duplicatePrivateName.add(name);
         isDuplicate = true;
       }
       scope.definiedPrivateName.add(name);
-      if(scope.definedPrivateNameKinds.has(name)) {
+      if (scope.definedPrivateNameKinds.has(name)) {
         const kinds = scope.definedPrivateNameKinds.get(name)!;
         kinds.add(type);
-      }else {
+      } else {
         scope.definedPrivateNameKinds.set(name, new Set([type]));
       }
-      if(scope.undefinedPrivateName.has(name)) {
+      if (scope.undefinedPrivateName.has(name)) {
         const kinds = scope.undefinedPrivateNameKinds.get(name)!;
-        if(kinds.has(type)) {
-            if(kinds.size == 1) {
-                scope.undefinedPrivateName.delete(name);
-                scope.undefinedPrivateNameKinds.delete(name);
-            }else {
-                kinds.delete(type);
-            }
+        if (kinds.has(type)) {
+          if (kinds.size == 1) {
+            scope.undefinedPrivateName.delete(name);
+            scope.undefinedPrivateNameKinds.delete(name);
+          } else {
+            kinds.delete(type);
+          }
         }
       }
     }
@@ -145,13 +142,13 @@ export function createClassScopeRecorder() {
       }
     }
     if (scope) {
-        scope.undefinedPrivateName.add(name);
-        if(scope.undefinedPrivateNameKinds.has(name)) {
-            const kinds = scope.undefinedPrivateNameKinds.get(name)!;
-            kinds.add(type);
-        }else {
-            scope.undefinedPrivateNameKinds.set(name, new Set([type]))
-        }
+      scope.undefinedPrivateName.add(name);
+      if (scope.undefinedPrivateNameKinds.has(name)) {
+        const kinds = scope.undefinedPrivateNameKinds.get(name)!;
+        kinds.add(type);
+      } else {
+        scope.undefinedPrivateNameKinds.set(name, new Set([type]));
+      }
     }
   }
   function helperGetCurrentClassScope(): ClassScope | undefined {

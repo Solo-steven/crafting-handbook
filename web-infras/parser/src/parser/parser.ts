@@ -3687,12 +3687,17 @@ export function createParser(code: string) {
       }
       if (match(SyntaxKinds.PrivateName)) {
         withPropertyName = parsePrivateName();
-        defPrivateName(withPropertyName.name, type === "method" ? "other" : isStatic ? `static-${type}` : type);
+        defPrivateName(
+          withPropertyName.name,
+          type === "method" ? "other" : isStatic ? `static-${type}` : type,
+        );
       } else {
         const isComputedRef = { isComputed: false };
         withPropertyName = parsePropertyName(isComputedRef);
         computed = isComputedRef.isComputed;
+        
       }
+      if(!start) start = cloneSourcePosition(withPropertyName.start);
     } else {
       start = cloneSourcePosition(withPropertyName.start);
     }
