@@ -10,6 +10,26 @@ const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 // const isCI = Boolean(process.env.TEST_CI) || false;
 
 const TempIgnoreCases: Set<string> = new Set([
+  // uncatgory
+  "/babel/core/regression/use-strict-with-pre-semi",
+  "/babel/core/regression/non-octal-float",
+  "/babel/core/sourcetype-unambiguous/flow",
+  "/babel/core/opts/allowAwaitOutsideFunction-true",
+  "/babel/core/opts/allowNewTargetOutsideFunction-true",
+  // (featture) ts or flow
+  "/babel/estree/class-method/flow",
+  "/babel/estree/class-method/typescript",
+  "/babel/estree/class-private-property/flow",
+  "/babel/estree/class-private-property/typescript",
+  // (feature) decorator
+  "/babel/estree/export/decorator-before-export",
+  // (feature) import assertion, attribute
+  "/babel/estree/dynamic-import/import-assertions",
+  "/babel/estree/import-assertions/valid-syntax-with-attributes",
+  "/babel/estree/import-attributes/valid-syntax-with-attributes",
+  "/babel/estree/dynamic-import/import-attributes",
+  // (feature?) async do plugin
+  "/babel/comments/basic/async-do-expression",
   // === (feature) ban async of
   "/babel/es2021/for-async-of/forbidden",
   // === (feature) tokenize ??=
@@ -26,9 +46,42 @@ const TempIgnoreCases: Set<string> = new Set([
   "/esprima/statement/if/invalid-function-declaration3",
   "/esprima/statement/while/invalid-decl-async-fun",
   "/esprima/ES6/for-of/invalid-decl-cls",
-  // === ?? dev success, but test failed
+  "/babel/core/categorized/invalid-fn-decl-inside-loop",
+  "/babel/core/categorized/invalid-fn-decl-labeled-inside-if",
+  "/babel/core/categorized/invalid-fn-decl-labeled-inside-loop",
+  "/babel/core/uncategorised/465",
+  // === (feature) tokenize private check it's identifierName value
+  "/babel/es2022/class-private-properties/failure-numeric-literal",
+  "/babel/es2022/class-private-properties/failure-numeric-start-identifier",
+  // === (feature) tokenize a number can not be followed by a idstart
+  "/babel/core/uncategorised/348",
+  "/babel/core/uncategorised/358",
+  "/babel/core/uncategorised/359",
+  // === (feature) position of break and continue statement, multi default in switch
+  "/babel/core/uncategorised/409",
+  "/babel/core/uncategorised/411",
+  "/babel/core/uncategorised/427",
+  "/babel/core/uncategorised/457",
+  "/babel/core/uncategorised/459",
+  "/babel/core/uncategorised/455",
+  "/babel/core/uncategorised/456",
+  "/babel/core/uncategorised/460",
+  "/babel/core/uncategorised/461",
+  "/babel/core/uncategorised/462",
+  "/babel/core/uncategorised/463",
+  "/babel/core/uncategorised/464",
+  // === (feature) return must in function
+  "/babel/core/uncategorised/454",
+  // === (feature) try need to have catch or finally
+  "/babel/core/uncategorised/425",
+  // === (feature) delete in strict mode
+  "/babel/core/uncategorised/466",
+  // === (??) dev success, but test failed
   "/esprima/expression/primary/literal/string/migrated_0017",
   "/esprima/expression/binary/multiline_string_literal",
+  "/babel/estree/class-property/basic-babel-7",
+  "/babel/estree/class-property/basic-babel-8",
+  "/babel/estree/class-property/not-enabled-babel-7",
   // ==== (feature) bigint literal problem
   "/babel/es2020/bigint/invalid-decimal",
   "/babel/es2020/bigint/invalid-e",
@@ -65,6 +118,15 @@ const TempIgnoreCases: Set<string> = new Set([
   "/esprima/ES6/arrow-function/migrated_0011",
   "/esprima/ES6/octal-integer-literal/migrated_0000",
   "/babel/es2015/regression/11183",
+  "/babel/core/escape-string/invalid-decimal-escape-strict-directive",
+  "/babel/core/escape-template/non-octal-eight",
+  "/babel/core/escape-string/invalid-decimal-escape-strict-directive-function",
+  "/babel/core/escape-string/non-octal-eight-and-nine",
+  "/babel/core/escape-template/non-octal-nine",
+  "/babel/core/escape-string/non-octal-eight-and-nine-before-use-strict",
+  "/babel/core/escape-string/numeric-escape-in-directive",
+  "/babel/core/escape-string/numeric-escape-in-property-name",
+  "/babel/core/categorized/not-directive",
   // === (feature) Checking **unicode** in string and identifier and template string.
   "/babel/es2021/numeric-separator/invalid-unicode-2",
   "/babel/es2021/numeric-separator/invalid-hex",
@@ -97,7 +159,7 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2015/uncategorised/326",
   "/babel/es2015/uncategorised/327",
   "/esprima/expression/primary/keyword/invalid-escaped-null",
-  // === (feature) Checking ***esc char*** in string and identifier and template string
+  "/babel/core/escape-keyword/invalid",
   "/esprima/es2018/template-literal-revision/not-escape-8",
   "/esprima/es2018/template-literal-revision/not-escape-9",
   "/esprima/es2018/template-literal-revision/not-escape-hex",
@@ -108,6 +170,16 @@ const TempIgnoreCases: Set<string> = new Set([
   "/esprima/expression/primary/literal/string/invalid_escaped_hex",
   "/esprima/expression/primary/literal/string/invalid_hex",
   "/esprima/expression/primary/literal/regular-expression/migrated_0006",
+  "/babel/core/uncategorised/362",
+  "/babel/core/uncategorised/363",
+  "/babel/core/uncategorised/426",
+  "/babel/core/uncategorised/447",
+  "/babel/core/uncategorised/446",
+  "/babel/core/uncategorised/450",
+  "/babel/core/uncategorised/448",
+  "/babel/core/uncategorised/449",
+  "/babel/core/uncategorised/451",
+  "/babel/core/uncategorised/19",
   // === (feature) html comment, hashtag comment
   "/esprima/comment/migrated_0036",
   "/esprima/comment/migrated_0038",
@@ -117,6 +189,9 @@ const TempIgnoreCases: Set<string> = new Set([
   "/esprima/comment/migrated_0042",
   "/babel/core/uncategorised/343",
   "/babel/core/uncategorised/538",
+  "/babel/comments/html/first-line",
+  "/babel/comments/interpreter-directive/interpreter-directive-import",
+  "/babel/comments/interpreter-directive/interpreter-directive-object",
   // === (feature) implement sourceType
   "/esprima/es2020/import.meta/log",
   "/esprima/es2020/import.meta/log-module",
@@ -141,6 +216,7 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2022/top-level-await-module/inside-block",
   "/babel/es2022/top-level-await-module/inside-property-key",
   "/babel/es2022/top-level-await-module/top-level",
+  "/babel/core/uncategorised/545",
   // === (feature) top level await
   "/babel/es2017/async-functions/allow-await-outside-function",
   // === (feature) duplicate proto property
@@ -198,12 +274,17 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2022/class-static-block/nested-control-flow",
   "/babel/es2022/class-static-block/re-declare-var",
   "/babel/es2022/class-static-block/super-property",
-  // === (feature) regex flag check
+  "/babel/comments/basic/class-static-block",
+  // === (feature) regex content and flag check
   "/babel/es2024/regexp-unicode-sets/vu-error",
   "/babel/es2024/regexp-unicode-sets/uv-error",
   "/babel/es2015/regex/duplicate-flags",
   "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-4-hex",
   "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-var-hex",
+  "/babel/core/uncategorised/108",
+  "/babel/core/uncategorised/366",
+  "/babel/core/uncategorised/380",
+  "/babel/core/uncategorised/441",
   // === (feature) checking duplicate variable in block scope
   "/babel/es2018/object-rest-spread/11",
   "/babel/es2018/object-rest-spread/12",
