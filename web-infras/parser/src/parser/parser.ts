@@ -519,19 +519,9 @@ export function createParser(code: string) {
    * @param {boolean} isGenerator
    */
   function enterFunctionScope(isAsync: boolean = false, isGenerator: boolean = false) {
-    //const lastScope = helperFindLastFunctionContext();
     asyncArrowExprScopeRecorder.enterBlankAsyncArrowExpressionScope();
     strictModeScopeRecorder.enterRHSStrictModeScope();
     lexicalScopeRecorder.enterFunctionLexicalScope(isAsync, isGenerator);
-    // context.scopeContext.push({
-    //   type: "FunctionContext",
-    //   isArrow: false,
-    //   isAsync,
-    //   isGenerator,
-    //   inParameter: false,
-    //   inStrict: lastScope ? lastScope.inStrict : false,
-    //   isSimpleParameter: true,
-    // });
   }
   /**
    * Private API called  when exist a function scope, refer to
@@ -541,22 +531,12 @@ export function createParser(code: string) {
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
     strictModeScopeRecorder.exitStrictModeScope();
     lexicalScopeRecorder.exitFunctionLexicalScope();
-    //context.scopeContext.pop();
   }
   /**
    * Private API called when start parse moduleItem in `parseProgram`, different from
    * `enterFunctionScope`, it will not find parent scope, since it not exist.
    */
   function enterProgram() {
-    // context.scopeContext.push({
-    //   type: "FunctionContext",
-    //   isArrow: false,
-    //   isAsync: false,
-    //   isGenerator: false,
-    //   inParameter: false,
-    //   inStrict: false,
-    //   isSimpleParameter: true,
-    // });
     lexicalScopeRecorder.enterProgramLexicalScope();
   }
   function exitProgram() {
@@ -577,7 +557,6 @@ export function createParser(code: string) {
    */
   function exitBlockScope() {
     lexicalScopeRecorder.exitBlockLexicalScope();
-    //context.scopeContext.pop();
   }
   function recordScope(kind: ExpressionScopeKind, position: SourcePosition) {
     strictModeScopeRecorder.record(kind, position);
@@ -586,26 +565,14 @@ export function createParser(code: string) {
   function parseWithArrowExpressionScope<T>(callback: () => T): [T, AsyncArrowExpressionScope] {
     asyncArrowExprScopeRecorder.enterAsyncArrowExpressionScope();
     const result = callback();
-    // since we parse with enter and exit, scope is not null
     const scope = asyncArrowExprScopeRecorder.getCurrentAsyncArrowExpressionScope()!;
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
     return [result, scope];
   }
   function enterArrowFunctionBodyScope(isAsync: boolean = false) {
-    // const lastScope = helperFindLastFunctionContext();
-    // context.scopeContext.push({
-    //   type: "FunctionContext",
-    //   isArrow: true,
-    //   isAsync,
-    //   isGenerator: false,
-    //   inParameter: false,
-    //   inStrict: lastScope ? lastScope.inStrict : false,
-    //   isSimpleParameter: true,
-    // });
     lexicalScopeRecorder.enterArrowFunctionBodyScope(isAsync);
   }
   function exitArrowFunctionBodyScope() {
-    //context.scopeContext.pop();
     lexicalScopeRecorder.exitArrowFunctionBodyScope();
   }
   function parseWithCatpureLayer<T>(callback: () => T): [T, StrictModeScope] {

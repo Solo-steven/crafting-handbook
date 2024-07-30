@@ -27,6 +27,36 @@ export interface BlockLexicalScope {
 
 export type LexicalScope = ClassLexicalScope | FunctionLexicalScope | BlockLexicalScope;
 
+
+function isPrivateNameExist(scope: ClassLexicalScope, name: string, type: PrivateNameDefKind) {
+  if (scope.definiedPrivateName.has(name)) {
+    switch (type) {
+      case "other": {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        return kinds.size > 0;
+      }
+      case "set": {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("get")));
+      }
+      case "get": {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("set")));
+      }
+      case "static-get": {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("static-set")));
+      }
+      case "static-set": {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("static-get")));
+      }
+    }
+  }
+  return false;
+}
+
+
 export function createLexicalScopeRecorder() {
   const lexicalScopes: Array<LexicalScope> = [];
 
@@ -209,7 +239,18 @@ export function createLexicalScopeRecorder() {
     });
   }
   function exitClassLexicalScope() {
-    lexicalScopes.pop();
+    const currentScope = lexicalScopes.pop() as ClassLexicalScope;
+    const parentScope = helperFindLastClassScope();
+    if (currentScope && parentScope) {
+      parentScope.undefinedPrivateName = new Set([
+        ...parentScope.undefinedPrivateName.values(),
+        ...currentScope.undefinedPrivateName.values(),
+      ]);
+      parentScope.undefinedPrivateNameKinds = new Map([
+        ...parentScope.undefinedPrivateNameKinds.entries(),
+        ...currentScope.undefinedPrivateNameKinds.entries(),
+      ]);
+    }
   }
   function enterPropertyName() {
     const scope = helperFindLastClassScope();
@@ -221,6 +262,30 @@ export function createLexicalScopeRecorder() {
     const scope = helperFindLastClassScope();
     if (scope) {
       scope.isInPropertyName = false;
+    }
+  }
+  function enterCtor() {
+    const scope = helperFindLastClassScope();
+    if (scope) {
+      scope.isInCtor = true;
+    }
+  }
+  function exitCtor() {
+    const scope = helperFindLastClassScope();
+    if (scope) {
+      scope.isInCtor = false;
+    }
+  }
+  function enterDelete() {
+    const scope = helperFindLastClassScope();
+    if (scope) {
+      scope.isInDelete = true;
+    }
+  }
+  function exitDelete() {
+    const scope = helperFindLastClassScope();
+    if (scope) {
+      scope.isInDelete = false;
     }
   }
   /**
@@ -346,9 +411,112 @@ export function createLexicalScopeRecorder() {
         return false;
     }
   }
+  function isInCtor() {
+    const scope = helperFindLastClassScope();
+    if (scope) {
+      return scope.isInCtor;
+    }
+    return false;
+  }
+  function isInClassScope() {
+    const scope = helperFindLastClassScope();
+    return !!scope
+  }
+  function isCurrentClassExtend() {
+    const scope = helperFindLastClassScope();
+    return !!scope && scope.isExtend;
+  }
+  function isCurrentInDelete() {
+    const scope = helperFindLastClassScope();
+    if (scope) {
+      return scope.isInDelete;
+    }
+    return false;
+  }
+  function isDuplicatePrivateName() {
+    const scope = helperFindLastClassScope();
+    if (scope && scope.duplicatePrivateName.size > 0) {
+      return scope.duplicatePrivateName;
+    }
+    return null;
+  }
+  function isUndeinfedPrivateName() {
+    const scope = helperFindLastClassScope();
+    let parentScope: ClassLexicalScope | null = null, flag = false;
+    for(let index = lexicalScopes.length-1; index >= 0 ; --index) {
+      const scope = lexicalScopes[index];
+      if(scope.type === "ClassLexicalScope") {
+        if(flag) {
+          parentScope = scope;
+          break;
+        }else {
+          flag = true;
+        }
+      }
+    }
 
+    if (scope && scope.undefinedPrivateName.size > 0) {
+      if (parentScope) {
+        return null;
+      }
+      return scope.undefinedPrivateName;
+    }
+    return null;
+  }
+  function defPrivateName(name: string, type: PrivateNameDefKind = "other") {
+    const scope = helperFindLastClassScope();
+    let isDuplicate = false;
+    if (scope) {
+      if (isPrivateNameExist(scope, name, type)) {
+        scope.duplicatePrivateName.add(name);
+        isDuplicate = true;
+      }
+      scope.definiedPrivateName.add(name);
+      if (scope.definedPrivateNameKinds.has(name)) {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        kinds.add(type);
+      } else {
+        scope.definedPrivateNameKinds.set(name, new Set([type]));
+      }
+      if (scope.undefinedPrivateName.has(name)) {
+        const kinds = scope.undefinedPrivateNameKinds.get(name)!;
+        if (kinds.has(type)) {
+          if (kinds.size == 1) {
+            scope.undefinedPrivateName.delete(name);
+            scope.undefinedPrivateNameKinds.delete(name);
+          } else {
+            kinds.delete(type);
+          }
+        }
+      }
+    }
+    return isDuplicate;
+  }
+  function usePrivateName(name: string, type: PrivateNameDefKind = "other") {
+    let scope: ClassLexicalScope | null = null;
+    for (const s of lexicalScopes) {
+      if(s.type === "ClassLexicalScope") {
+        scope = s;
+        if (isPrivateNameExist(scope, name, type)) {
+          return;
+        }
+      }
+    }
+    if (scope) {
+      scope.undefinedPrivateName.add(name);
+      if (scope.undefinedPrivateNameKinds.has(name)) {
+        const kinds = scope.undefinedPrivateNameKinds.get(name)!;
+        kinds.add(type);
+      } else {
+        scope.undefinedPrivateNameKinds.set(name, new Set([type]));
+      }
+    }
+  }
   return {
-    // enter and exit scope
+    /**
+     * Enter and Exit Scope or Scope attribute
+     */
+    // for functions
     enterProgramLexicalScope,
     exitProgramLexicalScope,
     enterFunctionLexicalScope,
@@ -357,27 +525,52 @@ export function createLexicalScopeRecorder() {
     exitArrowFunctionBodyScope,
     enterFunctionLexicalScopeParamemter,
     exitFunctionLexicalScopeParamemter,
+    // for blocks
+    enterBlockLexicalScope,
+    exitBlockLexicalScope,
+    // for class
     enterClassLexicalScope,
     exitClassLexicalScope,
     enterPropertyName,
     exitPropertyName,
-    enterBlockLexicalScope,
-    exitBlockLexicalScope,
-    // scope condition
-    isInParameter,
+    enterCtor,
+    exitCtor,
+    enterDelete,
+    exitDelete,
+    /**
+     * Scope condition
+     */
+    // for function
     isInStrictMode,
     isInTopLevel,
     isDirectToFunctionContext,
+    isInParameter,
     isCurrentFunctionLexicalScopeParameterSimple,
     isParentFunctionAsync,
     isParentFunctionGenerator,
-    // await yield condition
+    // for class
+    isInCtor,
+    isInClassScope,
+    isCurrentClassExtend,
+    isCurrentInDelete,
+    /**
+     * Await and Yield condition
+     */
     canAwaitParseAsExpression,
     canAwaitParseAsIdentifier,
     canYieldParseAsExpression,
-    // setter of scope attribute
+    /**
+     * Setter for function scope
+     */
     setCurrentFunctionLexicalScopeAsGenerator,
     setCurrentFunctionLexicalScopeAsStrictMode,
     setCurrentFunctionLexicalScopeParameterAsNonSimple,
+    /**
+     * Private useage for class scope
+     */
+    defPrivateName,
+    usePrivateName,
+    isDuplicatePrivateName,
+    isUndeinfedPrivateName,
   };
 }
