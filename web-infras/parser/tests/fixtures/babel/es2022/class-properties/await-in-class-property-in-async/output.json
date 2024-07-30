@@ -51,28 +51,29 @@
                                             }
                                         },
                                         "value": {
-                                            "kind": "AwaitExpression",
-                                            "argument": {
-                                                "kind": "UnaryExpression",
-                                                "operator": "+",
-                                                "argument": {
-                                                    "kind": "NumberLiteral",
-                                                    "value": "42",
-                                                    "start": {
-                                                        "row": 4,
-                                                        "col": 17,
-                                                        "index": 87
-                                                    },
-                                                    "end": {
-                                                        "row": 4,
-                                                        "col": 19,
-                                                        "index": 89
-                                                    }
-                                                },
+                                            "kind": "BinaryExpression",
+                                            "operator": "+",
+                                            "left": {
+                                                "kind": "Identifer",
+                                                "name": "await",
                                                 "start": {
                                                     "row": 4,
-                                                    "col": 15,
-                                                    "index": 85
+                                                    "col": 9,
+                                                    "index": 79
+                                                },
+                                                "end": {
+                                                    "row": 4,
+                                                    "col": 14,
+                                                    "index": 84
+                                                }
+                                            },
+                                            "right": {
+                                                "kind": "NumberLiteral",
+                                                "value": "42",
+                                                "start": {
+                                                    "row": 4,
+                                                    "col": 17,
+                                                    "index": 87
                                                 },
                                                 "end": {
                                                     "row": 4,

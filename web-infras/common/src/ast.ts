@@ -497,7 +497,11 @@ export interface ClassAccessor extends Omit<MethodDefinition, "generator" | "asy
     kind: SyntaxKinds.ClassAccessor;
     type: "get" | "set";
 }
-export type ClassElement = ClassProperty | ClassMethodDefinition | ClassAccessor | ClassConstructor;
+export interface ClassStaticBlock extends ModuleItem {
+    kind: SyntaxKinds.ClassStaticBlock;
+    body: Array<StatementListItem>;
+}
+export type ClassElement = ClassProperty | ClassMethodDefinition | ClassAccessor | ClassConstructor | ClassStaticBlock; 
 export interface ClassDeclaration extends ModuleItem, Class {
     kind: SyntaxKinds.ClassDeclaration;
 }

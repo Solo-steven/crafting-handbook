@@ -465,6 +465,12 @@ export function createClassAccessor(
         start, end
     }
 }
+export function createClassStaticBlock(body: AST.ClassStaticBlock['body'], start: SourcePosition, end: SourcePosition,): AST.ClassStaticBlock {
+    return {
+        kind: SyntaxKinds.ClassStaticBlock,
+        body, start, end
+    }
+}
 export function transFormClassToClassExpression(classNode: AST.Class ): AST.ClassExpression {
     return {
         kind: SyntaxKinds.ClassExpression,

@@ -1,0 +1,231 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "y",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        }
+                    },
+                    "init": {
+                        "kind": "NumberLiteral",
+                        "value": "1",
+                        "start": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 12,
+                        "index": 11
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 12,
+                "index": 11
+            }
+        },
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "x",
+                "start": {
+                    "row": 2,
+                    "col": 7,
+                    "index": 19
+                },
+                "end": {
+                    "row": 2,
+                    "col": 8,
+                    "index": 20
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": 10167,
+                        "body": [
+                            {
+                                "kind": 10142,
+                                "variant": "var",
+                                "declarations": [
+                                    {
+                                        "kind": 10143,
+                                        "id": {
+                                            "kind": 10119,
+                                            "name": "x",
+                                            "start": {
+                                                "row": 2,
+                                                "col": 24,
+                                                "index": 36
+                                            },
+                                            "end": {
+                                                "row": 2,
+                                                "col": 25,
+                                                "index": 37
+                                            }
+                                        },
+                                        "init": {
+                                            "kind": 10115,
+                                            "value": "42",
+                                            "start": {
+                                                "row": 2,
+                                                "col": 28,
+                                                "index": 40
+                                            },
+                                            "end": {
+                                                "row": 2,
+                                                "col": 30,
+                                                "index": 42
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 2,
+                                            "col": 24,
+                                            "index": 36
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 30,
+                                            "index": 42
+                                        }
+                                    }
+                                ],
+                                "start": {
+                                    "row": 2,
+                                    "col": 20,
+                                    "index": 32
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 30,
+                                    "index": 42
+                                }
+                            },
+                            {
+                                "kind": 10142,
+                                "variant": "var",
+                                "declarations": [
+                                    {
+                                        "kind": 10143,
+                                        "id": {
+                                            "kind": 10119,
+                                            "name": "y",
+                                            "start": {
+                                                "row": 2,
+                                                "col": 36,
+                                                "index": 48
+                                            },
+                                            "end": {
+                                                "row": 2,
+                                                "col": 37,
+                                                "index": 49
+                                            }
+                                        },
+                                        "init": null,
+                                        "start": {
+                                            "row": 2,
+                                            "col": 36,
+                                            "index": 48
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 37,
+                                            "index": 49
+                                        }
+                                    }
+                                ],
+                                "start": {
+                                    "row": 2,
+                                    "col": 32,
+                                    "index": 44
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 37,
+                                    "index": 49
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 2,
+                            "col": 18,
+                            "index": 30
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 40,
+                            "index": 52
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 9,
+                    "index": 21
+                },
+                "end": {
+                    "row": 2,
+                    "col": 42,
+                    "index": 54
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 13
+            },
+            "end": {
+                "row": 2,
+                "col": 42,
+                "index": 54
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 55
+    }
+}

@@ -1,0 +1,118 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "C",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": true,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "foo",
+                            "start": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 13,
+                                "index": 22
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 2,
+                                "col": 16,
+                                "index": 25
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 18,
+                                "index": 27
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 10,
+                            "index": 19
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 18,
+                            "index": 27
+                        }
+                    },
+                    {
+                        "kind": 10167,
+                        "body": [],
+                        "start": {
+                            "row": 3,
+                            "col": 10,
+                            "index": 37
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 12,
+                            "index": 39
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 41
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 4,
+                "col": 2,
+                "index": 41
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 5,
+        "col": 1,
+        "index": 42
+    }
+}

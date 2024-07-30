@@ -136,6 +136,7 @@ import { createClassScopeRecorder, PrivateNameDefKind } from "./scope/classScope
 import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } from "./scope/arrowExprScope";
 import { createStrictModeScopeRecorder, StrictModeScope } from "./scope/strictModeScope";
 import { ExpressionScopeKind } from "./scope/type";
+import { createLexicalScopeRecorder } from "./scope/lexicalScope";
 /**
  * Context for parser. composeed by several parts:
  * ## ScopeContext
@@ -212,6 +213,7 @@ export function createParser(code: string) {
   const lexer = createLexer(code);
   const context = createContext();
   const classScopeRecorder = createClassScopeRecorder();
+  const lexicalScopeRecorder = createLexicalScopeRecorder();
   const strictModeScopeRecorder = createStrictModeScopeRecorder();
   const asyncArrowExprScopeRecorder = createAsyncArrowExpressionScopeRecorder();
   /** ===========================================================
@@ -517,18 +519,19 @@ export function createParser(code: string) {
    * @param {boolean} isGenerator
    */
   function enterFunctionScope(isAsync: boolean = false, isGenerator: boolean = false) {
-    const lastScope = helperFindLastFunctionContext();
+    //const lastScope = helperFindLastFunctionContext();
     asyncArrowExprScopeRecorder.enterBlankAsyncArrowExpressionScope();
     strictModeScopeRecorder.enterRHSStrictModeScope();
-    context.scopeContext.push({
-      type: "FunctionContext",
-      isArrow: false,
-      isAsync,
-      isGenerator,
-      inParameter: false,
-      inStrict: lastScope ? lastScope.inStrict : false,
-      isSimpleParameter: true,
-    });
+    lexicalScopeRecorder.enterFunctionLexicalScope(isAsync, isGenerator);
+    // context.scopeContext.push({
+    //   type: "FunctionContext",
+    //   isArrow: false,
+    //   isAsync,
+    //   isGenerator,
+    //   inParameter: false,
+    //   inStrict: lastScope ? lastScope.inStrict : false,
+    //   isSimpleParameter: true,
+    // });
   }
   /**
    * Private API called  when exist a function scope, refer to
@@ -537,39 +540,44 @@ export function createParser(code: string) {
   function exitFunctionScope() {
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
     strictModeScopeRecorder.exitStrictModeScope();
-    context.scopeContext.pop();
+    lexicalScopeRecorder.exitFunctionLexicalScope();
+    //context.scopeContext.pop();
   }
   /**
    * Private API called when start parse moduleItem in `parseProgram`, different from
    * `enterFunctionScope`, it will not find parent scope, since it not exist.
    */
   function enterProgram() {
-    context.scopeContext.push({
-      type: "FunctionContext",
-      isArrow: false,
-      isAsync: false,
-      isGenerator: false,
-      inParameter: false,
-      inStrict: false,
-      isSimpleParameter: true,
-    });
+    // context.scopeContext.push({
+    //   type: "FunctionContext",
+    //   isArrow: false,
+    //   isAsync: false,
+    //   isGenerator: false,
+    //   inParameter: false,
+    //   inStrict: false,
+    //   isSimpleParameter: true,
+    // });
+    lexicalScopeRecorder.enterProgramLexicalScope();
   }
   function exitProgram() {
-    context.scopeContext.pop();
+    lexicalScopeRecorder.exitProgramLexicalScope();
+    //context.scopeContext.pop();
   }
   /**
    * Private API called when enter this block scope.
    * this function only called when `parseBlockStatement`.
    */
   function enterBlockScope() {
-    context.scopeContext.push({ type: "BlockContext" });
+    lexicalScopeRecorder.enterBlockLexicalScope();
+    //context.scopeContext.push({ type: "BlockContext" });
   }
   /**
    * Private APII called when enter this block scope.
    * this function only called when `parseBlockStatement`.
    */
   function exitBlockScope() {
-    context.scopeContext.pop();
+    lexicalScopeRecorder.exitBlockLexicalScope();
+    //context.scopeContext.pop();
   }
   function recordScope(kind: ExpressionScopeKind, position: SourcePosition) {
     strictModeScopeRecorder.record(kind, position);
@@ -584,19 +592,21 @@ export function createParser(code: string) {
     return [result, scope];
   }
   function enterArrowFunctionBodyScope(isAsync: boolean = false) {
-    const lastScope = helperFindLastFunctionContext();
-    context.scopeContext.push({
-      type: "FunctionContext",
-      isArrow: true,
-      isAsync,
-      isGenerator: false,
-      inParameter: false,
-      inStrict: lastScope ? lastScope.inStrict : false,
-      isSimpleParameter: true,
-    });
+    // const lastScope = helperFindLastFunctionContext();
+    // context.scopeContext.push({
+    //   type: "FunctionContext",
+    //   isArrow: true,
+    //   isAsync,
+    //   isGenerator: false,
+    //   inParameter: false,
+    //   inStrict: lastScope ? lastScope.inStrict : false,
+    //   isSimpleParameter: true,
+    // });
+    lexicalScopeRecorder.enterArrowFunctionBodyScope(isAsync);
   }
   function exitArrowFunctionBodyScope() {
-    context.scopeContext.pop();
+    //context.scopeContext.pop();
+    lexicalScopeRecorder.exitArrowFunctionBodyScope();
   }
   function parseWithCatpureLayer<T>(callback: () => T): [T, StrictModeScope] {
     strictModeScopeRecorder.enterCatpureStrictModeScope();
@@ -663,16 +673,18 @@ export function createParser(code: string) {
    * function is async or generator.
    */
   function enterFunctionParameter() {
-    const scope = helperFindLastFunctionContext();
-    scope.inParameter = true;
+    lexicalScopeRecorder.enterFunctionLexicalScopeParamemter();
+    // const scope = helperFindLastFunctionContext();
+    // scope.inParameter = true;
   }
   /**
    * Private API called when finish parse function param, reason please
    * refer to `enterFunctionParameter`
    */
   function existFunctionParameter() {
-    const scope = helperFindLastFunctionContext();
-    scope.inParameter = false;
+    lexicalScopeRecorder.exitFunctionLexicalScopeParamemter();
+    // const scope = helperFindLastFunctionContext();
+    // scope.inParameter = false;
   }
   /**
    * Private API called when parse `*` after parse function, since `function`
@@ -681,8 +693,7 @@ export function createParser(code: string) {
    * this problem, set current function as generator.
    */
   function setCurrentFunctionContextAsGenerator() {
-    const scope = helperFindLastFunctionContext();
-    scope.isGenerator = true;
+    lexicalScopeRecorder.setCurrentFunctionLexicalScopeAsGenerator();
   }
   /**
    * Private API called when parse `'use strict';` after parse function, since `function`
@@ -691,8 +702,7 @@ export function createParser(code: string) {
    * this problem, set current function strict mode.
    */
   function setCurrentFunctionContextAsStrictMode() {
-    const scope = helperFindLastFunctionContext();
-    scope.inStrict = true;
+    lexicalScopeRecorder.setCurrentFunctionLexicalScopeAsStrictMode();
   }
   /**
    * Private API for `For-In` parsering problem.
@@ -710,30 +720,24 @@ export function createParser(code: string) {
    * @returns {boolean}
    */
   function isTopLevel(): boolean {
-    for (let index = context.scopeContext.length - 1; index >= 0; --index) {
-      const scope = context.scopeContext[index];
-      if (scope.type === "FunctionContext" && scope.isArrow === false) {
-        return scope === context.scopeContext[0];
-      }
-    }
-    // TODO: better unreach error
-    throw new Error();
+    return lexicalScopeRecorder.isInTopLevel();
   }
   /**
    * Private API to know is current function is async.
    * @returns {boolean}
    */
-  function isCurrentFunctionAsync(): boolean {
-    const scope = helperFindLastFunctionContext();
-    return scope.isAsync;
+  function isCurrentScopeParseAwaitAsExpression(): boolean {
+    //const scope = helperFindLastFunctionContext();
+    return lexicalScopeRecorder.canAwaitParseAsExpression();
   }
   /**
    * Private API to know is current function is generator.
    * @returns {boolean}
    */
-  function isCurrentFunctionGenerator(): boolean {
-    const scope = helperFindLastFunctionContext();
-    return scope.isGenerator;
+  function isCurrentScopeParseYieldAsExpression(): boolean {
+    // const scope = helperFindLastFunctionContext();
+    // return scope.isGenerator;
+    return lexicalScopeRecorder.canYieldParseAsExpression();
   }
   /**
    * Private API to know is current recursion parse in the
@@ -741,8 +745,9 @@ export function createParser(code: string) {
    * @returns
    */
   function isInParameter(): boolean {
-    const scope = helperFindLastFunctionContext();
-    return scope.inParameter;
+    // const scope = helperFindLastFunctionContext();
+    // return scope.inParameter;
+    return lexicalScopeRecorder.isInParameter();
   }
   /**
    * Private API called when parse function, since `function` keyword is argument lisr,
@@ -751,16 +756,18 @@ export function createParser(code: string) {
    * is not simple.
    */
   function setCurrentFunctionParameterListAsNonSimple() {
-    const scope = helperFindLastFunctionContext();
-    scope.isSimpleParameter = false;
+    // const scope = helperFindLastFunctionContext();
+    // scope.isSimpleParameter = false;
+    return lexicalScopeRecorder.setCurrentFunctionLexicalScopeParameterAsNonSimple();
   }
   /**
    * Private API to know is current function's param is simple.
    * @returns {boolean}
    */
   function isCurrentFunctionParameterListSimple(): boolean {
-    const scope = helperFindLastFunctionContext();
-    return scope.isSimpleParameter;
+    // const scope = helperFindLastFunctionContext();
+    // return scope.isSimpleParameter;
+    return lexicalScopeRecorder.isCurrentFunctionLexicalScopeParameterSimple();
   }
   /**
    * Helper function for other private api to find a parnet
@@ -786,11 +793,7 @@ export function createParser(code: string) {
    * @returns {boolean}
    */
   function isParentFunctionAsync(): boolean {
-    const parentScope = helperFindParentScope();
-    if (parentScope) {
-      return parentScope.isAsync;
-    }
-    return false;
+    return lexicalScopeRecorder.isParentFunctionAsync();
   }
   /**
    * Private API to know is parent function scope
@@ -798,17 +801,14 @@ export function createParser(code: string) {
    * @returns {boolean}
    */
   function isParentFunctionGenerator(): boolean {
-    const parentScope = helperFindParentScope();
-    if (parentScope) {
-      return parentScope.isGenerator;
-    }
-    return false;
+    return lexicalScopeRecorder.isParentFunctionGenerator();
   }
   /**
    * Private API called when start parse class scope.
    * @param {boolean} isExtend
    */
   function enterClassScope(isExtend: boolean = false) {
+    lexicalScopeRecorder.enterClassLexicalScope(isExtend);
     classScopeRecorder.enterClassScope(isExtend);
     asyncArrowExprScopeRecorder.enterBlankAsyncArrowExpressionScope();
   }
@@ -822,6 +822,7 @@ export function createParser(code: string) {
     if (classScopeRecorder.isUndeinfedPrivateName()) {
       throw createMessageError(ErrorMessageMap.private_name_undeinfed);
     }
+    lexicalScopeRecorder.exitClassLexicalScope();
     classScopeRecorder.exitClassScope();
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
   }
@@ -861,11 +862,7 @@ export function createParser(code: string) {
    * @returns {boolean}
    */
   function isInStrictMode(): boolean {
-    if (isInClassScope()) {
-      return true;
-    }
-    const scope = helperFindLastFunctionContext();
-    return scope.inStrict;
+    return lexicalScopeRecorder.isInStrictMode();
   }
   /**
    * Helper function only used by `checkStrictMode`, because
@@ -875,7 +872,7 @@ export function createParser(code: string) {
    * @returns {boolean}
    */
   function isDirectToFunctionContext(): boolean {
-    return context.scopeContext[context.scopeContext.length - 1].type === "FunctionContext";
+    return lexicalScopeRecorder.isDirectToFunctionContext();
   }
 
   /** ===========================================================
@@ -1311,7 +1308,7 @@ export function createParser(code: string) {
       leftOrInit: VariableDeclaration | Expression | null = null;
     if (match(SyntaxKinds.AwaitKeyword)) {
       nextToken();
-      if (!isCurrentFunctionAsync()) {
+      if (!isCurrentScopeParseAwaitAsExpression()) {
         throw createMessageError(ErrorMessageMap.await_can_not_call_if_not_in_async);
       }
       isAwait = true;
@@ -1823,7 +1820,7 @@ export function createParser(code: string) {
       body,
       params,
       generator,
-      isCurrentFunctionAsync(),
+      isCurrentScopeParseAwaitAsExpression(),
       start,
       cloneSourcePosition(body.end),
     );
@@ -1879,7 +1876,7 @@ export function createParser(code: string) {
       } else {
         if (match(SyntaxKinds.AwaitKeyword)) {
           // for function expression, can await treat as function name is dep on current scope.
-          if (isExpression && isCurrentFunctionAsync()) {
+          if (isExpression && isCurrentScopeParseAwaitAsExpression()) {
             throw createMessageError(
               ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
             );
@@ -1893,7 +1890,7 @@ export function createParser(code: string) {
           name = parseIdentiferWithKeyword();
         } else if (match(SyntaxKinds.YieldKeyword)) {
           // for function expression, can yield treat as function name is dep on current scope.
-          if (isExpression && isCurrentFunctionGenerator()) {
+          if (isExpression && isCurrentScopeParseYieldAsExpression()) {
             throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
           }
           // for function declaration, can yield treat as function name is  dep on parent scope.
@@ -2134,8 +2131,15 @@ export function createParser(code: string) {
     if (checkIsMethodStartWithModifier()) {
       return parseMethodDefintion(true, undefined, isStatic) as ClassMethodDefinition;
     }
+    // console.log(match(SyntaxKinds.BracesLeftPunctuator) && isStatic);
     if (match(SyntaxKinds.BracesLeftPunctuator) && isStatic) {
-      // TODO: parse static block
+      const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
+      const body: Array<StatementListItem> = [];
+      while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
+        body.push(parseStatementListItem());
+      }
+      const { end } = expect(SyntaxKinds.BracesRightPunctuator);
+      return Factory.createClassStaticBlock(body, start, end);
     }
     // parse ClassElementName
     const isComputedRef = { isComputed: false };
@@ -2184,6 +2188,8 @@ export function createParser(code: string) {
         // static get/set/async
         case SyntaxKinds.Identifier:
         case SyntaxKinds.PrivateName:
+        // static { <static-block>
+        case SyntaxKinds.BracesLeftPunctuator:
         // static [<compute-name>]
         case SyntaxKinds.BracketLeftPunctuator:
         // static *
@@ -2340,7 +2346,7 @@ export function createParser(code: string) {
     ) {
       context.maybeArrowStart = getStartPosition().index;
     }
-    if (match(SyntaxKinds.YieldKeyword) && isCurrentFunctionGenerator()) {
+    if (match(SyntaxKinds.YieldKeyword) && isCurrentScopeParseYieldAsExpression()) {
       return parseYieldExpression();
     }
     const [[left, isPattern], scope] = parseWithCatpureLayer(() => {
@@ -2617,7 +2623,7 @@ export function createParser(code: string) {
       }
       return Factory.createUnaryExpression(argument, operator, start, cloneSourcePosition(argument.end));
     }
-    if (match(SyntaxKinds.AwaitKeyword) && isCurrentFunctionAsync()) {
+    if (match(SyntaxKinds.AwaitKeyword) && isCurrentScopeParseAwaitAsExpression()) {
       return parseAwaitExpression();
     }
     return parseUpdateExpression();
@@ -3083,7 +3089,7 @@ export function createParser(code: string) {
       // for most of yield keyword, if it should treat as identifier,
       // it should not in generator function.
       case SyntaxKinds.YieldKeyword: {
-        if (isCurrentFunctionGenerator() || isInStrictMode()) {
+        if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
           throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
         }
         const { value, start, end } = expect(SyntaxKinds.YieldKeyword);
@@ -3094,7 +3100,7 @@ export function createParser(code: string) {
       // for most of await keyword, if it should treat as identifier,
       // it should not in async function.
       case SyntaxKinds.AwaitKeyword: {
-        if (isCurrentFunctionAsync()) {
+        if (isCurrentScopeParseAwaitAsExpression()) {
           throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
         }
         const { value, start, end } = expect(SyntaxKinds.AwaitKeyword);
@@ -3577,14 +3583,14 @@ export function createParser(code: string) {
       const identifer = parseIdentiferWithKeyword();
       return identifer;
     }
+
     nextToken();
+    lexicalScopeRecorder.enterPropertyName();
     const expr = parseAssignmentExpressionAllowIn();
-    if (match(SyntaxKinds.BracketRightPunctuator)) {
-      nextToken();
-      isComputedRef.isComputed = true;
-      return expr;
-    }
-    throw createUnexpectError(SyntaxKinds.BracketRightPunctuator);
+    lexicalScopeRecorder.exitPropertyName();
+    expect(SyntaxKinds.BracketRightPunctuator);
+    isComputedRef.isComputed = true;
+    return expr;
   }
   /**
    *  propty name is a spical test of binding identifier.
@@ -3595,13 +3601,13 @@ export function createParser(code: string) {
   function checkPropertyShortedIsKeyword(propertyName: PropertyName) {
     if (isIdentifer(propertyName)) {
       if (propertyName.name === "await") {
-        if (isCurrentFunctionAsync()) {
+        if (isCurrentScopeParseAwaitAsExpression()) {
           throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
         }
         return;
       }
       if (propertyName.name === "yield") {
-        if (isCurrentFunctionGenerator()) {
+        if (isCurrentScopeParseYieldAsExpression()) {
           throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
         }
         return;
@@ -3695,9 +3701,8 @@ export function createParser(code: string) {
         const isComputedRef = { isComputed: false };
         withPropertyName = parsePropertyName(isComputedRef);
         computed = isComputedRef.isComputed;
-        
       }
-      if(!start) start = cloneSourcePosition(withPropertyName.start);
+      if (!start) start = cloneSourcePosition(withPropertyName.start);
     } else {
       start = cloneSourcePosition(withPropertyName.start);
     }
@@ -3969,7 +3974,7 @@ export function createParser(code: string) {
       isExpression,
       body,
       functionArguments,
-      isCurrentFunctionAsync(),
+      isCurrentScopeParseAwaitAsExpression(),
       cloneSourcePosition(metaData.start),
       cloneSourcePosition(body.end),
     );
@@ -3992,7 +3997,7 @@ export function createParser(code: string) {
   ): Array<Pattern> {
     const params = functionArguments.map((node) => exprToPattern(node, true)) as Array<Pattern>;
     if (
-      isCurrentFunctionAsync() ||
+      isCurrentScopeParseAwaitAsExpression() ||
       isParentFunctionAsync() ||
       isParentFunctionGenerator() ||
       isInStrictMode()

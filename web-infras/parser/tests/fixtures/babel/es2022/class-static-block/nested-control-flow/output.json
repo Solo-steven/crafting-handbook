@@ -1,0 +1,408 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "C",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": true,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "foo",
+                            "start": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 13,
+                                "index": 22
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 2,
+                                "col": 16,
+                                "index": 25
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 18,
+                                "index": 27
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 10,
+                            "index": 19
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 18,
+                            "index": 27
+                        }
+                    },
+                    {
+                        "kind": 10167,
+                        "body": [
+                            {
+                                "kind": 10131,
+                                "test": {
+                                    "kind": 10175,
+                                    "computed": false,
+                                    "optional": false,
+                                    "object": {
+                                        "kind": 10155,
+                                        "name": "this",
+                                        "start": {
+                                            "row": 4,
+                                            "col": 12,
+                                            "index": 50
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 16,
+                                            "index": 54
+                                        }
+                                    },
+                                    "property": {
+                                        "kind": 10119,
+                                        "name": "foo",
+                                        "start": {
+                                            "row": 4,
+                                            "col": 17,
+                                            "index": 55
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 20,
+                                            "index": 58
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 4,
+                                        "col": 12,
+                                        "index": 50
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 20,
+                                        "index": 58
+                                    }
+                                },
+                                "body": {
+                                    "kind": 10124,
+                                    "body": [
+                                        {
+                                            "kind": 10123,
+                                            "test": {
+                                                "kind": 10175,
+                                                "computed": false,
+                                                "optional": false,
+                                                "object": {
+                                                    "kind": 10155,
+                                                    "name": "this",
+                                                    "start": {
+                                                        "row": 5,
+                                                        "col": 11,
+                                                        "index": 72
+                                                    },
+                                                    "end": {
+                                                        "row": 5,
+                                                        "col": 15,
+                                                        "index": 76
+                                                    }
+                                                },
+                                                "property": {
+                                                    "kind": 10119,
+                                                    "name": "foo",
+                                                    "start": {
+                                                        "row": 5,
+                                                        "col": 16,
+                                                        "index": 77
+                                                    },
+                                                    "end": {
+                                                        "row": 5,
+                                                        "col": 19,
+                                                        "index": 80
+                                                    }
+                                                },
+                                                "start": {
+                                                    "row": 5,
+                                                    "col": 11,
+                                                    "index": 72
+                                                },
+                                                "end": {
+                                                    "row": 5,
+                                                    "col": 19,
+                                                    "index": 80
+                                                }
+                                            },
+                                            "conseqence": {
+                                                "kind": 10124,
+                                                "body": [
+                                                    {
+                                                        "kind": 10128,
+                                                        "label": null,
+                                                        "start": {
+                                                            "row": 6,
+                                                            "col": 9,
+                                                            "index": 92
+                                                        },
+                                                        "end": {
+                                                            "row": 6,
+                                                            "col": 14,
+                                                            "index": 97
+                                                        }
+                                                    }
+                                                ],
+                                                "start": {
+                                                    "row": 5,
+                                                    "col": 21,
+                                                    "index": 82
+                                                },
+                                                "end": {
+                                                    "row": 7,
+                                                    "col": 8,
+                                                    "index": 106
+                                                }
+                                            },
+                                            "alternative": {
+                                                "kind": 10124,
+                                                "body": [
+                                                    {
+                                                        "kind": 10129,
+                                                        "label": null,
+                                                        "start": {
+                                                            "row": 8,
+                                                            "col": 9,
+                                                            "index": 122
+                                                        },
+                                                        "end": {
+                                                            "row": 8,
+                                                            "col": 17,
+                                                            "index": 130
+                                                        }
+                                                    }
+                                                ],
+                                                "start": {
+                                                    "row": 7,
+                                                    "col": 14,
+                                                    "index": 112
+                                                },
+                                                "end": {
+                                                    "row": 9,
+                                                    "col": 8,
+                                                    "index": 139
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 5,
+                                                "col": 7,
+                                                "index": 68
+                                            },
+                                            "end": {
+                                                "row": 9,
+                                                "col": 8,
+                                                "index": 139
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 4,
+                                        "col": 22,
+                                        "index": 60
+                                    },
+                                    "end": {
+                                        "row": 10,
+                                        "col": 6,
+                                        "index": 145
+                                    }
+                                },
+                                "start": {
+                                    "row": 4,
+                                    "col": 5,
+                                    "index": 43
+                                },
+                                "end": {
+                                    "row": 10,
+                                    "col": 6,
+                                    "index": 145
+                                }
+                            },
+                            {
+                                "kind": 10147,
+                                "id": {
+                                    "kind": 10119,
+                                    "name": "C2",
+                                    "start": {
+                                        "row": 11,
+                                        "col": 11,
+                                        "index": 156
+                                    },
+                                    "end": {
+                                        "row": 11,
+                                        "col": 13,
+                                        "index": 158
+                                    }
+                                },
+                                "superClass": null,
+                                "body": {
+                                    "kind": 10148,
+                                    "body": [
+                                        {
+                                            "kind": 10166,
+                                            "async": false,
+                                            "generator": false,
+                                            "computed": false,
+                                            "static": false,
+                                            "key": {
+                                                "kind": 10119,
+                                                "name": "bar",
+                                                "start": {
+                                                    "row": 12,
+                                                    "col": 7,
+                                                    "index": 167
+                                                },
+                                                "end": {
+                                                    "row": 12,
+                                                    "col": 10,
+                                                    "index": 170
+                                                }
+                                            },
+                                            "params": [],
+                                            "body": {
+                                                "kind": 10146,
+                                                "body": [
+                                                    {
+                                                        "kind": 10130,
+                                                        "argu": null,
+                                                        "start": {
+                                                            "row": 13,
+                                                            "col": 9,
+                                                            "index": 183
+                                                        },
+                                                        "end": {
+                                                            "row": 13,
+                                                            "col": 15,
+                                                            "index": 189
+                                                        }
+                                                    }
+                                                ],
+                                                "start": {
+                                                    "row": 12,
+                                                    "col": 13,
+                                                    "index": 173
+                                                },
+                                                "end": {
+                                                    "row": 14,
+                                                    "col": 8,
+                                                    "index": 198
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 12,
+                                                "col": 7,
+                                                "index": 167
+                                            },
+                                            "end": {
+                                                "row": 14,
+                                                "col": 8,
+                                                "index": 198
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 11,
+                                        "col": 14,
+                                        "index": 159
+                                    },
+                                    "end": {
+                                        "row": 15,
+                                        "col": 6,
+                                        "index": 204
+                                    }
+                                },
+                                "start": {
+                                    "row": 11,
+                                    "col": 5,
+                                    "index": 150
+                                },
+                                "end": {
+                                    "row": 15,
+                                    "col": 6,
+                                    "index": 204
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 3,
+                            "col": 10,
+                            "index": 37
+                        },
+                        "end": {
+                            "row": 16,
+                            "col": 4,
+                            "index": 208
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 17,
+                    "col": 2,
+                    "index": 210
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 17,
+                "col": 2,
+                "index": 210
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 18,
+        "col": 1,
+        "index": 211
+    }
+}
