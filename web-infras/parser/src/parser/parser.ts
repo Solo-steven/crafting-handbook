@@ -128,51 +128,16 @@ import {
   isClassExpression,
   isExpressionStatement,
 } from "web-infra-common";
-import { ExpectToken, ScopeContext, FunctionContext } from "./type";
+import { ExpectToken, } from "./type";
 import { ErrorMessageMap } from "./error";
 import { LookaheadToken } from "../lexer/type";
 import { createLexer } from "../lexer/index";
-import { createClassScopeRecorder, PrivateNameDefKind } from "./scope/classScope";
 import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } from "./scope/arrowExprScope";
 import { createStrictModeScopeRecorder, StrictModeScope } from "./scope/strictModeScope";
 import { ExpressionScopeKind } from "./scope/type";
-import { createLexicalScopeRecorder } from "./scope/lexicalScope";
-/**
- * Context for parser. composeed by several parts:
- * ## ScopeContext
- * scope context contain context when enter the function or block statement,
- * we need function scope to determinate parse rule of await and yield keyword.
- * and only the direct child of function scope can using `use strict` directive.
- *
- * ## ClassContext
- * class context indicate current class state (is in class ?, have extend class ?)
- * - used by checking super call validate (must in class block and have extend class)
- * - used by checking private name in expression is validate (must in class block).
- *
- * please notes that method and property can not use private name have already been check, because
- * by which call `parseMethodDefinition`, we can know is in class or object.
- * when class `parseClass` must wrap helper function before and after parse class body.
- *
- * ## InOperatorStack
- * when parse for-in statement, we need to ignore `in` operator to seperate left and right
- * expression of for-in statement, so we need to know is current expression level is call by
- * for-in statement, and expression level is determinate by `parseExpression` and
- * `parseAssignmentExpression` function.
- *
- * ## PropertiesInitSet
- * when parse ObjectExpression, we may accept coverInit for transform to ObjectPattern,
- * because coverInit is not a illegal syntax of ObjectExpression, so it must be transform.
- * so when program finish parse, but there are still some coverInitProperty not transformed
- * yet, those would be error syntax.
- *
- * @member {boolean} maybeArrow
- * @member {Array<ScopeContext>} scopeContext
- * @member {Array<boolean>} inOperatorStack
- * @member {Set<any>} propertiesInitSet
- */
+import { createLexicalScopeRecorder, PrivateNameDefKind } from "./scope/lexicalScope";
 interface Context {
   maybeArrowStart: number;
-  scopeContext: Array<ScopeContext>;
   inOperatorStack: Array<boolean>;
   propertiesInitSet: Set<any>;
 }
@@ -188,7 +153,6 @@ interface ASTArrayWithMetaData<T> {
  */
 function createContext(): Context {
   return {
-    scopeContext: [],
     maybeArrowStart: -1,
     inOperatorStack: [],
     propertiesInitSet: new Set(),
@@ -212,7 +176,6 @@ const KeywordSet = new Set(LexicalLiteral.keywords);
 export function createParser(code: string) {
   const lexer = createLexer(code);
   const context = createContext();
-  const classScopeRecorder = createClassScopeRecorder();
   const lexicalScopeRecorder = createLexicalScopeRecorder();
   const strictModeScopeRecorder = createStrictModeScopeRecorder();
   const asyncArrowExprScopeRecorder = createAsyncArrowExpressionScopeRecorder();
@@ -507,54 +470,33 @@ export function createParser(code: string) {
     context.inOperatorStack.pop();
     return result;
   }
+  /** ===========================================================
+   *     Private API for other Parser API, just wrapper of recorder
+   *  ===========================================================
+   */
+
   /**
-   * Private API called when enter function scope. when parse
-   * - **Function delcaration or expression** : called`parseFunction` api, which is called by
-   * `parseFunctionDeclaration` and `parseFunctionExpression`
-   * - **method of class or object** : parseMethodDefintion.
-   *
-   * need to call this function and give this flag of is this function
-   * a async or generator
-   * @param {boolean} isAsync
-   * @param {boolean} isGenerator
+   *  please reference to recorder api
    */
   function enterFunctionScope(isAsync: boolean = false, isGenerator: boolean = false) {
     asyncArrowExprScopeRecorder.enterBlankAsyncArrowExpressionScope();
     strictModeScopeRecorder.enterRHSStrictModeScope();
     lexicalScopeRecorder.enterFunctionLexicalScope(isAsync, isGenerator);
   }
-  /**
-   * Private API called  when exist a function scope, refer to
-   * `enterFunctionScope` comment
-   */
   function exitFunctionScope() {
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
     strictModeScopeRecorder.exitStrictModeScope();
     lexicalScopeRecorder.exitFunctionLexicalScope();
   }
-  /**
-   * Private API called when start parse moduleItem in `parseProgram`, different from
-   * `enterFunctionScope`, it will not find parent scope, since it not exist.
-   */
   function enterProgram() {
     lexicalScopeRecorder.enterProgramLexicalScope();
   }
   function exitProgram() {
     lexicalScopeRecorder.exitProgramLexicalScope();
-    //context.scopeContext.pop();
   }
-  /**
-   * Private API called when enter this block scope.
-   * this function only called when `parseBlockStatement`.
-   */
   function enterBlockScope() {
     lexicalScopeRecorder.enterBlockLexicalScope();
-    //context.scopeContext.push({ type: "BlockContext" });
   }
-  /**
-   * Private APII called when enter this block scope.
-   * this function only called when `parseBlockStatement`.
-   */
   function exitBlockScope() {
     lexicalScopeRecorder.exitBlockLexicalScope();
   }
@@ -562,18 +504,18 @@ export function createParser(code: string) {
     strictModeScopeRecorder.record(kind, position);
     asyncArrowExprScopeRecorder.record(kind, position);
   }
+  function enterArrowFunctionBodyScope(isAsync: boolean = false) {
+    lexicalScopeRecorder.enterArrowFunctionBodyScope(isAsync);
+  }
+  function exitArrowFunctionBodyScope() {
+    lexicalScopeRecorder.exitArrowFunctionBodyScope();
+  }
   function parseWithArrowExpressionScope<T>(callback: () => T): [T, AsyncArrowExpressionScope] {
     asyncArrowExprScopeRecorder.enterAsyncArrowExpressionScope();
     const result = callback();
     const scope = asyncArrowExprScopeRecorder.getCurrentAsyncArrowExpressionScope()!;
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
     return [result, scope];
-  }
-  function enterArrowFunctionBodyScope(isAsync: boolean = false) {
-    lexicalScopeRecorder.enterArrowFunctionBodyScope(isAsync);
-  }
-  function exitArrowFunctionBodyScope() {
-    lexicalScopeRecorder.exitArrowFunctionBodyScope();
   }
   function parseWithCatpureLayer<T>(callback: () => T): [T, StrictModeScope] {
     strictModeScopeRecorder.enterCatpureStrictModeScope();
@@ -619,55 +561,15 @@ export function createParser(code: string) {
       }
     }
   }
-  /**
-   * Helper function for other context Private API to get this closest
-   * function scope structure in scopeContext.
-   * @returns {FunctionContext}
-   */
-  function helperFindLastFunctionContext(): FunctionContext {
-    for (let index = context.scopeContext.length - 1; index >= 0; --index) {
-      const scopeContext = context.scopeContext[index];
-      if (scopeContext.type === "FunctionContext") {
-        return scopeContext;
-      }
-    }
-    // TODO: better error
-    throw new Error();
-  }
-  /**
-   * Private API called when parse function param, since we should ban
-   * await expression and yeild expression in function param, event if
-   * function is async or generator.
-   */
   function enterFunctionParameter() {
     lexicalScopeRecorder.enterFunctionLexicalScopeParamemter();
-    // const scope = helperFindLastFunctionContext();
-    // scope.inParameter = true;
   }
-  /**
-   * Private API called when finish parse function param, reason please
-   * refer to `enterFunctionParameter`
-   */
   function existFunctionParameter() {
     lexicalScopeRecorder.exitFunctionLexicalScopeParamemter();
-    // const scope = helperFindLastFunctionContext();
-    // scope.inParameter = false;
   }
-  /**
-   * Private API called when parse `*` after parse function, since `function`
-   * keyword is before `*`, so when we called `parseFunction` parser api, we
-   * not know is this function is generator or not, this api is design to solve
-   * this problem, set current function as generator.
-   */
   function setCurrentFunctionContextAsGenerator() {
     lexicalScopeRecorder.setCurrentFunctionLexicalScopeAsGenerator();
   }
-  /**
-   * Private API called when parse `'use strict';` after parse function, since `function`
-   * keyword is before directive, so when we called `parseFunction` parser api, we
-   * not know is this function in strict mode or not, this api is design to solve
-   * this problem, set current function strict mode.
-   */
   function setCurrentFunctionContextAsStrictMode() {
     lexicalScopeRecorder.setCurrentFunctionLexicalScopeAsStrictMode();
   }
@@ -681,165 +583,79 @@ export function createParser(code: string) {
     }
     return context.inOperatorStack[context.inOperatorStack.length - 1];
   }
-  /**
-   * Private API to know is current scope is top level, some syntax item
-   * can not show in top level (like new.target)
-   * @returns {boolean}
-   */
   function isTopLevel(): boolean {
     return lexicalScopeRecorder.isInTopLevel();
   }
-  /**
-   * Private API to know is current function is async.
-   * @returns {boolean}
-   */
   function isCurrentScopeParseAwaitAsExpression(): boolean {
-    //const scope = helperFindLastFunctionContext();
     return lexicalScopeRecorder.canAwaitParseAsExpression();
   }
-  /**
-   * Private API to know is current function is generator.
-   * @returns {boolean}
-   */
   function isCurrentScopeParseYieldAsExpression(): boolean {
-    // const scope = helperFindLastFunctionContext();
-    // return scope.isGenerator;
     return lexicalScopeRecorder.canYieldParseAsExpression();
   }
-  /**
-   * Private API to know is current recursion parse in the
-   * function param or not (used by yeild and await)
-   * @returns
-   */
   function isInParameter(): boolean {
-    // const scope = helperFindLastFunctionContext();
-    // return scope.inParameter;
     return lexicalScopeRecorder.isInParameter();
   }
-  /**
-   * Private API called when parse function, since `function` keyword is argument lisr,
-   * so when we called `parseFunction` parser api, we not know is this function's argument
-   * is simple or not, this api is design to solve this problem, set current function param
-   * is not simple.
-   */
   function setCurrentFunctionParameterListAsNonSimple() {
-    // const scope = helperFindLastFunctionContext();
-    // scope.isSimpleParameter = false;
     return lexicalScopeRecorder.setCurrentFunctionLexicalScopeParameterAsNonSimple();
   }
-  /**
-   * Private API to know is current function's param is simple.
-   * @returns {boolean}
-   */
   function isCurrentFunctionParameterListSimple(): boolean {
-    // const scope = helperFindLastFunctionContext();
-    // return scope.isSimpleParameter;
     return lexicalScopeRecorder.isCurrentFunctionLexicalScopeParameterSimple();
   }
-  /**
-   * Helper function for other private api to find a parnet
-   * function scope (not arrow function scope or block scope).
-   * @returns {FunctionContext | undefined}
-   */
-  function helperFindParentScope(): FunctionContext | undefined {
-    let flag = false;
-    for (let index = context.scopeContext.length - 1; index >= 0; --index) {
-      const scopeContext = context.scopeContext[index];
-      if (scopeContext.type === "FunctionContext") {
-        if (flag) {
-          return scopeContext;
-        } else {
-          flag = true;
-        }
-      }
-    }
-  }
-  /**
-   * Private API to know is parent function scope
-   * is async, used by parse function name.
-   * @returns {boolean}
-   */
   function isParentFunctionAsync(): boolean {
     return lexicalScopeRecorder.isParentFunctionAsync();
   }
-  /**
-   * Private API to know is parent function scope
-   * is generator, used by parse function name.
-   * @returns {boolean}
-   */
   function isParentFunctionGenerator(): boolean {
     return lexicalScopeRecorder.isParentFunctionGenerator();
   }
-  /**
-   * Private API called when start parse class scope.
-   * @param {boolean} isExtend
-   */
   function enterClassScope(isExtend: boolean = false) {
     lexicalScopeRecorder.enterClassLexicalScope(isExtend);
-    classScopeRecorder.enterClassScope(isExtend);
     asyncArrowExprScopeRecorder.enterBlankAsyncArrowExpressionScope();
   }
-  /**
-   * Private API called when finish parse class scope.
-   */
   function existClassScope() {
-    if (classScopeRecorder.isDuplicatePrivateName()) {
+    if (lexicalScopeRecorder.isDuplicatePrivateName()) {
       throw createMessageError(ErrorMessageMap.private_name_duplicate);
     }
-    if (classScopeRecorder.isUndeinfedPrivateName()) {
+    if (lexicalScopeRecorder.isUndeinfedPrivateName()) {
       throw createMessageError(ErrorMessageMap.private_name_undeinfed);
     }
     lexicalScopeRecorder.exitClassLexicalScope();
-    classScopeRecorder.exitClassScope();
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
   }
-  /**
-   * Private API to know is current scope under class scope.
-   * @returns {boolean}
-   */
   function isInClassScope(): boolean {
-    return classScopeRecorder.isInClassScope();
+    return lexicalScopeRecorder.isInClassScope();
   }
-  /**
-   * Private API to know is current class scope have extend.
-   * @returns {boolean}
-   */
   function isCurrentClassExtend(): boolean {
-    return classScopeRecorder.isCurrentClassExtend();
+    return lexicalScopeRecorder.isCurrentClassExtend();
   }
   function usePrivateName(name: string, type: PrivateNameDefKind = "other") {
-    return classScopeRecorder.usePrivateName(name, type);
+    return lexicalScopeRecorder.usePrivateName(name, type);
   }
   function defPrivateName(name: string, type: PrivateNameDefKind = "other") {
-    return classScopeRecorder.defPrivateName(name, type);
+    return lexicalScopeRecorder.defPrivateName(name, type);
   }
   function enterDelete() {
-    classScopeRecorder.enterDelete();
+    lexicalScopeRecorder.enterDelete();
   }
   function exitDelete() {
-    classScopeRecorder.exitDelete();
+    lexicalScopeRecorder.exitDelete();
   }
   function isInDelete() {
-    return classScopeRecorder.isCurrentInDelete();
+    return lexicalScopeRecorder.isCurrentInDelete();
   }
-  /**
-   * Private API to know is current function scope is in strict mode,
-   * according to ECMA spec, in class declaration and class expression, is
-   * always strict mode.
-   * @returns {boolean}
-   */
   function isInStrictMode(): boolean {
     return lexicalScopeRecorder.isInStrictMode();
   }
-  /**
-   * Helper function only used by `checkStrictMode`, because
-   * "use strict" directive only meansful when `ExpressionStatement`
-   * is directive to function context, so we need is current
-   * `ExpressionStatement` is in functionContext or not.
-   * @returns {boolean}
-   */
   function isDirectToFunctionContext(): boolean {
     return lexicalScopeRecorder.isDirectToFunctionContext();
+  }
+  function isReturnValidate(): boolean {
+    return lexicalScopeRecorder.isReturnValidate();
+  }
+  function isEncloseInFunction(): boolean {
+    return lexicalScopeRecorder.isEncloseInFunction();
+  }
+  function isInPropertyName(): boolean {
+    return lexicalScopeRecorder.isInPropertyName();
   }
 
   /** ===========================================================
@@ -1026,11 +842,6 @@ export function createParser(code: string) {
         return parseExpressionStatement();
     }
   }
-  /** =================================================================
-   * Parse Statement
-   * entry point reference: https://tc39.es/ecma262/#prod-Statement
-   * ==================================================================
-   */
   /**
    * This is a critial helper function for transform expression (major is ObjectExpression
    * and ArrayExpression) to Pattern (`BindingObjectPattern`, `BindingArrayPattern`, `AssignmentObjectPattern`
@@ -1054,110 +865,237 @@ export function createParser(code: string) {
    * @param {boolean} isBinding Is transform to BindingPattern
    */
   function exprToPattern(expr: Expression, isBinding: boolean): Pattern {
-    const pattern = exprToPatternImpl(expr, isBinding);
-    return pattern;
+    return exprToPatternImpl(expr, isBinding);
   }
-  function exprToPatternImpl(node: ModuleItem, isBinding: boolean = false): Pattern {
-    const expr = node as Expression;
+  function exprToPatternImpl(node: Expression, isBinding: boolean): Pattern {
     /**
      * parentheses in pattern only allow in Assignment Pattern
      * for MemberExpression and Identifier
      */
-    if (expr.parentheses) {
+    if (node.parentheses) {
       if (isBinding || (!isBinding && !isMemberExpression(node) && !isIdentifer(node)))
-        throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
+        throw createMessageError(ErrorMessageMap.v8_error_invalid_parenthesized_assignment_pattern);
     }
     switch (node.kind) {
-      case SyntaxKinds.Identifier:
-        return node as Identifier;
       case SyntaxKinds.AssigmentExpression: {
-        const assignmentExpressionNode = node as AssigmentExpression;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const left = isPattern(assignmentExpressionNode.left)
-          ? checkPatternWithBinding(assignmentExpressionNode.left, isBinding)
-          : exprToPatternImpl(assignmentExpressionNode.left, isBinding);
-        if (assignmentExpressionNode.operator !== SyntaxKinds.AssginOperator) {
-          throw createMessageError(ErrorMessageMap.assigment_pattern_only_can_use_assigment_operator);
-        }
-        return Factory.createAssignmentPattern(
-          left as Pattern,
-          assignmentExpressionNode.right,
-          node.start,
-          node.end,
-        );
+        return assignmentExpressionToAssignmentPattern(node, isBinding);
       }
       case SyntaxKinds.SpreadElement: {
-        const spreadElementNode = node as SpreadElement;
-        const argument = exprToPatternImpl(spreadElementNode.argument, isBinding) as Pattern;
-        return Factory.createRestElement(argument, spreadElementNode.start, spreadElementNode.end);
+        return spreadElementToFunctionRestParameter(node);
       }
       case SyntaxKinds.ArrayExpression: {
-        const arrayExpressionNode = node as ArrayExpression;
-        const elements: Array<ModuleItem | null> = [];
-        for (let index = 0; index < arrayExpressionNode.elements.length; ++index) {
-          const element = arrayExpressionNode.elements[index];
-          if (element === null) {
-            elements.push(element);
-            continue;
-          }
-          const transformElement = exprToPatternImpl(element, isBinding);
-          if (isRestElement(transformElement)) {
-            if (index !== arrayExpressionNode.elements.length - 1 || arrayExpressionNode.trailingComma) {
-              throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
-            }
-          }
-          elements.push(transformElement);
-        }
-        return Factory.createArrayPattern(
-          elements as Array<Pattern>,
-          arrayExpressionNode.start,
-          arrayExpressionNode.end,
-        );
+        return arrayExpressionToArrayPattern(node, isBinding);
       }
       case SyntaxKinds.ObjectExpression: {
-        const objecExpressionNode = node as ObjectExpression;
-        const properties: Array<ModuleItem> = [];
-        for (let index = 0; index < objecExpressionNode.properties.length; ++index) {
-          const property = objecExpressionNode.properties[index];
-          const transformElement = isObjectProperty(property)
-            ? ObjectPropertyToObjectPatternProperty(property, isBinding)
-            : exprToPatternImpl(property, isBinding);
-          if (
-            isRestElement(transformElement) &&
-            (isObjectPattern(transformElement.argument) || isArrayPattern(transformElement.argument))
-          ) {
-            throw createMessageError(ErrorMessageMap.invalid_rest_element_with_pattern_in_object_pattern);
-          }
-          if (isRestElement(transformElement)) {
-            if (index !== objecExpressionNode.properties.length - 1 || objecExpressionNode.trailingComma) {
-              throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
-            }
-            if (
-              !isBinding &&
-              !isIdentifer(transformElement.argument) &&
-              !isMemberExpression(transformElement.argument)
-            ) {
-              throw createMessageError(
-                ErrorMessageMap.rest_operator_must_be_followed_by_an_assignable_reference_in_assignment_contexts,
-              );
-            }
-          }
-          properties.push(transformElement);
-        }
-        return Factory.createObjectPattern(
-          properties as Array<ObjectPatternProperty | RestElement | AssignmentPattern>,
-          objecExpressionNode.start,
-          objecExpressionNode.end,
-        );
+        return objectExpressionToObjectPattern(node, isBinding);
       }
+      case SyntaxKinds.Identifier:
+        return node as Identifier;
       case SyntaxKinds.MemberExpression:
         if (!isBinding) {
-          return node as Pattern;
+            return node as Pattern;
         }
-      // fall throught to error
+        // fall to error
       default:
-        throw createMessageError(ErrorMessageMap.invalid_left_value + ` get kind ${node.kind}.`);
+        throw createMessageError(ErrorMessageMap.syntax_error_invalid_assignment_left_hand_side);
     }
+  }
+  /**
+   * ## Transform Assignment Expression 
+   * @param expr 
+   * @param isBinding 
+   * @returns 
+   */
+  function assignmentExpressionToAssignmentPattern(expr: AssigmentExpression, isBinding: boolean) {
+    const left = isBinding ? helperCheckPatternWithBinding(expr.left) : expr.left;
+    if (expr.operator !== SyntaxKinds.AssginOperator) {
+      throw createMessageError(ErrorMessageMap.syntax_error_invalid_assignment_left_hand_side);
+    }
+    return Factory.createAssignmentPattern(
+      left as Pattern,
+      expr.right,
+      expr.start,
+      expr.end,
+    );
+  }
+  /**
+   *
+   * @param leftValue
+   * @param isBinding
+   * @returns
+   */
+  function helperCheckPatternWithBinding(leftValue: Pattern): Pattern {
+    if (isObjectPattern(leftValue)) {
+      for (const property of leftValue.properties) {
+        if (isObjectPatternProperty(property)) {
+          if (property.value && isMemberExpression(property.value)) {
+            throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
+          }
+          if (
+            property.value &&
+            (isMemberExpression(property.value) || isIdentifer(property.value)) &&
+            property.value.parentheses
+          ) {
+            throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
+          }
+        }
+      }
+      return leftValue;
+    }
+    if (isAssignmentPattern(leftValue)) {
+      helperCheckPatternWithBinding(leftValue.left);
+      return leftValue;
+    }
+    if (isRestElement(leftValue)) {
+      helperCheckPatternWithBinding(leftValue.argument);
+      return leftValue;
+    }
+    if (isArrayPattern(leftValue)) {
+      for (const pat of leftValue.elements) {
+        if (pat) {
+          helperCheckPatternWithBinding(pat);
+        }
+      }
+    }
+    if (isMemberExpression(leftValue) || isIdentifer(leftValue)) {
+      if(leftValue.parentheses) {
+        throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
+      }
+    }
+    return leftValue;
+  }
+  /**
+   * ## Transform `SpreadElement` to RestElement in function param
+   * 
+   * Accoring to production rule, `FunctionRestParameter` is just alias
+   * of `BindingRestElement` which be used in ArrayPattern.
+   * @param spreadElement 
+   * @returns 
+   */
+  function spreadElementToFunctionRestParameter(spreadElement: SpreadElement) {
+    return spreadElementToArrayRestElement(spreadElement, true);
+  }
+  /**
+   * ## Transform `ArrayExpression` to `ArrayPattern`
+   * @param elements 
+   * @param isBinding 
+   * @returns 
+   */
+  function arrayExpressionToArrayPattern(expr: ArrayExpression, isBinding: boolean): ArrayPattern {
+    const arrayPatternElements: Array<Pattern | null> = [];
+    const restElementIndexs = [];
+    for(let index = 0 ; index < expr.elements.length ; ++index) {
+      const element = expr.elements[index];
+      if(!element) {
+        arrayPatternElements.push(null);
+        continue;
+      }
+      if(isSpreadElement(element)) {
+        arrayPatternElements.push(spreadElementToArrayRestElement(element, isBinding));
+        restElementIndexs.push(index);
+        continue;
+      }
+      arrayPatternElements.push(exprToPattern(element, isBinding));
+    }
+    if(restElementIndexs.length > 1 || 
+      (restElementIndexs.length === 1 && (restElementIndexs[0] !== arrayPatternElements.length-1 || expr.trailingComma))
+    ) {
+      throw createMessageError(ErrorMessageMap.syntax_error_parameter_after_rest_parameter);
+    }
+    return Factory.createArrayPattern(
+      arrayPatternElements,
+      expr.start,
+      expr.end,
+    );
+  }
+  /**
+   * ## Transform `SpreadElement` in ArrayPattern
+   * This function transform spread element to following two production rule AST:
+   * 
+   * - `BindingRestElement` in  `ArrayBindingPattern`
+   * - `AssignmentRestElement` in `ArrayAssignmentPattern`
+   * 
+   * According to production rule, `BindingRestElement`'s argument can only be identifier or ObjectPattern
+   * or ArrayPattern, and argument of `AssignmentRestProperty` can only be identifier or memberExpression.
+   * ```
+   * BindingRestElement := ... BindingIdentifier
+   *                    := ... BindingPattern
+   * AssignmentRestElement :=... DestructuringAssignmentTarget
+   * ```
+   * @param spreadElement 
+   * @param isBinding 
+   */
+  function spreadElementToArrayRestElement(spreadElement: SpreadElement, isBinding: boolean): RestElement {
+    const argument = exprToPattern(spreadElement.argument, isBinding);
+    if(isAssignmentPattern(argument)) {
+      throw createMessageError(
+        ErrorMessageMap.rest_operator_must_be_followed_by_an_assignable_reference_in_assignment_contexts,
+      );
+    }
+    return Factory.createRestElement(argument, spreadElement.start, argument.end);
+  }
+  /**
+   * ## Transform `ObjectExpression` To `ObjectPattern`
+   * @param properties 
+   * @param isBinding 
+   * @returns 
+   */
+  function objectExpressionToObjectPattern(expr: ObjectExpression, isBinding: boolean): ObjectPattern {
+    const objectPatternProperties: Array<ObjectPatternProperty | AssignmentPattern | RestElement> = [];
+    const restElementIndexs = [];
+    for(let index = 0; index < expr.properties.length; ++ index) {
+      const property = expr.properties[index];
+      switch(property.kind) {
+        case SyntaxKinds.ObjectProperty:
+          objectPatternProperties.push(ObjectPropertyToObjectPatternProperty(property, isBinding));
+          break;
+        case SyntaxKinds.SpreadElement:
+          restElementIndexs.push(index);
+          objectPatternProperties.push(spreadElementToObjectRestElement(property, isBinding));
+          break;
+        default:
+          throw createMessageError(ErrorMessageMap.invalid_left_value);
+      }
+    }
+    if(restElementIndexs.length > 1 || 
+      (restElementIndexs.length === 1 && (restElementIndexs[0] !== objectPatternProperties.length-1 || expr.trailingComma))
+    ) {
+      throw createMessageError(ErrorMessageMap.syntax_error_parameter_after_rest_parameter);
+    }
+    return Factory.createObjectPattern(
+      objectPatternProperties,
+      expr.start,
+      expr.end,
+    );
+  }
+  /**
+   * ## Transform `SpreadElement` in ObjectPattern
+   * This function transform spread element to following two production rule AST:
+   * 
+   * - `BindingRestProperty` in BindingObjectPattern
+   * - `AssignmentRestProperty` in AssignObjectPattern
+   * 
+   * According to production rule, `BindingRestProperty`'s argument can only be identifier,
+   * and argument of `AssignmentRestProperty` can only be identifier or memberExpression.
+   * ```
+   * BindingRestProperty := ... BindingIdentifier
+   * AssignmentRestProperty:= ... DestructuringAssignmentTarget
+   * ```
+   */
+  function spreadElementToObjectRestElement(spreadElement: SpreadElement, isBinding: boolean): RestElement {
+    const argument = exprToPattern(spreadElement.argument, isBinding);
+    if(isBinding) {
+      if(!isIdentifer(argument)) {
+        throw createMessageError(ErrorMessageMap.v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts);
+      }
+    }else {
+      if(!isIdentifer(argument) && !isMemberExpression(argument)) {
+        throw createMessageError(
+          ErrorMessageMap.v8_error_rest_assignment_property_must_be_followed_by_an_identifier_in_declaration_contexts,
+        );
+      }
+    }
+    return Factory.createRestElement(argument, spreadElement.start, argument.end);
   }
   function ObjectPropertyToObjectPatternProperty(
     objectPropertyNode: ObjectProperty,
@@ -1200,58 +1138,6 @@ export function createParser(code: string) {
       objectPropertyNode.start,
       objectPropertyNode.end,
     );
-  }
-  /**
-   *
-   * @param leftValue
-   * @param isBinding
-   * @returns
-   */
-  function checkPatternWithBinding(leftValue: Pattern, isBinding = false): Pattern {
-    if (isObjectPattern(leftValue)) {
-      for (const property of leftValue.properties) {
-        if (isObjectPatternProperty(property)) {
-          if (property.value && isMemberExpression(property.value) && isBinding) {
-            throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
-          }
-          if (
-            isBinding &&
-            property.value &&
-            (isMemberExpression(property.value) || isIdentifer(property.value)) &&
-            property.value.parentheses
-          ) {
-            throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
-          }
-        }
-      }
-      return leftValue;
-    }
-    if (isAssignmentPattern(leftValue)) {
-      checkPatternWithBinding(leftValue.left, isBinding);
-      return leftValue;
-    }
-    if (isRestElement(leftValue)) {
-      checkPatternWithBinding(leftValue.argument, isBinding);
-      return leftValue;
-    }
-    if (isArrayPattern(leftValue)) {
-      for (const pat of leftValue.elements) {
-        if (pat) {
-          checkPatternWithBinding(pat, isBinding);
-        }
-      }
-    }
-    if (isMemberExpression(leftValue) || isIdentifer(leftValue)) {
-      checkIsPatternparenthesizedInvalid(leftValue, isBinding);
-    }
-    return leftValue;
-  }
-  function checkIsPatternparenthesizedInvalid(node: Pattern, isBinding: boolean) {
-    const isPatternOriginalHaveParenthesized =
-      (isMemberExpression(node) || isIdentifer(node)) && node.parentheses;
-    if (isBinding && isPatternOriginalHaveParenthesized) {
-      throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
-    }
   }
   /**
    * Parse For-related Statement, include ForStatement, ForInStatement, ForOfStatement.
@@ -1588,6 +1474,9 @@ export function createParser(code: string) {
   }
   function parseReturnStatement(): ReturnStatement {
     const { start, end } = expect(SyntaxKinds.ReturnKeyword);
+    if(!isReturnValidate()) {
+      throw  createMessageError(ErrorMessageMap.syntax_error_return_not_in_function);
+    }
     if (isSoftInsertSemi(true)) {
       return Factory.createReturnStatement(null, start, end);
     }
@@ -3099,6 +2988,9 @@ export function createParser(code: string) {
           if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
             throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
           }
+          if(isInClassScope() && !isEncloseInFunction() && !isInPropertyName()) {
+            throw createMessageError(ErrorMessageMap.syntax_error_arguments_is_not_valid_in_fields);
+          }
           recordScope(ExpressionScopeKind.ArgumentsIdentifier, start);
         }
         if (value === "eval") {
@@ -3289,7 +3181,7 @@ export function createParser(code: string) {
     }
     const { start: keywordStart, end: keywordEnd } = expect([SyntaxKinds.SuperKeyword]);
     if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-      if (!classScopeRecorder.isInCtor()) {
+      if (!lexicalScopeRecorder.isInCtor()) {
         throw createMessageError("");
       }
       const { nodes, end: argusEnd } = parseArguments();
@@ -3674,13 +3566,13 @@ export function createParser(code: string) {
       start = cloneSourcePosition(withPropertyName.start);
     }
     const isCtor = helperIsPropertyNameIsCtor(withPropertyName);
-    if (isCtor) classScopeRecorder.enterCtor();
+    if (isCtor) lexicalScopeRecorder.enterCtor();
     enterFunctionScope(isAsync, generator);
     const [parmas, scope] = parseWithCatpureLayer(parseFunctionParam);
     const body = parseFunctionBody();
     checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, parmas, true, scope);
     exitFunctionScope();
-    if (isCtor) classScopeRecorder.exitCtor();
+    if (isCtor) lexicalScopeRecorder.exitCtor();
     /**
      * Step 2: semantic and more concise syntax check instead just throw a unexpect
      * token error.

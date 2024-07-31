@@ -16,6 +16,9 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/core/sourcetype-unambiguous/flow",
   "/babel/core/opts/allowAwaitOutsideFunction-true",
   "/babel/core/opts/allowNewTargetOutsideFunction-true",
+  // (feature) allowReturnOutsideFunction
+  "/babel/core/uncategorised/328",
+  "/babel/core/uncategorised/327",
   // (featture) ts or flow
   "/babel/estree/class-method/flow",
   "/babel/estree/class-method/typescript",

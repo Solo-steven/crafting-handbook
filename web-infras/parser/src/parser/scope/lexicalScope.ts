@@ -59,8 +59,15 @@ function isPrivateNameExist(scope: ClassLexicalScope, name: string, type: Privat
 
 export function createLexicalScopeRecorder() {
   const lexicalScopes: Array<LexicalScope> = [];
-
-  function helperFindParentClassOrFunctionLexicalScope(): FunctionLexicalScope | ClassLexicalScope | null {
+/**=============================================
+ * Helper function 
+ * =============================================
+ */
+  /**
+   * 
+   * @returns 
+   */
+  function helperFindParentClassOrFunctionLexicalScope(): FunctionLexicalScope | ClassLexicalScope {
     let flag = false;
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scope = lexicalScopes[index];
@@ -76,7 +83,7 @@ export function createLexicalScopeRecorder() {
         }
       }
     }
-    return null;
+    throw new Error();
   }
   /**
    * Helper function for other context Private API to get this closest
@@ -93,6 +100,10 @@ export function createLexicalScopeRecorder() {
     // TODO: better error
     throw new Error();
   }
+  /**
+   * 
+   * @returns 
+   */
   function helperFindLastClassScope() {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scope = lexicalScopes[index];
@@ -102,6 +113,10 @@ export function createLexicalScopeRecorder() {
     }
     return null;
   }
+  /**
+   * 
+   * @returns 
+   */
   function helperFindLastClassOrFunctionLexicalScope(): FunctionLexicalScope | ClassLexicalScope {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scope = lexicalScopes[index];
@@ -115,7 +130,14 @@ export function createLexicalScopeRecorder() {
     // TODO: better error
     throw new Error();
   }
-
+/**=============================================
+ * Enter and Exit functions
+ * =============================================
+ */
+  /**
+   * Private API called when start parse moduleItem in `parseProgram`, different from
+   * `enterFunctionScope`, it will not find parent scope, since it not exist.
+   */
   function enterProgramLexicalScope() {
     lexicalScopes.push({
       type: "FunctionLexicalScope",
@@ -154,6 +176,10 @@ export function createLexicalScopeRecorder() {
       isSimpleParameter: true,
     });
   }
+  /**
+   * Private API called  when exist a function scope, refer to
+   * `enterFunctionScope` comment
+   */
   function exitFunctionLexicalScope() {
     lexicalScopes.pop();
   }
@@ -173,57 +199,41 @@ export function createLexicalScopeRecorder() {
   function exitArrowFunctionBodyScope() {
     lexicalScopes.pop();
   }
+  /**
+   * Private API called when parse function param, since we should ban
+   * await expression and yeild expression in function param, event if
+   * function is async or generator.
+   */
   function enterFunctionLexicalScopeParamemter() {
     const scope = helperFindLastFunctionLexicalScope();
     scope.inParameter = true;
   }
+  /**
+   * Private API called when finish parse function param, reason please
+   * refer to `enterFunctionParameter`
+   */
   function exitFunctionLexicalScopeParamemter() {
     const scope = helperFindLastFunctionLexicalScope();
     scope.inParameter = false;
   }
-  function setCurrentFunctionLexicalScopeAsGenerator() {
-    const scope = helperFindLastFunctionLexicalScope();
-    scope.isGenerator = true;
-  }
-  function setCurrentFunctionLexicalScopeAsStrictMode() {
-    const scope = helperFindLastFunctionLexicalScope();
-    scope.inStrict = true;
-  }
   /**
-   * Private API called when parse function, since `function` keyword is argument lisr,
-   * so when we called `parseFunction` parser api, we not know is this function's argument
-   * is simple or not, this api is design to solve this problem, set current function param
-   * is not simple.
+   * Private API called when enter this block scope.
+   * this function only called when `parseBlockStatement`.
    */
-  function setCurrentFunctionLexicalScopeParameterAsNonSimple() {
-    const scope = helperFindLastFunctionLexicalScope();
-    scope.isSimpleParameter = false;
-  }
-  /**
-   * Private API to know is current function's param is simple.
-   * @returns {boolean}
-   */
-  function isCurrentFunctionLexicalScopeParameterSimple(): boolean {
-    const scope = helperFindLastFunctionLexicalScope();
-    return scope.isSimpleParameter;
-  }
-  function isInTopLevel() {
-    for (let index = lexicalScopes.length - 1; index >= 0; --index) {
-      const scope = lexicalScopes[index];
-      if (scope.type === "FunctionLexicalScope" && scope.isArrow === false) {
-        return scope === lexicalScopes[0];
-      }
-    }
-    // TODO: better unreach error
-    throw new Error();
-  }
-
   function enterBlockLexicalScope() {
     lexicalScopes.push({ type: "BlockLexicalScope" });
   }
+  /**
+   * Private APII called when enter this block scope.
+   * this function only called when `parseBlockStatement`.
+   */
   function exitBlockLexicalScope() {
     lexicalScopes.pop();
   }
+    /**
+   * Private API called when start parse class scope.
+   * @param {boolean} isExtend
+   */
   function enterClassLexicalScope(isExtend: boolean) {
     lexicalScopes.push({
       type: "ClassLexicalScope",
@@ -238,6 +248,9 @@ export function createLexicalScopeRecorder() {
       duplicatePrivateName: new Set(),
     });
   }
+  /**
+   * Private API called when finish parse class scope.
+   */
   function exitClassLexicalScope() {
     const currentScope = lexicalScopes.pop() as ClassLexicalScope;
     const parentScope = helperFindLastClassScope();
@@ -288,10 +301,15 @@ export function createLexicalScopeRecorder() {
       scope.isInDelete = false;
     }
   }
+/**=============================================
+ * Await and Yield Condition
+ * =============================================
+ */
   /**
-   *
+   * Private API to know is current function is async.
+   * @returns {boolean}
    */
-  function canAwaitParseAsExpression() {
+  function canAwaitParseAsExpression(): boolean {
     const scope = helperFindLastClassOrFunctionLexicalScope();
     switch (scope.type) {
       case "FunctionLexicalScope":
@@ -301,7 +319,6 @@ export function createLexicalScopeRecorder() {
           return false;
         }
         const parentScope = helperFindParentClassOrFunctionLexicalScope();
-        if (!parentScope) return false;
         switch (parentScope.type) {
           case "ClassLexicalScope":
             return false;
@@ -311,8 +328,11 @@ export function createLexicalScopeRecorder() {
       }
     }
   }
-
-  function canYieldParseAsExpression() {
+  /**
+   * Private API to know is current function is generator.
+   * @returns {boolean}
+   */
+  function canYieldParseAsExpression(): boolean {
     const scope = helperFindLastClassOrFunctionLexicalScope();
     switch (scope.type) {
       case "FunctionLexicalScope":
@@ -322,7 +342,6 @@ export function createLexicalScopeRecorder() {
           return false;
         }
         const parentScope = helperFindParentClassOrFunctionLexicalScope();
-        if (!parentScope) return false;
         switch (parentScope.type) {
           case "ClassLexicalScope":
             return false;
@@ -333,27 +352,29 @@ export function createLexicalScopeRecorder() {
     }
   }
 
-  function canAwaitParseAsIdentifier() {
-    const scope = helperFindLastClassOrFunctionLexicalScope();
-    switch (scope.type) {
-      case "FunctionLexicalScope":
-        return scope.isAsync;
-      case "ClassLexicalScope": {
-        if (!scope.isInPropertyName) {
-          return false;
-        }
-        const parentScope = helperFindParentClassOrFunctionLexicalScope();
-        if (!parentScope) return false;
-        switch (parentScope.type) {
-          case "ClassLexicalScope":
-            return false;
-          case "FunctionLexicalScope":
-            return parentScope.isAsync;
-        }
-      }
-    }
-  }
-
+  // function canAwaitParseAsIdentifier() {
+  //   const scope = helperFindLastClassOrFunctionLexicalScope();
+  //   switch (scope.type) {
+  //     case "FunctionLexicalScope":
+  //       return scope.isAsync;
+  //     case "ClassLexicalScope": {
+  //       if (!scope.isInPropertyName) {
+  //         return false;
+  //       }
+  //       const parentScope = helperFindParentClassOrFunctionLexicalScope();
+  //       switch (parentScope.type) {
+  //         case "ClassLexicalScope":
+  //           return false;
+  //         case "FunctionLexicalScope":
+  //           return parentScope.isAsync;
+  //       }
+  //     }
+  //   }
+  // }
+/**=============================================
+ * Scope Attribute condition 
+ * =============================================
+ */
   /**
    * Private API to know is current recursion parse in the
    * function param or not (used by yeild and await)
@@ -363,8 +384,36 @@ export function createLexicalScopeRecorder() {
     const scope = lexicalScopes[lexicalScopes.length - 1];
     return scope.type === "FunctionLexicalScope" && scope.inParameter;
   }
-
-  function isInStrictMode() {
+  /**
+   * Private API to know is current function's param is simple.
+   * @returns {boolean}
+   */
+  function isCurrentFunctionLexicalScopeParameterSimple(): boolean {
+    const scope = helperFindLastFunctionLexicalScope();
+    return scope.isSimpleParameter;
+  }
+  /**
+   * Private API to know is current scope is top level, some syntax item
+   * can not show in top level (like new.target)
+   * @returns {boolean}
+   */
+  function isInTopLevel(): boolean {
+    for (let index = lexicalScopes.length - 1; index >= 0; --index) {
+      const scope = lexicalScopes[index];
+      if (scope.type === "FunctionLexicalScope" && scope.isArrow === false) {
+        return scope === lexicalScopes[0];
+      }
+    }
+    // TODO: better unreach error
+    throw new Error();
+  }
+  /**
+   * Private API to know is current function scope is in strict mode,
+   * according to ECMA spec, in class declaration and class expression, is
+   * always strict mode.
+   * @returns {boolean}
+   */
+  function isInStrictMode(): boolean {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scope = lexicalScopes[index];
       switch (scope.type) {
@@ -378,6 +427,13 @@ export function createLexicalScopeRecorder() {
     }
     throw new Error("[Unreach]");
   }
+  /**
+   * Helper function only used by `checkStrictMode`, because
+   * "use strict" directive only meansful when `ExpressionStatement`
+   * is directive to function context, so we need is current
+   * `ExpressionStatement` is in functionContext or not.
+   * @returns {boolean}
+   */
   function isDirectToFunctionContext(): boolean {
     return lexicalScopes[lexicalScopes.length - 1].type === "FunctionLexicalScope";
   }
@@ -418,11 +474,19 @@ export function createLexicalScopeRecorder() {
     }
     return false;
   }
-  function isInClassScope() {
+  /**
+   * Private API to know is current scope under class scope.
+   * @returns {boolean}
+   */
+  function isInClassScope(): boolean {
     const scope = helperFindLastClassScope();
     return !!scope
   }
-  function isCurrentClassExtend() {
+  /**
+   * Private API to know is current class scope have extend.
+   * @returns {boolean}
+   */
+  function isCurrentClassExtend(): boolean {
     const scope = helperFindLastClassScope();
     return !!scope && scope.isExtend;
   }
@@ -433,36 +497,63 @@ export function createLexicalScopeRecorder() {
     }
     return false;
   }
-  function isDuplicatePrivateName() {
-    const scope = helperFindLastClassScope();
-    if (scope && scope.duplicatePrivateName.size > 0) {
-      return scope.duplicatePrivateName;
-    }
-    return null;
+  function isReturnValidate() {
+    const scope = helperFindLastClassOrFunctionLexicalScope();
+    return (
+      scope.type === "FunctionLexicalScope" && 
+      /** Is not toplevel, there we not calling the function isInTopLevel is 
+       *  because we have already find the target scope, there is no need to
+       * find a possible closet function scope again 
+       * */ 
+      scope !== lexicalScopes[0]
+    )
   }
-  function isUndeinfedPrivateName() {
-    const scope = helperFindLastClassScope();
-    let parentScope: ClassLexicalScope | null = null, flag = false;
-    for(let index = lexicalScopes.length-1; index >= 0 ; --index) {
-      const scope = lexicalScopes[index];
-      if(scope.type === "ClassLexicalScope") {
-        if(flag) {
-          parentScope = scope;
-          break;
-        }else {
-          flag = true;
-        }
-      }
-    }
-
-    if (scope && scope.undefinedPrivateName.size > 0) {
-      if (parentScope) {
-        return null;
-      }
-      return scope.undefinedPrivateName;
-    }
-    return null;
+  function isEncloseInFunction() {
+    const scope = helperFindLastClassOrFunctionLexicalScope();
+    return scope.type === "FunctionLexicalScope";
   }
+  function isInPropertyName(): boolean {
+    const scope = helperFindLastClassScope();
+    return !!scope && scope.isInPropertyName;
+  }
+/**=============================================
+ * Setter to Function scope attribute
+ * =============================================
+ */
+  /**
+   * Private API called when parse `*` after parse function, since `function`
+   * keyword is before `*`, so when we called `parseFunction` parser api, we
+   * not know is this function is generator or not, this api is design to solve
+   * this problem, set current function as generator.
+   */
+  function setCurrentFunctionLexicalScopeAsGenerator() {
+    const scope = helperFindLastFunctionLexicalScope();
+    scope.isGenerator = true;
+  }
+  /**
+   * Private API called when parse `'use strict';` after parse function, since `function`
+   * keyword is before directive, so when we called `parseFunction` parser api, we
+   * not know is this function in strict mode or not, this api is design to solve
+   * this problem, set current function strict mode.
+   */
+  function setCurrentFunctionLexicalScopeAsStrictMode() {
+    const scope = helperFindLastFunctionLexicalScope();
+    scope.inStrict = true;
+  }
+  /**
+   * Private API called when parse function, since `function` keyword is argument lisr,
+   * so when we called `parseFunction` parser api, we not know is this function's argument
+   * is simple or not, this api is design to solve this problem, set current function param
+   * is not simple.
+   */
+  function setCurrentFunctionLexicalScopeParameterAsNonSimple() {
+    const scope = helperFindLastFunctionLexicalScope();
+    scope.isSimpleParameter = false;
+  }
+/**=============================================
+ * Class Scope private name 
+ * =============================================
+ */
   function defPrivateName(name: string, type: PrivateNameDefKind = "other") {
     const scope = helperFindLastClassScope();
     let isDuplicate = false;
@@ -512,6 +603,35 @@ export function createLexicalScopeRecorder() {
       }
     }
   }
+  function isUndeinfedPrivateName() {
+    const scope = helperFindLastClassScope();
+    let parentScope: ClassLexicalScope | null = null, flag = false;
+    for(let index = lexicalScopes.length-1; index >= 0 ; --index) {
+      const scope = lexicalScopes[index];
+      if(scope.type === "ClassLexicalScope") {
+        if(flag) {
+          parentScope = scope;
+          break;
+        }else {
+          flag = true;
+        }
+      }
+    }
+    if (scope && scope.undefinedPrivateName.size > 0) {
+      if (parentScope) {
+        return null;
+      }
+      return scope.undefinedPrivateName;
+    }
+    return null;
+  }
+  function isDuplicatePrivateName() {
+    const scope = helperFindLastClassScope();
+    if (scope && scope.duplicatePrivateName.size > 0) {
+      return scope.duplicatePrivateName;
+    }
+    return null;
+  }
   return {
     /**
      * Enter and Exit Scope or Scope attribute
@@ -544,12 +664,15 @@ export function createLexicalScopeRecorder() {
     isInStrictMode,
     isInTopLevel,
     isDirectToFunctionContext,
+    isEncloseInFunction,
     isInParameter,
     isCurrentFunctionLexicalScopeParameterSimple,
     isParentFunctionAsync,
     isParentFunctionGenerator,
+    isReturnValidate,
     // for class
     isInCtor,
+    isInPropertyName,
     isInClassScope,
     isCurrentClassExtend,
     isCurrentInDelete,
@@ -557,7 +680,6 @@ export function createLexicalScopeRecorder() {
      * Await and Yield condition
      */
     canAwaitParseAsExpression,
-    canAwaitParseAsIdentifier,
     canYieldParseAsExpression,
     /**
      * Setter for function scope
