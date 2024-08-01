@@ -45,6 +45,7 @@ async function recursivelyFindTestCase(
       expectFailedTestCases.push({
         jsFilePath,
         fileId: getFileIdCallback(jsDirPath),
+        config: expectObj.config,
       });
     } else {
       expectPassTestCases.push({
@@ -52,6 +53,7 @@ async function recursivelyFindTestCase(
         jsonFilePath,
         fileId: getFileIdCallback(jsDirPath),
         isJsonFileExist: existsSync(jsonFilePath),
+        config: expectObj.config,
       });
     }
   }

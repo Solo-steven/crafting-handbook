@@ -128,8 +128,9 @@ import {
   isClassExpression,
   isExpressionStatement,
 } from "web-infra-common";
-import { ExpectToken, } from "./type";
+import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
+import { ParserConfig, getConfigFromUserInput } from "./config";
 import { LookaheadToken } from "../lexer/type";
 import { createLexer } from "../lexer/index";
 import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } from "./scope/arrowExprScope";
@@ -173,9 +174,10 @@ const KeywordSet = new Set(LexicalLiteral.keywords);
  * @param {string} code
  * @returns
  */
-export function createParser(code: string) {
+export function createParser(code: string, option?: ParserConfig) {
   const lexer = createLexer(code);
   const context = createContext();
+  const config = getConfigFromUserInput(option);
   const lexicalScopeRecorder = createLexicalScopeRecorder();
   const strictModeScopeRecorder = createStrictModeScopeRecorder();
   const asyncArrowExprScopeRecorder = createAsyncArrowExpressionScopeRecorder();
@@ -489,7 +491,10 @@ export function createParser(code: string) {
     lexicalScopeRecorder.exitFunctionLexicalScope();
   }
   function enterProgram() {
-    lexicalScopeRecorder.enterProgramLexicalScope();
+    lexicalScopeRecorder.enterProgramLexicalScope(
+      config.allowAwaitOutsideFunction || false,
+      config.sourceType === "module",
+    );
   }
   function exitProgram() {
     lexicalScopeRecorder.exitProgramLexicalScope();
@@ -649,7 +654,7 @@ export function createParser(code: string) {
     return lexicalScopeRecorder.isDirectToFunctionContext();
   }
   function isReturnValidate(): boolean {
-    return lexicalScopeRecorder.isReturnValidate();
+    return config.allowReturnOutsideFunction || lexicalScopeRecorder.isReturnValidate();
   }
   function isEncloseInFunction(): boolean {
     return lexicalScopeRecorder.isEncloseInFunction();
@@ -893,30 +898,25 @@ export function createParser(code: string) {
         return node as Identifier;
       case SyntaxKinds.MemberExpression:
         if (!isBinding) {
-            return node as Pattern;
+          return node as Pattern;
         }
-        // fall to error
+      // fall to error
       default:
         throw createMessageError(ErrorMessageMap.syntax_error_invalid_assignment_left_hand_side);
     }
   }
   /**
-   * ## Transform Assignment Expression 
-   * @param expr 
-   * @param isBinding 
-   * @returns 
+   * ## Transform Assignment Expression
+   * @param expr
+   * @param isBinding
+   * @returns
    */
   function assignmentExpressionToAssignmentPattern(expr: AssigmentExpression, isBinding: boolean) {
     const left = isBinding ? helperCheckPatternWithBinding(expr.left) : expr.left;
     if (expr.operator !== SyntaxKinds.AssginOperator) {
       throw createMessageError(ErrorMessageMap.syntax_error_invalid_assignment_left_hand_side);
     }
-    return Factory.createAssignmentPattern(
-      left as Pattern,
-      expr.right,
-      expr.start,
-      expr.end,
-    );
+    return Factory.createAssignmentPattern(left as Pattern, expr.right, expr.start, expr.end);
   }
   /**
    *
@@ -958,7 +958,7 @@ export function createParser(code: string) {
       }
     }
     if (isMemberExpression(leftValue) || isIdentifer(leftValue)) {
-      if(leftValue.parentheses) {
+      if (leftValue.parentheses) {
         throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
       }
     }
@@ -966,55 +966,53 @@ export function createParser(code: string) {
   }
   /**
    * ## Transform `SpreadElement` to RestElement in function param
-   * 
+   *
    * Accoring to production rule, `FunctionRestParameter` is just alias
    * of `BindingRestElement` which be used in ArrayPattern.
-   * @param spreadElement 
-   * @returns 
+   * @param spreadElement
+   * @returns
    */
   function spreadElementToFunctionRestParameter(spreadElement: SpreadElement) {
     return spreadElementToArrayRestElement(spreadElement, true);
   }
   /**
    * ## Transform `ArrayExpression` to `ArrayPattern`
-   * @param elements 
-   * @param isBinding 
-   * @returns 
+   * @param elements
+   * @param isBinding
+   * @returns
    */
   function arrayExpressionToArrayPattern(expr: ArrayExpression, isBinding: boolean): ArrayPattern {
     const arrayPatternElements: Array<Pattern | null> = [];
     const restElementIndexs = [];
-    for(let index = 0 ; index < expr.elements.length ; ++index) {
+    for (let index = 0; index < expr.elements.length; ++index) {
       const element = expr.elements[index];
-      if(!element) {
+      if (!element) {
         arrayPatternElements.push(null);
         continue;
       }
-      if(isSpreadElement(element)) {
+      if (isSpreadElement(element)) {
         arrayPatternElements.push(spreadElementToArrayRestElement(element, isBinding));
         restElementIndexs.push(index);
         continue;
       }
       arrayPatternElements.push(exprToPattern(element, isBinding));
     }
-    if(restElementIndexs.length > 1 || 
-      (restElementIndexs.length === 1 && (restElementIndexs[0] !== arrayPatternElements.length-1 || expr.trailingComma))
+    if (
+      restElementIndexs.length > 1 ||
+      (restElementIndexs.length === 1 &&
+        (restElementIndexs[0] !== arrayPatternElements.length - 1 || expr.trailingComma))
     ) {
       throw createMessageError(ErrorMessageMap.syntax_error_parameter_after_rest_parameter);
     }
-    return Factory.createArrayPattern(
-      arrayPatternElements,
-      expr.start,
-      expr.end,
-    );
+    return Factory.createArrayPattern(arrayPatternElements, expr.start, expr.end);
   }
   /**
    * ## Transform `SpreadElement` in ArrayPattern
    * This function transform spread element to following two production rule AST:
-   * 
+   *
    * - `BindingRestElement` in  `ArrayBindingPattern`
    * - `AssignmentRestElement` in `ArrayAssignmentPattern`
-   * 
+   *
    * According to production rule, `BindingRestElement`'s argument can only be identifier or ObjectPattern
    * or ArrayPattern, and argument of `AssignmentRestProperty` can only be identifier or memberExpression.
    * ```
@@ -1022,12 +1020,12 @@ export function createParser(code: string) {
    *                    := ... BindingPattern
    * AssignmentRestElement :=... DestructuringAssignmentTarget
    * ```
-   * @param spreadElement 
-   * @param isBinding 
+   * @param spreadElement
+   * @param isBinding
    */
   function spreadElementToArrayRestElement(spreadElement: SpreadElement, isBinding: boolean): RestElement {
     const argument = exprToPattern(spreadElement.argument, isBinding);
-    if(isAssignmentPattern(argument)) {
+    if (isAssignmentPattern(argument)) {
       throw createMessageError(
         ErrorMessageMap.rest_operator_must_be_followed_by_an_assignable_reference_in_assignment_contexts,
       );
@@ -1036,16 +1034,16 @@ export function createParser(code: string) {
   }
   /**
    * ## Transform `ObjectExpression` To `ObjectPattern`
-   * @param properties 
-   * @param isBinding 
-   * @returns 
+   * @param properties
+   * @param isBinding
+   * @returns
    */
   function objectExpressionToObjectPattern(expr: ObjectExpression, isBinding: boolean): ObjectPattern {
     const objectPatternProperties: Array<ObjectPatternProperty | AssignmentPattern | RestElement> = [];
     const restElementIndexs = [];
-    for(let index = 0; index < expr.properties.length; ++ index) {
+    for (let index = 0; index < expr.properties.length; ++index) {
       const property = expr.properties[index];
-      switch(property.kind) {
+      switch (property.kind) {
         case SyntaxKinds.ObjectProperty:
           objectPatternProperties.push(ObjectPropertyToObjectPatternProperty(property, isBinding));
           break;
@@ -1057,24 +1055,22 @@ export function createParser(code: string) {
           throw createMessageError(ErrorMessageMap.invalid_left_value);
       }
     }
-    if(restElementIndexs.length > 1 || 
-      (restElementIndexs.length === 1 && (restElementIndexs[0] !== objectPatternProperties.length-1 || expr.trailingComma))
+    if (
+      restElementIndexs.length > 1 ||
+      (restElementIndexs.length === 1 &&
+        (restElementIndexs[0] !== objectPatternProperties.length - 1 || expr.trailingComma))
     ) {
       throw createMessageError(ErrorMessageMap.syntax_error_parameter_after_rest_parameter);
     }
-    return Factory.createObjectPattern(
-      objectPatternProperties,
-      expr.start,
-      expr.end,
-    );
+    return Factory.createObjectPattern(objectPatternProperties, expr.start, expr.end);
   }
   /**
    * ## Transform `SpreadElement` in ObjectPattern
    * This function transform spread element to following two production rule AST:
-   * 
+   *
    * - `BindingRestProperty` in BindingObjectPattern
    * - `AssignmentRestProperty` in AssignObjectPattern
-   * 
+   *
    * According to production rule, `BindingRestProperty`'s argument can only be identifier,
    * and argument of `AssignmentRestProperty` can only be identifier or memberExpression.
    * ```
@@ -1084,12 +1080,14 @@ export function createParser(code: string) {
    */
   function spreadElementToObjectRestElement(spreadElement: SpreadElement, isBinding: boolean): RestElement {
     const argument = exprToPattern(spreadElement.argument, isBinding);
-    if(isBinding) {
-      if(!isIdentifer(argument)) {
-        throw createMessageError(ErrorMessageMap.v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts);
+    if (isBinding) {
+      if (!isIdentifer(argument)) {
+        throw createMessageError(
+          ErrorMessageMap.v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts,
+        );
       }
-    }else {
-      if(!isIdentifer(argument) && !isMemberExpression(argument)) {
+    } else {
+      if (!isIdentifer(argument) && !isMemberExpression(argument)) {
         throw createMessageError(
           ErrorMessageMap.v8_error_rest_assignment_property_must_be_followed_by_an_identifier_in_declaration_contexts,
         );
@@ -1421,7 +1419,7 @@ export function createParser(code: string) {
   function parseContinueStatement(): ContinueStatement {
     const { start: keywordStart, end: keywordEnd } = expect(SyntaxKinds.ContinueKeyword);
     if (match(SyntaxKinds.Identifier)) {
-      const id = parseIdentifer();
+      const id = parseIdentifierReference();
       shouldInsertSemi();
       return Factory.createContinueStatement(id, keywordStart, cloneSourcePosition(id.end));
     }
@@ -1431,7 +1429,7 @@ export function createParser(code: string) {
   function parseBreakStatement(): BreakStatement {
     const { start, end } = expect(SyntaxKinds.BreakKeyword);
     if (match(SyntaxKinds.Identifier)) {
-      const label = parseIdentifer();
+      const label = parseIdentifierReference();
       shouldInsertSemi();
       return Factory.createBreakStatement(label, start, end);
     }
@@ -1442,7 +1440,7 @@ export function createParser(code: string) {
     if (!match(SyntaxKinds.Identifier) || lookahead().kind !== SyntaxKinds.ColonPunctuator) {
       // TODO: unreach
     }
-    const label = parseIdentifer();
+    const label = parseIdentifierReference();
     expect(SyntaxKinds.ColonPunctuator);
     const labeled = match(SyntaxKinds.FunctionKeyword) ? parseFunctionDeclaration(false) : parseStatement();
     staticSematicEarlyErrorForLabelStatement(labeled);
@@ -1474,8 +1472,8 @@ export function createParser(code: string) {
   }
   function parseReturnStatement(): ReturnStatement {
     const { start, end } = expect(SyntaxKinds.ReturnKeyword);
-    if(!isReturnValidate()) {
-      throw  createMessageError(ErrorMessageMap.syntax_error_return_not_in_function);
+    if (!isReturnValidate()) {
+      throw createMessageError(ErrorMessageMap.syntax_error_return_not_in_function);
     }
     if (isSoftInsertSemi(true)) {
       return Factory.createReturnStatement(null, start, end);
@@ -1728,7 +1726,7 @@ export function createParser(code: string) {
       // there we do not just using parseIdentifier function as the reason above
       // let can be function name as other place
       if (match([SyntaxKinds.Identifier, SyntaxKinds.LetKeyword])) {
-        name = parseIdentifer();
+        name = parseIdentifierReference();
       } else {
         if (match(SyntaxKinds.AwaitKeyword)) {
           // for function expression, can await treat as function name is dep on current scope.
@@ -1743,7 +1741,7 @@ export function createParser(code: string) {
               ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
             );
           }
-          name = parseIdentiferWithKeyword();
+          name = parseIdentifierName();
         } else if (match(SyntaxKinds.YieldKeyword)) {
           // for function expression, can yield treat as function name is dep on current scope.
           if (isExpression && isCurrentScopeParseYieldAsExpression()) {
@@ -1757,7 +1755,7 @@ export function createParser(code: string) {
           if (isInStrictMode()) {
             throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
           }
-          name = parseIdentiferWithKeyword();
+          name = parseIdentifierName();
         }
       }
       return name;
@@ -1928,7 +1926,7 @@ export function createParser(code: string) {
     const { start } = expect(SyntaxKinds.ClassKeyword);
     let name: Identifier | null = null;
     if (match(BindingIdentifierSyntaxKindArray)) {
-      name = parseIdentifer();
+      name = parseIdentifierReference();
     }
     let superClass: Expression | null = null;
     if (match(SyntaxKinds.ExtendsKeyword)) {
@@ -2721,7 +2719,7 @@ export function createParser(code: string) {
         throw createMessageError(ErrorMessageMap.delete_private_name);
       }
     } else {
-      property = parseIdentiferWithKeyword();
+      property = parseIdentifierName();
     }
     return property;
   }
@@ -2795,7 +2793,7 @@ export function createParser(code: string) {
         // case 0: identifier `=>` ...
         if (kind === SyntaxKinds.ArrowOperator && canParseAsArrowFunction()) {
           const [[argus, strictModeScope], arrowExprScope] = parseWithArrowExpressionScope(() =>
-            parseWithLHSLayerReturnScope(() => [parseIdentifer()]),
+            parseWithLHSLayerReturnScope(() => [parseIdentifierReference()]),
           );
           if (getLineTerminatorFlag()) {
             throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_arrow);
@@ -2832,7 +2830,7 @@ export function createParser(code: string) {
             //   function.
             if (kind === SyntaxKinds.ParenthesesLeftPunctuator) {
               const containEsc = getEscFlag();
-              const id = parseIdentifer();
+              const id = parseIdentifierReference();
               const [[meta, strictModeScope], arrowExprScope] = parseWithArrowExpressionScope(() =>
                 parseWithCatpureLayer(parseArguments),
               );
@@ -2866,7 +2864,7 @@ export function createParser(code: string) {
             ) {
               // async followed by line break
               if (flag) {
-                return parseIdentifer();
+                return parseIdentifierReference();
               }
               const isAsyncContainUnicode = getEscFlag();
               const { start, end } = expect(SyntaxKinds.Identifier); // eat async
@@ -2879,7 +2877,7 @@ export function createParser(code: string) {
                 throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
               }
               const [[argus, strictModeScope], arrowExprScope] = parseWithArrowExpressionScope(() =>
-                parseWithCatpureLayer(() => [parseIdentifer()]),
+                parseWithCatpureLayer(() => [parseIdentifierReference()]),
               );
               if (getLineTerminatorFlag()) {
                 throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_async);
@@ -2901,7 +2899,7 @@ export function createParser(code: string) {
             }
           }
         }
-        return parseIdentifer();
+        return parseIdentifierReference();
       }
       default:
         throw createUnexpectError(null);
@@ -2932,7 +2930,7 @@ export function createParser(code: string) {
    * ```
    * @returns {Identifier}
    */
-  function parseIdentifer(): Identifier {
+  function parseIdentifierReference(): Identifier {
     expectButNotEat([
       SyntaxKinds.Identifier,
       SyntaxKinds.AwaitKeyword,
@@ -2988,7 +2986,7 @@ export function createParser(code: string) {
           if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
             throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
           }
-          if(isInClassScope() && !isEncloseInFunction() && !isInPropertyName()) {
+          if (isInClassScope() && !isEncloseInFunction() && !isInPropertyName()) {
             throw createMessageError(ErrorMessageMap.syntax_error_arguments_is_not_valid_in_fields);
           }
           recordScope(ExpressionScopeKind.ArgumentsIdentifier, start);
@@ -3013,7 +3011,7 @@ export function createParser(code: string) {
    * it also can parse keyword as identifier.
    * @returns {Identifier}
    */
-  function parseIdentiferWithKeyword(): Identifier {
+  function parseIdentifierName(): Identifier {
     const { value, start, end } = expect(IdentiferWithKeyworArray);
     return Factory.createIdentifier(value, start, end);
   }
@@ -3086,12 +3084,19 @@ export function createParser(code: string) {
     const { start, end } = expect(SyntaxKinds.ImportKeyword);
     expect(SyntaxKinds.DotOperator);
     const ecaFlag = getEscFlag();
-    const property = parseIdentifer();
+    const property = parseIdentifierReference();
     if (property.name !== "meta") {
-      throw createMessageError(ErrorMessageMap.import_meta_invalid_property);
+      throw createMessageError(
+        ErrorMessageMap.babel_error_the_only_valid_meta_property_for_import_is_import_meta,
+      );
     }
     if (ecaFlag) {
       throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
+    }
+    if (config.sourceType === "script") {
+      throw createMessageError(
+        ErrorMessageMap.babel_error_import_meta_may_appear_only_with_source_type_module,
+      );
     }
     return Factory.createMetaProperty(
       Factory.createIdentifier("import", start, end),
@@ -3202,7 +3207,7 @@ export function createParser(code: string) {
         if (match(SyntaxKinds.PrivateName)) {
           // TODO: error
         }
-        property = parseIdentiferWithKeyword();
+        property = parseIdentifierName();
         end = cloneSourcePosition(property.end);
         break;
       }
@@ -3439,7 +3444,7 @@ export function createParser(code: string) {
     // propty name is a spical test of binding identifier.
     // if `await` and `yield` is propty name with colon (means assign), it dose not affected by scope.
     if (match(IdentiferWithKeyworArray)) {
-      const identifer = parseIdentiferWithKeyword();
+      const identifer = parseIdentifierName();
       return identifer;
     }
 
@@ -4265,7 +4270,7 @@ export function createParser(code: string) {
     return Factory.createRestElement(id, start, cloneSourcePosition(id.end));
   }
   function parseBindingIdentifier() {
-    return parseWithLHSLayer(parseIdentifer);
+    return parseWithLHSLayer(parseIdentifierReference);
   }
   /**
    * Parse BindingPattern
@@ -4518,7 +4523,7 @@ export function createParser(code: string) {
    * @returns {ImportDefaultSpecifier}
    */
   function parseImportDefaultSpecifier(): ImportDefaultSpecifier {
-    const name = parseIdentifer();
+    const name = parseIdentifierReference();
     return Factory.createImportDefaultSpecifier(
       name,
       cloneSourcePosition(name.start),
@@ -4538,7 +4543,7 @@ export function createParser(code: string) {
       throw createMessageError("import namespace specifier must has 'as'");
     }
     nextToken();
-    const id = parseIdentifer();
+    const id = parseIdentifierReference();
     return Factory.createImportNamespaceSpecifier(id, start, cloneSourcePosition(id.end));
   }
   /**
@@ -4585,7 +4590,7 @@ export function createParser(code: string) {
         continue;
       }
       nextToken();
-      const local = parseIdentifer();
+      const local = parseIdentifierReference();
       specifiers.push(
         Factory.createImportSpecifier(
           imported,
@@ -4760,6 +4765,6 @@ export function createParser(code: string) {
     if (match(SyntaxKinds.StringLiteral)) {
       return parseStringLiteral();
     }
-    return parseIdentiferWithKeyword();
+    return parseIdentifierName();
   }
 }

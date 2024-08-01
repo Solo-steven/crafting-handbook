@@ -15,7 +15,7 @@ const writePath = path.join(__dirname, "test.json");
 // // Combine styled and normal strings
 // log(chalk.blue('Hello') + ' World' + chalk.red('!'));
 
-printLexer(code);
+// printLexer(code);
 printParser(code);
 
 function printLexer(code: string) {
@@ -43,7 +43,7 @@ function printLexer(code: string) {
   );
 }
 function printParser(code: string) {
-  const ast = createParser(code).parse();
+  const ast = createParser(code, { allowAwaitOutsideFunction: true }).parse();
   transformSyntaxKindToLiteral(ast);
   console.log(JSON.stringify(ast, null, 4));
   return 0;

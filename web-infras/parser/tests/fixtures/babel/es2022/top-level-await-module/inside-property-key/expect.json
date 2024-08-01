@@ -1,3 +1,7 @@
 {
-  "expect": "Pass"
+  "expect": "Pass",
+  "config": {
+    "sourceType": "module",
+    "allowAwaitOutsideFunction": true
+  }
 }

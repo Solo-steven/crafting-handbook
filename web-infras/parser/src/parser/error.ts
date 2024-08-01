@@ -101,19 +101,29 @@ export const ErrorMessageMap = {
   invalid_esc_char_in_keyword: "keyword can not contain any esc flag.",
   paran_expr_can_not_be_empty: "paran expression can not be empty",
   /**
-   * Format error from MDN, using v8 based as error message value
+   * Format error from MDN, using v8 based as error message value, there is serval kind of error
+   * -
    */
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_return
   syntax_error_return_not_in_function: "SyntaxError: return not in function",
-  syntax_error_arguments_is_not_valid_in_fields: "SyntaxError: 'arguments' is not allowed in class field initializer or static initialization block",
-  syntax_error_rest_parameter_may_not_have_a_default: "SyntaxError: Rest parameter may not have a default initializer",
+  syntax_error_arguments_is_not_valid_in_fields:
+    "SyntaxError: 'arguments' is not allowed in class field initializer or static initialization block",
+  syntax_error_rest_parameter_may_not_have_a_default:
+    "SyntaxError: Rest parameter may not have a default initializer",
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Parameter_after_rest_parameter
   syntax_error_parameter_after_rest_parameter: "SyntaxError: Rest parameter must be last formal parameter",
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Invalid_assignment_left-hand_side
   syntax_error_invalid_assignment_left_hand_side: "SyntaxError: invalid assignment left-hand side",
   // try: ``
-  v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts: "SyntaxError: `...` must be followed by an identifier in declaration contexts",
-  v8_error_rest_assignment_property_must_be_followed_by_an_identifier_in_declaration_contexts: "SyntaxError: `...` must be followed by an assignable reference in assignment contexts",
-  // try: `((a)) => {}`
-  v8_error_invalid_parenthesized_assignment_pattern: "SyntaxError: Invalid destructuring assignment target."
+  v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts:
+    "SyntaxError: `...` must be followed by an identifier in declaration contexts",
+  v8_error_rest_assignment_property_must_be_followed_by_an_identifier_in_declaration_contexts:
+    "SyntaxError: `...` must be followed by an assignable reference in assignment contexts",
+  // try: `((a)) => {}` in v8
+  v8_error_invalid_parenthesized_assignment_pattern: "SyntaxError: Invalid destructuring assignment target.",
+  // try: `import.meta` in babel playground when sourceType is script
+  babel_error_import_meta_may_appear_only_with_source_type_module: `SyntaxError: import.meta may appear only with 'sourceType: "module"`,
+  // try `import.name` in babel playground
+  babel_error_the_only_valid_meta_property_for_import_is_import_meta:
+    "SyntaxError: The only valid meta property for import is import.meta.",
 };

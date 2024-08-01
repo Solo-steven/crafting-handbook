@@ -27,7 +27,6 @@ export interface BlockLexicalScope {
 
 export type LexicalScope = ClassLexicalScope | FunctionLexicalScope | BlockLexicalScope;
 
-
 function isPrivateNameExist(scope: ClassLexicalScope, name: string, type: PrivateNameDefKind) {
   if (scope.definiedPrivateName.has(name)) {
     switch (type) {
@@ -56,16 +55,15 @@ function isPrivateNameExist(scope: ClassLexicalScope, name: string, type: Privat
   return false;
 }
 
-
 export function createLexicalScopeRecorder() {
   const lexicalScopes: Array<LexicalScope> = [];
-/**=============================================
- * Helper function 
- * =============================================
- */
+  /**=============================================
+   * Helper function
+   * =============================================
+   */
   /**
-   * 
-   * @returns 
+   *
+   * @returns
    */
   function helperFindParentClassOrFunctionLexicalScope(): FunctionLexicalScope | ClassLexicalScope {
     let flag = false;
@@ -101,8 +99,8 @@ export function createLexicalScopeRecorder() {
     throw new Error();
   }
   /**
-   * 
-   * @returns 
+   *
+   * @returns
    */
   function helperFindLastClassScope() {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
@@ -114,8 +112,8 @@ export function createLexicalScopeRecorder() {
     return null;
   }
   /**
-   * 
-   * @returns 
+   *
+   * @returns
    */
   function helperFindLastClassOrFunctionLexicalScope(): FunctionLexicalScope | ClassLexicalScope {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
@@ -130,22 +128,22 @@ export function createLexicalScopeRecorder() {
     // TODO: better error
     throw new Error();
   }
-/**=============================================
- * Enter and Exit functions
- * =============================================
- */
+  /**=============================================
+   * Enter and Exit functions
+   * =============================================
+   */
   /**
    * Private API called when start parse moduleItem in `parseProgram`, different from
    * `enterFunctionScope`, it will not find parent scope, since it not exist.
    */
-  function enterProgramLexicalScope() {
+  function enterProgramLexicalScope(isAsync: boolean, inStrict: boolean) {
     lexicalScopes.push({
       type: "FunctionLexicalScope",
       isArrow: false,
-      isAsync: false,
+      isAsync,
       isGenerator: false,
       inParameter: false,
-      inStrict: false,
+      inStrict,
       isSimpleParameter: true,
     });
   }
@@ -230,7 +228,7 @@ export function createLexicalScopeRecorder() {
   function exitBlockLexicalScope() {
     lexicalScopes.pop();
   }
-    /**
+  /**
    * Private API called when start parse class scope.
    * @param {boolean} isExtend
    */
@@ -301,10 +299,10 @@ export function createLexicalScopeRecorder() {
       scope.isInDelete = false;
     }
   }
-/**=============================================
- * Await and Yield Condition
- * =============================================
- */
+  /**=============================================
+   * Await and Yield Condition
+   * =============================================
+   */
   /**
    * Private API to know is current function is async.
    * @returns {boolean}
@@ -371,10 +369,10 @@ export function createLexicalScopeRecorder() {
   //     }
   //   }
   // }
-/**=============================================
- * Scope Attribute condition 
- * =============================================
- */
+  /**=============================================
+   * Scope Attribute condition
+   * =============================================
+   */
   /**
    * Private API to know is current recursion parse in the
    * function param or not (used by yeild and await)
@@ -480,7 +478,7 @@ export function createLexicalScopeRecorder() {
    */
   function isInClassScope(): boolean {
     const scope = helperFindLastClassScope();
-    return !!scope
+    return !!scope;
   }
   /**
    * Private API to know is current class scope have extend.
@@ -500,13 +498,13 @@ export function createLexicalScopeRecorder() {
   function isReturnValidate() {
     const scope = helperFindLastClassOrFunctionLexicalScope();
     return (
-      scope.type === "FunctionLexicalScope" && 
-      /** Is not toplevel, there we not calling the function isInTopLevel is 
+      scope.type === "FunctionLexicalScope" &&
+      /** Is not toplevel, there we not calling the function isInTopLevel is
        *  because we have already find the target scope, there is no need to
-       * find a possible closet function scope again 
-       * */ 
+       * find a possible closet function scope again
+       * */
       scope !== lexicalScopes[0]
-    )
+    );
   }
   function isEncloseInFunction() {
     const scope = helperFindLastClassOrFunctionLexicalScope();
@@ -516,10 +514,10 @@ export function createLexicalScopeRecorder() {
     const scope = helperFindLastClassScope();
     return !!scope && scope.isInPropertyName;
   }
-/**=============================================
- * Setter to Function scope attribute
- * =============================================
- */
+  /**=============================================
+   * Setter to Function scope attribute
+   * =============================================
+   */
   /**
    * Private API called when parse `*` after parse function, since `function`
    * keyword is before `*`, so when we called `parseFunction` parser api, we
@@ -550,10 +548,10 @@ export function createLexicalScopeRecorder() {
     const scope = helperFindLastFunctionLexicalScope();
     scope.isSimpleParameter = false;
   }
-/**=============================================
- * Class Scope private name 
- * =============================================
- */
+  /**=============================================
+   * Class Scope private name
+   * =============================================
+   */
   function defPrivateName(name: string, type: PrivateNameDefKind = "other") {
     const scope = helperFindLastClassScope();
     let isDuplicate = false;
@@ -586,7 +584,7 @@ export function createLexicalScopeRecorder() {
   function usePrivateName(name: string, type: PrivateNameDefKind = "other") {
     let scope: ClassLexicalScope | null = null;
     for (const s of lexicalScopes) {
-      if(s.type === "ClassLexicalScope") {
+      if (s.type === "ClassLexicalScope") {
         scope = s;
         if (isPrivateNameExist(scope, name, type)) {
           return;
@@ -605,14 +603,15 @@ export function createLexicalScopeRecorder() {
   }
   function isUndeinfedPrivateName() {
     const scope = helperFindLastClassScope();
-    let parentScope: ClassLexicalScope | null = null, flag = false;
-    for(let index = lexicalScopes.length-1; index >= 0 ; --index) {
+    let parentScope: ClassLexicalScope | null = null,
+      flag = false;
+    for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scope = lexicalScopes[index];
-      if(scope.type === "ClassLexicalScope") {
-        if(flag) {
+      if (scope.type === "ClassLexicalScope") {
+        if (flag) {
           parentScope = scope;
           break;
-        }else {
+        } else {
           flag = true;
         }
       }

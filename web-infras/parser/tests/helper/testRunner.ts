@@ -10,6 +10,7 @@ import {
 } from "./type";
 import { transformSyntaxKindToLiteral } from "./transform";
 import { parse } from "@/src/index";
+import { ParserConfig } from "@/src/parser/config";
 
 /**
  * Try to parse a code string, return format string if no parse
@@ -17,9 +18,9 @@ import { parse } from "@/src/index";
  * @param code
  * @returns {string | null} return null if parse failed.
  */
-function tryParseCodeStringIntoASTString(code: string): string | null {
+function tryParseCodeStringIntoASTString(code: string, config?: ParserConfig): string | null {
   try {
-    const ast = parse(code);
+    const ast = parse(code, config);
     transformSyntaxKindToLiteral(ast);
     return JSON.stringify(ast, null, 4);
   } catch (e) {
@@ -51,7 +52,7 @@ async function runExpectPassTestCase(
     readFile(testCase.jsFilePath),
     readFile(testCase.jsonFilePath),
   ]);
-  const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString());
+  const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString(), testCase.config);
   const expectASTString = astBuffer.toString();
   if (resultASTString === null || expectASTString !== resultASTString) {
     failedResult.push({
@@ -81,7 +82,7 @@ async function runExpectFailedTestCase(
   failedResult: Array<FailedTestCasesResult>,
 ) {
   const codeBuffer = await readFile(testCase.jsFilePath);
-  const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString());
+  const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString(), testCase.config);
   if (resultASTString !== null) {
     failedResult.push({
       kind: "ExpectFailedButPass",
@@ -109,7 +110,7 @@ async function updateTestCase(
   failedResult: Array<FailedTestCasesResult>,
 ) {
   const codeBuffer = await readFile(testCase.jsFilePath);
-  const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString());
+  const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString(), testCase.config);
   if (resultASTString === null) {
     failedResult.push({
       kind: "ExpectPassButFailed",

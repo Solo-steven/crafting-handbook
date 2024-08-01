@@ -2,9 +2,10 @@ import { createParser } from "@/src/parser";
 import { createLexer } from "@/src/lexer";
 import { Token } from "@/src/lexer/type";
 import { SyntaxKinds } from "web-infra-common";
+import { ParserConfig } from "./parser/config";
 
-export function parse(code: string) {
-  const parser = createParser(code);
+export function parse(code: string, config?: ParserConfig) {
+  const parser = createParser(code, config);
   return parser.parse();
 }
 export function tokenize(code: string): Array<Token> {

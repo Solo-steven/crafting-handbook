@@ -17,8 +17,8 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/core/opts/allowAwaitOutsideFunction-true",
   "/babel/core/opts/allowNewTargetOutsideFunction-true",
   // (feature) allowReturnOutsideFunction
-  "/babel/core/uncategorised/328",
-  "/babel/core/uncategorised/327",
+  // "/babel/core/uncategorised/328",
+  // "/babel/core/uncategorised/327",
   // (featture) ts or flow
   "/babel/estree/class-method/flow",
   "/babel/estree/class-method/typescript",
@@ -196,8 +196,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/comments/interpreter-directive/interpreter-directive-import",
   "/babel/comments/interpreter-directive/interpreter-directive-object",
   // === (feature) implement sourceType
-  "/esprima/es2020/import.meta/log",
-  "/esprima/es2020/import.meta/log-module",
   "/esprima/ES6/identifier/invalid_expression_await",
   "/esprima/ES6/identifier/invalid_function_await",
   "/esprima/ES6/identifier/invalid_var_await",
@@ -207,21 +205,20 @@ const TempIgnoreCases: Set<string> = new Set([
   "/esprima/ES6/program/module/invalid-with",
   "/esprima/ES6/program/module/invalid-delete",
   "/babel/es2015/destructuring/binding-arguments-module",
-  "/babel/es2020/import-meta/error-in-script",
   "/babel/es2015/uncategorised/367",
   "/babel/es2015/uncategorised/365",
   "/babel/es2015/uncategorised/363",
   "/babel/es2015/uncategorised/361",
   "/babel/es2015/uncategorised/334",
   "/babel/es2015/uncategorised/359",
-  "/babel/es2022/top-level-await-module/export-default",
-  "/babel/es2022/top-level-await-module/for-await",
-  "/babel/es2022/top-level-await-module/inside-block",
-  "/babel/es2022/top-level-await-module/inside-property-key",
-  "/babel/es2022/top-level-await-module/top-level",
+  // "/babel/es2022/top-level-await-module/export-default",
+  // "/babel/es2022/top-level-await-module/for-await",
+  // "/babel/es2022/top-level-await-module/inside-block",
+  // "/babel/es2022/top-level-await-module/inside-property-key",
+  // "/babel/es2022/top-level-await-module/top-level",
   "/babel/core/uncategorised/545",
   // === (feature) top level await
-  "/babel/es2017/async-functions/allow-await-outside-function",
+  // "/babel/es2017/async-functions/allow-await-outside-function",
   // === (feature) duplicate proto property
   "/esprima/ES6/object-initialiser/invalid-proto-getter-literal-identifier",
   "/esprima/ES6/object-initialiser/invalid-proto-identifier-literal",
@@ -264,20 +261,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2015/modules/duplicate-named-export-function-declaration",
   "/babel/es2015/modules/duplicate-named-export-variable-declaration",
   "/babel/es2022/module-string-names/duplicate-exported-binding-check",
-  // === (feature) parse class static block
-  // "/babel/es2022/class-static-block/await-binding-in-arrow-function-in-static-block copy",
-  // "/babel/es2022/class-static-block/await-binding-in-function-in-static-block",
-  // "/babel/es2022/class-static-block/await-binding-in-initializer-in-static-block",
-  // "/babel/es2022/class-static-block/basic",
-  // "/babel/es2022/class-static-block/directive-like-literal",
-  // "/babel/es2022/class-static-block/duplicate-function-var-name",
-  // "/babel/es2022/class-static-block/empty-statement",
-  // "/babel/es2022/class-static-block/lexical-scope",
-  // "/babel/es2022/class-static-block/multiple-static-block",
-  // "/babel/es2022/class-static-block/nested-control-flow",
-  // "/babel/es2022/class-static-block/re-declare-var",
-  // "/babel/es2022/class-static-block/super-property",
-  // "/babel/comments/basic/class-static-block",
   // === (feature) regex content and flag check
   "/babel/es2024/regexp-unicode-sets/vu-error",
   "/babel/es2024/regexp-unicode-sets/uv-error",
@@ -293,9 +276,8 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2018/object-rest-spread/12",
   "/babel/es2018/object-rest-spread/13",
   "/babel/es2018/object-rest-spread/15",
-  // === (feature) class scope for yield and await expression.
+  // === (feature) record to parent arrow scope.
   "/babel/es2022/class-properties/await-in-computed-property-in-params-of-async-arrow",
-  "/babel/es2022/class-properties/yield-in-class-property-in-generator",
 ]);
 
 function getFailedKindCount(failedTestCases: Array<FailedTestCasesResult>) {

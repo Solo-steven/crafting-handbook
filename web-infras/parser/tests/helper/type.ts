@@ -1,6 +1,8 @@
+import { ParserConfig } from "@/src/parser/config";
+
 export interface ExpectConfig {
   expect: "Failed" | "Pass";
-  config: any;
+  config?: ParserConfig;
 }
 
 /**
@@ -11,6 +13,7 @@ export interface ExpectPassTestCase {
   jsonFilePath: string;
   isJsonFileExist: boolean;
   fileId: string;
+  config?: ParserConfig;
 }
 /**
  * A Test Case that expect to be failed
@@ -18,6 +21,7 @@ export interface ExpectPassTestCase {
 export interface ExpectFailedTestCase {
   jsFilePath: string;
   fileId: string;
+  config?: ParserConfig;
 }
 /**
  * A Test suit, contain two kind of test case
