@@ -1006,24 +1006,41 @@ export function createLexer(code: string) {
     if (char === "0") {
       eatChar();
       const next = getChar();
-      if (next === ".") {
-        eatChar();
-        return readDotStartFloat();
-      }
-      if (next === "b" || next === "B") {
-        eatChar();
-        return readNumberLiteralWithBase(isBinary);
-      }
-      if (next === "o" || next === "O") {
-        eatChar();
-        return readNumberLiteralWithBase(isOct);
-      }
-      if (next === "x" || next === "X") {
-        eatChar();
-        return readNumberLiteralWithBase(isHex);
-      }
-      if (next !== "E" && next !== "e") {
-        return finishToken(SyntaxKinds.NumberLiteral);
+      switch(next) {
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":{
+          return readLegacyOctNumberLiteral();
+        }
+        case ".": {
+          eatChar();
+          return readDotStartFloat();
+        }
+        case "b":
+        case "B": {
+          eatChar();
+          return readNumberLiteralWithBase(isBinary);
+        }
+        case "o":
+        case "O":{
+          eatChar();
+          return readNumberLiteralWithBase(isOct);
+        }
+        case "x":
+        case "X": {
+          eatChar();
+          return readNumberLiteralWithBase(isHex);
+        }
+        default: {
+          if (next !== "E" && next !== "e") {
+            return finishToken(SyntaxKinds.NumberLiteral);
+          }
+        }
       }
     }
     // Start With Non 0
@@ -1034,18 +1051,22 @@ export function createLexer(code: string) {
     }
     char = getChar();
     if (char === "e" || char === "E") {
+      return readExponPartOfNumberLiteral();
+    }
+    return finishToken(SyntaxKinds.NumberLiteral);
+  }
+  function readExponPartOfNumberLiteral() {
+    eatChar();
+    const char = getChar();
+    if (char === "+" || char == "-") {
       eatChar();
-      char = getChar();
-      if (char === "+" || char == "-") {
-        eatChar();
-      }
-      const startIndex = getCurrentIndex();
-      readDigitalHelper();
-      const exponPart = context.cursor.code.slice(startIndex, context.cursor.pos);
-      if (exponPart.length === 0) {
-        // TODO: error handle
-        throw new Error("todo error - expon length is 0");
-      }
+    }
+    const startIndex = getCurrentIndex();
+    readDigitalHelper();
+    const exponPart = context.cursor.code.slice(startIndex, context.cursor.pos);
+    if (exponPart.length === 0) {
+      // TODO: error handle
+      throw new Error("todo error - expon length is 0");
     }
     return finishToken(SyntaxKinds.NumberLiteral);
   }
@@ -1086,7 +1107,26 @@ export function createLexer(code: string) {
       eatChar();
     }
     if (seprator) {
-      throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+      throw lexicalError(ErrorMessageMap.babel_error_a_numeric_separator_is_only_allowed_between_two_digits);
+    }
+  }
+  function readLegacyOctNumberLiteral() {
+    while(isOct()) {
+      eatChar();
+    }
+    const char = getChar();
+    switch(char) {
+      case "e":
+      case "E": {
+        return readExponPartOfNumberLiteral();
+      }
+      case ".": {
+        eatChar();
+        return readDotStartFloat();
+      }
+      default: {
+        return finishToken(SyntaxKinds.NumberLiteral);
+      }
     }
   }
   /**
@@ -1168,7 +1208,7 @@ export function createLexer(code: string) {
       eatChar();
     }
     if (seprator) {
-      throw lexicalError(ErrorMessageMap.invalid_numeric_seperator);
+      throw lexicalError(ErrorMessageMap.babel_error_a_numeric_separator_is_only_allowed_between_two_digits);
     }
     // ban `0x` or `0b`
     if (getSliceStringFromCode(startIndex, getCurrentIndex()).length === 0) {
@@ -1196,14 +1236,14 @@ export function createLexer(code: string) {
       }
       if (char === "\n" && !isEscape) {
         // TODO: error handle
-        throw new Error("todo error - not close string literal");
+        throw new Error(ErrorMessageMap.babel_error_unterminated_string_constant);
       }
       isEscape = char === "\\" && !isEscape;
       eatChar();
     }
     if (isEOF()) {
       // TODO: error handle
-      throw new Error("todo error - not close string literal");
+      throw new Error(ErrorMessageMap.babel_error_unterminated_string_constant);
     }
     // get end index before ending char ' or "
     const indexBeforeEndMode = getCurrentIndex();

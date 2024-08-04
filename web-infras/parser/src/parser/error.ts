@@ -100,10 +100,10 @@ export const ErrorMessageMap = {
   import_call_is_not_allow_as_new_expression_called: "import call is not allowed as new expression called",
   invalid_esc_char_in_keyword: "keyword can not contain any esc flag.",
   paran_expr_can_not_be_empty: "paran expression can not be empty",
-  /**
-   * Format error from MDN, using v8 based as error message value, there is serval kind of error
-   * -
-   */
+/**
+ * Format error from MDN, using v8 based as error message value, some error is come from babel and 
+ * v8 engine
+ */
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_return
   syntax_error_return_not_in_function: "SyntaxError: return not in function",
   syntax_error_arguments_is_not_valid_in_fields:
@@ -114,12 +114,16 @@ export const ErrorMessageMap = {
   syntax_error_parameter_after_rest_parameter: "SyntaxError: Rest parameter must be last formal parameter",
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Invalid_assignment_left-hand_side
   syntax_error_invalid_assignment_left_hand_side: "SyntaxError: invalid assignment left-hand side",
-  // try: ``
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Setter_one_argument
+  syntax_error_setter_functions_must_have_one_argument: "SyntaxError: Setter must have exactly one formal parameter.",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Setter_one_argument
+  syntax_error_setter_functions_must_have_one_argument_not_rest: "SyntaxError: Setter function argument must not be a rest parameter",
+  // try: `const {...[x]} = {}` in babel playgroud`
   v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts:
     "SyntaxError: `...` must be followed by an identifier in declaration contexts",
   v8_error_rest_assignment_property_must_be_followed_by_an_identifier_in_declaration_contexts:
     "SyntaxError: `...` must be followed by an assignable reference in assignment contexts",
-  // try: `((a)) => {}` in v8
+  // try: `((a)) => {}` in v8 runtime.
   v8_error_invalid_parenthesized_assignment_pattern: "SyntaxError: Invalid destructuring assignment target.",
   // try: `import.meta` in babel playground when sourceType is script
   babel_error_import_meta_may_appear_only_with_source_type_module: `SyntaxError: import.meta may appear only with 'sourceType: "module"`,

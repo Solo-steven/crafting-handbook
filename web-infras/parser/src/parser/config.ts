@@ -6,12 +6,17 @@ export type ParserConfig = {
   allowReturnOutsideFunction?: boolean;
   allowAwaitOutsideFunction?: boolean;
 };
-const defaultConfig: ParserConfig = {
+export type ParserMergedConfig = {
+  sourceType: "script" | "module";
+  allowReturnOutsideFunction: boolean;
+  allowAwaitOutsideFunction: boolean;
+};
+const defaultConfig: ParserMergedConfig = {
   sourceType: "script",
   allowReturnOutsideFunction: false,
   allowAwaitOutsideFunction: false,
 };
-export function getConfigFromUserInput(config?: ParserConfig): ParserConfig {
+export function getConfigFromUserInput(config?: ParserConfig): ParserMergedConfig {
   return {
     ...defaultConfig,
     ...(config || {}),

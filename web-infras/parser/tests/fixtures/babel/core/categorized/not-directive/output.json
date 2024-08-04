@@ -1,0 +1,3097 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 1,
+                    "col": 2,
+                    "index": 1
+                },
+                "end": {
+                    "row": 1,
+                    "col": 14,
+                    "index": 13
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 2,
+                "index": 1
+            },
+            "end": {
+                "row": 1,
+                "col": 14,
+                "index": 13
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "MemberExpression",
+                "computed": false,
+                "optional": false,
+                "object": {
+                    "kind": "StringLiteral",
+                    "value": "use strict",
+                    "start": {
+                        "row": 3,
+                        "col": 1,
+                        "index": 17
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 13,
+                        "index": 29
+                    }
+                },
+                "property": {
+                    "kind": "Identifer",
+                    "name": "foo",
+                    "start": {
+                        "row": 3,
+                        "col": 14,
+                        "index": 30
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 17,
+                        "index": 33
+                    }
+                },
+                "start": {
+                    "row": 3,
+                    "col": 1,
+                    "index": 17
+                },
+                "end": {
+                    "row": 3,
+                    "col": 17,
+                    "index": 33
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 17
+            },
+            "end": {
+                "row": 3,
+                "col": 17,
+                "index": 33
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "MemberExpression",
+                "computed": true,
+                "optional": false,
+                "object": {
+                    "kind": "StringLiteral",
+                    "value": "use strict",
+                    "start": {
+                        "row": 4,
+                        "col": 1,
+                        "index": 35
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 13,
+                        "index": 47
+                    }
+                },
+                "property": {
+                    "kind": "Identifer",
+                    "name": "foo",
+                    "start": {
+                        "row": 4,
+                        "col": 14,
+                        "index": 48
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 17,
+                        "index": 51
+                    }
+                },
+                "start": {
+                    "row": 4,
+                    "col": 1,
+                    "index": 35
+                },
+                "end": {
+                    "row": 4,
+                    "col": 18,
+                    "index": 52
+                }
+            },
+            "start": {
+                "row": 4,
+                "col": 1,
+                "index": 35
+            },
+            "end": {
+                "row": 4,
+                "col": 18,
+                "index": 52
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "TaggTemplateExpression",
+                "tag": {
+                    "kind": "StringLiteral",
+                    "value": "use strict",
+                    "start": {
+                        "row": 5,
+                        "col": 1,
+                        "index": 54
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 13,
+                        "index": 66
+                    }
+                },
+                "quasi": {
+                    "kind": "TemplateLiteral",
+                    "quasis": [
+                        {
+                            "kind": "TemplateElement",
+                            "value": "`foo`",
+                            "tail": true,
+                            "start": {
+                                "row": 5,
+                                "col": 13,
+                                "index": 66
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 18,
+                                "index": 71
+                            }
+                        }
+                    ],
+                    "expressions": [],
+                    "start": {
+                        "row": 5,
+                        "col": 13,
+                        "index": 66
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 18,
+                        "index": 71
+                    }
+                },
+                "start": {
+                    "row": 5,
+                    "col": 13,
+                    "index": 66
+                },
+                "end": {
+                    "row": 5,
+                    "col": 18,
+                    "index": 71
+                }
+            },
+            "start": {
+                "row": 5,
+                "col": 13,
+                "index": 66
+            },
+            "end": {
+                "row": 5,
+                "col": 18,
+                "index": 71
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "StringLiteral",
+                    "value": "use strict",
+                    "start": {
+                        "row": 6,
+                        "col": 1,
+                        "index": 73
+                    },
+                    "end": {
+                        "row": 6,
+                        "col": 13,
+                        "index": 85
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "Identifer",
+                        "name": "foo",
+                        "start": {
+                            "row": 6,
+                            "col": 14,
+                            "index": 86
+                        },
+                        "end": {
+                            "row": 6,
+                            "col": 17,
+                            "index": 89
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 6,
+                    "col": 1,
+                    "index": 73
+                },
+                "end": {
+                    "row": 6,
+                    "col": 18,
+                    "index": 90
+                }
+            },
+            "start": {
+                "row": 6,
+                "col": 1,
+                "index": 73
+            },
+            "end": {
+                "row": 6,
+                "col": 18,
+                "index": 90
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "MemberExpression",
+                "computed": false,
+                "optional": false,
+                "object": {
+                    "kind": "StringLiteral",
+                    "value": "use strict",
+                    "start": {
+                        "row": 7,
+                        "col": 1,
+                        "index": 92
+                    },
+                    "end": {
+                        "row": 7,
+                        "col": 13,
+                        "index": 104
+                    }
+                },
+                "property": {
+                    "kind": "Identifer",
+                    "name": "foo",
+                    "start": {
+                        "row": 8,
+                        "col": 4,
+                        "index": 108
+                    },
+                    "end": {
+                        "row": 8,
+                        "col": 7,
+                        "index": 111
+                    }
+                },
+                "start": {
+                    "row": 7,
+                    "col": 1,
+                    "index": 92
+                },
+                "end": {
+                    "row": 8,
+                    "col": 7,
+                    "index": 111
+                }
+            },
+            "start": {
+                "row": 7,
+                "col": 1,
+                "index": 92
+            },
+            "end": {
+                "row": 8,
+                "col": 7,
+                "index": 111
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "MemberExpression",
+                "computed": true,
+                "optional": false,
+                "object": {
+                    "kind": "StringLiteral",
+                    "value": "use strict",
+                    "start": {
+                        "row": 9,
+                        "col": 1,
+                        "index": 113
+                    },
+                    "end": {
+                        "row": 9,
+                        "col": 13,
+                        "index": 125
+                    }
+                },
+                "property": {
+                    "kind": "Identifer",
+                    "name": "foo",
+                    "start": {
+                        "row": 10,
+                        "col": 4,
+                        "index": 129
+                    },
+                    "end": {
+                        "row": 10,
+                        "col": 7,
+                        "index": 132
+                    }
+                },
+                "start": {
+                    "row": 9,
+                    "col": 1,
+                    "index": 113
+                },
+                "end": {
+                    "row": 10,
+                    "col": 8,
+                    "index": 133
+                }
+            },
+            "start": {
+                "row": 9,
+                "col": 1,
+                "index": 113
+            },
+            "end": {
+                "row": 10,
+                "col": 8,
+                "index": 133
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "TaggTemplateExpression",
+                "tag": {
+                    "kind": "StringLiteral",
+                    "value": "use strict",
+                    "start": {
+                        "row": 11,
+                        "col": 1,
+                        "index": 135
+                    },
+                    "end": {
+                        "row": 11,
+                        "col": 13,
+                        "index": 147
+                    }
+                },
+                "quasi": {
+                    "kind": "TemplateLiteral",
+                    "quasis": [
+                        {
+                            "kind": "TemplateElement",
+                            "value": "`foo`",
+                            "tail": true,
+                            "start": {
+                                "row": 12,
+                                "col": 3,
+                                "index": 150
+                            },
+                            "end": {
+                                "row": 12,
+                                "col": 8,
+                                "index": 155
+                            }
+                        }
+                    ],
+                    "expressions": [],
+                    "start": {
+                        "row": 12,
+                        "col": 3,
+                        "index": 150
+                    },
+                    "end": {
+                        "row": 12,
+                        "col": 8,
+                        "index": 155
+                    }
+                },
+                "start": {
+                    "row": 11,
+                    "col": 13,
+                    "index": 147
+                },
+                "end": {
+                    "row": 12,
+                    "col": 8,
+                    "index": 155
+                }
+            },
+            "start": {
+                "row": 11,
+                "col": 13,
+                "index": 147
+            },
+            "end": {
+                "row": 12,
+                "col": 8,
+                "index": 155
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "StringLiteral",
+                    "value": "use strict",
+                    "start": {
+                        "row": 13,
+                        "col": 1,
+                        "index": 157
+                    },
+                    "end": {
+                        "row": 13,
+                        "col": 13,
+                        "index": 169
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "Identifer",
+                        "name": "foo",
+                        "start": {
+                            "row": 14,
+                            "col": 4,
+                            "index": 173
+                        },
+                        "end": {
+                            "row": 14,
+                            "col": 7,
+                            "index": 176
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 13,
+                    "col": 1,
+                    "index": 157
+                },
+                "end": {
+                    "row": 14,
+                    "col": 8,
+                    "index": 177
+                }
+            },
+            "start": {
+                "row": 13,
+                "col": 1,
+                "index": 157
+            },
+            "end": {
+                "row": 14,
+                "col": 8,
+                "index": 177
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "\\5",
+                "start": {
+                    "row": 17,
+                    "col": 1,
+                    "index": 257
+                },
+                "end": {
+                    "row": 17,
+                    "col": 5,
+                    "index": 261
+                }
+            },
+            "start": {
+                "row": 17,
+                "col": 1,
+                "index": 257
+            },
+            "end": {
+                "row": 17,
+                "col": 5,
+                "index": 261
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 19,
+                    "col": 10,
+                    "index": 273
+                },
+                "end": {
+                    "row": 19,
+                    "col": 11,
+                    "index": 274
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "MemberExpression",
+                            "computed": false,
+                            "optional": false,
+                            "object": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 20,
+                                    "col": 3,
+                                    "index": 280
+                                },
+                                "end": {
+                                    "row": 20,
+                                    "col": 15,
+                                    "index": 292
+                                }
+                            },
+                            "property": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 20,
+                                    "col": 16,
+                                    "index": 293
+                                },
+                                "end": {
+                                    "row": 20,
+                                    "col": 19,
+                                    "index": 296
+                                }
+                            },
+                            "start": {
+                                "row": 20,
+                                "col": 3,
+                                "index": 280
+                            },
+                            "end": {
+                                "row": 20,
+                                "col": 19,
+                                "index": 296
+                            }
+                        },
+                        "start": {
+                            "row": 20,
+                            "col": 3,
+                            "index": 280
+                        },
+                        "end": {
+                            "row": 20,
+                            "col": 19,
+                            "index": 296
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 21,
+                                "col": 3,
+                                "index": 300
+                            },
+                            "end": {
+                                "row": 21,
+                                "col": 7,
+                                "index": 304
+                            }
+                        },
+                        "start": {
+                            "row": 21,
+                            "col": 3,
+                            "index": 300
+                        },
+                        "end": {
+                            "row": 21,
+                            "col": 7,
+                            "index": 304
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 19,
+                    "col": 13,
+                    "index": 276
+                },
+                "end": {
+                    "row": 22,
+                    "col": 2,
+                    "index": 307
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 19,
+                "col": 1,
+                "index": 264
+            },
+            "end": {
+                "row": 22,
+                "col": 2,
+                "index": 307
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 24,
+                    "col": 10,
+                    "index": 318
+                },
+                "end": {
+                    "row": 24,
+                    "col": 11,
+                    "index": 319
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "MemberExpression",
+                            "computed": true,
+                            "optional": false,
+                            "object": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 25,
+                                    "col": 3,
+                                    "index": 325
+                                },
+                                "end": {
+                                    "row": 25,
+                                    "col": 15,
+                                    "index": 337
+                                }
+                            },
+                            "property": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 25,
+                                    "col": 16,
+                                    "index": 338
+                                },
+                                "end": {
+                                    "row": 25,
+                                    "col": 19,
+                                    "index": 341
+                                }
+                            },
+                            "start": {
+                                "row": 25,
+                                "col": 3,
+                                "index": 325
+                            },
+                            "end": {
+                                "row": 25,
+                                "col": 20,
+                                "index": 342
+                            }
+                        },
+                        "start": {
+                            "row": 25,
+                            "col": 3,
+                            "index": 325
+                        },
+                        "end": {
+                            "row": 25,
+                            "col": 20,
+                            "index": 342
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 26,
+                                "col": 3,
+                                "index": 346
+                            },
+                            "end": {
+                                "row": 26,
+                                "col": 7,
+                                "index": 350
+                            }
+                        },
+                        "start": {
+                            "row": 26,
+                            "col": 3,
+                            "index": 346
+                        },
+                        "end": {
+                            "row": 26,
+                            "col": 7,
+                            "index": 350
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 24,
+                    "col": 13,
+                    "index": 321
+                },
+                "end": {
+                    "row": 27,
+                    "col": 2,
+                    "index": 353
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 24,
+                "col": 1,
+                "index": 309
+            },
+            "end": {
+                "row": 27,
+                "col": 2,
+                "index": 353
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 29,
+                    "col": 10,
+                    "index": 364
+                },
+                "end": {
+                    "row": 29,
+                    "col": 11,
+                    "index": 365
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "TaggTemplateExpression",
+                            "tag": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 30,
+                                    "col": 3,
+                                    "index": 371
+                                },
+                                "end": {
+                                    "row": 30,
+                                    "col": 15,
+                                    "index": 383
+                                }
+                            },
+                            "quasi": {
+                                "kind": "TemplateLiteral",
+                                "quasis": [
+                                    {
+                                        "kind": "TemplateElement",
+                                        "value": "`foo`",
+                                        "tail": true,
+                                        "start": {
+                                            "row": 30,
+                                            "col": 15,
+                                            "index": 383
+                                        },
+                                        "end": {
+                                            "row": 30,
+                                            "col": 20,
+                                            "index": 388
+                                        }
+                                    }
+                                ],
+                                "expressions": [],
+                                "start": {
+                                    "row": 30,
+                                    "col": 15,
+                                    "index": 383
+                                },
+                                "end": {
+                                    "row": 30,
+                                    "col": 20,
+                                    "index": 388
+                                }
+                            },
+                            "start": {
+                                "row": 30,
+                                "col": 15,
+                                "index": 383
+                            },
+                            "end": {
+                                "row": 30,
+                                "col": 20,
+                                "index": 388
+                            }
+                        },
+                        "start": {
+                            "row": 30,
+                            "col": 15,
+                            "index": 383
+                        },
+                        "end": {
+                            "row": 30,
+                            "col": 20,
+                            "index": 388
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 31,
+                                "col": 3,
+                                "index": 392
+                            },
+                            "end": {
+                                "row": 31,
+                                "col": 7,
+                                "index": 396
+                            }
+                        },
+                        "start": {
+                            "row": 31,
+                            "col": 3,
+                            "index": 392
+                        },
+                        "end": {
+                            "row": 31,
+                            "col": 7,
+                            "index": 396
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 29,
+                    "col": 13,
+                    "index": 367
+                },
+                "end": {
+                    "row": 32,
+                    "col": 2,
+                    "index": 399
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 29,
+                "col": 1,
+                "index": 355
+            },
+            "end": {
+                "row": 32,
+                "col": 2,
+                "index": 399
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 34,
+                    "col": 10,
+                    "index": 410
+                },
+                "end": {
+                    "row": 34,
+                    "col": 11,
+                    "index": 411
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 35,
+                                    "col": 3,
+                                    "index": 417
+                                },
+                                "end": {
+                                    "row": 35,
+                                    "col": 15,
+                                    "index": 429
+                                }
+                            },
+                            "arguments": [
+                                {
+                                    "kind": "Identifer",
+                                    "name": "foo",
+                                    "start": {
+                                        "row": 35,
+                                        "col": 16,
+                                        "index": 430
+                                    },
+                                    "end": {
+                                        "row": 35,
+                                        "col": 19,
+                                        "index": 433
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 35,
+                                "col": 3,
+                                "index": 417
+                            },
+                            "end": {
+                                "row": 35,
+                                "col": 20,
+                                "index": 434
+                            }
+                        },
+                        "start": {
+                            "row": 35,
+                            "col": 3,
+                            "index": 417
+                        },
+                        "end": {
+                            "row": 35,
+                            "col": 20,
+                            "index": 434
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 36,
+                                "col": 3,
+                                "index": 438
+                            },
+                            "end": {
+                                "row": 36,
+                                "col": 7,
+                                "index": 442
+                            }
+                        },
+                        "start": {
+                            "row": 36,
+                            "col": 3,
+                            "index": 438
+                        },
+                        "end": {
+                            "row": 36,
+                            "col": 7,
+                            "index": 442
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 34,
+                    "col": 13,
+                    "index": 413
+                },
+                "end": {
+                    "row": 37,
+                    "col": 2,
+                    "index": 445
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 34,
+                "col": 1,
+                "index": 401
+            },
+            "end": {
+                "row": 37,
+                "col": 2,
+                "index": 445
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 39,
+                    "col": 10,
+                    "index": 456
+                },
+                "end": {
+                    "row": 39,
+                    "col": 11,
+                    "index": 457
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "MemberExpression",
+                            "computed": false,
+                            "optional": false,
+                            "object": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 40,
+                                    "col": 3,
+                                    "index": 463
+                                },
+                                "end": {
+                                    "row": 40,
+                                    "col": 15,
+                                    "index": 475
+                                }
+                            },
+                            "property": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 41,
+                                    "col": 4,
+                                    "index": 479
+                                },
+                                "end": {
+                                    "row": 41,
+                                    "col": 7,
+                                    "index": 482
+                                }
+                            },
+                            "start": {
+                                "row": 40,
+                                "col": 3,
+                                "index": 463
+                            },
+                            "end": {
+                                "row": 41,
+                                "col": 7,
+                                "index": 482
+                            }
+                        },
+                        "start": {
+                            "row": 40,
+                            "col": 3,
+                            "index": 463
+                        },
+                        "end": {
+                            "row": 41,
+                            "col": 7,
+                            "index": 482
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 42,
+                                "col": 3,
+                                "index": 486
+                            },
+                            "end": {
+                                "row": 42,
+                                "col": 7,
+                                "index": 490
+                            }
+                        },
+                        "start": {
+                            "row": 42,
+                            "col": 3,
+                            "index": 486
+                        },
+                        "end": {
+                            "row": 42,
+                            "col": 7,
+                            "index": 490
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 39,
+                    "col": 13,
+                    "index": 459
+                },
+                "end": {
+                    "row": 43,
+                    "col": 2,
+                    "index": 493
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 39,
+                "col": 1,
+                "index": 447
+            },
+            "end": {
+                "row": 43,
+                "col": 2,
+                "index": 493
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 45,
+                    "col": 10,
+                    "index": 504
+                },
+                "end": {
+                    "row": 45,
+                    "col": 11,
+                    "index": 505
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "MemberExpression",
+                            "computed": true,
+                            "optional": false,
+                            "object": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 46,
+                                    "col": 3,
+                                    "index": 511
+                                },
+                                "end": {
+                                    "row": 46,
+                                    "col": 15,
+                                    "index": 523
+                                }
+                            },
+                            "property": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 47,
+                                    "col": 4,
+                                    "index": 527
+                                },
+                                "end": {
+                                    "row": 47,
+                                    "col": 7,
+                                    "index": 530
+                                }
+                            },
+                            "start": {
+                                "row": 46,
+                                "col": 3,
+                                "index": 511
+                            },
+                            "end": {
+                                "row": 47,
+                                "col": 8,
+                                "index": 531
+                            }
+                        },
+                        "start": {
+                            "row": 46,
+                            "col": 3,
+                            "index": 511
+                        },
+                        "end": {
+                            "row": 47,
+                            "col": 8,
+                            "index": 531
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 48,
+                                "col": 3,
+                                "index": 535
+                            },
+                            "end": {
+                                "row": 48,
+                                "col": 7,
+                                "index": 539
+                            }
+                        },
+                        "start": {
+                            "row": 48,
+                            "col": 3,
+                            "index": 535
+                        },
+                        "end": {
+                            "row": 48,
+                            "col": 7,
+                            "index": 539
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 45,
+                    "col": 13,
+                    "index": 507
+                },
+                "end": {
+                    "row": 49,
+                    "col": 2,
+                    "index": 542
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 45,
+                "col": 1,
+                "index": 495
+            },
+            "end": {
+                "row": 49,
+                "col": 2,
+                "index": 542
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 51,
+                    "col": 10,
+                    "index": 553
+                },
+                "end": {
+                    "row": 51,
+                    "col": 11,
+                    "index": 554
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "TaggTemplateExpression",
+                            "tag": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 52,
+                                    "col": 3,
+                                    "index": 560
+                                },
+                                "end": {
+                                    "row": 52,
+                                    "col": 15,
+                                    "index": 572
+                                }
+                            },
+                            "quasi": {
+                                "kind": "TemplateLiteral",
+                                "quasis": [
+                                    {
+                                        "kind": "TemplateElement",
+                                        "value": "`foo`",
+                                        "tail": true,
+                                        "start": {
+                                            "row": 53,
+                                            "col": 3,
+                                            "index": 575
+                                        },
+                                        "end": {
+                                            "row": 53,
+                                            "col": 8,
+                                            "index": 580
+                                        }
+                                    }
+                                ],
+                                "expressions": [],
+                                "start": {
+                                    "row": 53,
+                                    "col": 3,
+                                    "index": 575
+                                },
+                                "end": {
+                                    "row": 53,
+                                    "col": 8,
+                                    "index": 580
+                                }
+                            },
+                            "start": {
+                                "row": 52,
+                                "col": 15,
+                                "index": 572
+                            },
+                            "end": {
+                                "row": 53,
+                                "col": 8,
+                                "index": 580
+                            }
+                        },
+                        "start": {
+                            "row": 52,
+                            "col": 15,
+                            "index": 572
+                        },
+                        "end": {
+                            "row": 53,
+                            "col": 8,
+                            "index": 580
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 54,
+                                "col": 3,
+                                "index": 584
+                            },
+                            "end": {
+                                "row": 54,
+                                "col": 7,
+                                "index": 588
+                            }
+                        },
+                        "start": {
+                            "row": 54,
+                            "col": 3,
+                            "index": 584
+                        },
+                        "end": {
+                            "row": 54,
+                            "col": 7,
+                            "index": 588
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 51,
+                    "col": 13,
+                    "index": 556
+                },
+                "end": {
+                    "row": 55,
+                    "col": 2,
+                    "index": 591
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 51,
+                "col": 1,
+                "index": 544
+            },
+            "end": {
+                "row": 55,
+                "col": 2,
+                "index": 591
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 57,
+                    "col": 10,
+                    "index": 602
+                },
+                "end": {
+                    "row": 57,
+                    "col": 11,
+                    "index": 603
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 58,
+                                    "col": 3,
+                                    "index": 609
+                                },
+                                "end": {
+                                    "row": 58,
+                                    "col": 15,
+                                    "index": 621
+                                }
+                            },
+                            "arguments": [
+                                {
+                                    "kind": "Identifer",
+                                    "name": "foo",
+                                    "start": {
+                                        "row": 59,
+                                        "col": 4,
+                                        "index": 625
+                                    },
+                                    "end": {
+                                        "row": 59,
+                                        "col": 7,
+                                        "index": 628
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 58,
+                                "col": 3,
+                                "index": 609
+                            },
+                            "end": {
+                                "row": 59,
+                                "col": 8,
+                                "index": 629
+                            }
+                        },
+                        "start": {
+                            "row": 58,
+                            "col": 3,
+                            "index": 609
+                        },
+                        "end": {
+                            "row": 59,
+                            "col": 8,
+                            "index": 629
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 60,
+                                "col": 3,
+                                "index": 633
+                            },
+                            "end": {
+                                "row": 60,
+                                "col": 7,
+                                "index": 637
+                            }
+                        },
+                        "start": {
+                            "row": 60,
+                            "col": 3,
+                            "index": 633
+                        },
+                        "end": {
+                            "row": 60,
+                            "col": 7,
+                            "index": 637
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 57,
+                    "col": 13,
+                    "index": 605
+                },
+                "end": {
+                    "row": 61,
+                    "col": 2,
+                    "index": 640
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 57,
+                "col": 1,
+                "index": 593
+            },
+            "end": {
+                "row": 61,
+                "col": 2,
+                "index": 640
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 63,
+                    "col": 10,
+                    "index": 651
+                },
+                "end": {
+                    "row": 63,
+                    "col": 11,
+                    "index": 652
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 64,
+                                    "col": 3,
+                                    "index": 658
+                                },
+                                "end": {
+                                    "row": 64,
+                                    "col": 6,
+                                    "index": 661
+                                }
+                            },
+                            "arguments": [],
+                            "start": {
+                                "row": 64,
+                                "col": 3,
+                                "index": 658
+                            },
+                            "end": {
+                                "row": 64,
+                                "col": 8,
+                                "index": 663
+                            }
+                        },
+                        "start": {
+                            "row": 64,
+                            "col": 3,
+                            "index": 658
+                        },
+                        "end": {
+                            "row": 64,
+                            "col": 8,
+                            "index": 663
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "MemberExpression",
+                            "computed": false,
+                            "optional": false,
+                            "object": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 65,
+                                    "col": 3,
+                                    "index": 667
+                                },
+                                "end": {
+                                    "row": 65,
+                                    "col": 15,
+                                    "index": 679
+                                }
+                            },
+                            "property": {
+                                "kind": "Identifer",
+                                "name": "bar",
+                                "start": {
+                                    "row": 65,
+                                    "col": 16,
+                                    "index": 680
+                                },
+                                "end": {
+                                    "row": 65,
+                                    "col": 19,
+                                    "index": 683
+                                }
+                            },
+                            "start": {
+                                "row": 65,
+                                "col": 3,
+                                "index": 667
+                            },
+                            "end": {
+                                "row": 65,
+                                "col": 19,
+                                "index": 683
+                            }
+                        },
+                        "start": {
+                            "row": 65,
+                            "col": 3,
+                            "index": 667
+                        },
+                        "end": {
+                            "row": 65,
+                            "col": 19,
+                            "index": 683
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 66,
+                                "col": 3,
+                                "index": 687
+                            },
+                            "end": {
+                                "row": 66,
+                                "col": 7,
+                                "index": 691
+                            }
+                        },
+                        "start": {
+                            "row": 66,
+                            "col": 3,
+                            "index": 687
+                        },
+                        "end": {
+                            "row": 66,
+                            "col": 7,
+                            "index": 691
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 63,
+                    "col": 13,
+                    "index": 654
+                },
+                "end": {
+                    "row": 67,
+                    "col": 2,
+                    "index": 694
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 63,
+                "col": 1,
+                "index": 642
+            },
+            "end": {
+                "row": 67,
+                "col": 2,
+                "index": 694
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 69,
+                    "col": 10,
+                    "index": 705
+                },
+                "end": {
+                    "row": 69,
+                    "col": 11,
+                    "index": 706
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 70,
+                                    "col": 3,
+                                    "index": 712
+                                },
+                                "end": {
+                                    "row": 70,
+                                    "col": 6,
+                                    "index": 715
+                                }
+                            },
+                            "arguments": [],
+                            "start": {
+                                "row": 70,
+                                "col": 3,
+                                "index": 712
+                            },
+                            "end": {
+                                "row": 70,
+                                "col": 8,
+                                "index": 717
+                            }
+                        },
+                        "start": {
+                            "row": 70,
+                            "col": 3,
+                            "index": 712
+                        },
+                        "end": {
+                            "row": 70,
+                            "col": 8,
+                            "index": 717
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "MemberExpression",
+                            "computed": true,
+                            "optional": false,
+                            "object": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 71,
+                                    "col": 3,
+                                    "index": 721
+                                },
+                                "end": {
+                                    "row": 71,
+                                    "col": 15,
+                                    "index": 733
+                                }
+                            },
+                            "property": {
+                                "kind": "Identifer",
+                                "name": "bar",
+                                "start": {
+                                    "row": 71,
+                                    "col": 16,
+                                    "index": 734
+                                },
+                                "end": {
+                                    "row": 71,
+                                    "col": 19,
+                                    "index": 737
+                                }
+                            },
+                            "start": {
+                                "row": 71,
+                                "col": 3,
+                                "index": 721
+                            },
+                            "end": {
+                                "row": 71,
+                                "col": 20,
+                                "index": 738
+                            }
+                        },
+                        "start": {
+                            "row": 71,
+                            "col": 3,
+                            "index": 721
+                        },
+                        "end": {
+                            "row": 71,
+                            "col": 20,
+                            "index": 738
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 72,
+                                "col": 3,
+                                "index": 742
+                            },
+                            "end": {
+                                "row": 72,
+                                "col": 7,
+                                "index": 746
+                            }
+                        },
+                        "start": {
+                            "row": 72,
+                            "col": 3,
+                            "index": 742
+                        },
+                        "end": {
+                            "row": 72,
+                            "col": 7,
+                            "index": 746
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 69,
+                    "col": 13,
+                    "index": 708
+                },
+                "end": {
+                    "row": 73,
+                    "col": 2,
+                    "index": 749
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 69,
+                "col": 1,
+                "index": 696
+            },
+            "end": {
+                "row": 73,
+                "col": 2,
+                "index": 749
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 75,
+                    "col": 10,
+                    "index": 760
+                },
+                "end": {
+                    "row": 75,
+                    "col": 11,
+                    "index": 761
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 76,
+                                    "col": 3,
+                                    "index": 767
+                                },
+                                "end": {
+                                    "row": 76,
+                                    "col": 6,
+                                    "index": 770
+                                }
+                            },
+                            "arguments": [],
+                            "start": {
+                                "row": 76,
+                                "col": 3,
+                                "index": 767
+                            },
+                            "end": {
+                                "row": 76,
+                                "col": 8,
+                                "index": 772
+                            }
+                        },
+                        "start": {
+                            "row": 76,
+                            "col": 3,
+                            "index": 767
+                        },
+                        "end": {
+                            "row": 76,
+                            "col": 8,
+                            "index": 772
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "TaggTemplateExpression",
+                            "tag": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 77,
+                                    "col": 3,
+                                    "index": 776
+                                },
+                                "end": {
+                                    "row": 77,
+                                    "col": 15,
+                                    "index": 788
+                                }
+                            },
+                            "quasi": {
+                                "kind": "TemplateLiteral",
+                                "quasis": [
+                                    {
+                                        "kind": "TemplateElement",
+                                        "value": "`bar`",
+                                        "tail": true,
+                                        "start": {
+                                            "row": 77,
+                                            "col": 15,
+                                            "index": 788
+                                        },
+                                        "end": {
+                                            "row": 77,
+                                            "col": 20,
+                                            "index": 793
+                                        }
+                                    }
+                                ],
+                                "expressions": [],
+                                "start": {
+                                    "row": 77,
+                                    "col": 15,
+                                    "index": 788
+                                },
+                                "end": {
+                                    "row": 77,
+                                    "col": 20,
+                                    "index": 793
+                                }
+                            },
+                            "start": {
+                                "row": 77,
+                                "col": 15,
+                                "index": 788
+                            },
+                            "end": {
+                                "row": 77,
+                                "col": 20,
+                                "index": 793
+                            }
+                        },
+                        "start": {
+                            "row": 77,
+                            "col": 15,
+                            "index": 788
+                        },
+                        "end": {
+                            "row": 77,
+                            "col": 20,
+                            "index": 793
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 78,
+                                "col": 3,
+                                "index": 797
+                            },
+                            "end": {
+                                "row": 78,
+                                "col": 7,
+                                "index": 801
+                            }
+                        },
+                        "start": {
+                            "row": 78,
+                            "col": 3,
+                            "index": 797
+                        },
+                        "end": {
+                            "row": 78,
+                            "col": 7,
+                            "index": 801
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 75,
+                    "col": 13,
+                    "index": 763
+                },
+                "end": {
+                    "row": 79,
+                    "col": 2,
+                    "index": 804
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 75,
+                "col": 1,
+                "index": 751
+            },
+            "end": {
+                "row": 79,
+                "col": 2,
+                "index": 804
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 81,
+                    "col": 10,
+                    "index": 815
+                },
+                "end": {
+                    "row": 81,
+                    "col": 11,
+                    "index": 816
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 82,
+                                    "col": 3,
+                                    "index": 822
+                                },
+                                "end": {
+                                    "row": 82,
+                                    "col": 6,
+                                    "index": 825
+                                }
+                            },
+                            "arguments": [],
+                            "start": {
+                                "row": 82,
+                                "col": 3,
+                                "index": 822
+                            },
+                            "end": {
+                                "row": 82,
+                                "col": 8,
+                                "index": 827
+                            }
+                        },
+                        "start": {
+                            "row": 82,
+                            "col": 3,
+                            "index": 822
+                        },
+                        "end": {
+                            "row": 82,
+                            "col": 8,
+                            "index": 827
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 83,
+                                    "col": 3,
+                                    "index": 831
+                                },
+                                "end": {
+                                    "row": 83,
+                                    "col": 15,
+                                    "index": 843
+                                }
+                            },
+                            "arguments": [
+                                {
+                                    "kind": "Identifer",
+                                    "name": "bar",
+                                    "start": {
+                                        "row": 83,
+                                        "col": 16,
+                                        "index": 844
+                                    },
+                                    "end": {
+                                        "row": 83,
+                                        "col": 19,
+                                        "index": 847
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 83,
+                                "col": 3,
+                                "index": 831
+                            },
+                            "end": {
+                                "row": 83,
+                                "col": 20,
+                                "index": 848
+                            }
+                        },
+                        "start": {
+                            "row": 83,
+                            "col": 3,
+                            "index": 831
+                        },
+                        "end": {
+                            "row": 83,
+                            "col": 20,
+                            "index": 848
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 84,
+                                "col": 3,
+                                "index": 852
+                            },
+                            "end": {
+                                "row": 84,
+                                "col": 7,
+                                "index": 856
+                            }
+                        },
+                        "start": {
+                            "row": 84,
+                            "col": 3,
+                            "index": 852
+                        },
+                        "end": {
+                            "row": 84,
+                            "col": 7,
+                            "index": 856
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 81,
+                    "col": 13,
+                    "index": 818
+                },
+                "end": {
+                    "row": 85,
+                    "col": 2,
+                    "index": 859
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 81,
+                "col": 1,
+                "index": 806
+            },
+            "end": {
+                "row": 85,
+                "col": 2,
+                "index": 859
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 87,
+                    "col": 10,
+                    "index": 870
+                },
+                "end": {
+                    "row": 87,
+                    "col": 11,
+                    "index": 871
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 88,
+                                    "col": 3,
+                                    "index": 877
+                                },
+                                "end": {
+                                    "row": 88,
+                                    "col": 6,
+                                    "index": 880
+                                }
+                            },
+                            "arguments": [],
+                            "start": {
+                                "row": 88,
+                                "col": 3,
+                                "index": 877
+                            },
+                            "end": {
+                                "row": 88,
+                                "col": 8,
+                                "index": 882
+                            }
+                        },
+                        "start": {
+                            "row": 88,
+                            "col": 3,
+                            "index": 877
+                        },
+                        "end": {
+                            "row": 88,
+                            "col": 8,
+                            "index": 882
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "MemberExpression",
+                            "computed": false,
+                            "optional": false,
+                            "object": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 89,
+                                    "col": 3,
+                                    "index": 886
+                                },
+                                "end": {
+                                    "row": 89,
+                                    "col": 15,
+                                    "index": 898
+                                }
+                            },
+                            "property": {
+                                "kind": "Identifer",
+                                "name": "bar",
+                                "start": {
+                                    "row": 90,
+                                    "col": 4,
+                                    "index": 902
+                                },
+                                "end": {
+                                    "row": 90,
+                                    "col": 7,
+                                    "index": 905
+                                }
+                            },
+                            "start": {
+                                "row": 89,
+                                "col": 3,
+                                "index": 886
+                            },
+                            "end": {
+                                "row": 90,
+                                "col": 7,
+                                "index": 905
+                            }
+                        },
+                        "start": {
+                            "row": 89,
+                            "col": 3,
+                            "index": 886
+                        },
+                        "end": {
+                            "row": 90,
+                            "col": 7,
+                            "index": 905
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 91,
+                                "col": 3,
+                                "index": 909
+                            },
+                            "end": {
+                                "row": 91,
+                                "col": 7,
+                                "index": 913
+                            }
+                        },
+                        "start": {
+                            "row": 91,
+                            "col": 3,
+                            "index": 909
+                        },
+                        "end": {
+                            "row": 91,
+                            "col": 7,
+                            "index": 913
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 87,
+                    "col": 13,
+                    "index": 873
+                },
+                "end": {
+                    "row": 92,
+                    "col": 2,
+                    "index": 916
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 87,
+                "col": 1,
+                "index": 861
+            },
+            "end": {
+                "row": 92,
+                "col": 2,
+                "index": 916
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 94,
+                    "col": 10,
+                    "index": 927
+                },
+                "end": {
+                    "row": 94,
+                    "col": 11,
+                    "index": 928
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 95,
+                                    "col": 3,
+                                    "index": 934
+                                },
+                                "end": {
+                                    "row": 95,
+                                    "col": 6,
+                                    "index": 937
+                                }
+                            },
+                            "arguments": [],
+                            "start": {
+                                "row": 95,
+                                "col": 3,
+                                "index": 934
+                            },
+                            "end": {
+                                "row": 95,
+                                "col": 8,
+                                "index": 939
+                            }
+                        },
+                        "start": {
+                            "row": 95,
+                            "col": 3,
+                            "index": 934
+                        },
+                        "end": {
+                            "row": 95,
+                            "col": 8,
+                            "index": 939
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "MemberExpression",
+                            "computed": true,
+                            "optional": false,
+                            "object": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 96,
+                                    "col": 3,
+                                    "index": 943
+                                },
+                                "end": {
+                                    "row": 96,
+                                    "col": 15,
+                                    "index": 955
+                                }
+                            },
+                            "property": {
+                                "kind": "Identifer",
+                                "name": "bar",
+                                "start": {
+                                    "row": 97,
+                                    "col": 4,
+                                    "index": 959
+                                },
+                                "end": {
+                                    "row": 97,
+                                    "col": 7,
+                                    "index": 962
+                                }
+                            },
+                            "start": {
+                                "row": 96,
+                                "col": 3,
+                                "index": 943
+                            },
+                            "end": {
+                                "row": 97,
+                                "col": 8,
+                                "index": 963
+                            }
+                        },
+                        "start": {
+                            "row": 96,
+                            "col": 3,
+                            "index": 943
+                        },
+                        "end": {
+                            "row": 97,
+                            "col": 8,
+                            "index": 963
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 98,
+                                "col": 3,
+                                "index": 967
+                            },
+                            "end": {
+                                "row": 98,
+                                "col": 7,
+                                "index": 971
+                            }
+                        },
+                        "start": {
+                            "row": 98,
+                            "col": 3,
+                            "index": 967
+                        },
+                        "end": {
+                            "row": 98,
+                            "col": 7,
+                            "index": 971
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 94,
+                    "col": 13,
+                    "index": 930
+                },
+                "end": {
+                    "row": 99,
+                    "col": 2,
+                    "index": 974
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 94,
+                "col": 1,
+                "index": 918
+            },
+            "end": {
+                "row": 99,
+                "col": 2,
+                "index": 974
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 101,
+                    "col": 10,
+                    "index": 985
+                },
+                "end": {
+                    "row": 101,
+                    "col": 11,
+                    "index": 986
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 102,
+                                    "col": 3,
+                                    "index": 992
+                                },
+                                "end": {
+                                    "row": 102,
+                                    "col": 6,
+                                    "index": 995
+                                }
+                            },
+                            "arguments": [],
+                            "start": {
+                                "row": 102,
+                                "col": 3,
+                                "index": 992
+                            },
+                            "end": {
+                                "row": 102,
+                                "col": 8,
+                                "index": 997
+                            }
+                        },
+                        "start": {
+                            "row": 102,
+                            "col": 3,
+                            "index": 992
+                        },
+                        "end": {
+                            "row": 102,
+                            "col": 8,
+                            "index": 997
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "TaggTemplateExpression",
+                            "tag": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 103,
+                                    "col": 3,
+                                    "index": 1001
+                                },
+                                "end": {
+                                    "row": 103,
+                                    "col": 15,
+                                    "index": 1013
+                                }
+                            },
+                            "quasi": {
+                                "kind": "TemplateLiteral",
+                                "quasis": [
+                                    {
+                                        "kind": "TemplateElement",
+                                        "value": "`bar`",
+                                        "tail": true,
+                                        "start": {
+                                            "row": 104,
+                                            "col": 3,
+                                            "index": 1016
+                                        },
+                                        "end": {
+                                            "row": 104,
+                                            "col": 8,
+                                            "index": 1021
+                                        }
+                                    }
+                                ],
+                                "expressions": [],
+                                "start": {
+                                    "row": 104,
+                                    "col": 3,
+                                    "index": 1016
+                                },
+                                "end": {
+                                    "row": 104,
+                                    "col": 8,
+                                    "index": 1021
+                                }
+                            },
+                            "start": {
+                                "row": 103,
+                                "col": 15,
+                                "index": 1013
+                            },
+                            "end": {
+                                "row": 104,
+                                "col": 8,
+                                "index": 1021
+                            }
+                        },
+                        "start": {
+                            "row": 103,
+                            "col": 15,
+                            "index": 1013
+                        },
+                        "end": {
+                            "row": 104,
+                            "col": 8,
+                            "index": 1021
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 105,
+                                "col": 3,
+                                "index": 1025
+                            },
+                            "end": {
+                                "row": 105,
+                                "col": 7,
+                                "index": 1029
+                            }
+                        },
+                        "start": {
+                            "row": 105,
+                            "col": 3,
+                            "index": 1025
+                        },
+                        "end": {
+                            "row": 105,
+                            "col": 7,
+                            "index": 1029
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 101,
+                    "col": 13,
+                    "index": 988
+                },
+                "end": {
+                    "row": 106,
+                    "col": 2,
+                    "index": 1032
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 101,
+                "col": 1,
+                "index": 976
+            },
+            "end": {
+                "row": 106,
+                "col": 2,
+                "index": 1032
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 108,
+                    "col": 10,
+                    "index": 1043
+                },
+                "end": {
+                    "row": 108,
+                    "col": 11,
+                    "index": 1044
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "Identifer",
+                                "name": "foo",
+                                "start": {
+                                    "row": 109,
+                                    "col": 3,
+                                    "index": 1050
+                                },
+                                "end": {
+                                    "row": 109,
+                                    "col": 6,
+                                    "index": 1053
+                                }
+                            },
+                            "arguments": [],
+                            "start": {
+                                "row": 109,
+                                "col": 3,
+                                "index": 1050
+                            },
+                            "end": {
+                                "row": 109,
+                                "col": 8,
+                                "index": 1055
+                            }
+                        },
+                        "start": {
+                            "row": 109,
+                            "col": 3,
+                            "index": 1050
+                        },
+                        "end": {
+                            "row": 109,
+                            "col": 8,
+                            "index": 1055
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "CallExpression",
+                            "optional": false,
+                            "callee": {
+                                "kind": "StringLiteral",
+                                "value": "use strict",
+                                "start": {
+                                    "row": 110,
+                                    "col": 3,
+                                    "index": 1059
+                                },
+                                "end": {
+                                    "row": 110,
+                                    "col": 15,
+                                    "index": 1071
+                                }
+                            },
+                            "arguments": [
+                                {
+                                    "kind": "Identifer",
+                                    "name": "bar",
+                                    "start": {
+                                        "row": 111,
+                                        "col": 4,
+                                        "index": 1075
+                                    },
+                                    "end": {
+                                        "row": 111,
+                                        "col": 7,
+                                        "index": 1078
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 110,
+                                "col": 3,
+                                "index": 1059
+                            },
+                            "end": {
+                                "row": 111,
+                                "col": 8,
+                                "index": 1079
+                            }
+                        },
+                        "start": {
+                            "row": 110,
+                            "col": 3,
+                            "index": 1059
+                        },
+                        "end": {
+                            "row": 111,
+                            "col": 8,
+                            "index": 1079
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "\\5",
+                            "start": {
+                                "row": 112,
+                                "col": 3,
+                                "index": 1083
+                            },
+                            "end": {
+                                "row": 112,
+                                "col": 7,
+                                "index": 1087
+                            }
+                        },
+                        "start": {
+                            "row": 112,
+                            "col": 3,
+                            "index": 1083
+                        },
+                        "end": {
+                            "row": 112,
+                            "col": 7,
+                            "index": 1087
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 108,
+                    "col": 13,
+                    "index": 1046
+                },
+                "end": {
+                    "row": 113,
+                    "col": 2,
+                    "index": 1090
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 108,
+                "col": 1,
+                "index": 1034
+            },
+            "end": {
+                "row": 113,
+                "col": 2,
+                "index": 1090
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "f",
+                "start": {
+                    "row": 115,
+                    "col": 10,
+                    "index": 1101
+                },
+                "end": {
+                    "row": 115,
+                    "col": 11,
+                    "index": 1102
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "NumberLiteral",
+                            "value": "05",
+                            "start": {
+                                "row": 116,
+                                "col": 3,
+                                "index": 1108
+                            },
+                            "end": {
+                                "row": 116,
+                                "col": 5,
+                                "index": 1110
+                            }
+                        },
+                        "start": {
+                            "row": 116,
+                            "col": 3,
+                            "index": 1108
+                        },
+                        "end": {
+                            "row": 116,
+                            "col": 5,
+                            "index": 1110
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "use strict",
+                            "start": {
+                                "row": 117,
+                                "col": 3,
+                                "index": 1114
+                            },
+                            "end": {
+                                "row": 117,
+                                "col": 15,
+                                "index": 1126
+                            }
+                        },
+                        "start": {
+                            "row": 117,
+                            "col": 3,
+                            "index": 1114
+                        },
+                        "end": {
+                            "row": 117,
+                            "col": 15,
+                            "index": 1126
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 115,
+                    "col": 13,
+                    "index": 1104
+                },
+                "end": {
+                    "row": 118,
+                    "col": 2,
+                    "index": 1129
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 115,
+                "col": 1,
+                "index": 1092
+            },
+            "end": {
+                "row": 118,
+                "col": 2,
+                "index": 1129
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 2,
+        "index": 1
+    },
+    "end": {
+        "row": 119,
+        "col": 1,
+        "index": 1130
+    }
+}

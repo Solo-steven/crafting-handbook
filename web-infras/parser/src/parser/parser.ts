@@ -3378,38 +3378,6 @@ export function createParser(code: string, option?: ParserConfig) {
     }
   }
   /**
-   * This is a helper function for object expression and class for determiate is property
-   * a method definition or not.
-   *
-   * Please notes that this function not only accept regualer syntax, but also accept something
-   * like set and get generator, it will left sematic job for `parseMetodDefinition` method.
-   * @returns  {boolean}
-   */
-  function checkIsMethodStartWithModifier(): boolean {
-    if (match(SyntaxKinds.MultiplyOperator)) {
-      return true;
-    }
-    const { kind, lineTerminatorFlag: flag } = lookahead();
-    const isLookAheadValidatePropertyNameStart =
-      Keywords.find((keyword) => keyword === kind) ||
-      kind === SyntaxKinds.Identifier ||
-      kind === SyntaxKinds.PrivateName ||
-      kind === SyntaxKinds.StringLiteral ||
-      kind === SyntaxKinds.NumberLiteral ||
-      kind === SyntaxKinds.BracketLeftPunctuator ||
-      kind === SyntaxKinds.MultiplyOperator;
-    if (isContextKeyword("set") && isLookAheadValidatePropertyNameStart) {
-      return true;
-    }
-    if (isContextKeyword("get") && isLookAheadValidatePropertyNameStart) {
-      return true;
-    }
-    if (isContextKeyword("async") && isLookAheadValidatePropertyNameStart && !flag) {
-      return true;
-    }
-    return false;
-  }
-  /**
    * Parse PropertyName, using context ref which passed in to record this property is computed or not.
    *
    * ### Problem of Keyword as PropertyName
@@ -3650,6 +3618,38 @@ export function createParser(code: string, option?: ParserConfig) {
       cloneSourcePosition(body.end),
     );
   }
+  /**
+   * This is a helper function for object expression and class for determiate is property
+   * a method definition or not.
+   *
+   * Please notes that this function not only accept regualer syntax, but also accept something
+   * like set and get generator, it will left sematic job for `parseMetodDefinition` method.
+   * @returns  {boolean}
+   */
+  function checkIsMethodStartWithModifier(): boolean {
+    if (match(SyntaxKinds.MultiplyOperator)) {
+      return true;
+    }
+    const { kind, lineTerminatorFlag: flag } = lookahead();
+    const isLookAheadValidatePropertyNameStart =
+      Keywords.find((keyword) => keyword === kind) ||
+      kind === SyntaxKinds.Identifier ||
+      kind === SyntaxKinds.PrivateName ||
+      kind === SyntaxKinds.StringLiteral ||
+      kind === SyntaxKinds.NumberLiteral ||
+      kind === SyntaxKinds.BracketLeftPunctuator ||
+      kind === SyntaxKinds.MultiplyOperator;
+    if (isContextKeyword("set") && isLookAheadValidatePropertyNameStart) {
+      return true;
+    }
+    if (isContextKeyword("get") && isLookAheadValidatePropertyNameStart) {
+      return true;
+    }
+    if (isContextKeyword("async") && isLookAheadValidatePropertyNameStart && !flag) {
+      return true;
+    }
+    return false;
+  }
   function helperIsPropertyNameIsCtor(propertyName: PropertyName) {
     return isIdentifer(propertyName) && propertyName.name === "constructor";
   }
@@ -3669,11 +3669,11 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     if (type === "set") {
       if (params.length !== 1) {
-        throw createMessageError(ErrorMessageMap.setter_should_has_only_one_params);
+        throw createMessageError(ErrorMessageMap.syntax_error_setter_functions_must_have_one_argument);
       }
       for (const param of params) {
         if (isRestElement(param)) {
-          throw createMessageError(ErrorMessageMap.setter_can_not_have_rest_element_as_argument);
+          throw createMessageError(ErrorMessageMap.syntax_error_setter_functions_must_have_one_argument_not_rest);
         }
       }
     }

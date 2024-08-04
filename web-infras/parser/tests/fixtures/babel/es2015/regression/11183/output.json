@@ -1,0 +1,183 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "X",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 11,
+                "index": 10
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "NumberLiteral",
+                "value": "05",
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 11
+                },
+                "end": {
+                    "row": 2,
+                    "col": 3,
+                    "index": 13
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 11
+            },
+            "end": {
+                "row": 2,
+                "col": 3,
+                "index": 13
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "x",
+                "start": {
+                    "row": 4,
+                    "col": 10,
+                    "index": 24
+                },
+                "end": {
+                    "row": 4,
+                    "col": 11,
+                    "index": 25
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "StringLiteral",
+                            "value": "use strict",
+                            "start": {
+                                "row": 4,
+                                "col": 16,
+                                "index": 30
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 28,
+                                "index": 42
+                            }
+                        },
+                        "start": {
+                            "row": 4,
+                            "col": 16,
+                            "index": 30
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 28,
+                            "index": 42
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 4,
+                    "col": 14,
+                    "index": 28
+                },
+                "end": {
+                    "row": 4,
+                    "col": 30,
+                    "index": 44
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 4,
+                "col": 1,
+                "index": 15
+            },
+            "end": {
+                "row": 4,
+                "col": 30,
+                "index": 44
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "NumberLiteral",
+                "value": "05",
+                "start": {
+                    "row": 5,
+                    "col": 1,
+                    "index": 45
+                },
+                "end": {
+                    "row": 5,
+                    "col": 3,
+                    "index": 47
+                }
+            },
+            "start": {
+                "row": 5,
+                "col": 1,
+                "index": 45
+            },
+            "end": {
+                "row": 5,
+                "col": 3,
+                "index": 47
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 48
+    }
+}
