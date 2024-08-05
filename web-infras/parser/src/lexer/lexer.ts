@@ -1049,7 +1049,7 @@ export function createLexer(code: string) {
     return readDecimalLiteral();
   }
   /**
-   * 
+   *
    */
   function readDecimalLiteral() {
     // Start With Non 0
@@ -1124,14 +1124,14 @@ export function createLexer(code: string) {
   }
   /**
    * Sub state machine helper to read leegacy Oct number;
-   * @returns 
+   * @returns
    */
-  function readLegacyOctNumberLiteralOrNonOctalDecimalIntegerLiteral () {
-    let isNonOctalDecimalIntegerLiteral  = false;
+  function readLegacyOctNumberLiteralOrNonOctalDecimalIntegerLiteral() {
+    let isNonOctalDecimalIntegerLiteral = false;
     let isLastCharNumeric = false;
-    loop: while(!isEOF()) {
+    loop: while (!isEOF()) {
       const char = getChar();
-      switch(char) {
+      switch (char) {
         case "0":
         case "1":
         case "2":
@@ -1152,7 +1152,7 @@ export function createLexer(code: string) {
           break;
         }
         case "_": {
-          if(!isLastCharNumeric) {
+          if (!isLastCharNumeric) {
             throw new Error("There am I !!");
           }
           eatChar();
@@ -1173,7 +1173,11 @@ export function createLexer(code: string) {
       helperReadExponPartOfDecimalLiteral();
     }
     // should error if is legacy oct not have float or expon.
-    return finishToken( isNonOctalDecimalIntegerLiteral ? SyntaxKinds.NonOctalDecimalLiteral : SyntaxKinds.LegacyOctalIntegerLiteral);
+    return finishToken(
+      isNonOctalDecimalIntegerLiteral
+        ? SyntaxKinds.NonOctalDecimalLiteral
+        : SyntaxKinds.LegacyOctalIntegerLiteral,
+    );
   }
   /**
    * Sub state mahcine helper for checking is current char

@@ -121,7 +121,13 @@ export const ErrorMessageMap = {
   syntax_error_setter_functions_must_have_one_argument_not_rest:
     "SyntaxError: Setter function argument must not be a rest parameter",
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Deprecated_octal_literal
-  Syntax_error_0_prefixed_octal_literals_are_deprecated: "SyntaxError: Octal literals are not allowed in strict mode",
+  Syntax_error_0_prefixed_octal_literals_are_deprecated:
+    "SyntaxError: Octal literals are not allowed in strict mode",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Duplicate_proto
+  syntax_error_property_name__proto__appears_more_than_once_in_object_literal:
+    "SyntaxError: property name __proto__ appears more than once in object literal",
+  // try `({ cc = 100})` in v8 based runtime
+  Syntax_error_Invalid_shorthand_property_initializer: "SyntaxError: Invalid shorthand property initializer",
   // try: `const {...[x]} = {}` in babel playgroud`
   v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts:
     "SyntaxError: `...` must be followed by an identifier in declaration contexts",

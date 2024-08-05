@@ -209,18 +209,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2015/uncategorised/334",
   "/babel/es2015/uncategorised/359",
   "/babel/core/uncategorised/545",
-  // === (feature) duplicate proto property
-  "/esprima/ES6/object-initialiser/invalid-proto-getter-literal-identifier",
-  "/esprima/ES6/object-initialiser/invalid-proto-identifier-literal",
-  "/esprima/ES6/object-initialiser/invalid-proto-identifiers",
-  "/esprima/ES6/object-initialiser/invalid-proto-literal-identifier",
-  "/esprima/ES6/object-initialiser/invalid-proto-literals",
-  "/esprima/ES6/object-initialiser/invalid-proto-setter-literal-identifier",
-  "/babel/es2015/duplicate-proto/in-new-expression",
-  "/babel/es2015/duplicate-proto/with-assignment-expression",
-  "/babel/es2015/duplicate-proto/without-assignment-expression",
-  "/babel/es2017/async-call/parenthesized-argument-object-double-proto",
-  "/babel/es2015/uncategorised/349",
   // === (dunplicate construcotr)
   "/babel/es2015/uncategorised/125",
   // === (feature) duplicate among export declaration

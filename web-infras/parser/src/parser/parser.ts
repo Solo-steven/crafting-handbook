@@ -143,6 +143,7 @@ interface Context {
   maybeArrowStart: number;
   inOperatorStack: Array<boolean>;
   propertiesInitSet: Set<any>;
+  propertiesProtoDuplicateSet: Set<PropertyName>;
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -159,6 +160,7 @@ function createContext(): Context {
     maybeArrowStart: -1,
     inOperatorStack: [],
     propertiesInitSet: new Set(),
+    propertiesProtoDuplicateSet: new Set(),
   };
 }
 
@@ -680,7 +682,12 @@ export function createParser(code: string, option?: ParserConfig) {
       body.push(parseModuleItem());
     }
     if (context.propertiesInitSet.size > 0) {
-      throw new Error();
+      throw createMessageError(ErrorMessageMap.Syntax_error_Invalid_shorthand_property_initializer);
+    }
+    if (context.propertiesProtoDuplicateSet.size > 0) {
+      throw createMessageError(
+        ErrorMessageMap.syntax_error_property_name__proto__appears_more_than_once_in_object_literal,
+      );
     }
     exitProgram();
     return Factory.createProgram(
@@ -1104,6 +1111,9 @@ export function createParser(code: string, option?: ParserConfig) {
     // object property's value can not has parentheses.
     if (objectPropertyNode.value && objectPropertyNode.value.parentheses && isBinding) {
       throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
+    }
+    if (context.propertiesProtoDuplicateSet.has(objectPropertyNode.key)) {
+      context.propertiesProtoDuplicateSet.delete(objectPropertyNode.key);
     }
     // When a property name is a CoverInitializedName, we need to cover to assignment pattern
     if (context.propertiesInitSet.has(objectPropertyNode) && !objectPropertyNode.shorted) {
@@ -2205,16 +2215,11 @@ export function createParser(code: string, option?: ParserConfig) {
     if (match(SyntaxKinds.YieldKeyword) && isCurrentScopeParseYieldAsExpression()) {
       return parseYieldExpression();
     }
-    const [[left, isPattern], scope] = parseWithCatpureLayer(() => {
-      let leftExpr = parseConditionalExpression();
-      if (!match(AssigmentOperators)) {
-        return [leftExpr, false];
-      }
-      return [exprToPattern(leftExpr, false), true];
-    });
-    if (!isPattern) {
-      return left as Expression;
+    const [leftExpr, scope] = parseWithCatpureLayer(parseConditionalExpression);
+    if (!match(AssigmentOperators)) {
+      return leftExpr;
     }
+    const left = exprToPattern(leftExpr, false);
     checkStrictModeScopeError(scope);
     const operator = getToken();
     nextToken();
@@ -3047,7 +3052,7 @@ export function createParser(code: string, option?: ParserConfig) {
     return Factory.createDecimalLiteral(value, start, end);
   }
   function parseNonOctalDecimalLiteral() {
-    if(isInStrictMode()) {
+    if (isInStrictMode()) {
       throw createMessageError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated);
     }
     const { start, end, value } = expect(SyntaxKinds.NonOctalDecimalLiteral);
@@ -3066,14 +3071,14 @@ export function createParser(code: string, option?: ParserConfig) {
     return Factory.createHexIntegerLiteral(value, start, end);
   }
   function parseLegacyOctalIntegerLiteral() {
-    if(isInStrictMode()) {
+    if (isInStrictMode()) {
       throw createMessageError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated);
     }
     const { start, end, value } = expect(SyntaxKinds.LegacyOctalIntegerLiteral);
     return Factory.createLegacyOctalIntegerLiteral(value, start, end);
   }
   function parseNumericLiteral(): NumberLiteral {
-    switch(getToken()) {
+    switch (getToken()) {
       case SyntaxKinds.DecimalLiteral:
         return parseDecimalLiteral();
       case SyntaxKinds.NonOctalDecimalLiteral:
@@ -3310,9 +3315,10 @@ export function createParser(code: string, option?: ParserConfig) {
     let isStart = true;
     const propertyDefinitionList: Array<PropertyDefinition> = [];
     let trailingComma = false;
+    const protoPropertyNames: Array<PropertyName> = [];
     while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
       if (isStart) {
-        propertyDefinitionList.push(parsePropertyDefinition());
+        propertyDefinitionList.push(parsePropertyDefinition(protoPropertyNames));
         isStart = false;
         continue;
       }
@@ -3321,10 +3327,32 @@ export function createParser(code: string, option?: ParserConfig) {
         trailingComma = true;
         break;
       }
-      propertyDefinitionList.push(parsePropertyDefinition());
+      propertyDefinitionList.push(parsePropertyDefinition(protoPropertyNames));
     }
+    staticSematicEarlyErrorForObjectExpression(protoPropertyNames);
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
     return Factory.createObjectExpression(propertyDefinitionList, trailingComma, start, end);
+  }
+  function staticSematicEarlyErrorForObjectExpression(protoPropertyNames: Array<PropertyName>) {
+    if (protoPropertyNames.length > 1) {
+      for (let index = 1; index < protoPropertyNames.length; ++index)
+        context.propertiesProtoDuplicateSet.add(protoPropertyNames[index]);
+      // throw createMessageError(ErrorMessageMap.syntax_error_property_name__proto__appears_more_than_once_in_object_literal);
+    }
+  }
+  function helperRecordPropertyNameForStaticSematicEarly(
+    protoPropertyNames: Array<PropertyName>,
+    propertyName: PropertyName,
+    isComputed: boolean,
+  ) {
+    if (isComputed) return;
+    if (
+      (isIdentifer(propertyName) && propertyName.name === "__proto__") ||
+      (isStringLiteral(propertyName) && propertyName.value === "__proto__")
+    ) {
+      protoPropertyNames.push(propertyName);
+      return;
+    }
   }
   /**
    * Parse PropertyDefinition
@@ -3346,7 +3374,7 @@ export function createParser(code: string, option?: ParserConfig) {
    *    end of `parseProgram`
    * #### ref: https://tc39.es/ecma262/#prod-PropertyDefinition
    */
-  function parsePropertyDefinition(): PropertyDefinition {
+  function parsePropertyDefinition(protoPropertyNameLocations: Array<PropertyName>): PropertyDefinition {
     // semantics check for private
     if (match(SyntaxKinds.PrivateName)) {
       throw createMessageError(ErrorMessageMap.private_field_can_not_use_in_object);
@@ -3369,6 +3397,11 @@ export function createParser(code: string, option?: ParserConfig) {
       return parseMethodDefintion(false, propertyName) as ObjectMethodDefinition;
     }
     if (isComputedRef.isComputed || match(SyntaxKinds.ColonPunctuator)) {
+      helperRecordPropertyNameForStaticSematicEarly(
+        protoPropertyNameLocations,
+        propertyName,
+        isComputedRef.isComputed,
+      );
       nextToken();
       const expr = parseAssignmentExpressionAllowIn();
       return Factory.createObjectProperty(
@@ -3382,6 +3415,11 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     recordIdentifierValue(propertyName);
     if (match(SyntaxKinds.AssginOperator)) {
+      helperRecordPropertyNameForStaticSematicEarly(
+        protoPropertyNameLocations,
+        propertyName,
+        isComputedRef.isComputed,
+      );
       nextToken();
       const expr = parseAssignmentExpressionAllowIn();
       const property = Factory.createObjectProperty(
@@ -3457,7 +3495,7 @@ export function createParser(code: string, option?: ParserConfig) {
       SyntaxKinds.BracketLeftPunctuator,
       SyntaxKinds.StringLiteral,
       ...IdentiferWithKeyworArray,
-      ...NumericLiteralKinds
+      ...NumericLiteralKinds,
     ]);
     if (match(SyntaxKinds.StringLiteral)) {
       return parseStringLiteral();
