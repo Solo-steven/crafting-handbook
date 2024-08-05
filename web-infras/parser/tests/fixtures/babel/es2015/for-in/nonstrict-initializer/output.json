@@ -22,8 +22,8 @@
                         }
                     },
                     "init": {
-                        "kind": "NumberLiteral",
-                        "value": "0",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "0",
                         "start": {
                             "row": 1,
                             "col": 17,
@@ -79,8 +79,8 @@
                         }
                     },
                     "init": {
-                        "kind": "NumberLiteral",
-                        "value": "0",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "0",
                         "start": {
                             "row": 2,
                             "col": 20,
@@ -217,8 +217,8 @@
                                     "kind": "UnaryExpression",
                                     "operator": "-",
                                     "argument": {
-                                        "kind": "NumberLiteral",
-                                        "value": "1",
+                                        "kind": "DecimalLiteral",
+                                        "rawValue": "1",
                                         "start": {
                                             "row": 4,
                                             "col": 29,
@@ -344,8 +344,8 @@
                                     }
                                 },
                                 "value": {
-                                    "kind": "NumberLiteral",
-                                    "value": "0",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "0",
                                     "start": {
                                         "row": 4,
                                         "col": 51,
@@ -387,8 +387,8 @@
                                     }
                                 },
                                 "value": {
-                                    "kind": "NumberLiteral",
-                                    "value": "1",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "1",
                                     "start": {
                                         "row": 4,
                                         "col": 57,
@@ -430,8 +430,8 @@
                                     }
                                 },
                                 "value": {
-                                    "kind": "NumberLiteral",
-                                    "value": "2",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "2",
                                     "start": {
                                         "row": 4,
                                         "col": 63,

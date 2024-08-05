@@ -4,8 +4,8 @@
         {
             "kind": "WhileStatement",
             "test": {
-                "kind": "NumberLiteral",
-                "value": "0",
+                "kind": "DecimalLiteral",
+                "rawValue": "0",
                 "start": {
                     "row": 1,
                     "col": 8,
@@ -75,8 +75,8 @@
                     }
                 },
                 "right": {
-                    "kind": "NumberLiteral",
-                    "value": "1",
+                    "kind": "DecimalLiteral",
+                    "rawValue": "1",
                     "start": {
                         "row": 2,
                         "col": 10,

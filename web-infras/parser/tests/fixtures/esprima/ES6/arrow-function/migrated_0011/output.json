@@ -24,8 +24,8 @@
                     }
                 ],
                 "body": {
-                    "kind": "NumberLiteral",
-                    "value": "00",
+                    "kind": "LegacyOctalIntegerLiteral",
+                    "rawValue": "00",
                     "start": {
                         "row": 1,
                         "col": 8,

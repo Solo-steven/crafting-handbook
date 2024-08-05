@@ -22,8 +22,8 @@
                         }
                     },
                     "init": {
-                        "kind": "NumberLiteral",
-                        "value": "1",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "1",
                         "start": {
                             "row": 1,
                             "col": 11,
@@ -79,16 +79,16 @@
                 "kind": "ClassBody",
                 "body": [
                     {
-                        "kind": 10167,
+                        "kind": 10173,
                         "body": [
                             {
-                                "kind": 10142,
+                                "kind": 10148,
                                 "variant": "var",
                                 "declarations": [
                                     {
-                                        "kind": 10143,
+                                        "kind": 10149,
                                         "id": {
-                                            "kind": 10119,
+                                            "kind": 10125,
                                             "name": "x",
                                             "start": {
                                                 "row": 2,
@@ -103,7 +103,7 @@
                                         },
                                         "init": {
                                             "kind": 10115,
-                                            "value": "42",
+                                            "rawValue": "42",
                                             "start": {
                                                 "row": 2,
                                                 "col": 28,
@@ -139,13 +139,13 @@
                                 }
                             },
                             {
-                                "kind": 10142,
+                                "kind": 10148,
                                 "variant": "var",
                                 "declarations": [
                                     {
-                                        "kind": 10143,
+                                        "kind": 10149,
                                         "id": {
-                                            "kind": 10119,
+                                            "kind": 10125,
                                             "name": "y",
                                             "start": {
                                                 "row": 2,

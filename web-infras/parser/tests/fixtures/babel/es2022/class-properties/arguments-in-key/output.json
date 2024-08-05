@@ -62,8 +62,8 @@
                                         }
                                     },
                                     "value": {
-                                        "kind": "NumberLiteral",
-                                        "value": "2",
+                                        "kind": "DecimalLiteral",
+                                        "rawValue": "2",
                                         "start": {
                                             "row": 3,
                                             "col": 19,

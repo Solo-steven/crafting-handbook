@@ -22,8 +22,8 @@
                         }
                     },
                     "init": {
-                        "kind": "NumberLiteral",
-                        "value": "5",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "5",
                         "start": {
                             "row": 4,
                             "col": 9,
@@ -63,8 +63,8 @@
                         }
                     },
                     "init": {
-                        "kind": "NumberLiteral",
-                        "value": "6",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "6",
                         "start": {
                             "row": 8,
                             "col": 9,

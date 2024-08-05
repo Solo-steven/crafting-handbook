@@ -25,8 +25,8 @@
                         "kind": "BinaryExpression",
                         "operator": "**",
                         "left": {
-                            "kind": "NumberLiteral",
-                            "value": "2",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "2",
                             "start": {
                                 "row": 1,
                                 "col": 15,
@@ -39,8 +39,8 @@
                             }
                         },
                         "right": {
-                            "kind": "NumberLiteral",
-                            "value": "2",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "2",
                             "start": {
                                 "row": 1,
                                 "col": 20,

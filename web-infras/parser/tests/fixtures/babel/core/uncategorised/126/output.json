@@ -33,8 +33,8 @@
                             },
                             "arguments": [
                                 {
-                                    "kind": "NumberLiteral",
-                                    "value": "42",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "42",
                                     "start": {
                                         "row": 1,
                                         "col": 10,
@@ -85,8 +85,8 @@
                     },
                     "arguments": [
                         {
-                            "kind": "NumberLiteral",
-                            "value": "14",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "14",
                             "start": {
                                 "row": 1,
                                 "col": 23,
@@ -99,8 +99,8 @@
                             }
                         },
                         {
-                            "kind": "NumberLiteral",
-                            "value": "3",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "3",
                             "start": {
                                 "row": 1,
                                 "col": 27,
@@ -113,8 +113,8 @@
                             }
                         },
                         {
-                            "kind": "NumberLiteral",
-                            "value": "77",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "77",
                             "start": {
                                 "row": 1,
                                 "col": 30,

@@ -24,8 +24,8 @@
                     {
                         "kind": "SpreadElement",
                         "argument": {
-                            "kind": "NumberLiteral",
-                            "value": ".5",
+                            "kind": "DecimalLiteral",
+                            "rawValue": ".5",
                             "start": {
                                 "row": 1,
                                 "col": 6,

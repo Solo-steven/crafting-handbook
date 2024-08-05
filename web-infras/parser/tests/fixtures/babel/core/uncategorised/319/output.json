@@ -11,8 +11,8 @@
                     "computed": false,
                     "optional": false,
                     "object": {
-                        "kind": "NumberLiteral",
-                        "value": "123.",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "123.",
                         "start": {
                             "row": 1,
                             "col": 1,
@@ -51,8 +51,8 @@
                 },
                 "arguments": [
                     {
-                        "kind": "NumberLiteral",
-                        "value": "10",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "10",
                         "start": {
                             "row": 1,
                             "col": 15,

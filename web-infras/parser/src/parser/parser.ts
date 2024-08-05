@@ -127,6 +127,8 @@ import {
   isFunctionDeclaration,
   isClassExpression,
   isExpressionStatement,
+  NumericLiteralKinds,
+  NumberLiteral,
 } from "web-infra-common";
 import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
@@ -2112,7 +2114,7 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function checkStrictMode(expr: Expression) {
     if (isStringLiteral(expr)) {
-      if (expr.value === "use strict") {
+      if (expr.value === "use strict" && !expr.parentheses) {
         if (isDirectToFunctionContext()) {
           if (!isCurrentFunctionParameterListSimple()) {
             throw createMessageError(ErrorMessageMap.illegal_use_strict_in_non_simple_parameter_list);
@@ -2746,8 +2748,18 @@ export function createParser(code: string, option?: ParserConfig) {
       case SyntaxKinds.TrueKeyword:
       case SyntaxKinds.FalseKeyword:
         return parseBoolLiteral();
-      case SyntaxKinds.NumberLiteral:
-        return parseNumberLiteral();
+      case SyntaxKinds.DecimalLiteral:
+        return parseDecimalLiteral();
+      case SyntaxKinds.NonOctalDecimalLiteral:
+        return parseNonOctalDecimalLiteral();
+      case SyntaxKinds.BinaryIntegerLiteral:
+        return parseBinaryIntegerLiteral();
+      case SyntaxKinds.OctalIntegerLiteral:
+        return parseOctalIntegerLiteral();
+      case SyntaxKinds.HexIntegerLiteral:
+        return parseHexIntegerLiteral();
+      case SyntaxKinds.LegacyOctalIntegerLiteral:
+        return parseLegacyOctalIntegerLiteral();
       case SyntaxKinds.StringLiteral:
         return parseStringLiteral();
       case SyntaxKinds.TemplateHead:
@@ -3030,9 +3042,53 @@ export function createParser(code: string, option?: ParserConfig) {
     const { start, end } = expect(SyntaxKinds.UndefinedKeyword);
     return Factory.createUndefinedLiteral(start, end);
   }
-  function parseNumberLiteral() {
-    const { start, end, value } = expect(SyntaxKinds.NumberLiteral);
-    return Factory.createNumberLiteral(value, start, end);
+  function parseDecimalLiteral() {
+    const { start, end, value } = expect(SyntaxKinds.DecimalLiteral);
+    return Factory.createDecimalLiteral(value, start, end);
+  }
+  function parseNonOctalDecimalLiteral() {
+    if(isInStrictMode()) {
+      throw createMessageError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated);
+    }
+    const { start, end, value } = expect(SyntaxKinds.NonOctalDecimalLiteral);
+    return Factory.createNonOctalDecimalLiteral(value, start, end);
+  }
+  function parseBinaryIntegerLiteral() {
+    const { start, end, value } = expect(SyntaxKinds.BinaryIntegerLiteral);
+    return Factory.createBinaryIntegerLiteral(value, start, end);
+  }
+  function parseOctalIntegerLiteral() {
+    const { start, end, value } = expect(SyntaxKinds.OctalIntegerLiteral);
+    return Factory.createOctalIntegerLiteral(value, start, end);
+  }
+  function parseHexIntegerLiteral() {
+    const { start, end, value } = expect(SyntaxKinds.HexIntegerLiteral);
+    return Factory.createHexIntegerLiteral(value, start, end);
+  }
+  function parseLegacyOctalIntegerLiteral() {
+    if(isInStrictMode()) {
+      throw createMessageError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated);
+    }
+    const { start, end, value } = expect(SyntaxKinds.LegacyOctalIntegerLiteral);
+    return Factory.createLegacyOctalIntegerLiteral(value, start, end);
+  }
+  function parseNumericLiteral(): NumberLiteral {
+    switch(getToken()) {
+      case SyntaxKinds.DecimalLiteral:
+        return parseDecimalLiteral();
+      case SyntaxKinds.NonOctalDecimalLiteral:
+        return parseNonOctalDecimalLiteral();
+      case SyntaxKinds.BinaryIntegerLiteral:
+        return parseBinaryIntegerLiteral();
+      case SyntaxKinds.OctalIntegerLiteral:
+        return parseOctalIntegerLiteral();
+      case SyntaxKinds.HexIntegerLiteral:
+        return parseHexIntegerLiteral();
+      case SyntaxKinds.LegacyOctalIntegerLiteral:
+        return parseLegacyOctalIntegerLiteral();
+      default:
+        throw createMessageError("");
+    }
   }
   function parseStringLiteral() {
     const { start, end, value } = expect(SyntaxKinds.StringLiteral);
@@ -3399,15 +3455,15 @@ export function createParser(code: string, option?: ParserConfig) {
   function parsePropertyName(isComputedRef: { isComputed: boolean }): PropertyName {
     expectButNotEat([
       SyntaxKinds.BracketLeftPunctuator,
-      SyntaxKinds.NumberLiteral,
       SyntaxKinds.StringLiteral,
       ...IdentiferWithKeyworArray,
+      ...NumericLiteralKinds
     ]);
     if (match(SyntaxKinds.StringLiteral)) {
       return parseStringLiteral();
     }
-    if (match(SyntaxKinds.NumberLiteral)) {
-      return parseNumberLiteral();
+    if (match(NumericLiteralKinds)) {
+      return parseNumericLiteral();
     }
     // propty name is a spical test of binding identifier.
     // if `await` and `yield` is propty name with colon (means assign), it dose not affected by scope.
@@ -3636,7 +3692,7 @@ export function createParser(code: string, option?: ParserConfig) {
       kind === SyntaxKinds.Identifier ||
       kind === SyntaxKinds.PrivateName ||
       kind === SyntaxKinds.StringLiteral ||
-      kind === SyntaxKinds.NumberLiteral ||
+      NumericLiteralKinds.includes(kind) ||
       kind === SyntaxKinds.BracketLeftPunctuator ||
       kind === SyntaxKinds.MultiplyOperator;
     if (isContextKeyword("set") && isLookAheadValidatePropertyNameStart) {
@@ -3673,7 +3729,9 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       for (const param of params) {
         if (isRestElement(param)) {
-          throw createMessageError(ErrorMessageMap.syntax_error_setter_functions_must_have_one_argument_not_rest);
+          throw createMessageError(
+            ErrorMessageMap.syntax_error_setter_functions_must_have_one_argument_not_rest,
+          );
         }
       }
     }

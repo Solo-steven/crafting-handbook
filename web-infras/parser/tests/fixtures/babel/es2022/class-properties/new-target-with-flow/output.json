@@ -132,8 +132,8 @@
                                 "kind": "BinaryExpression",
                                 "operator": "+",
                                 "left": {
-                                    "kind": "NumberLiteral",
-                                    "value": "1",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "1",
                                     "start": {
                                         "row": 3,
                                         "col": 21,
@@ -577,8 +577,8 @@
                                 "kind": "BinaryExpression",
                                 "operator": "+",
                                 "left": {
-                                    "kind": "NumberLiteral",
-                                    "value": "1",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "1",
                                     "start": {
                                         "row": 7,
                                         "col": 14,

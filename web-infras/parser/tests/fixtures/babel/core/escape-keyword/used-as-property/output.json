@@ -43,8 +43,8 @@
                                     }
                                 },
                                 "value": {
-                                    "kind": "NumberLiteral",
-                                    "value": "2",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "2",
                                     "start": {
                                         "row": 2,
                                         "col": 15,

@@ -4,8 +4,8 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "NumberLiteral",
-                "value": "0b1",
+                "kind": "DecimalLiteral",
+                "rawValue": "0b1",
                 "start": {
                     "row": 1,
                     "col": 1,

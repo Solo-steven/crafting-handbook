@@ -22,16 +22,16 @@
                 "kind": "ClassBody",
                 "body": [
                     {
-                        "kind": 10167,
+                        "kind": 10173,
                         "body": [
                             {
-                                "kind": 10142,
+                                "kind": 10148,
                                 "variant": "var",
                                 "declarations": [
                                     {
-                                        "kind": 10143,
+                                        "kind": 10149,
                                         "id": {
-                                            "kind": 10119,
+                                            "kind": 10125,
                                             "name": "x",
                                             "start": {
                                                 "row": 3,
@@ -69,9 +69,9 @@
                                 }
                             },
                             {
-                                "kind": 10145,
+                                "kind": 10151,
                                 "name": {
-                                    "kind": 10119,
+                                    "kind": 10125,
                                     "name": "x",
                                     "start": {
                                         "row": 4,
@@ -87,7 +87,7 @@
                                 "generator": false,
                                 "async": false,
                                 "body": {
-                                    "kind": 10146,
+                                    "kind": 10152,
                                     "body": [],
                                     "start": {
                                         "row": 4,

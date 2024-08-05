@@ -20,8 +20,8 @@
             "body": {
                 "kind": "ExpressionStatement",
                 "expr": {
-                    "kind": "NumberLiteral",
-                    "value": "10",
+                    "kind": "DecimalLiteral",
+                    "rawValue": "10",
                     "start": {
                         "row": 1,
                         "col": 6,
@@ -74,8 +74,8 @@
             "body": {
                 "kind": "ExpressionStatement",
                 "expr": {
-                    "kind": "NumberLiteral",
-                    "value": "20",
+                    "kind": "DecimalLiteral",
+                    "rawValue": "20",
                     "start": {
                         "row": 1,
                         "col": 15,

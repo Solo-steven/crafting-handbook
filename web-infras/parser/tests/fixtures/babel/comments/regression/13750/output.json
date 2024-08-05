@@ -28,8 +28,8 @@
                             }
                         },
                         "property": {
-                            "kind": "NumberLiteral",
-                            "value": "0",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "0",
                             "start": {
                                 "row": 1,
                                 "col": 10,
@@ -53,8 +53,8 @@
                         }
                     },
                     "right": {
-                        "kind": "NumberLiteral",
-                        "value": "1",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "1",
                         "start": {
                             "row": 1,
                             "col": 17,
@@ -102,8 +102,8 @@
                                 }
                             },
                             "property": {
-                                "kind": "NumberLiteral",
-                                "value": "0",
+                                "kind": "DecimalLiteral",
+                                "rawValue": "0",
                                 "start": {
                                     "row": 1,
                                     "col": 56,
@@ -127,8 +127,8 @@
                             }
                         },
                         "right": {
-                            "kind": "NumberLiteral",
-                            "value": "2",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "2",
                             "start": {
                                 "row": 1,
                                 "col": 63,
@@ -173,8 +173,8 @@
                                 }
                             },
                             "property": {
-                                "kind": "NumberLiteral",
-                                "value": "0",
+                                "kind": "DecimalLiteral",
+                                "rawValue": "0",
                                 "start": {
                                     "row": 1,
                                     "col": 74,
@@ -198,8 +198,8 @@
                             }
                         },
                         "right": {
-                            "kind": "NumberLiteral",
-                            "value": "3",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "3",
                             "start": {
                                 "row": 1,
                                 "col": 81,
@@ -289,8 +289,8 @@
                                         }
                                     },
                                     "property": {
-                                        "kind": "NumberLiteral",
-                                        "value": "0",
+                                        "kind": "DecimalLiteral",
+                                        "rawValue": "0",
                                         "start": {
                                             "row": 2,
                                             "col": 17,
@@ -314,8 +314,8 @@
                                     }
                                 },
                                 "right": {
-                                    "kind": "NumberLiteral",
-                                    "value": "10",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "10",
                                     "start": {
                                         "row": 2,
                                         "col": 22,
@@ -395,8 +395,8 @@
                                 }
                             },
                             "right": {
-                                "kind": "NumberLiteral",
-                                "value": "20",
+                                "kind": "DecimalLiteral",
+                                "rawValue": "20",
                                 "start": {
                                     "row": 4,
                                     "col": 12,

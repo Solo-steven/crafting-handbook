@@ -46,8 +46,8 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "NumberLiteral",
-                "value": "05",
+                "kind": "LegacyOctalIntegerLiteral",
+                "rawValue": "05",
                 "start": {
                     "row": 2,
                     "col": 1,
@@ -145,8 +145,8 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "NumberLiteral",
-                "value": "05",
+                "kind": "LegacyOctalIntegerLiteral",
+                "rawValue": "05",
                 "start": {
                     "row": 5,
                     "col": 1,

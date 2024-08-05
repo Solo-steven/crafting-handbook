@@ -60,8 +60,8 @@
                                 {
                                     "kind": "ExpressionStatement",
                                     "expr": {
-                                        "kind": "NumberLiteral",
-                                        "value": "3",
+                                        "kind": "DecimalLiteral",
+                                        "rawValue": "3",
                                         "start": {
                                             "row": 3,
                                             "col": 3,

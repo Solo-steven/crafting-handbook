@@ -22,8 +22,8 @@
                         }
                     },
                     "init": {
-                        "kind": "NumberLiteral",
-                        "value": "1",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "1",
                         "start": {
                             "row": 1,
                             "col": 9,
@@ -96,8 +96,8 @@
                             }
                         },
                         "right": {
-                            "kind": "NumberLiteral",
-                            "value": "1",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "1",
                             "start": {
                                 "row": 3,
                                 "col": 13,
@@ -149,8 +149,8 @@
                 "kind": "SequenceExpression",
                 "exprs": [
                     {
-                        "kind": "NumberLiteral",
-                        "value": "1",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "1",
                         "start": {
                             "row": 5,
                             "col": 2,
@@ -163,8 +163,8 @@
                         }
                     },
                     {
-                        "kind": "NumberLiteral",
-                        "value": "2",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "2",
                         "start": {
                             "row": 5,
                             "col": 5,

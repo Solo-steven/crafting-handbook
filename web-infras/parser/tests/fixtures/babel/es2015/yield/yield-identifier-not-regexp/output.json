@@ -45,8 +45,8 @@
                                     }
                                 },
                                 "right": {
-                                    "kind": "NumberLiteral",
-                                    "value": "1",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "1",
                                     "start": {
                                         "row": 2,
                                         "col": 11,
@@ -128,8 +128,8 @@
                                     }
                                 },
                                 "right": {
-                                    "kind": "NumberLiteral",
-                                    "value": "1",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "1",
                                     "start": {
                                         "row": 4,
                                         "col": 5,
@@ -256,8 +256,8 @@
                                 "kind": "BinaryExpression",
                                 "operator": "/",
                                 "left": {
-                                    "kind": "NumberLiteral",
-                                    "value": "2",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "2",
                                     "start": {
                                         "row": 7,
                                         "col": 11,
@@ -339,8 +339,8 @@
                                 "kind": "BinaryExpression",
                                 "operator": "/",
                                 "left": {
-                                    "kind": "NumberLiteral",
-                                    "value": "2",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "2",
                                     "start": {
                                         "row": 9,
                                         "col": 5,

@@ -4,8 +4,8 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "NumberLiteral",
-                "value": "1",
+                "kind": "DecimalLiteral",
+                "rawValue": "1",
                 "start": {
                     "row": 2,
                     "col": 2,
@@ -32,8 +32,8 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "NumberLiteral",
-                "value": "2",
+                "kind": "DecimalLiteral",
+                "rawValue": "2",
                 "start": {
                     "row": 5,
                     "col": 2,
@@ -60,8 +60,8 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "NumberLiteral",
-                "value": "3",
+                "kind": "DecimalLiteral",
+                "rawValue": "3",
                 "start": {
                     "row": 9,
                     "col": 3,
@@ -88,8 +88,8 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "NumberLiteral",
-                "value": "4",
+                "kind": "DecimalLiteral",
+                "rawValue": "4",
                 "start": {
                     "row": 12,
                     "col": 13,

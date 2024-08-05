@@ -4,8 +4,8 @@
         {
             "kind": "ExportDefaultDeclaration",
             "declaration": {
-                "kind": "NumberLiteral",
-                "value": "42",
+                "kind": "DecimalLiteral",
+                "rawValue": "42",
                 "start": {
                     "row": 1,
                     "col": 16,

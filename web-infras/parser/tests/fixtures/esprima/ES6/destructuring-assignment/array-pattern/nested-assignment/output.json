@@ -40,8 +40,8 @@
                                 }
                             },
                             "right": {
-                                "kind": "NumberLiteral",
-                                "value": "0",
+                                "kind": "DecimalLiteral",
+                                "rawValue": "0",
                                 "start": {
                                     "row": 1,
                                     "col": 6,
@@ -104,8 +104,8 @@
                                                 }
                                             },
                                             "property": {
-                                                "kind": "NumberLiteral",
-                                                "value": "0",
+                                                "kind": "DecimalLiteral",
+                                                "rawValue": "0",
                                                 "start": {
                                                     "row": 1,
                                                     "col": 16,
@@ -190,8 +190,8 @@
                     }
                 },
                 "right": {
-                    "kind": "NumberLiteral",
-                    "value": "0",
+                    "kind": "DecimalLiteral",
+                    "rawValue": "0",
                     "start": {
                         "row": 1,
                         "col": 24,

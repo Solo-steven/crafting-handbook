@@ -41,8 +41,8 @@
                             }
                         },
                         "value": {
-                            "kind": "NumberLiteral",
-                            "value": "1",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "1",
                             "start": {
                                 "row": 2,
                                 "col": 7,
@@ -188,8 +188,8 @@
                             }
                         },
                         "value": {
-                            "kind": "NumberLiteral",
-                            "value": "2",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "2",
                             "start": {
                                 "row": 8,
                                 "col": 8,
@@ -235,8 +235,8 @@
                                 {
                                     "kind": "ReturnStatement",
                                     "argu": {
-                                        "kind": "NumberLiteral",
-                                        "value": "9999",
+                                        "kind": "DecimalLiteral",
+                                        "rawValue": "9999",
                                         "start": {
                                             "row": 10,
                                             "col": 20,

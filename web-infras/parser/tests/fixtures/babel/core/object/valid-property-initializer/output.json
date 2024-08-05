@@ -44,8 +44,8 @@
                                         }
                                     },
                                     "right": {
-                                        "kind": "NumberLiteral",
-                                        "value": "123",
+                                        "kind": "DecimalLiteral",
+                                        "rawValue": "123",
                                         "start": {
                                             "row": 2,
                                             "col": 9,
@@ -103,8 +103,8 @@
                                             }
                                         },
                                         "right": {
-                                            "kind": "NumberLiteral",
-                                            "value": "123",
+                                            "kind": "DecimalLiteral",
+                                            "rawValue": "123",
                                             "start": {
                                                 "row": 3,
                                                 "col": 12,
@@ -172,8 +172,8 @@
                                         }
                                     },
                                     "value": {
-                                        "kind": "NumberLiteral",
-                                        "value": "24",
+                                        "kind": "DecimalLiteral",
+                                        "rawValue": "24",
                                         "start": {
                                             "row": 4,
                                             "col": 12,
@@ -215,8 +215,8 @@
                                         }
                                     },
                                     "value": {
-                                        "kind": "NumberLiteral",
-                                        "value": "45",
+                                        "kind": "DecimalLiteral",
+                                        "rawValue": "45",
                                         "start": {
                                             "row": 4,
                                             "col": 21,

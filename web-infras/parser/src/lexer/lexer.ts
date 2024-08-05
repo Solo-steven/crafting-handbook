@@ -908,7 +908,7 @@ export function createLexer(code: string) {
       }
       default: {
         if (isDigital()) {
-          return readDotStartFloat();
+          return readDotStartDecimalLiteral();
         }
         return finishToken(SyntaxKinds.DotOperator);
       }
@@ -1006,7 +1006,7 @@ export function createLexer(code: string) {
     if (char === "0") {
       eatChar();
       const next = getChar();
-      switch(next) {
+      switch (next) {
         case "0":
         case "1":
         case "2":
@@ -1014,12 +1014,14 @@ export function createLexer(code: string) {
         case "4":
         case "5":
         case "6":
-        case "7":{
-          return readLegacyOctNumberLiteral();
+        case "7":
+        case "8":
+        case "9": {
+          return readLegacyOctNumberLiteralOrNonOctalDecimalIntegerLiteral();
         }
         case ".": {
           eatChar();
-          return readDotStartFloat();
+          return readDotStartDecimalLiteral();
         }
         case "b":
         case "B": {
@@ -1027,7 +1029,7 @@ export function createLexer(code: string) {
           return readNumberLiteralWithBase(isBinary);
         }
         case "o":
-        case "O":{
+        case "O": {
           eatChar();
           return readNumberLiteralWithBase(isOct);
         }
@@ -1038,52 +1040,62 @@ export function createLexer(code: string) {
         }
         default: {
           if (next !== "E" && next !== "e") {
-            return finishToken(SyntaxKinds.NumberLiteral);
+            return finishToken(SyntaxKinds.DecimalLiteral);
           }
         }
       }
     }
     // Start With Non 0
-    readDigitalHelper();
+    return readDecimalLiteral();
+  }
+  /**
+   * 
+   */
+  function readDecimalLiteral() {
+    // Start With Non 0
+    readDigitals();
     if (getChar() === ".") {
       eatChar();
-      readDigitalHelper();
+      readDigitals();
     }
-    char = getChar();
+    const char = getChar();
     if (char === "e" || char === "E") {
-      return readExponPartOfNumberLiteral();
+      helperReadExponPartOfDecimalLiteral();
     }
-    return finishToken(SyntaxKinds.NumberLiteral);
+    return finishToken(SyntaxKinds.DecimalLiteral);
   }
-  function readExponPartOfNumberLiteral() {
+  function helperReadExponPartOfDecimalLiteral() {
     eatChar();
     const char = getChar();
     if (char === "+" || char == "-") {
       eatChar();
     }
     const startIndex = getCurrentIndex();
-    readDigitalHelper();
+    readDigitals();
     const exponPart = context.cursor.code.slice(startIndex, context.cursor.pos);
     if (exponPart.length === 0) {
       // TODO: error handle
       throw new Error("todo error - expon length is 0");
     }
-    return finishToken(SyntaxKinds.NumberLiteral);
   }
   /**
    * Sub state machine helper, reading a number literal
    * start with `.`, only could be a digital float literal.
    * @returns {SyntaxKinds}
    */
-  function readDotStartFloat(): SyntaxKinds {
-    readDigitalHelper();
-    return finishToken(SyntaxKinds.NumberLiteral);
+  function readDotStartDecimalLiteral(): SyntaxKinds {
+    readDigitals();
+    const char = getChar();
+    if (char === "e" || char === "E") {
+      helperReadExponPartOfDecimalLiteral();
+    }
+    return finishToken(SyntaxKinds.DecimalLiteral);
   }
   /**
    * Sub State Mahcine Helper for reading a digital string.
    * @returns {void}
    */
-  function readDigitalHelper(): void {
+  function readDigitals(): void {
     let seprator = false;
     let isStart = true;
     while (!isEOF()) {
@@ -1110,24 +1122,58 @@ export function createLexer(code: string) {
       throw lexicalError(ErrorMessageMap.babel_error_a_numeric_separator_is_only_allowed_between_two_digits);
     }
   }
-  function readLegacyOctNumberLiteral() {
-    while(isOct()) {
+  /**
+   * Sub state machine helper to read leegacy Oct number;
+   * @returns 
+   */
+  function readLegacyOctNumberLiteralOrNonOctalDecimalIntegerLiteral () {
+    let isNonOctalDecimalIntegerLiteral  = false;
+    let isLastCharNumeric = false;
+    loop: while(!isEOF()) {
+      const char = getChar();
+      switch(char) {
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7": {
+          isLastCharNumeric = true;
+          eatChar();
+          break;
+        }
+        case "8":
+        case "9": {
+          isLastCharNumeric = true;
+          isNonOctalDecimalIntegerLiteral = true;
+          eatChar();
+          break;
+        }
+        case "_": {
+          if(!isLastCharNumeric) {
+            throw new Error("There am I !!");
+          }
+          eatChar();
+          readDigitals();
+          break loop;
+        }
+        default: {
+          break loop;
+        }
+      }
+    }
+    if (getChar() === ".") {
       eatChar();
+      readDigitals();
     }
     const char = getChar();
-    switch(char) {
-      case "e":
-      case "E": {
-        return readExponPartOfNumberLiteral();
-      }
-      case ".": {
-        eatChar();
-        return readDotStartFloat();
-      }
-      default: {
-        return finishToken(SyntaxKinds.NumberLiteral);
-      }
+    if (char === "e" || char === "E") {
+      helperReadExponPartOfDecimalLiteral();
     }
+    // should error if is legacy oct not have float or expon.
+    return finishToken( isNonOctalDecimalIntegerLiteral ? SyntaxKinds.NonOctalDecimalLiteral : SyntaxKinds.LegacyOctalIntegerLiteral);
   }
   /**
    * Sub state mahcine helper for checking is current char
@@ -1214,7 +1260,7 @@ export function createLexer(code: string) {
     if (getSliceStringFromCode(startIndex, getCurrentIndex()).length === 0) {
       throw new Error("Number Literal Length can not be 0");
     }
-    return finishToken(SyntaxKinds.NumberLiteral);
+    return finishToken(SyntaxKinds.DecimalLiteral);
   }
   /**
    * Sub state machine for reading a string literal, tokenize a string literal

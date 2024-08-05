@@ -396,8 +396,8 @@
                     }
                 },
                 "right": {
-                    "kind": "NumberLiteral",
-                    "value": "0",
+                    "kind": "DecimalLiteral",
+                    "rawValue": "0",
                     "start": {
                         "row": 8,
                         "col": 5,

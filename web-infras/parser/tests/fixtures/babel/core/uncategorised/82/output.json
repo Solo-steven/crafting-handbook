@@ -4,8 +4,8 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "NumberLiteral",
-                "value": "02",
+                "kind": "LegacyOctalIntegerLiteral",
+                "rawValue": "02",
                 "start": {
                     "row": 1,
                     "col": 1,

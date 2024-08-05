@@ -14,8 +14,8 @@
                     "left": {
                         "kind": "AwaitExpression",
                         "argument": {
-                            "kind": "NumberLiteral",
-                            "value": "5",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "5",
                             "start": {
                                 "row": 1,
                                 "col": 20,
@@ -40,8 +40,8 @@
                         "parentheses": true
                     },
                     "right": {
-                        "kind": "NumberLiteral",
-                        "value": "6",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "6",
                         "start": {
                             "row": 1,
                             "col": 26,

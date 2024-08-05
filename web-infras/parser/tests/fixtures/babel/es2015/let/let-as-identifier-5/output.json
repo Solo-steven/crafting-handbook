@@ -4,8 +4,8 @@
         {
             "kind": "IfStatement",
             "test": {
-                "kind": "NumberLiteral",
-                "value": "1",
+                "kind": "DecimalLiteral",
+                "rawValue": "1",
                 "start": {
                     "row": 1,
                     "col": 5,

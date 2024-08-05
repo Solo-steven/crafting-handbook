@@ -100,10 +100,10 @@ export const ErrorMessageMap = {
   import_call_is_not_allow_as_new_expression_called: "import call is not allowed as new expression called",
   invalid_esc_char_in_keyword: "keyword can not contain any esc flag.",
   paran_expr_can_not_be_empty: "paran expression can not be empty",
-/**
- * Format error from MDN, using v8 based as error message value, some error is come from babel and 
- * v8 engine
- */
+  /**
+   * Format error from MDN, using v8 based as error message value, some error is come from babel and
+   * v8 engine
+   */
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_return
   syntax_error_return_not_in_function: "SyntaxError: return not in function",
   syntax_error_arguments_is_not_valid_in_fields:
@@ -115,9 +115,13 @@ export const ErrorMessageMap = {
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Invalid_assignment_left-hand_side
   syntax_error_invalid_assignment_left_hand_side: "SyntaxError: invalid assignment left-hand side",
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Setter_one_argument
-  syntax_error_setter_functions_must_have_one_argument: "SyntaxError: Setter must have exactly one formal parameter.",
+  syntax_error_setter_functions_must_have_one_argument:
+    "SyntaxError: Setter must have exactly one formal parameter.",
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Setter_one_argument
-  syntax_error_setter_functions_must_have_one_argument_not_rest: "SyntaxError: Setter function argument must not be a rest parameter",
+  syntax_error_setter_functions_must_have_one_argument_not_rest:
+    "SyntaxError: Setter function argument must not be a rest parameter",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Deprecated_octal_literal
+  Syntax_error_0_prefixed_octal_literals_are_deprecated: "SyntaxError: Octal literals are not allowed in strict mode",
   // try: `const {...[x]} = {}` in babel playgroud`
   v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts:
     "SyntaxError: `...` must be followed by an identifier in declaration contexts",

@@ -55,8 +55,8 @@
                             "kind": "BinaryExpression",
                             "operator": "+",
                             "left": {
-                                "kind": "NumberLiteral",
-                                "value": "1",
+                                "kind": "DecimalLiteral",
+                                "rawValue": "1",
                                 "start": {
                                     "row": 3,
                                     "col": 3,
@@ -69,8 +69,8 @@
                                 }
                             },
                             "right": {
-                                "kind": "NumberLiteral",
-                                "value": "1",
+                                "kind": "DecimalLiteral",
+                                "rawValue": "1",
                                 "start": {
                                     "row": 3,
                                     "col": 5,

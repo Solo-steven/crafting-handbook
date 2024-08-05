@@ -28,8 +28,8 @@
                         "computed": false,
                         "static": false,
                         "key": {
-                            "kind": "NumberLiteral",
-                            "value": "3",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "3",
                             "start": {
                                 "row": 1,
                                 "col": 17,

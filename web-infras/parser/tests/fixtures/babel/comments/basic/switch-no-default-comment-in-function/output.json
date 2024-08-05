@@ -42,8 +42,8 @@
                             {
                                 "kind": "SwitchCase",
                                 "test": {
-                                    "kind": "NumberLiteral",
-                                    "value": "2",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "2",
                                     "start": {
                                         "row": 3,
                                         "col": 14,
@@ -85,8 +85,8 @@
                             {
                                 "kind": "SwitchCase",
                                 "test": {
-                                    "kind": "NumberLiteral",
-                                    "value": "1",
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "1",
                                     "start": {
                                         "row": 5,
                                         "col": 14,

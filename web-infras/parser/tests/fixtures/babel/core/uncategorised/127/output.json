@@ -109,8 +109,8 @@
                 },
                 "arguments": [
                     {
-                        "kind": "NumberLiteral",
-                        "value": "2014",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "2014",
                         "start": {
                             "row": 1,
                             "col": 41,

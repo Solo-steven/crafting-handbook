@@ -25,8 +25,8 @@
                         "expr": {
                             "kind": "AwaitExpression",
                             "argument": {
-                                "kind": "NumberLiteral",
-                                "value": "0",
+                                "kind": "DecimalLiteral",
+                                "rawValue": "0",
                                 "start": {
                                     "row": 2,
                                     "col": 9,

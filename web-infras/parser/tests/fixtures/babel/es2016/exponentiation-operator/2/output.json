@@ -10,8 +10,8 @@
                     "kind": "BinaryExpression",
                     "operator": "**",
                     "left": {
-                        "kind": "NumberLiteral",
-                        "value": "5",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "5",
                         "start": {
                             "row": 1,
                             "col": 3,
@@ -24,8 +24,8 @@
                         }
                     },
                     "right": {
-                        "kind": "NumberLiteral",
-                        "value": "6",
+                        "kind": "DecimalLiteral",
+                        "rawValue": "6",
                         "start": {
                             "row": 1,
                             "col": 8,

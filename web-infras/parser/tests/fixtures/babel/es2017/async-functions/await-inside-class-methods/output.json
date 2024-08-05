@@ -44,8 +44,8 @@
                                             "expr": {
                                                 "kind": "AwaitExpression",
                                                 "argument": {
-                                                    "kind": "NumberLiteral",
-                                                    "value": "42",
+                                                    "kind": "DecimalLiteral",
+                                                    "rawValue": "42",
                                                     "start": {
                                                         "row": 2,
                                                         "col": 21,

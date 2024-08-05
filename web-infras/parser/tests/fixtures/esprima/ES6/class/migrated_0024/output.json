@@ -7,8 +7,8 @@
                 "kind": "ClassExpression",
                 "id": null,
                 "superClass": {
-                    "kind": "NumberLiteral",
-                    "value": "0",
+                    "kind": "DecimalLiteral",
+                    "rawValue": "0",
                     "start": {
                         "row": 1,
                         "col": 16,

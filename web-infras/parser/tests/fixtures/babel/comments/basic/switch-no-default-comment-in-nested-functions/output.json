@@ -284,8 +284,8 @@
                                                                                 }
                                                                             },
                                                                             "right": {
-                                                                                "kind": "NumberLiteral",
-                                                                                "value": "1",
+                                                                                "kind": "DecimalLiteral",
+                                                                                "rawValue": "1",
                                                                                 "start": {
                                                                                     "row": 6,
                                                                                     "col": 78,

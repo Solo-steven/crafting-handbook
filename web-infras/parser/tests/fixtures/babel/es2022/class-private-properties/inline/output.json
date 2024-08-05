@@ -144,8 +144,8 @@
                             }
                         },
                         "value": {
-                            "kind": "NumberLiteral",
-                            "value": "0",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "0",
                             "start": {
                                 "row": 3,
                                 "col": 16,
@@ -188,8 +188,8 @@
                             }
                         },
                         "value": {
-                            "kind": "NumberLiteral",
-                            "value": "1",
+                            "kind": "DecimalLiteral",
+                            "rawValue": "1",
                             "start": {
                                 "row": 3,
                                 "col": 24,

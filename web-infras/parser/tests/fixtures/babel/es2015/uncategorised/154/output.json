@@ -108,8 +108,8 @@
                                             }
                                         },
                                         "value": {
-                                            "kind": "NumberLiteral",
-                                            "value": "10",
+                                            "kind": "DecimalLiteral",
+                                            "rawValue": "10",
                                             "start": {
                                                 "row": 1,
                                                 "col": 24,

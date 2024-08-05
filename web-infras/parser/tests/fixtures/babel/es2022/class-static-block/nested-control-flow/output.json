@@ -68,16 +68,16 @@
                         }
                     },
                     {
-                        "kind": 10167,
+                        "kind": 10173,
                         "body": [
                             {
-                                "kind": 10131,
+                                "kind": 10137,
                                 "test": {
-                                    "kind": 10175,
+                                    "kind": 10181,
                                     "computed": false,
                                     "optional": false,
                                     "object": {
-                                        "kind": 10155,
+                                        "kind": 10161,
                                         "name": "this",
                                         "start": {
                                             "row": 4,
@@ -91,7 +91,7 @@
                                         }
                                     },
                                     "property": {
-                                        "kind": 10119,
+                                        "kind": 10125,
                                         "name": "foo",
                                         "start": {
                                             "row": 4,
@@ -116,16 +116,16 @@
                                     }
                                 },
                                 "body": {
-                                    "kind": 10124,
+                                    "kind": 10130,
                                     "body": [
                                         {
-                                            "kind": 10123,
+                                            "kind": 10129,
                                             "test": {
-                                                "kind": 10175,
+                                                "kind": 10181,
                                                 "computed": false,
                                                 "optional": false,
                                                 "object": {
-                                                    "kind": 10155,
+                                                    "kind": 10161,
                                                     "name": "this",
                                                     "start": {
                                                         "row": 5,
@@ -139,7 +139,7 @@
                                                     }
                                                 },
                                                 "property": {
-                                                    "kind": 10119,
+                                                    "kind": 10125,
                                                     "name": "foo",
                                                     "start": {
                                                         "row": 5,
@@ -164,10 +164,10 @@
                                                 }
                                             },
                                             "conseqence": {
-                                                "kind": 10124,
+                                                "kind": 10130,
                                                 "body": [
                                                     {
-                                                        "kind": 10128,
+                                                        "kind": 10134,
                                                         "label": null,
                                                         "start": {
                                                             "row": 6,
@@ -193,10 +193,10 @@
                                                 }
                                             },
                                             "alternative": {
-                                                "kind": 10124,
+                                                "kind": 10130,
                                                 "body": [
                                                     {
-                                                        "kind": 10129,
+                                                        "kind": 10135,
                                                         "label": null,
                                                         "start": {
                                                             "row": 8,
@@ -256,9 +256,9 @@
                                 }
                             },
                             {
-                                "kind": 10147,
+                                "kind": 10153,
                                 "id": {
-                                    "kind": 10119,
+                                    "kind": 10125,
                                     "name": "C2",
                                     "start": {
                                         "row": 11,
@@ -273,16 +273,16 @@
                                 },
                                 "superClass": null,
                                 "body": {
-                                    "kind": 10148,
+                                    "kind": 10154,
                                     "body": [
                                         {
-                                            "kind": 10166,
+                                            "kind": 10172,
                                             "async": false,
                                             "generator": false,
                                             "computed": false,
                                             "static": false,
                                             "key": {
-                                                "kind": 10119,
+                                                "kind": 10125,
                                                 "name": "bar",
                                                 "start": {
                                                     "row": 12,
@@ -297,10 +297,10 @@
                                             },
                                             "params": [],
                                             "body": {
-                                                "kind": 10146,
+                                                "kind": 10152,
                                                 "body": [
                                                     {
-                                                        "kind": 10130,
+                                                        "kind": 10136,
                                                         "argu": null,
                                                         "start": {
                                                             "row": 13,
