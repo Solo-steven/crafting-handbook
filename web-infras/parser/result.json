@@ -2,11 +2,6 @@
   "failedResult": [
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/regression/octal-float-fail/input.js",
-      "fileId": "/babel/core/regression/octal-float-fail"
-    },
-    {
-      "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2022/class-static-block/invalid-break/input.js",
       "fileId": "/babel/es2022/class-static-block/invalid-break"
     },
@@ -24,16 +19,6 @@
       "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2022/class-static-block/invalid-legacy-decorators/input.js",
       "fileId": "/babel/es2022/class-static-block/invalid-legacy-decorators"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2021/numeric-separator/invalid-legacy-octal-literal/input.js",
-      "fileId": "/babel/es2021/numeric-separator/invalid-legacy-octal-literal"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/554/input.js",
-      "fileId": "/babel/core/uncategorised/554"
     }
   ],
   "skipResult": []

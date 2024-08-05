@@ -1152,8 +1152,8 @@ export function createLexer(code: string) {
           break;
         }
         case "_": {
-          if (!isLastCharNumeric) {
-            throw new Error("There am I !!");
+          if (!isLastCharNumeric || !isNonOctalDecimalIntegerLiteral) {
+            throw lexicalError(ErrorMessageMap.error_legacy_octal_literals_contain_numeric_seperator);
           }
           eatChar();
           readDigitals();
@@ -1164,15 +1164,21 @@ export function createLexer(code: string) {
         }
       }
     }
+    let haveFloatOrExpon = false;
     if (getChar() === ".") {
+      haveFloatOrExpon = true;
       eatChar();
       readDigitals();
     }
     const char = getChar();
     if (char === "e" || char === "E") {
+      haveFloatOrExpon = true;
       helperReadExponPartOfDecimalLiteral();
     }
-    // should error if is legacy oct not have float or expon.
+    // should error if is legacy oct not have float or expon
+    if(!isNonOctalDecimalIntegerLiteral && haveFloatOrExpon) {
+      throw lexicalError(ErrorMessageMap.error_legacy_octal_literals_contain_float_or_expon);
+    }
     return finishToken(
       isNonOctalDecimalIntegerLiteral
         ? SyntaxKinds.NonOctalDecimalLiteral
