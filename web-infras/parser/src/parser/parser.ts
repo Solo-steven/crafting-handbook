@@ -129,6 +129,7 @@ import {
   isExpressionStatement,
   NumericLiteralKinds,
   NumberLiteral,
+  UnaryExpression,
 } from "web-infra-common";
 import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
@@ -1520,6 +1521,9 @@ export function createParser(code: string, option?: ParserConfig) {
       nextToken();
       finalizer = parseBlockStatement();
     }
+    if (!handler && !finalizer) {
+      throw createMessageError(ErrorMessageMap.v8_error_missing_catch_or_finally_after_try);
+    }
     return Factory.createTryStatement(
       body,
       handler,
@@ -1749,6 +1753,11 @@ export function createParser(code: string, option?: ParserConfig) {
           }
           // for function declaration, can await treat as function name is dep on parent scope.
           if (!isExpression && isParentFunctionAsync()) {
+            throw createMessageError(
+              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+            );
+          }
+          if (config.sourceType === "module") {
             throw createMessageError(
               ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
             );
@@ -2482,12 +2491,27 @@ export function createParser(code: string, option?: ParserConfig) {
       } else {
         argument = parseUnaryExpression();
       }
-      return Factory.createUnaryExpression(argument, operator, start, cloneSourcePosition(argument.end));
+      const unaryExpr = Factory.createUnaryExpression(
+        argument,
+        operator,
+        start,
+        cloneSourcePosition(argument.end),
+      );
+      staticSematicEarlyErrorForUnaryExpression(unaryExpr);
+      return unaryExpr;
     }
     if (match(SyntaxKinds.AwaitKeyword) && isCurrentScopeParseAwaitAsExpression()) {
       return parseAwaitExpression();
     }
     return parseUpdateExpression();
+  }
+  // 13.5.1.1
+  function staticSematicEarlyErrorForUnaryExpression(expr: UnaryExpression) {
+    if (isInStrictMode() && expr.operator === SyntaxKinds.DeleteKeyword && isIdentifer(expr.argument)) {
+      throw createMessageError(
+        ErrorMessageMap.syntax_error_applying_the_delete_operator_to_an_unqualified_name_is_deprecated,
+      );
+    }
   }
   function parseAwaitExpression() {
     if (isInParameter()) {
@@ -2971,7 +2995,7 @@ export function createParser(code: string, option?: ParserConfig) {
       // for most of await keyword, if it should treat as identifier,
       // it should not in async function.
       case SyntaxKinds.AwaitKeyword: {
-        if (isCurrentScopeParseAwaitAsExpression()) {
+        if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
           throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
         }
         const { value, start, end } = expect(SyntaxKinds.AwaitKeyword);
@@ -3333,11 +3357,11 @@ export function createParser(code: string, option?: ParserConfig) {
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
     return Factory.createObjectExpression(propertyDefinitionList, trailingComma, start, end);
   }
+  // part of 13.2.5.1
   function staticSematicEarlyErrorForObjectExpression(protoPropertyNames: Array<PropertyName>) {
     if (protoPropertyNames.length > 1) {
       for (let index = 1; index < protoPropertyNames.length; ++index)
         context.propertiesProtoDuplicateSet.add(protoPropertyNames[index]);
-      // throw createMessageError(ErrorMessageMap.syntax_error_property_name__proto__appears_more_than_once_in_object_literal);
     }
   }
   function helperRecordPropertyNameForStaticSematicEarly(
@@ -3527,13 +3551,13 @@ export function createParser(code: string, option?: ParserConfig) {
   function checkPropertyShortedIsKeyword(propertyName: PropertyName) {
     if (isIdentifer(propertyName)) {
       if (propertyName.name === "await") {
-        if (isCurrentScopeParseAwaitAsExpression()) {
+        if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
           throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
         }
         return;
       }
       if (propertyName.name === "yield") {
-        if (isCurrentScopeParseYieldAsExpression()) {
+        if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
           throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
         }
         return;
@@ -3644,7 +3668,7 @@ export function createParser(code: string, option?: ParserConfig) {
      * Step 2: semantic and more concise syntax check instead just throw a unexpect
      * token error.
      */
-    helperSematicCheckMethodPropertyName(
+    staticSematicEarlyErrorForClassMethodDefinition(
       withPropertyName,
       inClass,
       isStatic,
@@ -3747,7 +3771,8 @@ export function createParser(code: string, option?: ParserConfig) {
   function helperIsPropertyNameIsCtor(propertyName: PropertyName) {
     return isIdentifer(propertyName) && propertyName.name === "constructor";
   }
-  function helperSematicCheckMethodPropertyName(
+  // part of 15.7.1
+  function staticSematicEarlyErrorForClassMethodDefinition(
     propertyName: PropertyName,
     isClass: boolean,
     isStatic: boolean,
@@ -4573,6 +4598,11 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function parseImportDeclaration(): ImportDeclaration {
     const { start } = expect(SyntaxKinds.ImportKeyword);
+    if (config.sourceType === "script") {
+      throw createMessageError(
+        ErrorMessageMap.babel_error_import_and_export_may_appear_only_with_sourceType_module,
+      );
+    }
     const specifiers: Array<ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier> = [];
     if (match(SyntaxKinds.StringLiteral)) {
       const source = parseStringLiteral();
@@ -4719,6 +4749,11 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function parseExportDeclaration(): ExportDeclaration {
     const { start } = expect(SyntaxKinds.ExportKeyword);
+    if (config.sourceType === "script") {
+      throw createMessageError(
+        ErrorMessageMap.babel_error_import_and_export_may_appear_only_with_sourceType_module,
+      );
+    }
     if (match(SyntaxKinds.DefaultKeyword)) {
       return parseExportDefaultDeclaration(start);
     }

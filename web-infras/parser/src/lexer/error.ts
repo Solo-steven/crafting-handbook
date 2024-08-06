@@ -14,7 +14,9 @@ export const ErrorMessageMap = {
   babel_error_floating_point_numbers_require_a_valid_exponent_after_the_e:
     "Floating-point numbers require a valid exponent after the 'e'",
   // error: `001_1`
-  error_legacy_octal_literals_contain_numeric_seperator: "Legacy octal literals can not contain any numeric seperator",
+  error_legacy_octal_literals_contain_numeric_seperator:
+    "Legacy octal literals can not contain any numeric seperator",
   // error `010e01` or `010.13`
-  error_legacy_octal_literals_contain_float_or_expon: "Legacy octal literals can not contain any float number or expon",
+  error_legacy_octal_literals_contain_float_or_expon:
+    "Legacy octal literals can not contain any float number or expon",
 };

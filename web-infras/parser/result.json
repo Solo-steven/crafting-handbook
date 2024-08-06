@@ -9,16 +9,6 @@
       "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2022/class-static-block/invalid-continue/input.js",
       "fileId": "/babel/es2022/class-static-block/invalid-continue"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2022/class-static-block/invalid-decorators/input.js",
-      "fileId": "/babel/es2022/class-static-block/invalid-decorators"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2022/class-static-block/invalid-legacy-decorators/input.js",
-      "fileId": "/babel/es2022/class-static-block/invalid-legacy-decorators"
     }
   ],
   "skipResult": []

@@ -43,7 +43,7 @@ function printLexer(code: string) {
   );
 }
 function printParser(code: string) {
-  const ast = createParser(code, { allowAwaitOutsideFunction: true }).parse();
+  const ast = createParser(code, {}).parse();
   transformSyntaxKindToLiteral(ast);
   console.log(JSON.stringify(ast, null, 4));
   return 0;

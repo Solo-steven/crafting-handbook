@@ -24,12 +24,14 @@ const thirdPartyTestCase = [
     url: "https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.esm-browser.prod.min.js",
     code: "",
     pass: false,
+    config: { sourceType: "module" },
   },
   {
     title: "redux development",
     url: "https://cdnjs.cloudflare.com/ajax/libs/redux/5.0.1/redux.legacy-esm.js",
     code: "",
     pass: false,
+    config: { sourceType: "module" },
   },
   {
     title: "MUI development",
@@ -50,7 +52,7 @@ export default async function run3partyTestCase() {
     console.log(chalk.bold(`=========== 3rd Party Parser Test Case ===========`));
     for (const testCode of thirdPartyTestCase) {
       try {
-        const parser = createParser(testCode.code);
+        const parser = createParser(testCode.code, testCode.config as any);
         parser.parse();
         testCode.pass = true;
         console.log(`|${testCode.title}|: ${chalk.green("parse PASS")}.`);

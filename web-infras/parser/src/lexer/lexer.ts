@@ -1176,7 +1176,7 @@ export function createLexer(code: string) {
       helperReadExponPartOfDecimalLiteral();
     }
     // should error if is legacy oct not have float or expon
-    if(!isNonOctalDecimalIntegerLiteral && haveFloatOrExpon) {
+    if (!isNonOctalDecimalIntegerLiteral && haveFloatOrExpon) {
       throw lexicalError(ErrorMessageMap.error_legacy_octal_literals_contain_float_or_expon);
     }
     return finishToken(

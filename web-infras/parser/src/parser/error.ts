@@ -126,6 +126,9 @@ export const ErrorMessageMap = {
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Duplicate_proto
   syntax_error_property_name__proto__appears_more_than_once_in_object_literal:
     "SyntaxError: property name __proto__ appears more than once in object literal",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Delete_in_strict_mode
+  syntax_error_applying_the_delete_operator_to_an_unqualified_name_is_deprecated:
+    "SyntaxError: applying the 'delete' operator to an unqualified name is deprecated",
   // try `({ cc = 100})` in v8 based runtime
   Syntax_error_Invalid_shorthand_property_initializer: "SyntaxError: Invalid shorthand property initializer",
   // try: `const {...[x]} = {}` in babel playgroud`
@@ -135,9 +138,13 @@ export const ErrorMessageMap = {
     "SyntaxError: `...` must be followed by an assignable reference in assignment contexts",
   // try: `((a)) => {}` in v8 runtime.
   v8_error_invalid_parenthesized_assignment_pattern: "SyntaxError: Invalid destructuring assignment target.",
+  // try: `try{}` in v8 runtime
+  v8_error_missing_catch_or_finally_after_try: "SyntaxError: Missing catch or finally after try",
   // try: `import.meta` in babel playground when sourceType is script
   babel_error_import_meta_may_appear_only_with_source_type_module: `SyntaxError: import.meta may appear only with 'sourceType: "module"`,
   // try `import.name` in babel playground
   babel_error_the_only_valid_meta_property_for_import_is_import_meta:
     "SyntaxError: The only valid meta property for import is import.meta.",
+  // try any import or export in module type is script
+  babel_error_import_and_export_may_appear_only_with_sourceType_module: `SyntaxError: 'import' and 'export' may appear only with 'sourceType: "module"'`,
 };
