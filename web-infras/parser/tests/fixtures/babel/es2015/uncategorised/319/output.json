@@ -9,7 +9,7 @@
                     "kind": "VariableDeclarator",
                     "id": {
                         "kind": "Identifer",
-                        "name": "ABC",
+                        "name": "_Ҧ",
                         "start": {
                             "row": 1,
                             "col": 5,
@@ -17,11 +17,24 @@
                         },
                         "end": {
                             "row": 1,
-                            "col": 23,
-                            "index": 22
+                            "col": 15,
+                            "index": 14
                         }
                     },
-                    "init": null,
+                    "init": {
+                        "kind": "DecimalLiteral",
+                        "rawValue": "10",
+                        "start": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 20,
+                            "index": 19
+                        }
+                    },
                     "start": {
                         "row": 1,
                         "col": 5,
@@ -29,8 +42,8 @@
                     },
                     "end": {
                         "row": 1,
-                        "col": 23,
-                        "index": 22
+                        "col": 20,
+                        "index": 19
                     }
                 }
             ],
@@ -41,8 +54,8 @@
             },
             "end": {
                 "row": 1,
-                "col": 23,
-                "index": 22
+                "col": 20,
+                "index": 19
             }
         }
     ],
@@ -52,8 +65,8 @@
         "index": 0
     },
     "end": {
-        "row": 2,
-        "col": 1,
-        "index": 24
+        "row": 1,
+        "col": 21,
+        "index": 20
     }
 }

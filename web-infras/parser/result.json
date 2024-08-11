@@ -9,6 +9,36 @@
       "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2022/class-static-block/invalid-continue/input.js",
       "fileId": "/babel/es2022/class-static-block/invalid-continue"
+    },
+    {
+      "kind": "ExpectPassButFailed",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/escape-keyword/used-as-property/input.js",
+      "fileId": "/babel/core/escape-keyword/used-as-property",
+      "reason": "Parse Error"
+    },
+    {
+      "kind": "ExpectPassButFailed",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2019/json-strings/directive-line-separator/input.js",
+      "fileId": "/babel/es2019/json-strings/directive-line-separator",
+      "reason": "Parse Error"
+    },
+    {
+      "kind": "ExpectPassButFailed",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2019/json-strings/directive-paragraph-separator/input.js",
+      "fileId": "/babel/es2019/json-strings/directive-paragraph-separator",
+      "reason": "Parse Error"
+    },
+    {
+      "kind": "ExpectPassButFailed",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2019/json-strings/string-line-separator/input.js",
+      "fileId": "/babel/es2019/json-strings/string-line-separator",
+      "reason": "Parse Error"
+    },
+    {
+      "kind": "ExpectPassButFailed",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2019/json-strings/string-paragraph-separator/input.js",
+      "fileId": "/babel/es2019/json-strings/string-paragraph-separator",
+      "reason": "Parse Error"
     }
   ],
   "skipResult": []

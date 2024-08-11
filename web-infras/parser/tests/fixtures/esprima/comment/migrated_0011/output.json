@@ -7,35 +7,35 @@
                 "kind": "DecimalLiteral",
                 "rawValue": "42",
                 "start": {
-                    "row": 2,
+                    "row": 3,
                     "col": 5,
                     "index": 9
                 },
                 "end": {
-                    "row": 2,
+                    "row": 3,
                     "col": 7,
                     "index": 11
                 }
             },
             "start": {
-                "row": 2,
+                "row": 3,
                 "col": 5,
                 "index": 9
             },
             "end": {
-                "row": 2,
+                "row": 3,
                 "col": 7,
                 "index": 11
             }
         }
     ],
     "start": {
-        "row": 2,
+        "row": 3,
         "col": 5,
         "index": 9
     },
     "end": {
-        "row": 2,
+        "row": 3,
         "col": 7,
         "index": 11
     }

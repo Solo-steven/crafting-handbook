@@ -13,6 +13,12 @@ import {
   LexerTokenContext,
   LookaheadToken,
 } from "./type";
+import {
+  isCodePointLineTerminate,
+  isIdentifierChar,
+  isIdentifierStart,
+  UnicodePoints,
+} from "./unicode-helper";
 import { ErrorMessageMap } from "./error";
 /**
  * Lexer Context.
@@ -82,24 +88,6 @@ function cloneContext(source: Context): Context {
 //     readRegex: () => { pattern: string, flag: string };
 // }
 
-const nonIdentifierStartSet = new Set([
-  ...LexicalLiteral.punctuators,
-  ...LexicalLiteral.operator,
-  ...LexicalLiteral.newLineChars,
-  ...LexicalLiteral.whiteSpaceChars,
-]);
-
-const nonIdentifierStarMap: { [key: string]: number } = {};
-
-for (const item of [
-  ...LexicalLiteral.punctuators,
-  ...LexicalLiteral.operator,
-  ...LexicalLiteral.newLineChars,
-  ...LexicalLiteral.whiteSpaceChars,
-]) {
-  nonIdentifierStarMap[item] = 1;
-}
-
 const KeywordLiteralSet = new Set([
   ...LexicalLiteral.keywords,
   ...LexicalLiteral.BooleanLiteral,
@@ -122,7 +110,7 @@ export function createLexer(code: string) {
    * @returns {boolean}
    */
   function getLineTerminatorFlag(): boolean {
-    return /\n/.test(
+    return /[\n\u000D\u2028\u2029]/.test(
       context.cursor.code.slice(
         context.tokenContext.lastTokenEndPosition.index,
         context.tokenContext.startPosition.index,
@@ -219,21 +207,21 @@ export function createLexer(code: string) {
     let flag = "";
     let startIndex = getCurrentIndex();
     while (!isEOF()) {
-      const char = getChar();
-      if (char === "/" && !isEscape && !isInSet) {
+      const code = getCharCodePoint() as number;
+      if (code === UnicodePoints.Divide && !isEscape && !isInSet) {
         break;
       }
-      if (char === "[" && !isEscape) {
+      if (code === UnicodePoints.BracketLeft && !isEscape) {
         isInSet = true;
         eatChar();
         continue;
       }
-      if (char === "]" && !isEscape) {
+      if (code === UnicodePoints.BracketRight && !isEscape) {
         isInSet = false;
         eatChar();
         continue;
       }
-      isEscape = char === "\\" && !isEscape;
+      isEscape = code === UnicodePoints.BackSlash && !isEscape;
       eatChar();
     }
     if (isEOF()) {
@@ -245,8 +233,8 @@ export function createLexer(code: string) {
     /** tokenize flag  */
     startIndex = getCurrentIndex();
     while (!isEOF()) {
-      const char = getChar();
-      if (char && nonIdentifierStarMap[char]) {
+      const code = getCharCodePoint() as number;
+      if (!isIdentifierChar(code)) {
         break;
       }
       eatChar();
@@ -325,23 +313,45 @@ export function createLexer(code: string) {
    * - NOTE: it will return undefined if reaching EOF.
    * @returns {string}
    */
-  function getChar(step: number = 0): string | undefined {
-    return context.cursor.code[context.cursor.pos + step];
+  function getCharCodePoint(): number | undefined {
+    return context.cursor.code.codePointAt(context.cursor.pos);
+  }
+  /**
+   * Private API for getting current char accroding to
+   * the lexer cursor or get other char from current
+   * pos (offset).
+   * - NOTE: it will return undefined if reaching EOF.
+   * @returns {string}
+   */
+  function getNextCharCodePoint(): number | undefined {
+    const curCodePoint = getCharCodePoint() as number;
+    const nextCharStep = curCodePoint > 0xffff ? 2 : 1;
+    return context.cursor.code.codePointAt(context.cursor.pos + nextCharStep);
   }
   /**
    * Private API for checking is current reach EOF or not,
    * must used by every loop which use to eat char.
    */
   function isEOF(): boolean {
-    return getChar() === undefined;
+    return getCharCodePoint() === undefined;
   }
   /**
    * Private API for eatting current char, advance cursor with
    * one step default, or you can move more then one step
    * @return {void}
    */
-  function eatChar(step: number = 1): void {
-    context.cursor.pos += step;
+  function eatChar(): void {
+    const codePoint = getCharCodePoint() as number;
+    context.cursor.pos += codePoint > 0xffff ? 2 : 1;
+  }
+  /**
+   * Private API for eatting current char, advance cursor with
+   * one step default, or you can move more then one step
+   * @return {void}
+   */
+  function eatTwoChar(): void {
+    eatChar();
+    eatChar();
   }
   /**
    * Private API for eatting current char, which must be a change
@@ -350,7 +360,7 @@ export function createLexer(code: string) {
    * @return {void}
    */
   function eatChangeLine(): void {
-    context.cursor.pos += 1;
+    eatChar();
     context.cursor.currentLineStart = context.cursor.pos;
     context.cursor.currentLine++;
   }
@@ -360,30 +370,33 @@ export function createLexer(code: string) {
    * @return {void}
    */
   function skipWhiteSpaceChangeLine(): void {
-    loop: while (context.cursor.pos < code.length) {
-      let counter = 0;
-      switch (getChar()) {
-        case "\n":
+    while (!isEOF()) {
+      switch (getCharCodePoint()) {
+        case UnicodePoints.ChangeLine:
+        case UnicodePoints.CR:
+        case UnicodePoints.LS:
+        case UnicodePoints.PS:
           eatChangeLine();
           break;
-        case " ":
-        case "\t":
+        case UnicodePoints.WhiteSpace:
+        case UnicodePoints.Tab:
           eatChar();
           break;
-        case "/": {
-          const next = getChar(1);
-          if (next === "/") {
+
+        case UnicodePoints.Divide: {
+          const next = getNextCharCodePoint();
+          if (next === UnicodePoints.Divide) {
             readComment();
             return skipWhiteSpaceChangeLine();
           }
-          if (next === "*") {
+          if (next === UnicodePoints.Multi) {
             readCommentBlock();
             return skipWhiteSpaceChangeLine();
           }
           // fall thorugh
         }
         default:
-          break loop;
+          return;
       }
     }
   }
@@ -420,7 +433,7 @@ export function createLexer(code: string) {
    */
   function scan(): SyntaxKinds {
     skipWhiteSpaceChangeLine();
-    const char = getChar();
+    const char = getCharCodePoint();
     startToken();
     if (!char) {
       return finishToken(SyntaxKinds.EOFToken);
@@ -430,134 +443,128 @@ export function createLexer(code: string) {
        *              Punctuators
        *  ==========================================
        */
-      case "{":
+      case UnicodePoints.BracesLeft:
         context.templateMeta.stackCounter.push(-1);
         eatChar();
         return finishToken(SyntaxKinds.BracesLeftPunctuator);
-      case "}":
+      case UnicodePoints.BracesRight:
         const result = context.templateMeta.stackCounter.pop();
         if (result && result > 0) {
           return readTemplateLiteral(SyntaxKinds.TemplateTail, SyntaxKinds.TemplateMiddle);
         }
         eatChar();
         return finishToken(SyntaxKinds.BracesRightPunctuator);
-      case "[":
+      case UnicodePoints.BracketLeft:
         eatChar();
         return finishToken(SyntaxKinds.BracketLeftPunctuator);
-      case "]":
+      case UnicodePoints.BracketRight:
         eatChar();
         return finishToken(SyntaxKinds.BracketRightPunctuator);
-      case "(":
+      case UnicodePoints.ParenthesesLeft:
         eatChar();
         return finishToken(SyntaxKinds.ParenthesesLeftPunctuator);
-      case ")":
+      case UnicodePoints.ParenthesesRight:
         eatChar();
         return finishToken(SyntaxKinds.ParenthesesRightPunctuator);
-      case ":":
+      case UnicodePoints.Colon:
         eatChar();
         return finishToken(SyntaxKinds.ColonPunctuator);
-      case ";":
+      case UnicodePoints.Semi:
         eatChar();
         return finishToken(SyntaxKinds.SemiPunctuator);
       /** ==========================================
        *                Operators
        *  ==========================================
        */
-      case ",":
+      case UnicodePoints.Comma:
         eatChar();
         return finishToken(SyntaxKinds.CommaToken);
-      case "+":
+      case UnicodePoints.Plus:
         // +, ++, +=
         return readPlusStart();
-      case "-":
+      case UnicodePoints.Minus:
         // -, --, -=
         return readMinusStart();
-      case "*":
+      case UnicodePoints.Multi:
         return readMulStart();
-      case "%":
+      case UnicodePoints.Mod:
         return readModStart();
-      case ">":
+      case UnicodePoints.GreaterThen:
         return readGreaterStart();
-      case "<":
+      case UnicodePoints.LessThen:
         return readLessStart();
-      case "=":
+      case UnicodePoints.Equal:
         // '=', '==', '===', '=>'
         return readEqualStart();
-      case "!":
+      case UnicodePoints.Not:
         // '!', '!=', '!=='
         return readNotStart();
-      case "&":
+      case UnicodePoints.And:
         // '&', '&&', '&=', '&&='
         return readAndStart();
-      case "|":
+      case UnicodePoints.Or:
         // '|', "||", '|=', '||='
         return readOrStart();
-      case "?":
+      case UnicodePoints.Question:
         // '?', '?.' '??'
         return readQuestionStart();
-      case "^":
+      case UnicodePoints.BitwiseXor:
         // '^', '^='
         return readBitwiseXORStart();
-      case "~":
+      case UnicodePoints.BitwiseNot:
         // `~=`, `~`
         return readBitwiseNOTStart();
-      case "/": {
+      case UnicodePoints.Divide: {
+        eatChar();
         // '/' '// comment' '/* comments */'
-        const next = getChar(1);
+        const next = getCharCodePoint();
         switch (next) {
-          // case "/":
-          //   // start with "//"
-          //   return readComment();
-          // case "*":
-          //   // start with "/*"
-          //   return readCommentBlock();
-          case "=":
+          case UnicodePoints.Equal:
             // start with "/="
-            eatChar(2);
+            eatChar();
             return finishToken(SyntaxKinds.DivideAssignOperator, "/=");
-          case ">":
+          case UnicodePoints.GreaterThen:
             // start with "/>"
-            eatChar(2);
+            eatChar();
             return finishToken(SyntaxKinds.JSXSelfClosedToken, "/>");
           default:
             // just "/"
-            eatChar();
             return finishToken(SyntaxKinds.DivideOperator, "/");
         }
       }
-      case ".":
+      case UnicodePoints.Dot:
         // '.', '...', 'float-literal'
         return readDotStart();
       /** ==========================================
        *  Keyword, Id, Literal
        *  ==========================================
        */
-      case "0":
-      case "1":
-      case "2":
-      case "3":
-      case "4":
-      case "5":
-      case "6":
-      case "7":
-      case "8":
-      case "9": {
+      case UnicodePoints.Digital0:
+      case UnicodePoints.Digital1:
+      case UnicodePoints.Digital2:
+      case UnicodePoints.Digital3:
+      case UnicodePoints.Digital4:
+      case UnicodePoints.Digital5:
+      case UnicodePoints.Digital6:
+      case UnicodePoints.Digital7:
+      case UnicodePoints.Digital8:
+      case UnicodePoints.Digital9: {
         // Number Literal
         return readNumberLiteral();
       }
-      case '"': {
+      case UnicodePoints.DoubleQuote: {
         // String Literal
-        return readStringLiteral('"');
+        return readStringLiteral("Double");
       }
-      case "'": {
+      case UnicodePoints.SingleQuote: {
         // String Literal
-        return readStringLiteral("'");
+        return readStringLiteral("Single");
       }
-      case "`": {
+      case UnicodePoints.GraveAccent: {
         // Template Literal
         return readTemplateLiteral(SyntaxKinds.TemplateNoSubstitution, SyntaxKinds.TemplateHead);
       }
-      case "#": {
+      case UnicodePoints.PoundSign: {
         eatChar();
         const word = readWordAsIdentifier();
         return finishToken(SyntaxKinds.PrivateName, word);
@@ -583,13 +590,13 @@ export function createLexer(code: string) {
   function readPlusStart(): SyntaxKinds {
     // must start with +
     eatChar();
-    switch (getChar()) {
+    switch (getCharCodePoint()) {
       // +=
-      case "=":
+      case UnicodePoints.Equal:
         eatChar();
         return finishToken(SyntaxKinds.PlusAssignOperator);
       // ++
-      case "+":
+      case UnicodePoints.Plus:
         eatChar();
         return finishToken(SyntaxKinds.IncreOperator);
       // +
@@ -608,13 +615,13 @@ export function createLexer(code: string) {
   function readMinusStart(): SyntaxKinds {
     // must start with `-`
     eatChar();
-    switch (getChar()) {
+    switch (getCharCodePoint()) {
       // -=
-      case "=":
+      case UnicodePoints.Equal:
         eatChar();
         return finishToken(SyntaxKinds.MinusAssignOperator);
       // --
-      case "-":
+      case UnicodePoints.Minus:
         eatChar();
         return finishToken(SyntaxKinds.DecreOperator);
       // -
@@ -632,14 +639,15 @@ export function createLexer(code: string) {
    */
   function readMulStart(): SyntaxKinds {
     eatChar();
-    switch (getChar()) {
+    switch (getCharCodePoint()) {
       // *=
-      case "=":
+      case UnicodePoints.Equal:
         eatChar();
         return finishToken(SyntaxKinds.MultiplyAssignOperator);
-      case "*": {
+      // **= or **
+      case UnicodePoints.Multi: {
         eatChar();
-        if (getChar() === "=") {
+        if (getCharCodePoint() === UnicodePoints.Equal) {
           eatChar();
           // **=
           return finishToken(SyntaxKinds.ExponAssignOperator);
@@ -659,9 +667,9 @@ export function createLexer(code: string) {
    */
   function readModStart(): SyntaxKinds {
     eatChar();
-    switch (getChar()) {
+    switch (getCharCodePoint()) {
       // %=
-      case "=":
+      case UnicodePoints.Equal:
         eatChar();
         return finishToken(SyntaxKinds.ModAssignOperator);
       // %
@@ -676,14 +684,14 @@ export function createLexer(code: string) {
    */
   function readGreaterStart(): SyntaxKinds {
     eatChar();
-    switch (getChar()) {
-      case ">": {
+    switch (getCharCodePoint()) {
+      case UnicodePoints.GreaterThen: {
         eatChar();
-        switch (getChar()) {
-          case ">": {
+        switch (getCharCodePoint()) {
+          case UnicodePoints.GreaterThen: {
             eatChar();
-            switch (getChar()) {
-              case "=":
+            switch (getCharCodePoint()) {
+              case UnicodePoints.Equal:
                 // >>>=
                 eatChar();
                 return finishToken(SyntaxKinds.BitwiseRightShiftFillAssginOperator);
@@ -692,7 +700,7 @@ export function createLexer(code: string) {
                 return finishToken(SyntaxKinds.BitwiseRightShiftFillOperator);
             }
           }
-          case "=":
+          case UnicodePoints.Equal:
             // >>=
             eatChar();
             return finishToken(SyntaxKinds.BitwiseRightShiftAssginOperator);
@@ -701,7 +709,7 @@ export function createLexer(code: string) {
             return finishToken(SyntaxKinds.BitwiseRightShiftOperator);
         }
       }
-      case "=":
+      case UnicodePoints.Equal:
         // >=
         eatChar();
         return finishToken(SyntaxKinds.GeqtOperator);
@@ -717,11 +725,11 @@ export function createLexer(code: string) {
    */
   function readLessStart(): SyntaxKinds {
     eatChar();
-    switch (getChar()) {
-      case "<": {
+    switch (getCharCodePoint()) {
+      case UnicodePoints.LessThen: {
         eatChar();
-        switch (getChar()) {
-          case "=":
+        switch (getCharCodePoint()) {
+          case UnicodePoints.Equal:
             // <<=
             eatChar();
             return finishToken(SyntaxKinds.BitwiseLeftShiftAssginOperator);
@@ -730,11 +738,11 @@ export function createLexer(code: string) {
             return finishToken(SyntaxKinds.BitwiseLeftShiftOperator);
         }
       }
-      case "=":
+      case UnicodePoints.Equal:
         // <=
         eatChar();
         return finishToken(SyntaxKinds.LeqtOperator);
-      case "/":
+      case UnicodePoints.Divide:
         eatChar();
         return finishToken(SyntaxKinds.JSXCloseTagStart);
       default:
@@ -750,18 +758,18 @@ export function createLexer(code: string) {
    */
   function readEqualStart(): SyntaxKinds {
     eatChar();
-    switch (getChar()) {
-      case "=": {
+    switch (getCharCodePoint()) {
+      case UnicodePoints.Equal: {
         eatChar();
-        switch (getChar()) {
-          case "=":
+        switch (getCharCodePoint()) {
+          case UnicodePoints.Equal:
             eatChar();
             return finishToken(SyntaxKinds.StrictEqOperator);
           default:
             return finishToken(SyntaxKinds.EqOperator);
         }
       }
-      case ">":
+      case UnicodePoints.GreaterThen:
         eatChar();
         return finishToken(SyntaxKinds.ArrowOperator);
       default:
@@ -775,11 +783,11 @@ export function createLexer(code: string) {
    */
   function readNotStart(): SyntaxKinds {
     eatChar();
-    switch (getChar()) {
-      case "=": {
+    switch (getCharCodePoint()) {
+      case UnicodePoints.Equal: {
         eatChar();
-        switch (getChar()) {
-          case "=":
+        switch (getCharCodePoint()) {
+          case UnicodePoints.Equal:
             eatChar();
             return finishToken(SyntaxKinds.StrictNotEqOperator);
           default:
@@ -797,18 +805,18 @@ export function createLexer(code: string) {
    */
   function readAndStart(): SyntaxKinds {
     eatChar();
-    switch (getChar()) {
-      case "&": {
+    switch (getCharCodePoint()) {
+      case UnicodePoints.Ampersand: {
         eatChar();
-        switch (getChar()) {
-          case "=":
+        switch (getCharCodePoint()) {
+          case UnicodePoints.Equal:
             eatChar();
             return finishToken(SyntaxKinds.logicalANDAssginOperator);
           default:
             return finishToken(SyntaxKinds.LogicalANDOperator);
         }
       }
-      case "=":
+      case UnicodePoints.Equal:
         eatChar();
         return finishToken(SyntaxKinds.BitwiseANDAssginOperator);
       default:
@@ -822,18 +830,18 @@ export function createLexer(code: string) {
    */
   function readOrStart(): SyntaxKinds {
     eatChar();
-    switch (getChar()) {
-      case "|": {
+    switch (getCharCodePoint()) {
+      case UnicodePoints.Or: {
         eatChar();
-        switch (getChar()) {
-          case "=":
+        switch (getCharCodePoint()) {
+          case UnicodePoints.Equal:
             eatChar();
             return finishToken(SyntaxKinds.LogicalORAssignOperator);
           default:
             return finishToken(SyntaxKinds.LogicalOROperator);
         }
       }
-      case "=":
+      case UnicodePoints.Equal:
         eatChar();
         return finishToken(SyntaxKinds.BitwiseORAssginOperator);
       default:
@@ -847,11 +855,11 @@ export function createLexer(code: string) {
    */
   function readQuestionStart(): SyntaxKinds {
     eatChar();
-    switch (getChar()) {
-      case ".":
+    switch (getCharCodePoint()) {
+      case UnicodePoints.Dot:
         eatChar();
         return finishToken(SyntaxKinds.QustionDotOperator);
-      case "?":
+      case UnicodePoints.Question:
         eatChar();
         return finishToken(SyntaxKinds.NullishOperator);
       default:
@@ -865,8 +873,8 @@ export function createLexer(code: string) {
    */
   function readBitwiseXORStart(): SyntaxKinds {
     eatChar();
-    switch (getChar()) {
-      case "=":
+    switch (getCharCodePoint()) {
+      case UnicodePoints.Equal:
         eatChar();
         return finishToken(SyntaxKinds.BitwiseXORAssginOperator);
       default:
@@ -880,8 +888,8 @@ export function createLexer(code: string) {
    */
   function readBitwiseNOTStart(): SyntaxKinds {
     eatChar();
-    switch (getChar()) {
-      case "=":
+    switch (getCharCodePoint()) {
+      case UnicodePoints.Equal:
         eatChar();
         return finishToken(SyntaxKinds.BitwiseNOTAssginOperator);
       default:
@@ -896,10 +904,10 @@ export function createLexer(code: string) {
   function readDotStart(): SyntaxKinds {
     // '.', '...', 'float-literal',
     eatChar();
-    switch (getChar()) {
-      case ".": {
+    switch (getCharCodePoint()) {
+      case UnicodePoints.Dot: {
         eatChar();
-        if (getChar() !== ".") {
+        if (getCharCodePoint() !== UnicodePoints.Dot) {
           // should error: .. invalid
           throw new Error();
         }
@@ -916,9 +924,11 @@ export function createLexer(code: string) {
   }
   function readComment() {
     // eat '//'
-    eatChar(2);
+    eatTwoChar();
     while (!isEOF()) {
-      if (getChar() === "\n") {
+      // Saft, since we called under isEOF.
+      const code = getCharCodePoint() as number;
+      if (isCodePointLineTerminate(code)) {
         break;
       }
       eatChar();
@@ -928,17 +938,19 @@ export function createLexer(code: string) {
   function readCommentBlock() {
     // eat /*
     let flag = false;
-    eatChar(2);
+    eatTwoChar();
     while (!isEOF()) {
-      const char = getChar();
-      if (char === "\n") {
+      // Saft, since we called under isEOF.
+      const code = getCharCodePoint() as number;
+      if (isCodePointLineTerminate(code)) {
         eatChangeLine();
         flag = true;
         continue;
       }
-      if (char === "*") {
-        if (getChar(1) === "/") {
-          eatChar(2);
+      if (code === UnicodePoints.Multi) {
+        const next = getNextCharCodePoint();
+        if (next === UnicodePoints.Divide) {
+          eatTwoChar();
           return flag;
         }
       }
@@ -965,23 +977,24 @@ export function createLexer(code: string) {
     eatChar();
     let isEscape = false;
     while (!isEOF()) {
-      const current = getChar();
-      if (current === "\n") {
+      // safe, since we call it under the isEOF.
+      const code = getCharCodePoint() as number;
+      if (isCodePointLineTerminate(code)) {
         eatChangeLine();
         continue;
       }
-      if (!isEscape && current === "`") {
+      if (!isEscape && code === UnicodePoints.GraveAccent) {
         eatChar();
         return finishToken(meetEnd);
       }
-      if (!isEscape && current === "$") {
-        if (getChar(1) === "{") {
-          eatChar(2);
+      if (!isEscape && code === UnicodePoints.DollarSign) {
+        if (getNextCharCodePoint() === UnicodePoints.BracesLeft) {
+          eatTwoChar();
           context.templateMeta.stackCounter.push(1);
           return finishToken(meetMiddle);
         }
       }
-      isEscape = current === "\\" && !isEscape;
+      isEscape = code === UnicodePoints.BackSlash && !isEscape;
       eatChar();
     }
     // TODO: error handle
@@ -1001,45 +1014,46 @@ export function createLexer(code: string) {
    * @returns {SyntaxKinds}
    */
   function readNumberLiteral(): SyntaxKinds {
-    let char = getChar();
+    const code = getCharCodePoint();
     // Start With 0
-    if (char === "0") {
+    if (code === UnicodePoints.Digital0) {
       eatChar();
-      const next = getChar();
+      const next = getCharCodePoint();
       switch (next) {
-        case "0":
-        case "1":
-        case "2":
-        case "3":
-        case "4":
-        case "5":
-        case "6":
-        case "7":
-        case "8":
-        case "9": {
+        case UnicodePoints.Digital0:
+        case UnicodePoints.Digital1:
+        case UnicodePoints.Digital2:
+        case UnicodePoints.Digital3:
+        case UnicodePoints.Digital4:
+        case UnicodePoints.Digital5:
+        case UnicodePoints.Digital6:
+        case UnicodePoints.Digital7:
+        case UnicodePoints.Digital8:
+        case UnicodePoints.Digital9: {
           return readLegacyOctNumberLiteralOrNonOctalDecimalIntegerLiteral();
         }
-        case ".": {
+        case UnicodePoints.Dot: {
           eatChar();
           return readDotStartDecimalLiteral();
         }
-        case "b":
-        case "B": {
+        case UnicodePoints.LowerCaseB:
+        case UnicodePoints.UpperCaseB: {
           eatChar();
           return readNumberLiteralWithBase(isBinary);
         }
-        case "o":
-        case "O": {
+        case UnicodePoints.LowerCaseO:
+        case UnicodePoints.UpperCaseO: {
           eatChar();
           return readNumberLiteralWithBase(isOct);
         }
-        case "x":
-        case "X": {
+        case UnicodePoints.LowerCaseX:
+        case UnicodePoints.UpperCaseX: {
           eatChar();
           return readNumberLiteralWithBase(isHex);
         }
         default: {
-          if (next !== "E" && next !== "e") {
+          if (next !== UnicodePoints.UpperCaseE && next !== UnicodePoints.LowerCaseE) {
+            // just 0
             return finishToken(SyntaxKinds.DecimalLiteral);
           }
         }
@@ -1054,20 +1068,20 @@ export function createLexer(code: string) {
   function readDecimalLiteral() {
     // Start With Non 0
     readDigitals();
-    if (getChar() === ".") {
+    if (getCharCodePoint() === UnicodePoints.Dot) {
       eatChar();
       readDigitals();
     }
-    const char = getChar();
-    if (char === "e" || char === "E") {
+    const code = getCharCodePoint();
+    if (code === UnicodePoints.LowerCaseE || code === UnicodePoints.UpperCaseE) {
       helperReadExponPartOfDecimalLiteral();
     }
     return finishToken(SyntaxKinds.DecimalLiteral);
   }
   function helperReadExponPartOfDecimalLiteral() {
-    eatChar();
-    const char = getChar();
-    if (char === "+" || char == "-") {
+    eatChar(); // eat e/E
+    const code = getCharCodePoint();
+    if (code === UnicodePoints.Plus || code === UnicodePoints.Minus) {
       eatChar();
     }
     const startIndex = getCurrentIndex();
@@ -1085,8 +1099,8 @@ export function createLexer(code: string) {
    */
   function readDotStartDecimalLiteral(): SyntaxKinds {
     readDigitals();
-    const char = getChar();
-    if (char === "e" || char === "E") {
+    const code = getCharCodePoint();
+    if (code === UnicodePoints.LowerCaseE || code === UnicodePoints.UpperCaseE) {
       helperReadExponPartOfDecimalLiteral();
     }
     return finishToken(SyntaxKinds.DecimalLiteral);
@@ -1099,8 +1113,8 @@ export function createLexer(code: string) {
     let seprator = false;
     let isStart = true;
     while (!isEOF()) {
-      const char = getChar();
-      if (char === "_") {
+      const code = getCharCodePoint() as number;
+      if (code === UnicodePoints.Underscore) {
         if (isStart) {
           throw lexicalError("TODO: Can not start with _");
         }
@@ -1130,28 +1144,28 @@ export function createLexer(code: string) {
     let isNonOctalDecimalIntegerLiteral = false;
     let isLastCharNumeric = false;
     loop: while (!isEOF()) {
-      const char = getChar();
+      const char = getCharCodePoint();
       switch (char) {
-        case "0":
-        case "1":
-        case "2":
-        case "3":
-        case "4":
-        case "5":
-        case "6":
-        case "7": {
+        case UnicodePoints.Digital0:
+        case UnicodePoints.Digital1:
+        case UnicodePoints.Digital2:
+        case UnicodePoints.Digital3:
+        case UnicodePoints.Digital4:
+        case UnicodePoints.Digital5:
+        case UnicodePoints.Digital6:
+        case UnicodePoints.Digital7: {
           isLastCharNumeric = true;
           eatChar();
           break;
         }
-        case "8":
-        case "9": {
+        case UnicodePoints.Digital8:
+        case UnicodePoints.Digital9: {
           isLastCharNumeric = true;
           isNonOctalDecimalIntegerLiteral = true;
           eatChar();
           break;
         }
-        case "_": {
+        case UnicodePoints.Underscore: {
           if (!isLastCharNumeric || !isNonOctalDecimalIntegerLiteral) {
             throw lexicalError(ErrorMessageMap.error_legacy_octal_literals_contain_numeric_seperator);
           }
@@ -1165,13 +1179,13 @@ export function createLexer(code: string) {
       }
     }
     let haveFloatOrExpon = false;
-    if (getChar() === ".") {
+    if (getCharCodePoint() === UnicodePoints.Dot) {
       haveFloatOrExpon = true;
       eatChar();
       readDigitals();
     }
-    const char = getChar();
-    if (char === "e" || char === "E") {
+    const code = getCharCodePoint();
+    if (code === UnicodePoints.LowerCaseE || code === UnicodePoints.UpperCaseE) {
       haveFloatOrExpon = true;
       helperReadExponPartOfDecimalLiteral();
     }
@@ -1191,11 +1205,10 @@ export function createLexer(code: string) {
    * @returns {boolean}
    */
   function isDigital(): boolean {
-    const char = getChar();
-    if (char == undefined) {
+    const code = getCharCodePoint();
+    if (code == undefined) {
       return false;
     }
-    const code = char.charCodeAt(0);
     return code >= 48 && code <= 57;
   }
   /**
@@ -1204,11 +1217,10 @@ export function createLexer(code: string) {
    * @returns {boolean}
    */
   function isHex(): boolean {
-    const char = getChar();
-    if (char == undefined) {
+    const code = getCharCodePoint();
+    if (code == undefined) {
       return false;
     }
-    const code = char.charCodeAt(0);
     return (code >= 48 && code <= 57) || (code >= 97 && code <= 102) || (code >= 65 && code <= 70);
   }
   /**
@@ -1217,8 +1229,8 @@ export function createLexer(code: string) {
    * @returns {boolean}
    */
   function isBinary(): boolean {
-    const code = getChar();
-    return code === "0" || code === "1";
+    const code = getCharCodePoint();
+    return code === UnicodePoints.Digital0 || code === UnicodePoints.Digital1;
   }
   /**
    * Sub state machine helperfor checking is current char
@@ -1226,11 +1238,10 @@ export function createLexer(code: string) {
    * @returns {boolean}
    */
   function isOct(): boolean {
-    const char = getChar();
-    if (char == undefined) {
+    const code = getCharCodePoint();
+    if (code == undefined) {
       return false;
     }
-    const code = char.charCodeAt(0);
     return code >= 48 && code <= 55;
   }
   /**
@@ -1244,8 +1255,8 @@ export function createLexer(code: string) {
     let isStart = true;
     const startIndex = getCurrentIndex();
     while (!isEOF()) {
-      const char = getChar();
-      if (char === "_") {
+      const code = getCharCodePoint() as number;
+      if (code === UnicodePoints.Underscore) {
         if (isStart) {
           throw lexicalError("TODO: Can not start with _");
         }
@@ -1278,27 +1289,27 @@ export function createLexer(code: string) {
    * @param mode which char string literal is start with.
    * @returns {SyntaxKinds}
    */
-  function readStringLiteral(mode: '"' | "'"): SyntaxKinds {
+  function readStringLiteral(mode: "Single" | "Double"): SyntaxKinds {
     // eat mode
+    const modeInCodepoint = mode === "Single" ? UnicodePoints.SingleQuote : UnicodePoints.DoubleQuote;
     eatChar();
     const indexAfterStartMode = getCurrentIndex();
     let isEscape = false;
     while (!isEOF()) {
-      const char = getChar();
-      if (char === mode && !isEscape) {
+      const code = getCharCodePoint() as number;
+      if (code === modeInCodepoint && !isEscape) {
         // eat node outside is because we want to
         // make value not including `"` or `'`
         break;
       }
-      if (char === "\n" && !isEscape) {
+      if (isCodePointLineTerminate(code) && !isEscape) {
         // TODO: error handle
         throw new Error(ErrorMessageMap.babel_error_unterminated_string_constant);
       }
-      isEscape = char === "\\" && !isEscape;
+      isEscape = code === UnicodePoints.BackSlash && !isEscape;
       eatChar();
     }
     if (isEOF()) {
-      // TODO: error handle
       throw new Error(ErrorMessageMap.babel_error_unterminated_string_constant);
     }
     // get end index before ending char ' or "
@@ -1310,16 +1321,75 @@ export function createLexer(code: string) {
       getSliceStringFromCode(indexAfterStartMode, indexBeforeEndMode),
     );
   }
-  /** ===========================================================
-   *         Identifier and Keywrod Sub state mahcine
-   *  ===========================================================
+  /**
+   * 
+   * @param mode 
+   * @returns 
    */
+  function readEscapeSequenceInStringLiteral() {
+    eatChar(); // eat \
+    const code = getCharCodePoint()
+    switch(code) {
+      // LineContinuation
+      case UnicodePoints.ChangeLine:
+      case UnicodePoints.LS:
+      case UnicodePoints.PS: {
+        eatChar();
+        return;
+      }
+      case UnicodePoints.CR: {
+        eatChar();
+        const code = getCharCodePoint();
+        if(code === UnicodePoints.ChangeLine) {
+          eatChar();
+        }
+        return;
+      }
+      // SingleEscapeCharacter
+      case UnicodePoints.DoubleQuote:
+      case UnicodePoints.SingleQuote: {
+        eatChar();
+        return;
+      }
+      // HexEscapeSequence
+      case UnicodePoints.LowerCaseX: {
+        eatChar();
+        for(let i = 0 ; i < 2 ; ++i) {
+          if(isHex()) eatChar()
+            else { 
+              // should error
+            }
+        }
+        return;
+      }
+      // NonOctalDecimalEscapeSequence
+      case UnicodePoints.Digital8:
+      case UnicodePoints.Digital9: {
+        eatChar();
+        return;
+      }
+      // UnicodeEscapeSequence
+      case UnicodePoints.LowerCaseU: {
+        eatChar();
+        readUnicodeEscapeSequence();
+        return;
+      }
+      default: {
+        eatChar();
+        return;
+      }
+    }
+  }
+  //  ===========================================================
+  //       Identifier and Keywrod Sub state mahcine
+  //  ===========================================================
   /**
    * Sub state machine for tokenize a identifier or a keyword.
    * @returns {SyntaxKinds}
    */
   function readIdentifierOrKeyword(): SyntaxKinds {
     const word = readWordAsIdentifier();
+    // @ts-ignore
     if (KeywordLiteralSet.has(word)) {
       // @ts-ignore
       const keywordKind = KeywordLiteralMapSyntaxKind[word];
@@ -1332,25 +1402,24 @@ export function createLexer(code: string) {
     return finishToken(SyntaxKinds.Identifier, word);
   }
   function readWordAsIdentifier() {
-    let isEscape = false;
     let word = "";
     let startIndex = getCurrentIndex();
     while (!isEOF()) {
-      const char = getChar();
-      if (char === "\\") {
-        const next = getChar(1);
-        if (next === "u" || next === "U") {
+      const code = getCharCodePoint() as number;
+      if (code === UnicodePoints.BackSlash) {
+        const next = getNextCharCodePoint();
+        if (next === UnicodePoints.LowerCaseU || next === UnicodePoints.UpperCaseU) {
           context.escapeMeta.flag = true;
           word += getSliceStringFromCode(startIndex, getCurrentIndex());
-          word += readHexEscap();
+          eatTwoChar(); // eat \u \U
+          word += readUnicodeEscapeSequence();
           startIndex = getCurrentIndex();
           continue;
+        } else {
+          throw new Error("Invalud Excap");
         }
-        isEscape = !isEscape;
-      } else {
-        isEscape = false;
       }
-      if (char && nonIdentifierStartSet.has(char)) {
+      if (!isIdentifierChar(code)) {
         break;
       }
       eatChar();
@@ -1358,13 +1427,52 @@ export function createLexer(code: string) {
     word += getSliceStringFromCode(startIndex, getCurrentIndex());
     return word;
   }
-  function readHexEscap() {
-    // eat \u \U
-    eatChar(2);
-    const startIndex = getCurrentIndex();
-    for (let i = 0; i < 4; ++i) {
-      eatChar();
+  /**
+   * ## Read unicode escape seqence
+   * Reading a unicode escape string start with `\u` or `\U` char.
+   * 
+   * reference: ECMA spec 12.9.4
+   * @returns {string}
+   */
+  function readUnicodeEscapeSequence(): string {
+    const code = getCharCodePoint();
+    switch (code) {
+      case UnicodePoints.BracesLeft: {
+        eatChar();
+        const startIndex = getCurrentIndex();
+        while (!isEOF()) {
+          const code = getCharCodePoint() as number;
+          if (code === UnicodePoints.BracesRight) {
+            break;
+          }
+          if (isHex()) {
+            eatChar();
+          } else {
+            throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
+          }
+        }
+        if (isEOF()) {
+          throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
+        }
+        const endIndex = getCurrentIndex();
+        eatChar();
+        return String.fromCharCode(Number(`0x${getSliceStringFromCode(startIndex, endIndex)}`));
+      }
+      default: {
+        const startIndex = getCurrentIndex();
+        if (isHex()) {
+          eatChar();
+          for (let i = 0; i < 3; ++i) {
+            if (isHex()) {
+              eatChar();
+            } else {
+              throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
+            }
+          }
+          return String.fromCharCode(Number(`0x${getSliceStringFromCode(startIndex, getCurrentIndex())}`));
+        }
+        throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
+      }
     }
-    return String.fromCharCode(Number(`0x${getSliceStringFromCode(startIndex, getCurrentIndex())}`));
   }
 }

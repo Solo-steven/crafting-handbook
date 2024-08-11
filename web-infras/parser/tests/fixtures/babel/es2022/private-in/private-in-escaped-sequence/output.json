@@ -28,7 +28,7 @@
                         "shorted": false,
                         "key": {
                             "kind": "PrivateName",
-                            "name": "\u0000",
+                            "name": "a",
                             "start": {
                                 "row": 2,
                                 "col": 3,
@@ -96,7 +96,7 @@
                                         "operator": "in",
                                         "left": {
                                             "kind": "PrivateName",
-                                            "name": "\u0000",
+                                            "name": "a",
                                             "start": {
                                                 "row": 4,
                                                 "col": 5,

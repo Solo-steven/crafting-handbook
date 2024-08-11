@@ -3,6 +3,7 @@
  * v8 engine
  */
 export const ErrorMessageMap = {
+  v8_error_invalid_unicode_escape_sequence: "SyntaxError: Invalid Unicode escape sequence",
   // try: `const a = ';` in babel playground
   babel_error_unterminated_string_constant: "Unterminated string constant",
   // try: `const a = `;` in babel playground
@@ -19,4 +20,5 @@ export const ErrorMessageMap = {
   // error `010e01` or `010.13`
   error_legacy_octal_literals_contain_float_or_expon:
     "Legacy octal literals can not contain any float number or expon",
+  error_line_terminator_in_string_literal: "",
 };

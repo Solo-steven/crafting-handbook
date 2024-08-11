@@ -4,9 +4,14 @@ import { createParser } from "@/src/parser";
 import { transformSyntaxKindToLiteral } from "../tests/helper/transform";
 import fs from "fs";
 import path from "path";
-const code = fs.readFileSync(path.join(__dirname, "test.js"), "utf-8").toString();
+const code = fs.readFileSync(path.join(__dirname, "test.js")).toString();
+// console.log(code);
+// const writePath = path.join(__dirname, "test.json");
 
-const writePath = path.join(__dirname, "test.json");
+// for(const symbol of code) console.log("SYM:",symbol);
+
+// console.log(code.includes("𞸀"), code.indexOf("𞸀"), code.length, "𞸀".length, code[code.indexOf("𞸀")] === "𞸀", IdContinueRegex.test("𞸀"), XContinueRegex.test(code[4]),   String.fromCodePoint("𞸀".charCodeAt(0)) === "𞸀", code.indexOf("𞸀"), code[4])
+// IdContinueRegex
 
 // import chalk from 'chalk';
 
@@ -15,7 +20,7 @@ const writePath = path.join(__dirname, "test.json");
 // // Combine styled and normal strings
 // log(chalk.blue('Hello') + ' World' + chalk.red('!'));
 
-printLexer(code);
+// printLexer(code);
 printParser(code);
 
 function printLexer(code: string) {
@@ -29,7 +34,7 @@ function printLexer(code: string) {
     console.log(
       lexer.getTokenKind(),
       SytaxKindsMapLexicalLiteral[lexer.getTokenKind()],
-      lexer.getSourceValue(),
+      lexer.getSourceValue().charCodeAt(0),
       lexer.getStartPosition(),
       lexer.getEndPosition(),
     );
@@ -43,7 +48,7 @@ function printLexer(code: string) {
   );
 }
 function printParser(code: string) {
-  const ast = createParser(code, {}).parse();
+  const ast = createParser(code, { sourceType: "module" }).parse();
   transformSyntaxKindToLiteral(ast);
   console.log(JSON.stringify(ast, null, 4));
   return 0;

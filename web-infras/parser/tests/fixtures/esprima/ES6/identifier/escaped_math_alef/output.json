@@ -9,7 +9,7 @@
                     "kind": "VariableDeclarator",
                     "id": {
                         "kind": "Identifer",
-                        "name": "ABC",
+                        "name": "",
                         "start": {
                             "row": 1,
                             "col": 5,
@@ -17,8 +17,8 @@
                         },
                         "end": {
                             "row": 1,
-                            "col": 23,
-                            "index": 22
+                            "col": 14,
+                            "index": 13
                         }
                     },
                     "init": null,
@@ -29,8 +29,8 @@
                     },
                     "end": {
                         "row": 1,
-                        "col": 23,
-                        "index": 22
+                        "col": 14,
+                        "index": 13
                     }
                 }
             ],
@@ -41,8 +41,8 @@
             },
             "end": {
                 "row": 1,
-                "col": 23,
-                "index": 22
+                "col": 14,
+                "index": 13
             }
         }
     ],
@@ -52,8 +52,8 @@
         "index": 0
     },
     "end": {
-        "row": 2,
+        "row": 3,
         "col": 1,
-        "index": 24
+        "index": 15
     }
 }

@@ -9,7 +9,7 @@
                     "kind": "VariableDeclarator",
                     "id": {
                         "kind": "Identifer",
-                        "name": "ABC",
+                        "name": "",
                         "start": {
                             "row": 1,
                             "col": 5,
@@ -54,6 +54,6 @@
     "end": {
         "row": 2,
         "col": 1,
-        "index": 24
+        "index": 23
     }
 }
