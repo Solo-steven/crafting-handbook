@@ -9,7 +9,7 @@
                     "kind": "VariableDeclarator",
                     "id": {
                         "kind": "Identifer",
-                        "name": "_$",
+                        "name": "𞸆_$",
                         "start": {
                             "row": 1,
                             "col": 5,

@@ -131,6 +131,9 @@ export const ErrorMessageMap = {
     "SyntaxError: applying the 'delete' operator to an unqualified name is deprecated",
   // try `({ cc = 100})` in v8 based runtime
   Syntax_error_Invalid_shorthand_property_initializer: "SyntaxError: Invalid shorthand property initializer",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Deprecated_octal_escape_sequence
+  syntax_error_Octal_escape_sequences_are_not_allowed_in_strict_mode:
+    "SyntaxError: Octal escape sequences are not allowed in strict mode.",
   // try: `const {...[x]} = {}` in babel playgroud`
   v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts:
     "SyntaxError: `...` must be followed by an identifier in declaration contexts",

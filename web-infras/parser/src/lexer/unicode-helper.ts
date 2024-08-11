@@ -124,7 +124,7 @@ export const UnicodePoints = {
   ChangeLine: codePoint("\n"), // LINE FEED (LF)
   CR: codePoint("\u000D"), // CARRIAGE RETURN (CR)
   LS: codePoint("\u2028"), // LINE SEPARATOR (LS)
-  PS: codePoint("\u2029"),  // PARAGRAPH SEPARATOR (PS)
+  PS: codePoint("\u2029"), // PARAGRAPH SEPARATOR (PS)
   Ampersand: codePoint("&"),
   // I am too lazy, so I only gonna list some letter I need for lexer
   LowerCaseA: codePoint("a"),

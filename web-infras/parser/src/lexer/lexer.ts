@@ -5,20 +5,17 @@ import {
   SourcePosition,
   cloneSourcePosition,
   createSourcePosition,
+  SytaxKindsMapLexicalLiteral,
 } from "web-infra-common";
 import {
   LexerCursorContext,
   LexerEscFlagContext,
+  LexerStringLiteralContext,
   LexerTemplateContext,
   LexerTokenContext,
   LookaheadToken,
 } from "./type";
-import {
-  isCodePointLineTerminate,
-  isIdentifierChar,
-  isIdentifierStart,
-  UnicodePoints,
-} from "./unicode-helper";
+import { isCodePointLineTerminate, isIdentifierChar, UnicodePoints } from "./unicode-helper";
 import { ErrorMessageMap } from "./error";
 /**
  * Lexer Context.
@@ -33,8 +30,10 @@ interface Context {
   tokenContext: LexerTokenContext;
   // Ad-hoc data structure for tokenize template literal.
   templateMeta: LexerTemplateContext;
-  // Ad-hoc data structure for escap char when tokenize.
+  // Ad-hoc data structure for escape char when tokenize.
   escapeMeta: LexerEscFlagContext;
+  // Ad-hoc data structure for Is string literal break strict mode rule
+  stringLiteralContext: LexerStringLiteralContext;
 }
 /**
  * Create a empty lexer context
@@ -53,6 +52,7 @@ function createContext(code: string): Context {
     },
     templateMeta: { stackCounter: [] },
     escapeMeta: { flag: false },
+    stringLiteralContext: { breakStrictRule: false },
   };
 }
 /**
@@ -71,6 +71,7 @@ function cloneContext(source: Context): Context {
     },
     templateMeta: { stackCounter: [...source.templateMeta.stackCounter] },
     escapeMeta: { ...source.escapeMeta },
+    stringLiteralContext: { ...source.stringLiteralContext },
   };
 }
 
@@ -124,6 +125,9 @@ export function createLexer(code: string) {
    */
   function getEscFlag(): boolean {
     return context.escapeMeta.flag;
+  }
+  function getStringLiteralFlag(): boolean {
+    return context.stringLiteralContext.breakStrictRule;
   }
   /**
    * Public API for getting token's string value
@@ -251,6 +255,7 @@ export function createLexer(code: string) {
     getEndPosition,
     getLineTerminatorFlag,
     getEscFlag,
+    getStringLiteralFlag,
     nextToken,
     lookahead,
     readRegex,
@@ -279,6 +284,7 @@ export function createLexer(code: string) {
    */
   function startToken(): void {
     context.escapeMeta.flag = false;
+    context.stringLiteralContext.breakStrictRule = false;
     context.tokenContext.startPosition = creaetSourcePositionFromCursor();
   }
   /**
@@ -1294,20 +1300,28 @@ export function createLexer(code: string) {
     const modeInCodepoint = mode === "Single" ? UnicodePoints.SingleQuote : UnicodePoints.DoubleQuote;
     eatChar();
     const indexAfterStartMode = getCurrentIndex();
-    let isEscape = false;
-    while (!isEOF()) {
+    loop: while (!isEOF()) {
       const code = getCharCodePoint() as number;
-      if (code === modeInCodepoint && !isEscape) {
-        // eat node outside is because we want to
-        // make value not including `"` or `'`
-        break;
+      switch (code) {
+        case modeInCodepoint: {
+          // eat node outside is because we want to
+          // make value not including `"` or `'`
+          break loop;
+        }
+        // for LF and CR.
+        case UnicodePoints.ChangeLine:
+        case UnicodePoints.CR: {
+          throw lexicalError(ErrorMessageMap.error_line_terminator_in_string_literal);
+        }
+        case UnicodePoints.BackSlash: {
+          readEscapeSequenceInStringLiteral();
+          break;
+        }
+        default: {
+          eatChar();
+          break;
+        }
       }
-      if (isCodePointLineTerminate(code) && !isEscape) {
-        // TODO: error handle
-        throw new Error(ErrorMessageMap.babel_error_unterminated_string_constant);
-      }
-      isEscape = code === UnicodePoints.BackSlash && !isEscape;
-      eatChar();
     }
     if (isEOF()) {
       throw new Error(ErrorMessageMap.babel_error_unterminated_string_constant);
@@ -1322,14 +1336,14 @@ export function createLexer(code: string) {
     );
   }
   /**
-   * 
-   * @param mode 
-   * @returns 
+   *
+   * @param mode
+   * @returns
    */
   function readEscapeSequenceInStringLiteral() {
     eatChar(); // eat \
-    const code = getCharCodePoint()
-    switch(code) {
+    const code = getCharCodePoint();
+    switch (code) {
       // LineContinuation
       case UnicodePoints.ChangeLine:
       case UnicodePoints.LS:
@@ -1340,7 +1354,7 @@ export function createLexer(code: string) {
       case UnicodePoints.CR: {
         eatChar();
         const code = getCharCodePoint();
-        if(code === UnicodePoints.ChangeLine) {
+        if (code === UnicodePoints.ChangeLine) {
           eatChar();
         }
         return;
@@ -1354,17 +1368,87 @@ export function createLexer(code: string) {
       // HexEscapeSequence
       case UnicodePoints.LowerCaseX: {
         eatChar();
-        for(let i = 0 ; i < 2 ; ++i) {
-          if(isHex()) eatChar()
-            else { 
-              // should error
-            }
+        for (let i = 0; i < 2; ++i) {
+          if (isHex()) eatChar();
+          else {
+            // should error
+            throw lexicalError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence);
+          }
         }
         return;
+      }
+      // 0 escape
+      case UnicodePoints.Digital0: {
+        const next = getNextCharCodePoint();
+        if (next && !(next >= UnicodePoints.Digital0 && next <= UnicodePoints.Digital9)) {
+          eatChar();
+          return;
+        }
+        // fall to legacy
+      }
+      // LegacyOctalEscapeSequence
+      case UnicodePoints.Digital1:
+      case UnicodePoints.Digital2:
+      case UnicodePoints.Digital3:
+      case UnicodePoints.Digital4:
+      case UnicodePoints.Digital5:
+      case UnicodePoints.Digital6:
+      case UnicodePoints.Digital7: {
+        context.stringLiteralContext.breakStrictRule ||= true;
+        /**
+         * The condition could be more simple.
+         */
+        // 0 [lookahead ∈ { 8, 9 }]
+        const next = getNextCharCodePoint();
+        if (
+          code === UnicodePoints.Digital0 &&
+          next &&
+          (next === UnicodePoints.Digital8 || next === UnicodePoints.Digital9)
+        ) {
+          eatChar();
+          return;
+        }
+        // NonZeroOctalDigit [lookahead ∉ OctalDigit]
+        if (
+          code > UnicodePoints.Digital0 &&
+          code <= UnicodePoints.Digital8 &&
+          next &&
+          (next > UnicodePoints.Digital7 || next < UnicodePoints.Digital0)
+        ) {
+          eatChar();
+          return;
+        }
+        // ZeroToThree OctalDigit [lookahead ∉ OctalDigit]
+        // ZeroToThree OctalDigit OctalDigit
+        if (code >= UnicodePoints.Digital0 && code <= UnicodePoints.Digital3) {
+          if (next && next <= UnicodePoints.Digital7 && next >= UnicodePoints.Digital0) {
+            eatTwoChar();
+            const nextNext = getCharCodePoint();
+            if (nextNext && nextNext <= UnicodePoints.Digital7 && nextNext >= UnicodePoints.Digital0) {
+              eatChar();
+              return;
+            }
+          } else {
+            // should error, but actually unreach. since this part if handle
+            // by `NonZeroOctalDigit [lookahead ∉ OctalDigit]` or  0 [lookahead ∈ { 8, 9 }]
+            // or 0 escape
+          }
+        }
+        // FourToSeven OctalDigit
+        if (code >= UnicodePoints.Digital4 && code <= UnicodePoints.Digital7) {
+          if (next && next <= UnicodePoints.Digital7 && next >= UnicodePoints.Digital0) {
+            eatTwoChar();
+            return;
+          } else {
+            // should error, but actually unreach. since this part if handle
+            // by `NonZeroOctalDigit [lookahead ∉ OctalDigit]`
+          }
+        }
       }
       // NonOctalDecimalEscapeSequence
       case UnicodePoints.Digital8:
       case UnicodePoints.Digital9: {
+        context.stringLiteralContext.breakStrictRule ||= true;
         eatChar();
         return;
       }
@@ -1412,7 +1496,12 @@ export function createLexer(code: string) {
           context.escapeMeta.flag = true;
           word += getSliceStringFromCode(startIndex, getCurrentIndex());
           eatTwoChar(); // eat \u \U
-          word += readUnicodeEscapeSequence();
+          const anyUnicodeString = readUnicodeEscapeSequence();
+          if (!isIdentifierChar(anyUnicodeString.codePointAt(0) as number)) {
+            console.log(anyUnicodeString.codePointAt(0));
+            throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
+          }
+          word += anyUnicodeString;
           startIndex = getCurrentIndex();
           continue;
         } else {
@@ -1430,7 +1519,7 @@ export function createLexer(code: string) {
   /**
    * ## Read unicode escape seqence
    * Reading a unicode escape string start with `\u` or `\U` char.
-   * 
+   *
    * reference: ECMA spec 12.9.4
    * @returns {string}
    */
@@ -1456,7 +1545,7 @@ export function createLexer(code: string) {
         }
         const endIndex = getCurrentIndex();
         eatChar();
-        return String.fromCharCode(Number(`0x${getSliceStringFromCode(startIndex, endIndex)}`));
+        return String.fromCodePoint(Number(`0x${getSliceStringFromCode(startIndex, endIndex)}`));
       }
       default: {
         const startIndex = getCurrentIndex();
@@ -1469,7 +1558,7 @@ export function createLexer(code: string) {
               throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
             }
           }
-          return String.fromCharCode(Number(`0x${getSliceStringFromCode(startIndex, getCurrentIndex())}`));
+          return String.fromCodePoint(Number(`0x${getSliceStringFromCode(startIndex, getCurrentIndex())}`));
         }
         throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
       }

@@ -2006,7 +2006,6 @@ export function createParser(code: string, option?: ParserConfig) {
     if (checkIsMethodStartWithModifier()) {
       return parseMethodDefintion(true, undefined, isStatic) as ClassMethodDefinition;
     }
-    // console.log(match(SyntaxKinds.BracesLeftPunctuator) && isStatic);
     if (match(SyntaxKinds.BracesLeftPunctuator) && isStatic) {
       const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
       const body: Array<StatementListItem> = [];
@@ -3120,6 +3119,11 @@ export function createParser(code: string, option?: ParserConfig) {
     }
   }
   function parseStringLiteral() {
+    if (isInStrictMode() && lexer.getStringLiteralFlag()) {
+      throw createMessageError(
+        ErrorMessageMap.syntax_error_Octal_escape_sequences_are_not_allowed_in_strict_mode,
+      );
+    }
     const { start, end, value } = expect(SyntaxKinds.StringLiteral);
     return Factory.createStringLiteral(value, start, end);
   }

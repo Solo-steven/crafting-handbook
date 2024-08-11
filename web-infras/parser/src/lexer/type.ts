@@ -50,3 +50,7 @@ export type LexerTemplateContext = {
 export type LexerEscFlagContext = {
   flag: boolean;
 };
+// for
+export type LexerStringLiteralContext = {
+  breakStrictRule: boolean;
+};

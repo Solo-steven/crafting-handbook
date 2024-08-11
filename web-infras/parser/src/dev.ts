@@ -5,7 +5,7 @@ import { transformSyntaxKindToLiteral } from "../tests/helper/transform";
 import fs from "fs";
 import path from "path";
 const code = fs.readFileSync(path.join(__dirname, "test.js")).toString();
-// console.log(code);
+console.log(code);
 // const writePath = path.join(__dirname, "test.json");
 
 // for(const symbol of code) console.log("SYM:",symbol);
