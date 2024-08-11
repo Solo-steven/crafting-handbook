@@ -5,7 +5,6 @@ import {
   SourcePosition,
   cloneSourcePosition,
   createSourcePosition,
-  SytaxKindsMapLexicalLiteral,
 } from "web-infra-common";
 import {
   LexerCursorContext,
@@ -74,20 +73,6 @@ function cloneContext(source: Context): Context {
     stringLiteralContext: { ...source.stringLiteralContext },
   };
 }
-
-// interface Lexer {
-//     getSourceValue: () => string;
-//     getBeforeValue: () => string;
-//     getStartPosition: () => SourcePosition;
-//     getEndPosition: () => SourcePosition;
-//     getToken: () => SyntaxKinds;
-//     nextToken: () => SyntaxKinds;
-//     lookahead: () => Context['tokenContext'];
-//     // API for line terminator
-//     getLineTerminatorFlag: () => boolean,
-//     // API for read regexliteral
-//     readRegex: () => { pattern: string, flag: string };
-// }
 
 const KeywordLiteralSet = new Set([
   ...LexicalLiteral.keywords,
@@ -1006,6 +991,9 @@ export function createLexer(code: string) {
     // TODO: error handle
     throw new Error("todo error - not close template head or no subsitude");
   }
+  //  ===========================================================
+  //       Numeric Literal State machine
+  //  ===========================================================
   /**
    * Sub state machine for tokenize Number Literal, includeing following kind of
    * number literal
@@ -1289,6 +1277,9 @@ export function createLexer(code: string) {
     }
     return finishToken(SyntaxKinds.DecimalLiteral);
   }
+  //  ===========================================================
+  //       String Literal State machine
+  //  ===========================================================
   /**
    * Sub state machine for reading a string literal, tokenize a string literal
    * with escape char and possible change line.
