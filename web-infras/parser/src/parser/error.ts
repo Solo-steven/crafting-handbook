@@ -134,6 +134,17 @@ export const ErrorMessageMap = {
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Deprecated_octal_escape_sequence
   syntax_error_Octal_escape_sequences_are_not_allowed_in_strict_mode:
     "SyntaxError: Octal escape sequences are not allowed in strict mode.",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Function_label
+  syntax_error_functions_cannot_be_labelled:
+    "SyntaxError: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement.",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_break
+  syntax_error_unlabeled_break_must_be_inside_loop_or_switch:
+    "SyntaxError: unlabeled break must be inside loop or switch.",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_continue
+  syntax_error_continue_must_be_inside_loop:
+    "SyntaxError: Illegal continue statement: no surrounding iteration statement.",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Label_not_found
+  syntax_error_label_not_found: "SyntaxError: label not found.",
   // try: `const {...[x]} = {}` in babel playgroud`
   v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts:
     "SyntaxError: `...` must be followed by an identifier in declaration contexts",

@@ -21,11 +21,19 @@ export interface ClassLexicalScope {
   duplicatePrivateName: Set<string>;
 }
 
+export type BlockType = "Loop" | "Switch" | "Label";
+
+export interface VirtualLexicalScope {
+  readonly type: "VirtualLexicalScope";
+  blockType: BlockType;
+  labelName?: string;
+}
+
 export interface BlockLexicalScope {
   readonly type: "BlockLexicalScope";
 }
 
-export type LexicalScope = ClassLexicalScope | FunctionLexicalScope | BlockLexicalScope;
+export type LexicalScope = ClassLexicalScope | FunctionLexicalScope | BlockLexicalScope | VirtualLexicalScope;
 
 function isPrivateNameExist(scope: ClassLexicalScope, name: string, type: PrivateNameDefKind) {
   if (scope.definiedPrivateName.has(name)) {
@@ -57,6 +65,7 @@ function isPrivateNameExist(scope: ClassLexicalScope, name: string, type: Privat
 
 export function createLexicalScopeRecorder() {
   const lexicalScopes: Array<LexicalScope> = [];
+  // const virtualScopes: Array<VirtualIterOrSwitchLexicalScope> = [];
   /**=============================================
    * Helper function
    * =============================================
@@ -227,6 +236,62 @@ export function createLexicalScopeRecorder() {
    */
   function exitBlockLexicalScope() {
     lexicalScopes.pop();
+  }
+  function enterVirtualBlockScope(blockType: BlockType, labelName?: string) {
+    lexicalScopes.push({ type: "VirtualLexicalScope", blockType, labelName });
+  }
+  function exitVirtualBlockScope() {
+    lexicalScopes.pop();
+  }
+  function isBreakValidate() {
+    for (let index = lexicalScopes.length - 1; index >= 0; --index) {
+      const scope = lexicalScopes[index];
+      switch (scope.type) {
+        case "FunctionLexicalScope":
+        case "ClassLexicalScope":
+          return false;
+        case "BlockLexicalScope":
+          continue;
+        case "VirtualLexicalScope": {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  function isContinueValidate() {
+    for (let index = lexicalScopes.length - 1; index >= 0; --index) {
+      const scope = lexicalScopes[index];
+      switch (scope.type) {
+        case "FunctionLexicalScope":
+        case "ClassLexicalScope":
+          return false;
+        case "BlockLexicalScope":
+          continue;
+        case "VirtualLexicalScope": {
+          if (scope.blockType === "Loop") return true;
+          continue;
+        }
+      }
+    }
+    return false;
+  }
+  function canLabelReach(name: string) {
+    for (let index = lexicalScopes.length - 1; index >= 0; --index) {
+      const scope = lexicalScopes[index];
+      switch (scope.type) {
+        case "FunctionLexicalScope":
+        case "ClassLexicalScope":
+          return false;
+        case "BlockLexicalScope":
+          continue;
+        case "VirtualLexicalScope": {
+          if (scope.blockType === "Label" && scope.labelName === name) return true;
+          continue;
+        }
+      }
+    }
+    return false;
   }
   /**
    * Private API called when start parse class scope.
@@ -647,6 +712,8 @@ export function createLexicalScopeRecorder() {
     // for blocks
     enterBlockLexicalScope,
     exitBlockLexicalScope,
+    enterVirtualBlockScope,
+    exitVirtualBlockScope,
     // for class
     enterClassLexicalScope,
     exitClassLexicalScope,
@@ -669,6 +736,9 @@ export function createLexicalScopeRecorder() {
     isParentFunctionAsync,
     isParentFunctionGenerator,
     isReturnValidate,
+    isBreakValidate,
+    isContinueValidate,
+    canLabelReach,
     // for class
     isInCtor,
     isInPropertyName,

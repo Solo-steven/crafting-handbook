@@ -22,7 +22,21 @@
                 "body": [
                     {
                         "kind": "BreakStatement",
-                        "label": {
+                        "label": null,
+                        "start": {
+                            "row": 1,
+                            "col": 16,
+                            "index": 15
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
                             "kind": "Identifer",
                             "name": "there",
                             "start": {
@@ -37,14 +51,14 @@
                             }
                         },
                         "start": {
-                            "row": 1,
-                            "col": 16,
-                            "index": 15
+                            "row": 2,
+                            "col": 1,
+                            "index": 32
                         },
                         "end": {
-                            "row": 1,
-                            "col": 21,
-                            "index": 20
+                            "row": 2,
+                            "col": 6,
+                            "index": 37
                         }
                     }
                 ],

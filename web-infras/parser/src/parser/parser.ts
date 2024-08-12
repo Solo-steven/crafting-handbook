@@ -139,7 +139,7 @@ import { createLexer } from "../lexer/index";
 import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } from "./scope/arrowExprScope";
 import { createStrictModeScopeRecorder, StrictModeScope } from "./scope/strictModeScope";
 import { ExpressionScopeKind } from "./scope/type";
-import { createLexicalScopeRecorder, PrivateNameDefKind } from "./scope/lexicalScope";
+import { BlockType, createLexicalScopeRecorder, PrivateNameDefKind } from "./scope/lexicalScope";
 interface Context {
   maybeArrowStart: number;
   inOperatorStack: Array<boolean>;
@@ -510,6 +510,18 @@ export function createParser(code: string, option?: ParserConfig) {
   function exitBlockScope() {
     lexicalScopeRecorder.exitBlockLexicalScope();
   }
+  function parseAsLoop<T>(callback: () => T): T {
+    lexicalScopeRecorder.enterVirtualBlockScope("Loop");
+    const result = callback();
+    lexicalScopeRecorder.exitVirtualBlockScope();
+    return result;
+  }
+  function parseAsSwitch<T>(callback: () => T): T {
+    lexicalScopeRecorder.enterVirtualBlockScope("Switch");
+    const result = callback();
+    lexicalScopeRecorder.exitVirtualBlockScope();
+    return result;
+  }
   function recordScope(kind: ExpressionScopeKind, position: SourcePosition) {
     strictModeScopeRecorder.record(kind, position);
     asyncArrowExprScopeRecorder.record(kind, position);
@@ -660,6 +672,15 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function isReturnValidate(): boolean {
     return config.allowReturnOutsideFunction || lexicalScopeRecorder.isReturnValidate();
+  }
+  function isBreakValidate(): boolean {
+    return lexicalScopeRecorder.isBreakValidate();
+  }
+  function isContinueValidate(): boolean {
+    return lexicalScopeRecorder.isContinueValidate();
+  }
+  function canLabelReach(name: string): boolean {
+    return lexicalScopeRecorder.canLabelReach(name);
   }
   function isEncloseInFunction(): boolean {
     return lexicalScopeRecorder.isEncloseInFunction();
@@ -841,15 +862,6 @@ export function createParser(code: string, option?: ParserConfig) {
         return parseDoWhileStatement();
       case SyntaxKinds.VarKeyword:
         return parseVariableDeclaration();
-      case SyntaxKinds.LetKeyword:
-        const { kind, lineTerminatorFlag } = lookahead();
-        if (
-          kind === SyntaxKinds.BracketLeftPunctuator ||
-          (!lineTerminatorFlag &&
-            (kind === SyntaxKinds.BracesLeftPunctuator || kind === SyntaxKinds.Identifier))
-        ) {
-          throw createMessageError("lexical binding wrong position");
-        }
       default:
         if (match(SyntaxKinds.Identifier) && lookahead().kind === SyntaxKinds.ColonPunctuator) {
           return parseLabeledStatement();
@@ -880,6 +892,7 @@ export function createParser(code: string, option?: ParserConfig) {
    * @param {boolean} isBinding Is transform to BindingPattern
    */
   function exprToPattern(expr: Expression, isBinding: boolean): Pattern {
+    // TODO, remove impl function.
     return exprToPatternImpl(expr, isBinding);
   }
   function exprToPatternImpl(node: Expression, isBinding: boolean): Pattern {
@@ -1227,8 +1240,8 @@ export function createParser(code: string, option?: ParserConfig) {
         update = parseExpressionAllowIn();
       }
       expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseStatement();
-      return Factory.createForStatement(
+      const body = parseAsLoop(parseStatement);
+      const forStatement = Factory.createForStatement(
         body,
         leftOrInit,
         test,
@@ -1236,6 +1249,8 @@ export function createParser(code: string, option?: ParserConfig) {
         keywordStart,
         cloneSourcePosition(body.end),
       );
+      staticSematicEarlyErrorForFORStatement(forStatement);
+      return forStatement;
     }
     // unreach case, even if syntax error, when leftOrInit, it must match semi token.
     // and because it match semi token, if would enter forStatement case, will not
@@ -1265,14 +1280,16 @@ export function createParser(code: string, option?: ParserConfig) {
       nextToken();
       const right = parseExpressionAllowIn();
       expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseStatement();
-      return Factory.createForInStatement(
+      const body = parseAsLoop(parseStatement);
+      const forInStatement = Factory.createForInStatement(
         leftOrInit,
         right,
         body,
         keywordStart,
         cloneSourcePosition(body.end),
       );
+      staticSematicEarlyErrorForFORStatement(forInStatement);
+      return forInStatement;
     }
     // branch case for `for-of` statement
     if (isContextKeyword("of")) {
@@ -1285,8 +1302,8 @@ export function createParser(code: string, option?: ParserConfig) {
       nextToken();
       const right = parseAssignmentExpressionAllowIn();
       expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseStatement();
-      return Factory.createForOfStatement(
+      const body = parseAsLoop(parseStatement);
+      const forOfStatement = Factory.createForOfStatement(
         isAwait,
         leftOrInit,
         right,
@@ -1294,8 +1311,15 @@ export function createParser(code: string, option?: ParserConfig) {
         keywordStart,
         cloneSourcePosition(body.end),
       );
+      staticSematicEarlyErrorForFORStatement(forOfStatement);
+      return forOfStatement;
     }
     throw createUnexpectError(null);
+  }
+  function staticSematicEarlyErrorForFORStatement(statement: ForStatement | ForInStatement | ForOfStatement) {
+    if (checkIsLabelledFunction(statement.body)) {
+      throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+    }
   }
 
   /**
@@ -1336,31 +1360,68 @@ export function createParser(code: string, option?: ParserConfig) {
       const alter = parseStatement();
       return Factory.createIfStatement(test, consequnce, alter, keywordStart, cloneSourcePosition(alter.end));
     }
-    return Factory.createIfStatement(
+    const ifStatement = Factory.createIfStatement(
       test,
       consequnce,
       null,
       keywordStart,
       cloneSourcePosition(consequnce.end),
     );
+    staticSematicEarlyErrorForIfStatement(ifStatement);
+    return ifStatement;
+  }
+  function staticSematicEarlyErrorForIfStatement(statement: IfStatement) {
+    if (checkIsLabelledFunction(statement.conseqence)) {
+      throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+    }
+    if (statement.alternative && checkIsLabelledFunction(statement.alternative)) {
+      throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+    }
   }
   function parseWhileStatement(): WhileStatement {
     const { start: keywordStart } = expect(SyntaxKinds.WhileKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const test = parseExpressionAllowIn();
     expect(SyntaxKinds.ParenthesesRightPunctuator);
-    const body = parseStatement();
-    return Factory.createWhileStatement(test, body, keywordStart, cloneSourcePosition(body.end));
+    const body = parseAsLoop(parseStatement);
+    const whileStatement = Factory.createWhileStatement(
+      test,
+      body,
+      keywordStart,
+      cloneSourcePosition(body.end),
+    );
+    staticSematicEarlyErrorForWhileStatement(whileStatement);
+    return whileStatement;
+  }
+  function checkIsLabelledFunction(statement: Statement) {
+    while (statement.kind === SyntaxKinds.LabeledStatement) {
+      if (statement.body.kind === SyntaxKinds.FunctionDeclaration) {
+        return true;
+      }
+      statement = statement.body;
+    }
+  }
+  function staticSematicEarlyErrorForWhileStatement(statement: WhileStatement) {
+    if (checkIsLabelledFunction(statement.body)) {
+      throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+    }
   }
   function parseDoWhileStatement(): DoWhileStatement {
     const { start: keywordStart } = expect(SyntaxKinds.DoKeyword);
-    const body = parseStatement();
+    const body = parseAsLoop(parseStatement);
     expect(SyntaxKinds.WhileKeyword, "do while statement should has while condition");
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const test = parseExpressionAllowIn();
     const { end: punctEnd } = expect(SyntaxKinds.ParenthesesRightPunctuator);
     isSoftInsertSemi();
-    return Factory.createDoWhileStatement(test, body, keywordStart, punctEnd);
+    const doWhileStatement = Factory.createDoWhileStatement(test, body, keywordStart, punctEnd);
+    staticSematicEarlyErrorForDoWhileStatement(doWhileStatement);
+    return doWhileStatement;
+  }
+  function staticSematicEarlyErrorForDoWhileStatement(statement: DoWhileStatement) {
+    if (checkIsLabelledFunction(statement.body)) {
+      throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+    }
   }
   function parseBlockStatement() {
     const { start: puncStart } = expect(SyntaxKinds.BracesLeftPunctuator);
@@ -1385,7 +1446,7 @@ export function createParser(code: string, option?: ParserConfig) {
     if (!match(SyntaxKinds.BracesLeftPunctuator)) {
       throw createUnexpectError(SyntaxKinds.BracesLeftPunctuator, "switch statement should has cases body");
     }
-    const { nodes, end } = parseSwitchCases();
+    const { nodes, end } = parseAsSwitch(parseSwitchCases);
     return Factory.createSwitchStatement(discriminant, nodes, keywordStart, end);
   }
   function parseSwitchCases(): ASTArrayWithMetaData<SwitchCase> {
@@ -1431,31 +1492,57 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function parseContinueStatement(): ContinueStatement {
     const { start: keywordStart, end: keywordEnd } = expect(SyntaxKinds.ContinueKeyword);
-    if (match(SyntaxKinds.Identifier)) {
+    staticSematicEarlyErrorForContinueStatement();
+    if (match(SyntaxKinds.Identifier) && !getLineTerminatorFlag()) {
       const id = parseIdentifierReference();
       shouldInsertSemi();
+      staticSematicEarlyErrorForLabelInContinueStatement(id.name);
       return Factory.createContinueStatement(id, keywordStart, cloneSourcePosition(id.end));
     }
     shouldInsertSemi();
     return Factory.createContinueStatement(null, keywordStart, keywordEnd);
   }
+  function staticSematicEarlyErrorForContinueStatement() {
+    if (!isContinueValidate()) {
+      throw createMessageError(ErrorMessageMap.syntax_error_continue_must_be_inside_loop);
+    }
+  }
+  function staticSematicEarlyErrorForLabelInContinueStatement(name: string) {
+    if (!canLabelReach(name)) {
+      throw createMessageError(ErrorMessageMap.syntax_error_label_not_found);
+    }
+  }
   function parseBreakStatement(): BreakStatement {
     const { start, end } = expect(SyntaxKinds.BreakKeyword);
-    if (match(SyntaxKinds.Identifier)) {
+    if (match(SyntaxKinds.Identifier) && !getLineTerminatorFlag()) {
       const label = parseIdentifierReference();
       shouldInsertSemi();
+      staticSematicEarlyErrorForLabelInBreakStatement(label.name);
       return Factory.createBreakStatement(label, start, end);
     }
     shouldInsertSemi();
+    staticSematicEarlyErrorForBreakStatement();
     return Factory.createBreakStatement(null, start, end);
+  }
+  function staticSematicEarlyErrorForBreakStatement() {
+    if (!isBreakValidate()) {
+      throw createMessageError(ErrorMessageMap.syntax_error_unlabeled_break_must_be_inside_loop_or_switch);
+    }
+  }
+  function staticSematicEarlyErrorForLabelInBreakStatement(name: string) {
+    if (!canLabelReach(name)) {
+      throw createMessageError(ErrorMessageMap.syntax_error_label_not_found);
+    }
   }
   function parseLabeledStatement(): LabeledStatement {
     if (!match(SyntaxKinds.Identifier) || lookahead().kind !== SyntaxKinds.ColonPunctuator) {
       // TODO: unreach
     }
     const label = parseIdentifierReference();
+    lexicalScopeRecorder.enterVirtualBlockScope("Label", label.name);
     expect(SyntaxKinds.ColonPunctuator);
     const labeled = match(SyntaxKinds.FunctionKeyword) ? parseFunctionDeclaration(false) : parseStatement();
+    lexicalScopeRecorder.exitVirtualBlockScope();
     staticSematicEarlyErrorForLabelStatement(labeled);
     return Factory.createLabeledStatement(
       label,
@@ -2111,14 +2198,35 @@ export function createParser(code: string, option?: ParserConfig) {
    * @returns {ExpressionStatement}
    */
   function parseExpressionStatement(): ExpressionStatement {
+    preStaticSematicEarlyErrorForExpressionStatement();
     const expr = parseExpressionAllowIn();
     checkStrictMode(expr);
+    postStaticSematicEarlyErrorForExpressionStatement(expr);
     shouldInsertSemi();
     return Factory.createExpressionStatement(
       expr,
       cloneSourcePosition(expr.start),
       cloneSourcePosition(expr.end),
     );
+  }
+  function preStaticSematicEarlyErrorForExpressionStatement() {
+    if (match(SyntaxKinds.LetKeyword)) {
+      const { kind, lineTerminatorFlag } = lookahead();
+      if (
+        kind === SyntaxKinds.BracketLeftPunctuator ||
+        (!lineTerminatorFlag &&
+          (kind === SyntaxKinds.BracesLeftPunctuator || kind === SyntaxKinds.Identifier))
+      ) {
+        throw createMessageError("lexical binding wrong position");
+      }
+    }
+  }
+  function postStaticSematicEarlyErrorForExpressionStatement(expr: Expression) {
+    if (!expr.parentheses) {
+      if (isFunctionExpression(expr) || isClassExpression(expr)) {
+        throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+      }
+    }
   }
   /**
    * Helper function for checking `use strict` directive, according to
@@ -2231,6 +2339,9 @@ export function createParser(code: string, option?: ParserConfig) {
     const left = exprToPattern(leftExpr, false);
     checkStrictModeScopeError(scope);
     const operator = getToken();
+    if (operator !== SyntaxKinds.AssginOperator) {
+      checkExpressionAsLeftValue(left);
+    }
     nextToken();
     const right = parseAssignmentExpressionInheritIn();
     return Factory.createAssignmentExpression(
@@ -2605,8 +2716,13 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     return base;
   }
-  function checkExpressionAsLeftValue(expression: Expression) {
-    if (isPattern(expression)) {
+  /**
+   * Check is a assignable left value
+   * @param expression
+   * @returns
+   */
+  function checkExpressionAsLeftValue(expression: ModuleItem) {
+    if (isIdentifer(expression) || isMemberExpression(expression)) {
       return;
     }
     throw createMessageError(ErrorMessageMap.invalid_left_value);

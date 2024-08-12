@@ -22,7 +22,21 @@
                 "body": [
                     {
                         "kind": "ContinueStatement",
-                        "label": {
+                        "label": null,
+                        "start": {
+                            "row": 1,
+                            "col": 16,
+                            "index": 15
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        }
+                    },
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
                             "kind": "Identifer",
                             "name": "there",
                             "start": {
@@ -37,9 +51,9 @@
                             }
                         },
                         "start": {
-                            "row": 1,
-                            "col": 16,
-                            "index": 15
+                            "row": 2,
+                            "col": 1,
+                            "index": 24
                         },
                         "end": {
                             "row": 2,
