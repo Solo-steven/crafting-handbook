@@ -36,8 +36,8 @@
                                     "index": 10
                                 },
                                 "end": {
-                                    "row": 1,
-                                    "col": 22,
+                                    "row": 2,
+                                    "col": 4,
                                     "index": 21
                                 }
                             },
@@ -45,13 +45,13 @@
                                 "kind": "StringLiteral",
                                 "value": "test \\\r\ntest",
                                 "start": {
-                                    "row": 1,
-                                    "col": 23,
+                                    "row": 2,
+                                    "col": 5,
                                     "index": 22
                                 },
                                 "end": {
-                                    "row": 1,
-                                    "col": 37,
+                                    "row": 3,
+                                    "col": 7,
                                     "index": 36
                                 }
                             },
@@ -61,8 +61,8 @@
                                 "index": 10
                             },
                             "end": {
-                                "row": 1,
-                                "col": 37,
+                                "row": 3,
+                                "col": 7,
                                 "index": 36
                             }
                         },
@@ -70,13 +70,13 @@
                             "kind": "StringLiteral",
                             "value": "f",
                             "start": {
-                                "row": 1,
-                                "col": 38,
+                                "row": 3,
+                                "col": 8,
                                 "index": 37
                             },
                             "end": {
-                                "row": 1,
-                                "col": 41,
+                                "row": 3,
+                                "col": 11,
                                 "index": 40
                             }
                         },
@@ -86,8 +86,8 @@
                             "index": 10
                         },
                         "end": {
-                            "row": 1,
-                            "col": 41,
+                            "row": 3,
+                            "col": 11,
                             "index": 40
                         }
                     },
@@ -97,8 +97,8 @@
                         "index": 4
                     },
                     "end": {
-                        "row": 1,
-                        "col": 41,
+                        "row": 3,
+                        "col": 11,
                         "index": 40
                     }
                 }
@@ -109,8 +109,8 @@
                 "index": 0
             },
             "end": {
-                "row": 1,
-                "col": 41,
+                "row": 3,
+                "col": 11,
                 "index": 40
             }
         }
@@ -121,7 +121,7 @@
         "index": 0
     },
     "end": {
-        "row": 3,
+        "row": 5,
         "col": 1,
         "index": 43
     }

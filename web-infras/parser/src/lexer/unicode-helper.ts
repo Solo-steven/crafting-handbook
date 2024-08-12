@@ -121,6 +121,9 @@ export const UnicodePoints = {
   Underscore: codePoint("_"),
   WhiteSpace: codePoint(" "),
   Tab: codePoint("\t"),
+  NoBreakSpace: codePoint("\u00A0"),
+  LineTabulation: codePoint("\u000B"),
+  FromFeed: codePoint("\u000C"),
   ChangeLine: codePoint("\n"), // LINE FEED (LF)
   CR: codePoint("\u000D"), // CARRIAGE RETURN (CR)
   LS: codePoint("\u2028"), // LINE SEPARATOR (LS)

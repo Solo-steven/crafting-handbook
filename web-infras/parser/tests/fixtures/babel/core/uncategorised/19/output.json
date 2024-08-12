@@ -4,34 +4,35 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "BinaryExpression",
-                "operator": "+",
+                "kind": "AssigmentExpression",
+                "operator": "=",
                 "left": {
-                    "kind": "StringLiteral",
-                    "value": "\\\n",
+                    "kind": "Identifer",
+                    "name": "ⅣⅡ",
                     "start": {
                         "row": 1,
                         "col": 1,
                         "index": 0
                     },
                     "end": {
-                        "row": 2,
-                        "col": 2,
-                        "index": 4
+                        "row": 1,
+                        "col": 3,
+                        "index": 2
                     }
                 },
                 "right": {
-                    "kind": "Identifer",
-                    "name": "bar",
+                    "kind": "ArrayExpression",
+                    "elements": [],
+                    "trailingComma": false,
                     "start": {
-                        "row": 2,
-                        "col": 5,
-                        "index": 7
+                        "row": 1,
+                        "col": 6,
+                        "index": 5
                     },
                     "end": {
-                        "row": 2,
+                        "row": 1,
                         "col": 8,
-                        "index": 10
+                        "index": 7
                     }
                 },
                 "start": {
@@ -40,9 +41,9 @@
                     "index": 0
                 },
                 "end": {
-                    "row": 2,
+                    "row": 1,
                     "col": 8,
-                    "index": 10
+                    "index": 7
                 }
             },
             "start": {
@@ -51,9 +52,9 @@
                 "index": 0
             },
             "end": {
-                "row": 2,
+                "row": 1,
                 "col": 8,
-                "index": 10
+                "index": 7
             }
         }
     ],
@@ -63,8 +64,8 @@
         "index": 0
     },
     "end": {
-        "row": 3,
-        "col": 1,
-        "index": 11
+        "row": 1,
+        "col": 8,
+        "index": 7
     }
 }

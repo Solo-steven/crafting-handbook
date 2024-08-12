@@ -54,9 +54,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/core/categorized/invalid-fn-decl-labeled-inside-if",
   "/babel/core/categorized/invalid-fn-decl-labeled-inside-loop",
   "/babel/core/uncategorised/465",
-  // === (feature) tokenize private check it's identifierName value
-  "/babel/es2022/class-private-properties/failure-numeric-literal",
-  "/babel/es2022/class-private-properties/failure-numeric-start-identifier",
   // === (feature) tokenize a number can not be followed by a idstart
   "/babel/core/uncategorised/348",
   "/babel/core/uncategorised/358",
@@ -74,10 +71,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/core/uncategorised/462",
   "/babel/core/uncategorised/463",
   "/babel/core/uncategorised/464",
-  // === (??) dev success, but test failed
-  "/babel/estree/class-property/basic-babel-7",
-  "/babel/estree/class-property/basic-babel-8",
-  "/babel/estree/class-property/not-enabled-babel-7",
   // ==== (feature) bigint literal problem
   "/babel/es2020/bigint/invalid-decimal",
   "/babel/es2020/bigint/invalid-e",
@@ -115,6 +108,9 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/core/uncategorised/366",
   "/babel/core/uncategorised/380",
   "/babel/core/uncategorised/441",
+  /**
+   * Scope Id and reference feature
+   */
   // === (feature) duplicate among export declaration
   "/babel/es2015/modules/duplicate-export-default",
   "/babel/es2015/modules/duplicate-export-default-and-export-as-default",

@@ -45,6 +45,7 @@ export type LexerTokenContext = {
 
 export type LexerTemplateContext = {
   stackCounter: Array<number>;
+  isTagged: boolean;
 };
 
 export type LexerEscFlagContext = {

@@ -2062,6 +2062,7 @@ export function createParser(code: string, option?: ParserConfig) {
         // static get/set/async
         case SyntaxKinds.Identifier:
         case SyntaxKinds.PrivateName:
+        case SyntaxKinds.StringLiteral:
         // static { <static-block>
         case SyntaxKinds.BracesLeftPunctuator:
         // static [<compute-name>]
@@ -2754,7 +2755,7 @@ export function createParser(code: string, option?: ParserConfig) {
     return property;
   }
   function parseTagTemplateExpression(base: Expression) {
-    const quasi = parseTemplateLiteral();
+    const quasi = parseTemplateLiteral(true);
     return Factory.createTagTemplateExpression(
       base,
       quasi,
@@ -2792,7 +2793,7 @@ export function createParser(code: string, option?: ParserConfig) {
         return parseStringLiteral();
       case SyntaxKinds.TemplateHead:
       case SyntaxKinds.TemplateNoSubstitution:
-        return parseTemplateLiteral();
+        return parseTemplateLiteral(false);
       case SyntaxKinds.ImportKeyword:
         const { kind } = lookahead();
         if (kind === SyntaxKinds.DotOperator) return parseImportMeta();
@@ -3131,12 +3132,15 @@ export function createParser(code: string, option?: ParserConfig) {
     const { start, end, value } = expect([SyntaxKinds.TrueKeyword, SyntaxKinds.FalseKeyword]);
     return Factory.createBoolLiteral(value === "true" ? true : false, start, end);
   }
-  function parseTemplateLiteral() {
+  function parseTemplateLiteral(tagged: boolean) {
     if (!match([SyntaxKinds.TemplateHead, SyntaxKinds.TemplateNoSubstitution])) {
       throw createUnreachError([SyntaxKinds.TemplateHead, SyntaxKinds.TemplateNoSubstitution]);
     }
     const templateLiteralStart = getStartPosition();
     if (match(SyntaxKinds.TemplateNoSubstitution)) {
+      if (!tagged && lexer.getTemplateLiteralTag()) {
+        throw createMessageError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence);
+      }
       const value = getSourceValue();
       const templateLiteralEnd = getEndPosition();
       nextToken();
@@ -3155,6 +3159,9 @@ export function createParser(code: string, option?: ParserConfig) {
       match(SyntaxKinds.TemplateMiddle) &&
       !match(SyntaxKinds.EOFToken)
     ) {
+      if (!tagged && lexer.getTemplateLiteralTag()) {
+        throw createMessageError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence);
+      }
       quasis.push(
         Factory.createTemplateElement(getSourceValue(), false, getStartPosition(), getEndPosition()),
       );
@@ -3163,6 +3170,9 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     if (match(SyntaxKinds.EOFToken)) {
       throw createUnexpectError(SyntaxKinds.BracesLeftPunctuator);
+    }
+    if (!tagged && lexer.getTemplateLiteralTag()) {
+      throw createMessageError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence);
     }
     quasis.push(Factory.createTemplateElement(getSourceValue(), true, getStartPosition(), getEndPosition()));
     const templateLiteralEnd = getEndPosition();

@@ -20,7 +20,7 @@ console.log(code);
 // // Combine styled and normal strings
 // log(chalk.blue('Hello') + ' World' + chalk.red('!'));
 
-// printLexer(code);
+printLexer(code);
 printParser(code);
 
 function printLexer(code: string) {

@@ -14,7 +14,12 @@ import {
   LexerTokenContext,
   LookaheadToken,
 } from "./type";
-import { isCodePointLineTerminate, isIdentifierChar, UnicodePoints } from "./unicode-helper";
+import {
+  isCodePointLineTerminate,
+  isIdentifierChar,
+  isIdentifierStart,
+  UnicodePoints,
+} from "./unicode-helper";
 import { ErrorMessageMap } from "./error";
 /**
  * Lexer Context.
@@ -28,7 +33,7 @@ interface Context {
   // need for syntax check (like line terminator).
   tokenContext: LexerTokenContext;
   // Ad-hoc data structure for tokenize template literal.
-  templateMeta: LexerTemplateContext;
+  templateContext: LexerTemplateContext;
   // Ad-hoc data structure for escape char when tokenize.
   escapeMeta: LexerEscFlagContext;
   // Ad-hoc data structure for Is string literal break strict mode rule
@@ -49,7 +54,7 @@ function createContext(code: string): Context {
       endPosition: createSourcePosition(),
       lastTokenEndPosition: createSourcePosition(),
     },
-    templateMeta: { stackCounter: [] },
+    templateContext: { stackCounter: [], isTagged: false },
     escapeMeta: { flag: false },
     stringLiteralContext: { breakStrictRule: false },
   };
@@ -68,7 +73,7 @@ function cloneContext(source: Context): Context {
       endPosition: cloneSourcePosition(source.tokenContext.endPosition),
       lastTokenEndPosition: cloneSourcePosition(source.tokenContext.lastTokenEndPosition),
     },
-    templateMeta: { stackCounter: [...source.templateMeta.stackCounter] },
+    templateContext: { ...source.templateContext, stackCounter: [...source.templateContext.stackCounter] },
     escapeMeta: { ...source.escapeMeta },
     stringLiteralContext: { ...source.stringLiteralContext },
   };
@@ -113,6 +118,9 @@ export function createLexer(code: string) {
   }
   function getStringLiteralFlag(): boolean {
     return context.stringLiteralContext.breakStrictRule;
+  }
+  function getTemplateLiteralTag(): boolean {
+    return context.templateContext.isTagged;
   }
   /**
    * Public API for getting token's string value
@@ -241,6 +249,7 @@ export function createLexer(code: string) {
     getLineTerminatorFlag,
     getEscFlag,
     getStringLiteralFlag,
+    getTemplateLiteralTag,
     nextToken,
     lookahead,
     readRegex,
@@ -269,6 +278,7 @@ export function createLexer(code: string) {
    */
   function startToken(): void {
     context.escapeMeta.flag = false;
+    context.templateContext.isTagged = false;
     context.stringLiteralContext.breakStrictRule = false;
     context.tokenContext.startPosition = creaetSourcePositionFromCursor();
   }
@@ -370,7 +380,21 @@ export function createLexer(code: string) {
           eatChangeLine();
           break;
         case UnicodePoints.WhiteSpace:
+        case UnicodePoints.NoBreakSpace:
         case UnicodePoints.Tab:
+        case UnicodePoints.LineTabulation:
+        case UnicodePoints.FromFeed:
+        case "\u{2000}".codePointAt(0):
+        case "\u{2001}".codePointAt(0):
+        case "\u{2002}".codePointAt(0):
+        case "\u{2003}".codePointAt(0):
+        case "\u{2004}".codePointAt(0):
+        case "\u{2005}".codePointAt(0):
+        case "\u{2006}".codePointAt(0):
+        case "\u{2007}".codePointAt(0):
+        case "\u{2008}".codePointAt(0):
+        case "\u{2009}".codePointAt(0):
+        case "\u{200A}".codePointAt(0):
           eatChar();
           break;
 
@@ -435,11 +459,11 @@ export function createLexer(code: string) {
        *  ==========================================
        */
       case UnicodePoints.BracesLeft:
-        context.templateMeta.stackCounter.push(-1);
+        context.templateContext.stackCounter.push(-1);
         eatChar();
         return finishToken(SyntaxKinds.BracesLeftPunctuator);
       case UnicodePoints.BracesRight:
-        const result = context.templateMeta.stackCounter.pop();
+        const result = context.templateContext.stackCounter.pop();
         if (result && result > 0) {
           return readTemplateLiteral(SyntaxKinds.TemplateTail, SyntaxKinds.TemplateMiddle);
         }
@@ -557,14 +581,29 @@ export function createLexer(code: string) {
       }
       case UnicodePoints.PoundSign: {
         eatChar();
+        if (!isIdentifierNameStart()) {
+          throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
+        }
         const word = readWordAsIdentifier();
         return finishToken(SyntaxKinds.PrivateName, word);
       }
       default: {
-        // Word -> Id or Keyword
-        return readIdentifierOrKeyword();
+        if (isIdentifierNameStart()) {
+          return readIdentifierOrKeyword();
+        }
+        throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
       }
     }
+  }
+  function isIdentifierNameStart() {
+    const code = getCharCodePoint();
+    const next = getNextCharCodePoint();
+    if (code && next) {
+      if (code === UnicodePoints.BackSlash && next === UnicodePoints.LowerCaseU) {
+        return true;
+      }
+    }
+    return code && isIdentifierStart(code);
   }
   /** ===========================================================
    *                Operators Sub state mahcine
@@ -970,26 +1009,114 @@ export function createLexer(code: string) {
     while (!isEOF()) {
       // safe, since we call it under the isEOF.
       const code = getCharCodePoint() as number;
-      if (isCodePointLineTerminate(code)) {
-        eatChangeLine();
-        continue;
-      }
-      if (!isEscape && code === UnicodePoints.GraveAccent) {
-        eatChar();
-        return finishToken(meetEnd);
-      }
-      if (!isEscape && code === UnicodePoints.DollarSign) {
-        if (getNextCharCodePoint() === UnicodePoints.BracesLeft) {
-          eatTwoChar();
-          context.templateMeta.stackCounter.push(1);
-          return finishToken(meetMiddle);
+      switch (code) {
+        // $ [lookahead ≠ {] or `${`
+        case UnicodePoints.DollarSign: {
+          eatChar();
+          if (getCharCodePoint() === UnicodePoints.BracesLeft) {
+            eatChar();
+            context.templateContext.stackCounter.push(1);
+            return finishToken(meetMiddle);
+          }
+          break;
+        }
+        // ` char
+        case UnicodePoints.GraveAccent: {
+          eatChar();
+          return finishToken(meetEnd);
+        }
+        // LineTerminatorSequence
+        case UnicodePoints.ChangeLine:
+        case UnicodePoints.LS:
+        case UnicodePoints.PS: {
+          eatChangeLine();
+          break;
+        }
+        case UnicodePoints.CR: {
+          eatChangeLine();
+          const code = getCharCodePoint();
+          if (code === UnicodePoints.ChangeLine) {
+            eatChar();
+          }
+          break;
+        }
+        // \ TemplateEscapeSequence
+        // \ NotEscapeSequence
+        // LineContinuation (\ LineTerminatorSequence)
+        case UnicodePoints.BackSlash: {
+          readEscapeSequenceInTemplateLiteral();
+          break;
+        }
+        // SourceCharacter but not one of ` or \ or $ or LineTerminator
+        default: {
+          eatChar();
         }
       }
-      isEscape = code === UnicodePoints.BackSlash && !isEscape;
-      eatChar();
     }
     // TODO: error handle
     throw new Error("todo error - not close template head or no subsitude");
+  }
+  function readEscapeSequenceInTemplateLiteral() {
+    eatChar(); // eat \
+    const code = getCharCodePoint();
+    switch (code) {
+      // LineContinuation
+      case UnicodePoints.ChangeLine:
+      case UnicodePoints.LS:
+      case UnicodePoints.PS: {
+        eatChangeLine();
+        break;
+      }
+      case UnicodePoints.CR: {
+        eatChangeLine();
+        const code = getCharCodePoint();
+        if (code === UnicodePoints.ChangeLine) {
+          eatChar();
+        }
+        break;
+      }
+      case UnicodePoints.LowerCaseX: {
+        eatChar();
+        for (let i = 0; i < 2; ++i) {
+          context.templateContext.isTagged ||= !isHex();
+          eatChar();
+        }
+        return;
+      }
+      case UnicodePoints.LowerCaseU: {
+        eatChar();
+        try {
+          readUnicodeEscapeSequence();
+        } catch (e) {
+          context.templateContext.isTagged = true;
+        }
+        return;
+      }
+      // SingleEscapeCharacter
+      case UnicodePoints.DoubleQuote:
+      case UnicodePoints.SingleQuote: {
+        eatChar();
+        return;
+      }
+      case UnicodePoints.Digital0: {
+        const next = getNextCharCodePoint();
+        if (next) {
+          const needTagged = next <= UnicodePoints.Digital9 && next >= UnicodePoints.Digital0;
+          eatTwoChar();
+          context.templateContext.isTagged = needTagged;
+        } else {
+          eatChar();
+        }
+        break;
+      }
+      // NonEscapeCharacter
+      default: {
+        if (code && code >= UnicodePoints.Digital1 && code <= UnicodePoints.Digital9) {
+          context.templateContext.isTagged = true;
+        }
+        eatChar();
+      }
+    }
   }
   //  ===========================================================
   //       Numeric Literal State machine
@@ -1335,20 +1462,20 @@ export function createLexer(code: string) {
     eatChar(); // eat \
     const code = getCharCodePoint();
     switch (code) {
-      // LineContinuation
+      // LineTerminatorSequence
       case UnicodePoints.ChangeLine:
       case UnicodePoints.LS:
       case UnicodePoints.PS: {
-        eatChar();
-        return;
+        eatChangeLine();
+        break;
       }
       case UnicodePoints.CR: {
-        eatChar();
+        eatChangeLine();
         const code = getCharCodePoint();
         if (code === UnicodePoints.ChangeLine) {
           eatChar();
         }
-        return;
+        break;
       }
       // SingleEscapeCharacter
       case UnicodePoints.DoubleQuote:
@@ -1449,6 +1576,7 @@ export function createLexer(code: string) {
         readUnicodeEscapeSequence();
         return;
       }
+      // NonEscapeCharacter
       default: {
         eatChar();
         return;
@@ -1489,7 +1617,6 @@ export function createLexer(code: string) {
           eatTwoChar(); // eat \u \U
           const anyUnicodeString = readUnicodeEscapeSequence();
           if (!isIdentifierChar(anyUnicodeString.codePointAt(0) as number)) {
-            console.log(anyUnicodeString.codePointAt(0));
             throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
           }
           word += anyUnicodeString;
@@ -1536,7 +1663,9 @@ export function createLexer(code: string) {
         }
         const endIndex = getCurrentIndex();
         eatChar();
-        return String.fromCodePoint(Number(`0x${getSliceStringFromCode(startIndex, endIndex)}`));
+        return String.fromCodePoint(
+          Number(`0x${getSliceStringFromCode(startIndex, endIndex)}`.replace("_", "")),
+        );
       }
       default: {
         const startIndex = getCurrentIndex();
@@ -1549,7 +1678,9 @@ export function createLexer(code: string) {
               throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
             }
           }
-          return String.fromCodePoint(Number(`0x${getSliceStringFromCode(startIndex, getCurrentIndex())}`));
+          return String.fromCodePoint(
+            Number(`0x${getSliceStringFromCode(startIndex, getCurrentIndex())}`.replace("_", "")),
+          );
         }
         throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
       }
