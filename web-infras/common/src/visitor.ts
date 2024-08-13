@@ -85,6 +85,7 @@ import {
   OctalIntegerLiteral,
   HexIntegerLiteral,
   LegacyOctalIntegerLiteral,
+  ImportAttribute,
 } from "./ast";
 import { SyntaxKinds } from "./kind";
 
@@ -177,6 +178,7 @@ export type Visitor = {
   [SyntaxKinds.ExportSpecifier]?: (node: ExportSpecifier, visitor: Visitor) => void;
   [SyntaxKinds.ExportDefaultDeclaration]?: (node: ExportDefaultDeclaration, visitor: Visitor) => void;
   [SyntaxKinds.ExportAllDeclaration]?: (node: ExportAllDeclaration, visitor: Visitor) => void;
+  [SyntaxKinds.ImportAttribute]?: (node: ImportAttribute, visior: Visitor) => void;
 };
 
 export const PropagationtVisitorTable: Visitor = {
@@ -192,11 +194,11 @@ export const PropagationtVisitorTable: Visitor = {
   [SyntaxKinds.BooleanLiteral]: function visitBoolLiteral(node: BoolLiteral, visior: Visitor) {},
   [SyntaxKinds.StringLiteral]: function visitStringLiteral(node: StringLiteral, visitor: Visitor) {},
   [SyntaxKinds.DecimalLiteral]: function (node: DecimalLiteral, visitor: Visitor) {},
-  [SyntaxKinds.NonOctalDecimalLiteral]: function (node: NonOctalDecimalLiteral, visior: Visitor){},
-  [SyntaxKinds.BinaryIntegerLiteral]: function (node: BinaryIntegerLiteral, visior: Visitor){},
-  [SyntaxKinds.OctalIntegerLiteral]: function (node: OctalIntegerLiteral, visior: Visitor){},
-  [SyntaxKinds.HexIntegerLiteral]: function (node: HexIntegerLiteral, visior: Visitor){},
-  [SyntaxKinds.LegacyOctalIntegerLiteral]: function (node: LegacyOctalIntegerLiteral, visior: Visitor){},
+  [SyntaxKinds.NonOctalDecimalLiteral]: function (node: NonOctalDecimalLiteral, visior: Visitor) {},
+  [SyntaxKinds.BinaryIntegerLiteral]: function (node: BinaryIntegerLiteral, visior: Visitor) {},
+  [SyntaxKinds.OctalIntegerLiteral]: function (node: OctalIntegerLiteral, visior: Visitor) {},
+  [SyntaxKinds.HexIntegerLiteral]: function (node: HexIntegerLiteral, visior: Visitor) {},
+  [SyntaxKinds.LegacyOctalIntegerLiteral]: function (node: LegacyOctalIntegerLiteral, visior: Visitor) {},
   [SyntaxKinds.Identifier]: function bindIdentifier(node: Identifier, visitor: Visitor) {},
   [SyntaxKinds.Super]: function bindSuper(node: Super, visitor: Visitor) {},
   [SyntaxKinds.Import]: function bindImport(node: Import, visitor: Visitor) {},
@@ -514,6 +516,10 @@ export const PropagationtVisitorTable: Visitor = {
   ) {
     visitNode(node.exported, visitor);
     visitNode(node.source, visitor);
+  },
+  [SyntaxKinds.ImportAttribute]: function (node: ImportAttribute, visitor: Visitor) {
+    visitNode(node.key, visitor);
+    visitNode(node.value, visitor);
   },
 };
 

@@ -81,7 +81,7 @@ export function createOctalIntegerLiteral(
     end,
   };
 }
-export function createHexIntegerLiteral (
+export function createHexIntegerLiteral(
   rawValue: string,
   start: SourcePosition,
   end: SourcePosition,
@@ -1066,6 +1066,7 @@ export function createProgram(
 export function createImportDeclaration(
   specifiers: AST.ImportDeclaration["specifiers"],
   source: AST.ImportDeclaration["source"],
+  attributes: AST.ImportDeclaration["attributes"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.ImportDeclaration {
@@ -1073,6 +1074,7 @@ export function createImportDeclaration(
     kind: SyntaxKinds.ImportDeclaration,
     specifiers,
     source,
+    attributes,
     start,
     end,
   };
@@ -1168,6 +1170,21 @@ export function createExportDefaultDeclaration(
   return {
     kind: SyntaxKinds.ExportDefaultDeclaration,
     declaration,
+    start,
+    end,
+  };
+}
+
+export function createImportAttribute(
+  key: AST.ImportAttribute["key"],
+  value: AST.ImportAttribute["value"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.ImportAttribute {
+  return {
+    kind: SyntaxKinds.ImportAttribute,
+    key,
+    value,
     start,
     end,
   };

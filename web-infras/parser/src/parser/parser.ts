@@ -130,6 +130,7 @@ import {
   NumericLiteralKinds,
   NumberLiteral,
   UnaryExpression,
+  ImportAttribute,
 } from "web-infra-common";
 import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
@@ -3324,14 +3325,32 @@ export function createParser(code: string, option?: ParserConfig) {
     const { start, end } = expect(SyntaxKinds.ImportKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const argument = parseAssignmentExpressionAllowIn();
+    const option = parseImportAttributeOptional();
     const { end: finalEnd } = expect(SyntaxKinds.ParenthesesRightPunctuator);
     return Factory.createCallExpression(
       Factory.createImport(start, end),
-      [argument],
+      option ? [argument, option] : [argument],
       false,
       cloneSourcePosition(start),
       cloneSourcePosition(finalEnd),
     );
+  }
+  function parseImportAttributeOptional(): Expression | null {
+    if (!config.plugins.includes("importAttributes") && !config.plugins.includes("importAssertions")) {
+      return null;
+    }
+    if (!match(SyntaxKinds.CommaToken)) {
+      return null;
+    }
+    nextToken();
+    if (match(SyntaxKinds.ParenthesesRightPunctuator)) {
+      return null;
+    }
+    const option = parseAssignmentExpressionAllowIn();
+    if (match(SyntaxKinds.CommaToken)) {
+      nextToken();
+    }
+    return option;
   }
   function parseNewTarget() {
     const { start, end } = expect(SyntaxKinds.NewKeyword);
@@ -4709,8 +4728,8 @@ export function createParser(code: string, option?: ParserConfig) {
   /**
    * Parse Import Declaration
    * ```
-   * ImportDeclaration := 'import'  ImportClasue FromClause
-   *                   := 'import'  StringLiteral
+   * ImportDeclaration := 'import'  ImportClasue FromClause WithClause?
+   *                   := 'import'  StringLiteral WithClause?
    * FromClause := 'from' StringLiteral
    * ImportClause := ImportDefaultBinding
    *              := ImportNamesapce
@@ -4736,22 +4755,43 @@ export function createParser(code: string, option?: ParserConfig) {
     const specifiers: Array<ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier> = [];
     if (match(SyntaxKinds.StringLiteral)) {
       const source = parseStringLiteral();
+      const attributes = parseImportAttributesOptional();
       shouldInsertSemi();
-      return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
+      return Factory.createImportDeclaration(
+        specifiers,
+        source,
+        attributes,
+        start,
+        cloneSourcePosition(source.end),
+      );
     }
     if (match(SyntaxKinds.MultiplyOperator)) {
       specifiers.push(parseImportNamespaceSpecifier());
       expectFormKeyword();
       const source = parseStringLiteral();
+      const attributes = parseImportAttributesOptional();
       shouldInsertSemi();
-      return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
+      return Factory.createImportDeclaration(
+        specifiers,
+        source,
+        attributes,
+        start,
+        cloneSourcePosition(source.end),
+      );
     }
     if (match(SyntaxKinds.BracesLeftPunctuator)) {
       parseImportSpecifiers(specifiers);
       expectFormKeyword();
       const source = parseStringLiteral();
+      const attributes = parseImportAttributesOptional();
       shouldInsertSemi();
-      return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
+      return Factory.createImportDeclaration(
+        specifiers,
+        source,
+        attributes,
+        start,
+        cloneSourcePosition(source.end),
+      );
     }
     specifiers.push(parseImportDefaultSpecifier());
     if (match(SyntaxKinds.CommaToken)) {
@@ -4768,8 +4808,15 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     expectFormKeyword();
     const source = parseStringLiteral();
+    const attributes = parseImportAttributesOptional();
     shouldInsertSemi();
-    return Factory.createImportDeclaration(specifiers, source, start, cloneSourcePosition(source.end));
+    return Factory.createImportDeclaration(
+      specifiers,
+      source,
+      attributes,
+      start,
+      cloneSourcePosition(source.end),
+    );
   }
   /**
    * Parse Default import binding
@@ -4857,6 +4904,42 @@ export function createParser(code: string, option?: ParserConfig) {
       );
     }
     expect(SyntaxKinds.BracesRightPunctuator);
+  }
+  function parseImportAttributesOptional(): ImportAttribute[] | undefined {
+    if (
+      (config.plugins.includes("importAttributes") && match(SyntaxKinds.WithKeyword)) ||
+      (config.plugins.includes("importAssertions") &&
+        match(SyntaxKinds.Identifier) &&
+        getSourceValue() === "assert")
+    ) {
+      nextToken();
+      return parseImportAttributes();
+    }
+    return undefined;
+  }
+  function parseImportAttributes(): ImportAttribute[] {
+    expect(SyntaxKinds.BracesLeftPunctuator);
+    const attributes: Array<ImportAttribute> = [parseImportAttribute()];
+    while (!match([SyntaxKinds.BracesRightPunctuator, SyntaxKinds.EOFToken])) {
+      expect(SyntaxKinds.CommaToken);
+      if (match([SyntaxKinds.BracesRightPunctuator, SyntaxKinds.EOFToken])) {
+        break;
+      }
+      attributes.push(parseImportAttribute());
+    }
+    expect(SyntaxKinds.BracesRightPunctuator);
+    return attributes;
+  }
+  function parseImportAttribute(): ImportAttribute {
+    const key = parseIdentifierName();
+    expect(SyntaxKinds.ColonPunctuator);
+    const value = parseStringLiteral();
+    return Factory.createImportAttribute(
+      key,
+      value,
+      cloneSourcePosition(key.start),
+      cloneSourcePosition(value.end),
+    );
   }
   /** ================================================================================
    *  Parse Export Declaration

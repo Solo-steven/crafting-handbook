@@ -158,19 +158,25 @@ export interface BinaryIntegerLiteral extends ExpressionModuleItem {
   kind: SyntaxKinds.BinaryIntegerLiteral;
   rawValue: string;
 }
-export interface  OctalIntegerLiteral extends ExpressionModuleItem {
+export interface OctalIntegerLiteral extends ExpressionModuleItem {
   kind: SyntaxKinds.OctalIntegerLiteral;
   rawValue: string;
 }
-export interface  HexIntegerLiteral extends ExpressionModuleItem {
+export interface HexIntegerLiteral extends ExpressionModuleItem {
   kind: SyntaxKinds.HexIntegerLiteral;
   rawValue: string;
 }
-export interface  LegacyOctalIntegerLiteral extends ExpressionModuleItem {
+export interface LegacyOctalIntegerLiteral extends ExpressionModuleItem {
   kind: SyntaxKinds.LegacyOctalIntegerLiteral;
   rawValue: string;
 }
-export type NumberLiteral = DecimalLiteral | NonOctalDecimalLiteral | BinaryIntegerLiteral | OctalIntegerLiteral | HexIntegerLiteral | LegacyOctalIntegerLiteral
+export type NumberLiteral =
+  | DecimalLiteral
+  | NonOctalDecimalLiteral
+  | BinaryIntegerLiteral
+  | OctalIntegerLiteral
+  | HexIntegerLiteral
+  | LegacyOctalIntegerLiteral;
 export interface StringLiteral extends ExpressionModuleItem {
   kind: SyntaxKinds.StringLiteral;
   value: string;
@@ -593,6 +599,7 @@ export interface ImportDeclaration extends ModuleItem {
   kind: SyntaxKinds.ImportDeclaration;
   specifiers: Array<ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier>;
   source: StringLiteral;
+  attributes: ImportAttribute[] | undefined;
 }
 export interface ImportDefaultSpecifier extends ModuleItem {
   kind: SyntaxKinds.ImportDefaultSpecifier;
@@ -634,6 +641,16 @@ export interface ExportAllDeclaration extends ModuleItem {
 }
 export type ExportDeclaration = ExportNamedDeclarations | ExportDefaultDeclaration | ExportAllDeclaration;
 
+/** ==========================================
+ * Module Aserttion and Attribute
+ * ===========================================
+ */
+export interface ImportAttribute extends ModuleItem {
+  kind: SyntaxKinds.ImportAttribute;
+  key: Identifier | StringLiteral;
+  value: StringLiteral;
+}
+
 /** ========================================
  *   Helper
  * =========================================
@@ -652,7 +669,14 @@ export function isPrivateName(node: ModuleItem): node is PrivateName {
   return node.kind === SyntaxKinds.PrivateName;
 }
 export function isNumnerLiteral(node: ModuleItem): node is NumberLiteral {
-  return node.kind === SyntaxKinds.DecimalLiteral || node.kind === SyntaxKinds.NonOctalDecimalLiteral || node.kind === SyntaxKinds.BinaryIntegerLiteral || node.kind === SyntaxKinds.OctalIntegerLiteral || node.kind === SyntaxKinds.HexIntegerLiteral || node.kind === SyntaxKinds.LegacyOctalIntegerLiteral;
+  return (
+    node.kind === SyntaxKinds.DecimalLiteral ||
+    node.kind === SyntaxKinds.NonOctalDecimalLiteral ||
+    node.kind === SyntaxKinds.BinaryIntegerLiteral ||
+    node.kind === SyntaxKinds.OctalIntegerLiteral ||
+    node.kind === SyntaxKinds.HexIntegerLiteral ||
+    node.kind === SyntaxKinds.LegacyOctalIntegerLiteral
+  );
 }
 export function isStringLiteral(node: ModuleItem): node is StringLiteral {
   return node.kind === SyntaxKinds.StringLiteral;

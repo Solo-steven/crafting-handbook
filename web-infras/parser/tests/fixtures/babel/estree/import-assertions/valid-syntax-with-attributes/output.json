@@ -1,0 +1,114 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ImportDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ImportDefaultSpecifier",
+                    "imported": {
+                        "kind": "Identifer",
+                        "name": "foo",
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 8,
+                        "index": 7
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 11,
+                        "index": 10
+                    }
+                }
+            ],
+            "source": {
+                "kind": "StringLiteral",
+                "value": "foo.json",
+                "start": {
+                    "row": 1,
+                    "col": 17,
+                    "index": 16
+                },
+                "end": {
+                    "row": 1,
+                    "col": 27,
+                    "index": 26
+                }
+            },
+            "attributes": [
+                {
+                    "kind": 10206,
+                    "key": {
+                        "kind": 10125,
+                        "name": "type",
+                        "start": {
+                            "row": 1,
+                            "col": 37,
+                            "index": 36
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 41,
+                            "index": 40
+                        }
+                    },
+                    "value": {
+                        "kind": 10114,
+                        "value": "json",
+                        "start": {
+                            "row": 1,
+                            "col": 43,
+                            "index": 42
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 49,
+                            "index": 48
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 37,
+                        "index": 36
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 49,
+                        "index": 48
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 27,
+                "index": 26
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 52
+    }
+}

@@ -27,11 +27,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/estree/export/decorator-before-export",
   "/babel/es2022/class-static-block/invalid-legacy-decorators",
   "/babel/es2022/class-static-block/invalid-decorators",
-  // (feature) import assertion, attribute
-  "/babel/estree/dynamic-import/import-assertions",
-  "/babel/estree/import-assertions/valid-syntax-with-attributes",
-  "/babel/estree/import-attributes/valid-syntax-with-attributes",
-  "/babel/estree/dynamic-import/import-attributes",
   // (feature?) async do plugin
   "/babel/comments/basic/async-do-expression",
   // === (feature) ban async of
@@ -44,19 +39,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/core/uncategorised/348",
   "/babel/core/uncategorised/358",
   "/babel/core/uncategorised/359",
-  // === (feature) position of break and continue statement, multi default in switch
-  // "/babel/core/uncategorised/409",
-  // "/babel/core/uncategorised/411",
-  // "/babel/core/uncategorised/427",
-  // "/babel/core/uncategorised/457",
-  // "/babel/core/uncategorised/459",
-  // "/babel/core/uncategorised/455",
-  // "/babel/core/uncategorised/456",
-  // "/babel/core/uncategorised/460",
-  // "/babel/core/uncategorised/461",
-  // "/babel/core/uncategorised/462",
-  // "/babel/core/uncategorised/463",
-  // "/babel/core/uncategorised/464",
   // ==== (feature) bigint literal problem
   "/babel/es2020/bigint/invalid-decimal",
   "/babel/es2020/bigint/invalid-e",

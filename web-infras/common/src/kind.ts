@@ -219,6 +219,8 @@ export enum SyntaxKinds {
   ExportSpecifier,
   ExportDefaultDeclaration,
   ExportAllDeclaration,
+  // ==== Module Assertion and Attribute
+  ImportAttribute,
   // ======= JSX Element and JSX Fragment
   JSXElement,
   JSXOpeningElement,
@@ -644,6 +646,8 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.ExportSpecifier]: "ExportSpecifier",
   [SyntaxKinds.ExportDefaultDeclaration]: "ExportDefaultDeclaration",
   [SyntaxKinds.ExportAllDeclaration]: "ExportAllDeclaration",
+  // ========= ImportDeclaration ==========
+  [SyntaxKinds.ImportAttribute]: "ImportAttribute",
   // ========= JSXElement and JSXFragment ========
   [SyntaxKinds.JSXElement]: "JSXElement",
   [SyntaxKinds.JSXOpeningElement]: "JSXOpeningElement",
@@ -829,4 +833,4 @@ export const NumericLiteralKinds = [
   SyntaxKinds.OctalIntegerLiteral,
   SyntaxKinds.HexIntegerLiteral,
   SyntaxKinds.LegacyOctalIntegerLiteral,
-]
+];

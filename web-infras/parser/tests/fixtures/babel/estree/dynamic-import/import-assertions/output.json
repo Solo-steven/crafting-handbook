@@ -1,0 +1,176 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "Import",
+                    "name": "import",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "StringLiteral",
+                        "value": "module",
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 16,
+                            "index": 15
+                        }
+                    },
+                    {
+                        "kind": "ObjectExpression",
+                        "properties": [
+                            {
+                                "kind": "ObjectProperty",
+                                "computed": false,
+                                "shorted": false,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "assert",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 20,
+                                        "index": 19
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 26,
+                                        "index": 25
+                                    }
+                                },
+                                "value": {
+                                    "kind": "ObjectExpression",
+                                    "properties": [
+                                        {
+                                            "kind": "ObjectProperty",
+                                            "computed": false,
+                                            "shorted": false,
+                                            "key": {
+                                                "kind": "Identifer",
+                                                "name": "type",
+                                                "start": {
+                                                    "row": 1,
+                                                    "col": 30,
+                                                    "index": 29
+                                                },
+                                                "end": {
+                                                    "row": 1,
+                                                    "col": 34,
+                                                    "index": 33
+                                                }
+                                            },
+                                            "value": {
+                                                "kind": "StringLiteral",
+                                                "value": "json",
+                                                "start": {
+                                                    "row": 1,
+                                                    "col": 36,
+                                                    "index": 35
+                                                },
+                                                "end": {
+                                                    "row": 1,
+                                                    "col": 42,
+                                                    "index": 41
+                                                }
+                                            },
+                                            "start": {
+                                                "row": 1,
+                                                "col": 30,
+                                                "index": 29
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 42,
+                                                "index": 41
+                                            }
+                                        }
+                                    ],
+                                    "trailingComma": false,
+                                    "start": {
+                                        "row": 1,
+                                        "col": 28,
+                                        "index": 27
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 44,
+                                        "index": 43
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 20,
+                                    "index": 19
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 44,
+                                    "index": 43
+                                }
+                            }
+                        ],
+                        "trailingComma": false,
+                        "start": {
+                            "row": 1,
+                            "col": 18,
+                            "index": 17
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 46,
+                            "index": 45
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 47,
+                    "index": 46
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 47,
+                "index": 46
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 48
+    }
+}
