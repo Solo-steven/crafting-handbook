@@ -497,7 +497,14 @@ export function createLexer(code: string) {
         case "\u{200A}".codePointAt(0):
           eatChar();
           break;
-
+        case UnicodePoints.HashTag: {
+          const next = getNextCharCodePoint();
+          if(next === UnicodePoints.Not) {
+            readHashTahComment();
+            return skipWhiteSpaceChangeLine();
+          }
+          return;
+        }
         case UnicodePoints.Divide: {
           const next = getNextCharCodePoint();
           if (next === UnicodePoints.Divide) {
@@ -1088,6 +1095,18 @@ export function createLexer(code: string) {
     }
     // TODO: error message
     throw new Error();
+  }
+  function readHashTahComment() {
+    eatTwoChar(); // eat !#
+    while (!isEOF()) {
+      // Saft, since we called under isEOF.
+      const code = getCharCodePoint() as number;
+      if (isCodePointLineTerminate(code)) {
+        break;
+      }
+      eatChar();
+    }
+    return;
   }
   /** ===========================================================
    *                Literal state mahcine

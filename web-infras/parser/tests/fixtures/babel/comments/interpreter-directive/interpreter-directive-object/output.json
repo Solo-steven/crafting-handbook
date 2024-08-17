@@ -1,0 +1,102 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "ObjectPattern",
+                        "properties": [
+                            {
+                                "kind": "ObjectPatternProperty",
+                                "computed": false,
+                                "shorted": true,
+                                "key": {
+                                    "kind": "Identifer",
+                                    "name": "spawn",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 7,
+                                        "index": 33
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 12,
+                                        "index": 38
+                                    }
+                                },
+                                "start": {
+                                    "row": 3,
+                                    "col": 7,
+                                    "index": 33
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 12,
+                                    "index": 38
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 31
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 14,
+                            "index": 40
+                        }
+                    },
+                    "init": {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 3,
+                            "col": 17,
+                            "index": 43
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 18,
+                            "index": 44
+                        }
+                    },
+                    "start": {
+                        "row": 3,
+                        "col": 5,
+                        "index": 31
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 18,
+                        "index": 44
+                    }
+                }
+            ],
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 27
+            },
+            "end": {
+                "row": 3,
+                "col": 18,
+                "index": 44
+            }
+        }
+    ],
+    "start": {
+        "row": 3,
+        "col": 1,
+        "index": 27
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 46
+    }
+}

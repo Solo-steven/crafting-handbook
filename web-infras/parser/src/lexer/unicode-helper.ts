@@ -129,6 +129,7 @@ export const UnicodePoints = {
   LS: codePoint("\u2028"), // LINE SEPARATOR (LS)
   PS: codePoint("\u2029"), // PARAGRAPH SEPARATOR (PS)
   Ampersand: codePoint("&"),
+  HashTag: codePoint("#"),
   // I am too lazy, so I only gonna list some letter I need for lexer
   LowerCaseA: codePoint("a"),
   LowerCaseB: codePoint("b"),

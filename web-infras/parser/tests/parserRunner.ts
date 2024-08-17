@@ -71,8 +71,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/core/uncategorised/343",
   "/babel/core/uncategorised/538",
   "/babel/comments/html/first-line",
-  "/babel/comments/interpreter-directive/interpreter-directive-import",
-  "/babel/comments/interpreter-directive/interpreter-directive-object",
   /**
    * Scope Id and reference feature
    */

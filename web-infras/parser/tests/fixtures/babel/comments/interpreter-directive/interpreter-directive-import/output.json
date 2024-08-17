@@ -1,0 +1,72 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ImportDeclaration",
+            "specifiers": [
+                {
+                    "kind": "ImportSpecifier",
+                    "imported": {
+                        "kind": "Identifer",
+                        "name": "spawn",
+                        "start": {
+                            "row": 3,
+                            "col": 9,
+                            "index": 35
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 14,
+                            "index": 40
+                        }
+                    },
+                    "local": null,
+                    "start": {
+                        "row": 3,
+                        "col": 9,
+                        "index": 35
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 14,
+                        "index": 40
+                    }
+                }
+            ],
+            "source": {
+                "kind": "StringLiteral",
+                "value": "foobar",
+                "start": {
+                    "row": 3,
+                    "col": 21,
+                    "index": 47
+                },
+                "end": {
+                    "row": 3,
+                    "col": 29,
+                    "index": 55
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 27
+            },
+            "end": {
+                "row": 3,
+                "col": 29,
+                "index": 55
+            }
+        }
+    ],
+    "start": {
+        "row": 3,
+        "col": 1,
+        "index": 27
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 57
+    }
+}
