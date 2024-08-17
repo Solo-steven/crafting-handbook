@@ -154,10 +154,14 @@ export const ErrorMessageMap = {
   v8_error_invalid_parenthesized_assignment_pattern: "SyntaxError: Invalid destructuring assignment target.",
   // try: `try{}` in v8 runtime
   v8_error_missing_catch_or_finally_after_try: "SyntaxError: Missing catch or finally after try",
-  // try `"\xfG"` in v8 runtime (same from lexer)
+  // try: `"\xfG"` in v8 runtime (same from lexer)
   v8_error_invalid_hexadecimal_escape_sequence: "SyntaxError: Invalid hexadecimal escape sequence",
-  // try duplicate ctor in v8 runtime.
+  // try: duplicate ctor in v8 runtime.
   v8_error_a_class_may_only_have_one_constructor: "SyntaxError: A class may only have one constructor",
+  // try: multi default in switch case 
+  v8_error_more_than_one_default_clause_in_switch_statement: "SyntaxError: More than one default clause in switch statement",
+  // try: `x: while (true) { x: while (true) { } }` in v8 runtime,
+  v8_error_label_has_already_been_declared: "SyntaxError: Label has already been declared",
   // try: `import.meta` in babel playground when sourceType is script
   babel_error_import_meta_may_appear_only_with_source_type_module: `SyntaxError: import.meta may appear only with 'sourceType: "module"`,
   // try `import.name` in babel playground

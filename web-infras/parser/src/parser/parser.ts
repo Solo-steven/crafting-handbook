@@ -1453,6 +1453,7 @@ export function createParser(code: string, option?: ParserConfig) {
   function parseSwitchCases(): ASTArrayWithMetaData<SwitchCase> {
     const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
     const cases: Array<SwitchCase> = [];
+    let haveDefault = false;
     while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
       let test: Expression | null = null;
       const start = getStartPosition();
@@ -1461,6 +1462,11 @@ export function createParser(code: string, option?: ParserConfig) {
         test = parseExpressionAllowIn();
       } else if (match(SyntaxKinds.DefaultKeyword)) {
         nextToken();
+        if(haveDefault) {
+          throw createMessageError(ErrorMessageMap.v8_error_more_than_one_default_clause_in_switch_statement);
+        }else {
+          haveDefault = true;
+        }
       }
       expect(SyntaxKinds.ColonPunctuator, "switch case should has colon");
       const consequence: Array<StatementListItem> = [];
@@ -1484,7 +1490,6 @@ export function createParser(code: string, option?: ParserConfig) {
       throw createMessageError("switch statement should wrapped by braces");
     }
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
-    // TODO: multi default
     return {
       nodes: cases,
       start,
@@ -1540,7 +1545,9 @@ export function createParser(code: string, option?: ParserConfig) {
       // TODO: unreach
     }
     const label = parseIdentifierReference();
-    lexicalScopeRecorder.enterVirtualBlockScope("Label", label.name);
+    if(lexicalScopeRecorder.enterVirtualBlockScope("Label", label.name)) {
+      throw createMessageError(ErrorMessageMap.v8_error_label_has_already_been_declared);
+    }
     expect(SyntaxKinds.ColonPunctuator);
     const labeled = match(SyntaxKinds.FunctionKeyword) ? parseFunctionDeclaration(false) : parseStatement();
     lexicalScopeRecorder.exitVirtualBlockScope();

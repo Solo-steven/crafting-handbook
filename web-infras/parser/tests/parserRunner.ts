@@ -42,8 +42,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2022/class-properties/await-in-computed-property-in-params-of-async-arrow",
   // === (feature) ban async of
   "/babel/es2021/for-async-of/forbidden",
-  // === (feature) tokenize ??=
-  "/babel/es2021/logical-assignment-operator/qq-equals",
   // === (feature) tokenize a number can not be followed by a idstart
   "/babel/core/uncategorised/348",
   "/babel/core/uncategorised/358",

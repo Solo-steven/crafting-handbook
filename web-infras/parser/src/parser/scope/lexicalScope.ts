@@ -66,6 +66,7 @@ function isPrivateNameExist(scope: ClassLexicalScope, name: string, type: Privat
 
 export function createLexicalScopeRecorder() {
   const lexicalScopes: Array<LexicalScope> = [];
+  const labelSet = new Set<string>;
   // const virtualScopes: Array<VirtualIterOrSwitchLexicalScope> = [];
   /**=============================================
    * Helper function
@@ -238,11 +239,22 @@ export function createLexicalScopeRecorder() {
   function exitBlockLexicalScope() {
     lexicalScopes.pop();
   }
-  function enterVirtualBlockScope(blockType: BlockType, labelName?: string) {
+  // return boolean to indicate is label exist.
+  function enterVirtualBlockScope(blockType: BlockType, labelName?: string): boolean {
+    let isLabelAlreadyExist = false;
+    if(labelName) {
+      isLabelAlreadyExist = labelSet.has(labelName);
+      labelSet.add(labelName);
+    }
     lexicalScopes.push({ type: "VirtualLexicalScope", blockType, labelName });
+    return isLabelAlreadyExist;
   }
   function exitVirtualBlockScope() {
-    lexicalScopes.pop();
+    const virtualScope = lexicalScopes.pop();
+    if(virtualScope?.type === "VirtualLexicalScope" && virtualScope.blockType === "Label") {
+      const labelName = virtualScope.labelName as string;
+      labelSet.delete(labelName);
+    }
   }
   function isBreakValidate() {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
