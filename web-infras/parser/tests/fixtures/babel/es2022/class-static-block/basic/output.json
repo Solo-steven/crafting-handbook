@@ -68,19 +68,19 @@
                         }
                     },
                     {
-                        "kind": 10176,
+                        "kind": 10177,
                         "body": [
                             {
-                                "kind": 10195,
+                                "kind": 10196,
                                 "expr": {
-                                    "kind": 10192,
+                                    "kind": 10193,
                                     "operator": 10078,
                                     "left": {
-                                        "kind": 10184,
+                                        "kind": 10185,
                                         "computed": false,
                                         "optional": false,
                                         "object": {
-                                            "kind": 10164,
+                                            "kind": 10165,
                                             "name": "this",
                                             "start": {
                                                 "row": 4,
@@ -94,7 +94,7 @@
                                             }
                                         },
                                         "property": {
-                                            "kind": 10128,
+                                            "kind": 10129,
                                             "name": "bar",
                                             "start": {
                                                 "row": 4,
@@ -119,11 +119,11 @@
                                         }
                                     },
                                     "right": {
-                                        "kind": 10184,
+                                        "kind": 10185,
                                         "computed": false,
                                         "optional": false,
                                         "object": {
-                                            "kind": 10164,
+                                            "kind": 10165,
                                             "name": "this",
                                             "start": {
                                                 "row": 4,
@@ -137,7 +137,7 @@
                                             }
                                         },
                                         "property": {
-                                            "kind": 10128,
+                                            "kind": 10129,
                                             "name": "foo",
                                             "start": {
                                                 "row": 4,

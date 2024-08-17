@@ -72,12 +72,12 @@
                         "kind": "ClassBody",
                         "body": [
                             {
-                                "kind": 10176,
+                                "kind": 10177,
                                 "body": [
                                     {
-                                        "kind": 10154,
+                                        "kind": 10155,
                                         "name": {
-                                            "kind": 10128,
+                                            "kind": 10129,
                                             "name": "f",
                                             "start": {
                                                 "row": 3,
@@ -93,12 +93,12 @@
                                         "generator": false,
                                         "async": false,
                                         "body": {
-                                            "kind": 10155,
+                                            "kind": 10156,
                                             "body": [
                                                 {
-                                                    "kind": 10195,
+                                                    "kind": 10196,
                                                     "expr": {
-                                                        "kind": 10128,
+                                                        "kind": 10129,
                                                         "name": "await",
                                                         "start": {
                                                             "row": 3,
@@ -230,12 +230,12 @@
                         "kind": "ClassBody",
                         "body": [
                             {
-                                "kind": 10176,
+                                "kind": 10177,
                                 "body": [
                                     {
-                                        "kind": 10154,
+                                        "kind": 10155,
                                         "name": {
-                                            "kind": 10128,
+                                            "kind": 10129,
                                             "name": "f",
                                             "start": {
                                                 "row": 5,
@@ -251,7 +251,7 @@
                                         "generator": false,
                                         "async": false,
                                         "body": {
-                                            "kind": 10155,
+                                            "kind": 10156,
                                             "body": [],
                                             "start": {
                                                 "row": 5,
@@ -266,7 +266,7 @@
                                         },
                                         "params": [
                                             {
-                                                "kind": 10128,
+                                                "kind": 10129,
                                                 "name": "await",
                                                 "start": {
                                                     "row": 5,
@@ -375,12 +375,12 @@
                         "kind": "ClassBody",
                         "body": [
                             {
-                                "kind": 10176,
+                                "kind": 10177,
                                 "body": [
                                     {
-                                        "kind": 10154,
+                                        "kind": 10155,
                                         "name": {
-                                            "kind": 10128,
+                                            "kind": 10129,
                                             "name": "f",
                                             "start": {
                                                 "row": 7,
@@ -396,7 +396,7 @@
                                         "generator": false,
                                         "async": false,
                                         "body": {
-                                            "kind": 10155,
+                                            "kind": 10156,
                                             "body": [],
                                             "start": {
                                                 "row": 7,
@@ -411,9 +411,9 @@
                                         },
                                         "params": [
                                             {
-                                                "kind": 10196,
+                                                "kind": 10197,
                                                 "left": {
-                                                    "kind": 10128,
+                                                    "kind": 10129,
                                                     "name": "x",
                                                     "start": {
                                                         "row": 7,
@@ -427,7 +427,7 @@
                                                     }
                                                 },
                                                 "right": {
-                                                    "kind": 10128,
+                                                    "kind": 10129,
                                                     "name": "await",
                                                     "start": {
                                                         "row": 7,
@@ -547,12 +547,12 @@
                         "kind": "ClassBody",
                         "body": [
                             {
-                                "kind": 10176,
+                                "kind": 10177,
                                 "body": [
                                     {
-                                        "kind": 10154,
+                                        "kind": 10155,
                                         "name": {
-                                            "kind": 10128,
+                                            "kind": 10129,
                                             "name": "f",
                                             "start": {
                                                 "row": 9,
@@ -568,7 +568,7 @@
                                         "generator": false,
                                         "async": false,
                                         "body": {
-                                            "kind": 10155,
+                                            "kind": 10156,
                                             "body": [],
                                             "start": {
                                                 "row": 9,
@@ -583,14 +583,14 @@
                                         },
                                         "params": [
                                             {
-                                                "kind": 10197,
+                                                "kind": 10198,
                                                 "properties": [
                                                     {
-                                                        "kind": 10198,
+                                                        "kind": 10199,
                                                         "computed": true,
                                                         "shorted": false,
                                                         "key": {
-                                                            "kind": 10128,
+                                                            "kind": 10129,
                                                             "name": "await",
                                                             "start": {
                                                                 "row": 9,
@@ -604,7 +604,7 @@
                                                             }
                                                         },
                                                         "value": {
-                                                            "kind": 10128,
+                                                            "kind": 10129,
                                                             "name": "x",
                                                             "start": {
                                                                 "row": 9,
@@ -736,14 +736,14 @@
                         "kind": "ClassBody",
                         "body": [
                             {
-                                "kind": 10176,
+                                "kind": 10177,
                                 "body": [
                                     {
-                                        "kind": 10195,
+                                        "kind": 10196,
                                         "expr": {
-                                            "kind": 10177,
+                                            "kind": 10178,
                                             "name": {
-                                                "kind": 10128,
+                                                "kind": 10129,
                                                 "name": "await",
                                                 "start": {
                                                     "row": 11,
@@ -759,7 +759,7 @@
                                             "generator": false,
                                             "async": false,
                                             "body": {
-                                                "kind": 10155,
+                                                "kind": 10156,
                                                 "body": [],
                                                 "start": {
                                                     "row": 11,

@@ -1,0 +1,154 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "??=",
+                "left": {
+                    "kind": "Identifer",
+                    "name": "a",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "b",
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 8,
+                        "index": 7
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 8,
+                "index": 7
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "??=",
+                "left": {
+                    "kind": "MemberExpression",
+                    "computed": false,
+                    "optional": false,
+                    "object": {
+                        "kind": "Identifer",
+                        "name": "obj",
+                        "start": {
+                            "row": 2,
+                            "col": 1,
+                            "index": 9
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 4,
+                            "index": 12
+                        }
+                    },
+                    "property": {
+                        "kind": "Identifer",
+                        "name": "a",
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 13
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 6,
+                            "index": 14
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 1,
+                        "index": 9
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 6,
+                        "index": 14
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "b",
+                    "start": {
+                        "row": 2,
+                        "col": 11,
+                        "index": 19
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 12,
+                        "index": 20
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 9
+                },
+                "end": {
+                    "row": 2,
+                    "col": 12,
+                    "index": 20
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 9
+            },
+            "end": {
+                "row": 2,
+                "col": 12,
+                "index": 20
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 22
+    }
+}

@@ -89,6 +89,7 @@ export enum SyntaxKinds {
   BitwiseLeftShiftAssginOperator, // <<=
   BitwiseRightShiftAssginOperator, // >>=
   BitwiseRightShiftFillAssginOperator, // >>>=
+  NullishAssignOperator, // ??=
   // ========= Token (Maybe Punctuator and Operator) =====
   CommaToken,
   // ========== Punctuator ===========
@@ -519,6 +520,7 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.BitwiseLeftShiftAssginOperator]: "<<=", // <<=
   [SyntaxKinds.BitwiseRightShiftAssginOperator]: ">>=", // >>=
   [SyntaxKinds.BitwiseRightShiftFillAssginOperator]: ">>>=", // >>>=
+  [SyntaxKinds.NullishAssignOperator]: "??=",
   // ========= Token (Maybe Punctuator and Operator) =====
   [SyntaxKinds.CommaToken]: "CommaToken",
   // ========== Punctuator ===========
@@ -692,7 +694,8 @@ export type AssigmentOperatorKinds =
   | SyntaxKinds.logicalANDAssginOperator // &&=
   | SyntaxKinds.BitwiseLeftShiftAssginOperator // <<=
   | SyntaxKinds.BitwiseRightShiftAssginOperator // >>=
-  | SyntaxKinds.BitwiseRightShiftFillAssginOperator; // >>>=
+  | SyntaxKinds.BitwiseRightShiftFillAssginOperator
+  | SyntaxKinds.NullishAssignOperator; // >>>=
 export const AssigmentOperators = [
   SyntaxKinds.AssginOperator,
   SyntaxKinds.PlusAssignOperator,
@@ -710,6 +713,7 @@ export const AssigmentOperators = [
   SyntaxKinds.BitwiseLeftShiftAssginOperator, // <<=
   SyntaxKinds.BitwiseRightShiftAssginOperator, // >>=
   SyntaxKinds.BitwiseRightShiftFillAssginOperator, // >>>=
+  SyntaxKinds.NullishAssignOperator
 ];
 export type BinaryOperatorKinds =
   | SyntaxKinds.PlusOperator // +

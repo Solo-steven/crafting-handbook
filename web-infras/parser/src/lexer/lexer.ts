@@ -987,7 +987,7 @@ export function createLexer(code: string) {
   }
   /**
    * Sub state machine when current char is `?`, read three kind of token:
-   * - '?', '?.' '??'
+   * - '?', '?.' '??' `??=`
    * @return {SyntaxKinds}
    */
   function readQuestionStart(): SyntaxKinds {
@@ -998,7 +998,15 @@ export function createLexer(code: string) {
         return finishToken(SyntaxKinds.QustionDotOperator);
       case UnicodePoints.Question:
         eatChar();
-        return finishToken(SyntaxKinds.NullishOperator);
+        switch(getCharCodePoint()) {
+          case UnicodePoints.Equal: {
+            eatChar();
+            return finishToken(SyntaxKinds.NullishAssignOperator)
+          }
+          default: {
+            return finishToken(SyntaxKinds.NullishOperator);
+          }
+        }
       default:
         return finishToken(SyntaxKinds.QustionOperator);
     }

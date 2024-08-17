@@ -487,6 +487,7 @@ export const PropagationtVisitorTable: Visitor = {
   [SyntaxKinds.ImportDeclaration]: function bindImportDeclaration(node: ImportDeclaration, visitor: Visitor) {
     visitNodes(node.specifiers, visitor);
     visitNode(node.source, visitor);
+    visitNodes(node.attributes, visitor);
   },
   [SyntaxKinds.ImportDefaultSpecifier]: function bindImportDefaultSpecifier(
     node: ImportDefaultSpecifier,
@@ -510,6 +511,7 @@ export const PropagationtVisitorTable: Visitor = {
   ) {
     visitNode(node.declaration, visitor);
     visitNodes(node.specifiers, visitor);
+    visitNode(node.source, visitor);
   },
   [SyntaxKinds.ExportSpecifier]: function bindExportSpecifier(node: ExportSpecifier, visitor: Visitor) {
     visitNode(node.exported, visitor);

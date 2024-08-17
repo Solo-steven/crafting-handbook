@@ -200,7 +200,7 @@
             ],
             "declaration": null,
             "source": {
-                "kind": 10114,
+                "kind": "StringLiteral",
                 "value": "module-b",
                 "start": {
                     "row": 3,

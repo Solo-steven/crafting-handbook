@@ -35,7 +35,7 @@
             ],
             "declaration": null,
             "source": {
-                "kind": 10114,
+                "kind": "StringLiteral",
                 "value": "other",
                 "start": {
                     "row": 1,

@@ -48,9 +48,9 @@
             },
             "attributes": [
                 {
-                    "kind": 10209,
+                    "kind": 10210,
                     "key": {
-                        "kind": 10128,
+                        "kind": "Identifer",
                         "name": "type",
                         "start": {
                             "row": 1,
@@ -64,7 +64,7 @@
                         }
                     },
                     "value": {
-                        "kind": 10114,
+                        "kind": "StringLiteral",
                         "value": "json",
                         "start": {
                             "row": 1,

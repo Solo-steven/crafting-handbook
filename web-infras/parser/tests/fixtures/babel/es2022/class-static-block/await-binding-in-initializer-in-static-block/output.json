@@ -72,12 +72,12 @@
                         "kind": "ClassBody",
                         "body": [
                             {
-                                "kind": 10176,
+                                "kind": 10177,
                                 "body": [
                                     {
-                                        "kind": 10156,
+                                        "kind": 10157,
                                         "id": {
-                                            "kind": 10128,
+                                            "kind": 10129,
                                             "name": "D",
                                             "start": {
                                                 "row": 3,
@@ -92,15 +92,15 @@
                                         },
                                         "superClass": null,
                                         "body": {
-                                            "kind": 10157,
+                                            "kind": 10158,
                                             "body": [
                                                 {
-                                                    "kind": 10172,
+                                                    "kind": 10173,
                                                     "computed": false,
                                                     "static": false,
                                                     "shorted": false,
                                                     "key": {
-                                                        "kind": 10128,
+                                                        "kind": 10129,
                                                         "name": "x",
                                                         "start": {
                                                             "row": 3,
@@ -114,7 +114,7 @@
                                                         }
                                                     },
                                                     "value": {
-                                                        "kind": 10128,
+                                                        "kind": 10129,
                                                         "name": "await",
                                                         "start": {
                                                             "row": 3,

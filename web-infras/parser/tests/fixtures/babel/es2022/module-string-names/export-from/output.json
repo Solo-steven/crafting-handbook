@@ -76,7 +76,7 @@
             ],
             "declaration": null,
             "source": {
-                "kind": 10114,
+                "kind": "StringLiteral",
                 "value": "Confucius",
                 "start": {
                     "row": 1,
