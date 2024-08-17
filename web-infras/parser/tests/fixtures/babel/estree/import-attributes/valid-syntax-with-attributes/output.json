@@ -48,9 +48,9 @@
             },
             "attributes": [
                 {
-                    "kind": 10206,
+                    "kind": 10209,
                     "key": {
-                        "kind": 10125,
+                        "kind": 10128,
                         "name": "type",
                         "start": {
                             "row": 1,

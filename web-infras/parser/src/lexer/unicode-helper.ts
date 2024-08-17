@@ -138,6 +138,7 @@ export const UnicodePoints = {
   LowerCaseG: codePoint("g"),
   LowerCaseI: codePoint("i"),
   LowerCaseM: codePoint("m"),
+  LowerCaseN: codePoint("n"),
   LowerCaseO: codePoint("o"),
   LowerCaseS: codePoint("s"),
   LowerCaseU: codePoint("u"),

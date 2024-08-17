@@ -52,7 +52,7 @@
                     {
                         "kind": "ExpressionStatement",
                         "expr": {
-                            "kind": "DecimalLiteral",
+                            "kind": "OctalIntegerLiteral",
                             "rawValue": "0o0",
                             "start": {
                                 "row": 1,

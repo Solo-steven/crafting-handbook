@@ -4,8 +4,8 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "OctalIntegerLiteral",
-                "rawValue": "0o0_11",
+                "kind": "BinaryBigIntegerLiteral",
+                "rawValue": "0b101011101n",
                 "start": {
                     "row": 1,
                     "col": 1,
@@ -13,8 +13,8 @@
                 },
                 "end": {
                     "row": 1,
-                    "col": 7,
-                    "index": 6
+                    "col": 13,
+                    "index": 12
                 }
             },
             "start": {
@@ -24,8 +24,8 @@
             },
             "end": {
                 "row": 1,
-                "col": 7,
-                "index": 6
+                "col": 13,
+                "index": 12
             }
         }
     ],
@@ -35,8 +35,8 @@
         "index": 0
     },
     "end": {
-        "row": 1,
-        "col": 7,
-        "index": 6
+        "row": 2,
+        "col": 1,
+        "index": 13
     }
 }

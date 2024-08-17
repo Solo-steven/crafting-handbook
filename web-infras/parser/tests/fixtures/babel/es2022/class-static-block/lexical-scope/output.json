@@ -68,16 +68,16 @@
                         }
                     },
                     {
-                        "kind": 10173,
+                        "kind": 10176,
                         "body": [
                             {
-                                "kind": 10148,
+                                "kind": 10151,
                                 "variant": "const",
                                 "declarations": [
                                     {
-                                        "kind": 10149,
+                                        "kind": 10152,
                                         "id": {
-                                            "kind": 10125,
+                                            "kind": 10128,
                                             "name": "C",
                                             "start": {
                                                 "row": 4,
@@ -91,7 +91,7 @@
                                             }
                                         },
                                         "init": {
-                                            "kind": 10164,
+                                            "kind": 10167,
                                             "properties": [],
                                             "trailingComma": false,
                                             "start": {

@@ -79,16 +79,16 @@
                 "kind": "ClassBody",
                 "body": [
                     {
-                        "kind": 10173,
+                        "kind": 10176,
                         "body": [
                             {
-                                "kind": 10148,
+                                "kind": 10151,
                                 "variant": "var",
                                 "declarations": [
                                     {
-                                        "kind": 10149,
+                                        "kind": 10152,
                                         "id": {
-                                            "kind": 10125,
+                                            "kind": 10128,
                                             "name": "x",
                                             "start": {
                                                 "row": 2,
@@ -139,13 +139,13 @@
                                 }
                             },
                             {
-                                "kind": 10148,
+                                "kind": 10151,
                                 "variant": "var",
                                 "declarations": [
                                     {
-                                        "kind": 10149,
+                                        "kind": 10152,
                                         "id": {
-                                            "kind": 10125,
+                                            "kind": 10128,
                                             "name": "y",
                                             "start": {
                                                 "row": 2,

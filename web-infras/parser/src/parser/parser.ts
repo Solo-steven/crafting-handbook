@@ -2896,14 +2896,22 @@ export function createParser(code: string, option?: ParserConfig) {
         return parseBoolLiteral();
       case SyntaxKinds.DecimalLiteral:
         return parseDecimalLiteral();
+      case SyntaxKinds.DecimalBigIntegerLiteral:
+        return parseDecimalBigIntegerLiteral();
       case SyntaxKinds.NonOctalDecimalLiteral:
         return parseNonOctalDecimalLiteral();
       case SyntaxKinds.BinaryIntegerLiteral:
         return parseBinaryIntegerLiteral();
+      case SyntaxKinds.BinaryBigIntegerLiteral:
+        return parseBinaryBigIntegerLiteral();
       case SyntaxKinds.OctalIntegerLiteral:
         return parseOctalIntegerLiteral();
+      case SyntaxKinds.OctalBigIntegerLiteral:
+        return parseOctalBigIntegerLiteral();
       case SyntaxKinds.HexIntegerLiteral:
         return parseHexIntegerLiteral();
+      case SyntaxKinds.HexBigIntegerLiteral:
+        return parseHexBigIntegerLiteral();
       case SyntaxKinds.LegacyOctalIntegerLiteral:
         return parseLegacyOctalIntegerLiteral();
       case SyntaxKinds.StringLiteral:
@@ -3192,6 +3200,10 @@ export function createParser(code: string, option?: ParserConfig) {
     const { start, end, value } = expect(SyntaxKinds.DecimalLiteral);
     return Factory.createDecimalLiteral(value, start, end);
   }
+  function parseDecimalBigIntegerLiteral() {
+    const { start, end, value } = expect(SyntaxKinds.DecimalBigIntegerLiteral);
+    return Factory.createDecimalBigIntegerLiteral(value, start, end);
+  }
   function parseNonOctalDecimalLiteral() {
     if (isInStrictMode()) {
       throw createMessageError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated);
@@ -3203,13 +3215,25 @@ export function createParser(code: string, option?: ParserConfig) {
     const { start, end, value } = expect(SyntaxKinds.BinaryIntegerLiteral);
     return Factory.createBinaryIntegerLiteral(value, start, end);
   }
+  function parseBinaryBigIntegerLiteral() {
+    const { start, end, value } = expect(SyntaxKinds.BinaryBigIntegerLiteral);
+    return Factory.createBinaryBigIntegerLiteral(value, start, end);
+  }
   function parseOctalIntegerLiteral() {
     const { start, end, value } = expect(SyntaxKinds.OctalIntegerLiteral);
     return Factory.createOctalIntegerLiteral(value, start, end);
   }
+  function parseOctalBigIntegerLiteral() {
+    const { start, end, value } = expect(SyntaxKinds.OctalBigIntegerLiteral);
+    return Factory.createOctBigIntegerLiteral(value, start, end);
+  }
   function parseHexIntegerLiteral() {
     const { start, end, value } = expect(SyntaxKinds.HexIntegerLiteral);
     return Factory.createHexIntegerLiteral(value, start, end);
+  }
+  function parseHexBigIntegerLiteral() {
+    const { start, end, value } = expect(SyntaxKinds.HexBigIntegerLiteral);
+    return Factory.createHexBigIntegerLiteral(value, start, end);
   }
   function parseLegacyOctalIntegerLiteral() {
     if (isInStrictMode()) {
@@ -3222,14 +3246,22 @@ export function createParser(code: string, option?: ParserConfig) {
     switch (getToken()) {
       case SyntaxKinds.DecimalLiteral:
         return parseDecimalLiteral();
+      case SyntaxKinds.DecimalBigIntegerLiteral:
+        return parseDecimalBigIntegerLiteral();
       case SyntaxKinds.NonOctalDecimalLiteral:
         return parseNonOctalDecimalLiteral();
       case SyntaxKinds.BinaryIntegerLiteral:
         return parseBinaryIntegerLiteral();
+      case SyntaxKinds.BinaryBigIntegerLiteral:
+        return parseBinaryBigIntegerLiteral();
       case SyntaxKinds.OctalIntegerLiteral:
         return parseOctalIntegerLiteral();
+      case SyntaxKinds.OctalBigIntegerLiteral:
+        return parseOctalBigIntegerLiteral();
       case SyntaxKinds.HexIntegerLiteral:
         return parseHexIntegerLiteral();
+      case SyntaxKinds.HexBigIntegerLiteral:
+        return parseHexBigIntegerLiteral();
       case SyntaxKinds.LegacyOctalIntegerLiteral:
         return parseLegacyOctalIntegerLiteral();
       default:

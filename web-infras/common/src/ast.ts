@@ -150,6 +150,10 @@ export interface DecimalLiteral extends ExpressionModuleItem {
   kind: SyntaxKinds.DecimalLiteral;
   rawValue: string;
 }
+export interface DecimalBigIntegerLiteral extends ExpressionModuleItem {
+  kind: SyntaxKinds.DecimalBigIntegerLiteral;
+  rawValue: string;
+}
 export interface NonOctalDecimalLiteral extends ExpressionModuleItem {
   kind: SyntaxKinds.NonOctalDecimalLiteral;
   rawValue: string;
@@ -166,6 +170,18 @@ export interface HexIntegerLiteral extends ExpressionModuleItem {
   kind: SyntaxKinds.HexIntegerLiteral;
   rawValue: string;
 }
+export interface BinaryBigIntegerLiteral extends ExpressionModuleItem {
+  kind: SyntaxKinds.BinaryBigIntegerLiteral;
+  rawValue: string;
+}
+export interface OctalBigIntegerLiteral extends ExpressionModuleItem {
+  kind: SyntaxKinds.OctalBigIntegerLiteral;
+  rawValue: string;
+}
+export interface HexBigIntegerLiteral extends ExpressionModuleItem {
+  kind: SyntaxKinds.HexBigIntegerLiteral;
+  rawValue: string;
+}
 export interface LegacyOctalIntegerLiteral extends ExpressionModuleItem {
   kind: SyntaxKinds.LegacyOctalIntegerLiteral;
   rawValue: string;
@@ -176,7 +192,11 @@ export type NumberLiteral =
   | BinaryIntegerLiteral
   | OctalIntegerLiteral
   | HexIntegerLiteral
-  | LegacyOctalIntegerLiteral;
+  | LegacyOctalIntegerLiteral
+  | BinaryBigIntegerLiteral 
+  | HexBigIntegerLiteral 
+  | OctalBigIntegerLiteral
+  | DecimalBigIntegerLiteral;
 export interface StringLiteral extends ExpressionModuleItem {
   kind: SyntaxKinds.StringLiteral;
   value: string;
@@ -675,7 +695,11 @@ export function isNumnerLiteral(node: ModuleItem): node is NumberLiteral {
     node.kind === SyntaxKinds.BinaryIntegerLiteral ||
     node.kind === SyntaxKinds.OctalIntegerLiteral ||
     node.kind === SyntaxKinds.HexIntegerLiteral ||
-    node.kind === SyntaxKinds.LegacyOctalIntegerLiteral
+    node.kind === SyntaxKinds.LegacyOctalIntegerLiteral ||
+    node.kind === SyntaxKinds.DecimalBigIntegerLiteral || 
+    node.kind === SyntaxKinds.BinaryBigIntegerLiteral ||
+    node.kind === SyntaxKinds.HexBigIntegerLiteral || 
+    node.kind === SyntaxKinds.OctalBigIntegerLiteral
   );
 }
 export function isStringLiteral(node: ModuleItem): node is StringLiteral {

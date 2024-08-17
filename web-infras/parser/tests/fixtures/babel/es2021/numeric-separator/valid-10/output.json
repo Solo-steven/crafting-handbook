@@ -4,7 +4,7 @@
         {
             "kind": "ExpressionStatement",
             "expr": {
-                "kind": "DecimalLiteral",
+                "kind": "HexIntegerLiteral",
                 "rawValue": "0xA_b",
                 "start": {
                     "row": 1,

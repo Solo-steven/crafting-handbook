@@ -48,20 +48,7 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/core/uncategorised/348",
   "/babel/core/uncategorised/358",
   "/babel/core/uncategorised/359",
-  // ==== (feature) bigint literal problem
-  "/babel/es2020/bigint/invalid-decimal",
-  "/babel/es2020/bigint/invalid-e",
-  "/babel/es2020/bigint/invalid-non-octal-decimal-int",
-  "/babel/es2020/bigint/invalid-octal-legacy",
-  "/babel/es2020/bigint/decimal-as-property-name",
-  "/babel/es2020/bigint/hex-as-property-name",
-  "/babel/estree/bigInt/basic",
-  "/babel/es2020/bigint/valid-binary",
-  "/babel/es2020/bigint/valid-hex",
-  "/babel/es2020/bigint/valid-large",
-  "/babel/es2020/bigint/valid-octal-new",
-  "/babel/es2020/bigint/valid-small",
-  // === (feature) html comment, hashtag comment
+  // === (feature) html comment.
   "/esprima/comment/migrated_0036",
   "/esprima/comment/migrated_0038",
   "/esprima/comment/migrated_0039",

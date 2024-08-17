@@ -105,7 +105,53 @@ export function createLegacyOctalIntegerLiteral(
     end,
   };
 }
-
+export function createDecimalBigIntegerLiteral(
+  rawValue: string,
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.DecimalBigIntegerLiteral{
+  return {
+    kind: SyntaxKinds.DecimalBigIntegerLiteral,
+    rawValue,
+    start, end,
+  }
+}
+export function createBinaryBigIntegerLiteral(
+  rawValue: string,
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.BinaryBigIntegerLiteral {
+  return {
+    kind: SyntaxKinds.BinaryBigIntegerLiteral,
+    rawValue,
+    start, 
+    end,
+  }
+}
+export function createOctBigIntegerLiteral(
+  rawValue: string,
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.OctalBigIntegerLiteral {
+  return {
+    kind: SyntaxKinds.OctalBigIntegerLiteral,
+    rawValue,
+    start, 
+    end,
+  }
+}
+export function createHexBigIntegerLiteral(
+  rawValue: string,
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.HexBigIntegerLiteral {
+  return {
+    kind: SyntaxKinds.HexBigIntegerLiteral,
+    rawValue,
+    start, 
+    end,
+  }
+}
 export function createStringLiteral(
   value: string,
   start: SourcePosition,

@@ -86,6 +86,9 @@ import {
   HexIntegerLiteral,
   LegacyOctalIntegerLiteral,
   ImportAttribute,
+  DecimalBigIntegerLiteral,
+  OctalBigIntegerLiteral,
+  HexBigIntegerLiteral,
 } from "./ast";
 import { SyntaxKinds } from "./kind";
 
@@ -104,6 +107,10 @@ export type Visitor = {
   [SyntaxKinds.OctalIntegerLiteral]?: (node: OctalIntegerLiteral, visior: Visitor) => void;
   [SyntaxKinds.HexIntegerLiteral]?: (node: HexIntegerLiteral, visior: Visitor) => void;
   [SyntaxKinds.LegacyOctalIntegerLiteral]?: (node: LegacyOctalIntegerLiteral, visior: Visitor) => void;
+  [SyntaxKinds.DecimalBigIntegerLiteral]?: (node: DecimalBigIntegerLiteral, visitor: Visitor) => void;
+  [SyntaxKinds.BinaryBigIntegerLiteral]?: (node: BinaryIntegerLiteral, visitor: Visitor) => void;
+  [SyntaxKinds.OctalBigIntegerLiteral]?:  (node: OctalBigIntegerLiteral, visitor: Visitor) => void;
+  [SyntaxKinds.HexBigIntegerLiteral]?:  (node: HexBigIntegerLiteral, visitor: Visitor) => void;
   [SyntaxKinds.StringLiteral]?: (node: StringLiteral, visitor: Visitor) => void;
   [SyntaxKinds.Identifier]?: (node: Identifier, visitor: Visitor) => void;
   [SyntaxKinds.Super]?: (node: Super, visitor: Visitor) => void;
@@ -199,6 +206,10 @@ export const PropagationtVisitorTable: Visitor = {
   [SyntaxKinds.OctalIntegerLiteral]: function (node: OctalIntegerLiteral, visior: Visitor) {},
   [SyntaxKinds.HexIntegerLiteral]: function (node: HexIntegerLiteral, visior: Visitor) {},
   [SyntaxKinds.LegacyOctalIntegerLiteral]: function (node: LegacyOctalIntegerLiteral, visior: Visitor) {},
+  [SyntaxKinds.DecimalBigIntegerLiteral]: function (node: DecimalBigIntegerLiteral, visitor: Visitor) {},
+  [SyntaxKinds.BinaryBigIntegerLiteral]: function (node: BinaryIntegerLiteral, visitor: Visitor) {},
+  [SyntaxKinds.OctalBigIntegerLiteral]: function (node: OctalBigIntegerLiteral, visitor: Visitor) {},
+  [SyntaxKinds.HexBigIntegerLiteral]: function (node: HexBigIntegerLiteral, visitor: Visitor) {},
   [SyntaxKinds.Identifier]: function bindIdentifier(node: Identifier, visitor: Visitor) {},
   [SyntaxKinds.Super]: function bindSuper(node: Super, visitor: Visitor) {},
   [SyntaxKinds.Import]: function bindImport(node: Import, visitor: Visitor) {},

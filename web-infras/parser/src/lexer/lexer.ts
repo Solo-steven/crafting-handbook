@@ -499,7 +499,7 @@ export function createLexer(code: string) {
           break;
         case UnicodePoints.HashTag: {
           const next = getNextCharCodePoint();
-          if(next === UnicodePoints.Not) {
+          if (next === UnicodePoints.Not) {
             readHashTahComment();
             return skipWhiteSpaceChangeLine();
           }
@@ -1280,21 +1280,38 @@ export function createLexer(code: string) {
         case UnicodePoints.LowerCaseB:
         case UnicodePoints.UpperCaseB: {
           eatChar();
-          return readNumberLiteralWithBase(isBinary);
+          return readNumberLiteralWithBase(
+            isBinary,
+            SyntaxKinds.BinaryIntegerLiteral,
+            SyntaxKinds.BinaryBigIntegerLiteral,
+          );
         }
         case UnicodePoints.LowerCaseO:
         case UnicodePoints.UpperCaseO: {
           eatChar();
-          return readNumberLiteralWithBase(isOct);
+          return readNumberLiteralWithBase(
+            isOct,
+            SyntaxKinds.OctalIntegerLiteral,
+            SyntaxKinds.OctalBigIntegerLiteral,
+          );
         }
         case UnicodePoints.LowerCaseX:
         case UnicodePoints.UpperCaseX: {
           eatChar();
-          return readNumberLiteralWithBase(isHex);
+          return readNumberLiteralWithBase(
+            isHex,
+            SyntaxKinds.HexIntegerLiteral,
+            SyntaxKinds.HexBigIntegerLiteral,
+          );
         }
         default: {
           if (next !== UnicodePoints.UpperCaseE && next !== UnicodePoints.LowerCaseE) {
             // just 0
+            const isBigInt = getCharCodePoint() === UnicodePoints.LowerCaseN;
+            if (isBigInt) {
+              eatChar();
+              return finishToken(SyntaxKinds.DecimalBigIntegerLiteral);
+            }
             return finishToken(SyntaxKinds.DecimalLiteral);
           }
         }
@@ -1309,13 +1326,24 @@ export function createLexer(code: string) {
   function readDecimalLiteral() {
     // Start With Non 0
     readDigitals();
+    let onlyInt = false;
     if (getCharCodePoint() === UnicodePoints.Dot) {
+      onlyInt = true;
       eatChar();
       readDigitals();
     }
     const code = getCharCodePoint();
     if (code === UnicodePoints.LowerCaseE || code === UnicodePoints.UpperCaseE) {
+      onlyInt = true;
       helperReadExponPartOfDecimalLiteral();
+    }
+    const isBigInt = getCharCodePoint() === UnicodePoints.LowerCaseN;
+    if (isBigInt) {
+      eatChar();
+      if (onlyInt) {
+        throw lexicalError(ErrorMessageMap.babel_error_invalid_bigIntLiteral);
+      }
+      return finishToken(SyntaxKinds.DecimalBigIntegerLiteral);
     }
     return finishToken(SyntaxKinds.DecimalLiteral);
   }
@@ -1491,7 +1519,7 @@ export function createLexer(code: string) {
    * @param stopper determinate is current char is eatable.
    * @returns
    */
-  function readNumberLiteralWithBase(stopper: () => boolean) {
+  function readNumberLiteralWithBase(stopper: () => boolean, IntKind: SyntaxKinds, BigIntKind: SyntaxKinds) {
     let seprator = false;
     let isStart = true;
     const startIndex = getCurrentIndex();
@@ -1522,7 +1550,12 @@ export function createLexer(code: string) {
     if (getSliceStringFromCode(startIndex, getCurrentIndex()).length === 0) {
       throw new Error("Number Literal Length can not be 0");
     }
-    return finishToken(SyntaxKinds.DecimalLiteral);
+    const isBigInt = getCharCodePoint() === UnicodePoints.LowerCaseN;
+    if (isBigInt) {
+      eatChar();
+      return finishToken(BigIntKind);
+    }
+    return finishToken(IntKind);
   }
   //  ===========================================================
   //       String Literal State machine

@@ -18,6 +18,8 @@ export const ErrorMessageMap = {
   // try: `const a = 2e;` in babel playground
   babel_error_floating_point_numbers_require_a_valid_exponent_after_the_e:
     "Floating-point numbers require a valid exponent after the 'e'",
+  // try: `1.3n` in babel playground
+  babel_error_invalid_bigIntLiteral: "SyntaxError: Invalid hexadecimal escape sequence",
   // error: `001_1`
   error_legacy_octal_literals_contain_numeric_seperator:
     "Legacy octal literals can not contain any numeric seperator",

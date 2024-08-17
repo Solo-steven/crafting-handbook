@@ -20,7 +20,7 @@ const code = fs.readFileSync(path.join(__dirname, "test.js")).toString();
 // // Combine styled and normal strings
 // log(chalk.blue('Hello') + ' World' + chalk.red('!'));
 
-// printLexer(code);
+printLexer(code);
 printParser(code);
 
 function printLexer(code: string) {
