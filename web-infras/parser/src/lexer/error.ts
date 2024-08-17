@@ -3,6 +3,8 @@
  * v8 engine
  */
 export const ErrorMessageMap = {
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_regexp_flag
+  syntax_error_invalid_regular_expression_flags: "SyntaxError: Invalid regular expression flags",
   v8_error_invalid_unicode_escape_sequence: "SyntaxError: Invalid Unicode escape sequence",
   // try `"\xfG"` in v8 runtime
   v8_error_invalid_hexadecimal_escape_sequence: "SyntaxError: Invalid hexadecimal escape sequence",

@@ -1186,7 +1186,7 @@ export function createParser(code: string, option?: ParserConfig) {
       leftOrInit: VariableDeclaration | Expression | null = null;
     if (match(SyntaxKinds.AwaitKeyword)) {
       nextToken();
-      if (!isCurrentScopeParseAwaitAsExpression()) {
+      if (!config.allowAwaitOutsideFunction && !isCurrentScopeParseAwaitAsExpression()) {
         throw createMessageError(ErrorMessageMap.await_can_not_call_if_not_in_async);
       }
       isAwait = true;
@@ -2113,7 +2113,7 @@ export function createParser(code: string, option?: ParserConfig) {
       key = parsePropertyName(isComputedRef);
     }
     if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-      return parseMethodDefintion(true, key, isStatic) as ClassMethodDefinition;
+      return parseMethodDefintion(true, [key, isComputedRef.isComputed], isStatic) as ClassMethodDefinition;
     }
     helperSematicCheckClassPropertyName(key, isComputedRef.isComputed, isStatic);
     if (match([SyntaxKinds.AssginOperator])) {
@@ -3361,7 +3361,7 @@ export function createParser(code: string, option?: ParserConfig) {
         "new concat with dot should only be used in meta property",
       );
     }
-    if (isTopLevel() && !isInClassScope()) {
+    if (!config.allowNewTargetOutsideFunction && isTopLevel() && !isInClassScope()) {
       throw createMessageError(ErrorMessageMap.new_target_can_only_be_used_in_class_or_function_scope);
     }
     const targetStart = getStartPosition();
@@ -3567,7 +3567,7 @@ export function createParser(code: string, option?: ParserConfig) {
     const isComputedRef = { isComputed: false };
     const propertyName = parsePropertyName(isComputedRef);
     if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-      return parseMethodDefintion(false, propertyName) as ObjectMethodDefinition;
+      return parseMethodDefintion(false, [propertyName, isComputedRef.isComputed]) as ObjectMethodDefinition;
     }
     if (isComputedRef.isComputed || match(SyntaxKinds.ColonPunctuator)) {
       helperRecordPropertyNameForStaticSematicEarly(
@@ -3747,7 +3747,7 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function parseMethodDefintion(
     inClass: boolean = false,
-    withPropertyName: PropertyName | PrivateName | undefined = undefined,
+    withPropertyName: [PropertyName | PrivateName, boolean] | undefined = undefined,
     isStatic: boolean = false,
   ): ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor | ClassConstructor {
     if (!checkIsMethodStartWithModifier() && !withPropertyName) {
@@ -3762,8 +3762,9 @@ export function createParser(code: string, option?: ParserConfig) {
     let type: MethodDefinition["type"] = "method";
     let isAsync: MethodDefinition["async"] = false;
     let generator: MethodDefinition["generator"] = false;
-    let computed: MethodDefinition["computed"] = false;
+    let computed: MethodDefinition["computed"] = withPropertyName ? withPropertyName[1] : false;
     let start: SourcePosition | null = null;
+    let propertyName: PropertyName;
     if (!withPropertyName) {
       // frist, is setter or getter
       if (isContextKeyword("set")) {
@@ -3791,22 +3792,25 @@ export function createParser(code: string, option?: ParserConfig) {
         nextToken();
       }
       if (match(SyntaxKinds.PrivateName)) {
-        withPropertyName = parsePrivateName();
-        defPrivateName(
-          withPropertyName.name,
-          type === "method" ? "other" : isStatic ? `static-${type}` : type,
-        );
+        propertyName = parsePrivateName();
+        defPrivateName(propertyName.name, type === "method" ? "other" : isStatic ? `static-${type}` : type);
       } else {
         const isComputedRef = { isComputed: false };
-        withPropertyName = parsePropertyName(isComputedRef);
+        propertyName = parsePropertyName(isComputedRef);
         computed = isComputedRef.isComputed;
       }
-      if (!start) start = cloneSourcePosition(withPropertyName.start);
+      if (!start) start = cloneSourcePosition(propertyName.start);
     } else {
-      start = cloneSourcePosition(withPropertyName.start);
+      start = cloneSourcePosition(withPropertyName[0].start);
+      propertyName = withPropertyName[0];
     }
-    const isCtor = helperIsPropertyNameIsCtor(withPropertyName);
-    if (isCtor) lexicalScopeRecorder.enterCtor();
+    const isCtor = inClass && !isStatic && !computed && helperIsPropertyNameIsCtor(propertyName);
+    if (isCtor) {
+      lexicalScopeRecorder.enterCtor();
+      if (lexicalScopeRecorder.testAndSetCtor()) {
+        throw createMessageError(ErrorMessageMap.v8_error_a_class_may_only_have_one_constructor);
+      }
+    }
     enterFunctionScope(isAsync, generator);
     const [parmas, scope] = parseWithCatpureLayer(parseFunctionParam);
     const body = parseFunctionBody();
@@ -3818,10 +3822,9 @@ export function createParser(code: string, option?: ParserConfig) {
      * token error.
      */
     staticSematicEarlyErrorForClassMethodDefinition(
-      withPropertyName,
+      propertyName,
       inClass,
       isStatic,
-      computed,
       isAsync,
       generator,
       parmas,
@@ -3833,7 +3836,7 @@ export function createParser(code: string, option?: ParserConfig) {
     if (inClass) {
       if (isCtor) {
         return Factory.createClassConstructor(
-          withPropertyName as ClassConstructor["key"],
+          propertyName as ClassConstructor["key"],
           body,
           parmas,
           start as SourcePosition,
@@ -3842,7 +3845,7 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       if (type === "set" || type === "get") {
         return Factory.createClassAccessor(
-          withPropertyName,
+          propertyName,
           body,
           parmas,
           type,
@@ -3852,20 +3855,20 @@ export function createParser(code: string, option?: ParserConfig) {
         );
       }
       return Factory.createClassMethodDefintion(
-        withPropertyName,
+        propertyName,
         body,
         parmas,
         isAsync,
         generator,
         computed,
         isStatic,
-        start ? start : cloneSourcePosition(withPropertyName.start),
+        start ? start : cloneSourcePosition(propertyName.start),
         cloneSourcePosition(body.end),
       );
     }
     if (type === "set" || type === "get") {
       return Factory.createObjectAccessor(
-        withPropertyName,
+        propertyName,
         body,
         parmas,
         type,
@@ -3875,13 +3878,13 @@ export function createParser(code: string, option?: ParserConfig) {
       );
     }
     return Factory.createObjectMethodDefintion(
-      withPropertyName,
+      propertyName,
       body,
       parmas,
       isAsync,
       generator,
       computed,
-      start ? start : cloneSourcePosition(withPropertyName.start),
+      start ? start : cloneSourcePosition(propertyName.start),
       cloneSourcePosition(body.end),
     );
   }
@@ -3918,14 +3921,23 @@ export function createParser(code: string, option?: ParserConfig) {
     return false;
   }
   function helperIsPropertyNameIsCtor(propertyName: PropertyName) {
-    return isIdentifer(propertyName) && propertyName.name === "constructor";
+    switch (propertyName.kind) {
+      case SyntaxKinds.Identifier: {
+        return propertyName.name === "constructor";
+      }
+      case SyntaxKinds.StringLiteral: {
+        return propertyName.value === "constructor";
+      }
+      default: {
+        return false;
+      }
+    }
   }
   // part of 15.7.1
   function staticSematicEarlyErrorForClassMethodDefinition(
     propertyName: PropertyName,
     isClass: boolean,
     isStatic: boolean,
-    isComputed: boolean,
     isAsync: boolean,
     isGenerator: boolean,
     params: Array<Pattern>,
@@ -3954,7 +3966,7 @@ export function createParser(code: string, option?: ParserConfig) {
       throw createMessageError(ErrorMessageMap.setter_can_not_be_async_or_generator);
     }
     // class check
-    if (isClass && !isComputed) {
+    if (isClass) {
       let valueOfName: string | undefined,
         isPrivate = false,
         fromLiteral = false;

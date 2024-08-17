@@ -22,11 +22,7 @@
                 "kind": "ClassBody",
                 "body": [
                     {
-                        "kind": "ClassMethodDefinition",
-                        "async": false,
-                        "generator": false,
-                        "computed": false,
-                        "static": false,
+                        "kind": "ClassConstructor",
                         "key": {
                             "kind": "StringLiteral",
                             "value": "constructor",
@@ -41,7 +37,6 @@
                                 "index": 22
                             }
                         },
-                        "params": [],
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -56,6 +51,7 @@
                                 "index": 27
                             }
                         },
+                        "params": [],
                         "start": {
                             "row": 1,
                             "col": 10,

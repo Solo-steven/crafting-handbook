@@ -1,0 +1,199 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        }
+                    },
+                    "init": {
+                        "kind": "MetaProperty",
+                        "meta": {
+                            "kind": "Identifer",
+                            "name": "new",
+                            "start": {
+                                "row": 1,
+                                "col": 11,
+                                "index": 10
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 14,
+                                "index": 13
+                            }
+                        },
+                        "property": {
+                            "kind": "Identifer",
+                            "name": "target",
+                            "start": {
+                                "row": 1,
+                                "col": 15,
+                                "index": 14
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 21,
+                        "index": 20
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 21,
+                "index": 20
+            }
+        },
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "y",
+                        "start": {
+                            "row": 2,
+                            "col": 7,
+                            "index": 28
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 8,
+                            "index": 29
+                        }
+                    },
+                    "init": {
+                        "kind": "ArrowFunctionExpression",
+                        "expressionBody": true,
+                        "async": false,
+                        "arguments": [],
+                        "body": {
+                            "kind": "MetaProperty",
+                            "meta": {
+                                "kind": "Identifer",
+                                "name": "new",
+                                "start": {
+                                    "row": 2,
+                                    "col": 17,
+                                    "index": 38
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 20,
+                                    "index": 41
+                                }
+                            },
+                            "property": {
+                                "kind": "Identifer",
+                                "name": "target",
+                                "start": {
+                                    "row": 2,
+                                    "col": 21,
+                                    "index": 42
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 27,
+                                    "index": 48
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 17,
+                                "index": 38
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 27,
+                                "index": 48
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 11,
+                            "index": 32
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 27,
+                            "index": 48
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 7,
+                        "index": 28
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 27,
+                        "index": 48
+                    }
+                }
+            ],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 22
+            },
+            "end": {
+                "row": 2,
+                "col": 27,
+                "index": 48
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 50
+    }
+}

@@ -156,6 +156,8 @@ export const ErrorMessageMap = {
   v8_error_missing_catch_or_finally_after_try: "SyntaxError: Missing catch or finally after try",
   // try `"\xfG"` in v8 runtime (same from lexer)
   v8_error_invalid_hexadecimal_escape_sequence: "SyntaxError: Invalid hexadecimal escape sequence",
+  // try duplicate ctor in v8 runtime.
+  v8_error_a_class_may_only_have_one_constructor: "SyntaxError: A class may only have one constructor",
   // try: `import.meta` in babel playground when sourceType is script
   babel_error_import_meta_may_appear_only_with_source_type_module: `SyntaxError: import.meta may appear only with 'sourceType: "module"`,
   // try `import.name` in babel playground

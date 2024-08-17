@@ -43,6 +43,12 @@ export type LexerTokenContext = {
   lastTokenEndPosition: SourcePosition;
 };
 
+export type LexerSematicContext = {
+  isTemplateLiteralBreakEscapRule: boolean;
+  isKeywordContainUnicodeEscap: boolean;
+  isStringLiteralContainNonStrictEscap: boolean;
+};
+
 export type LexerTemplateContext = {
   stackCounter: Array<number>;
   isTagged: boolean;

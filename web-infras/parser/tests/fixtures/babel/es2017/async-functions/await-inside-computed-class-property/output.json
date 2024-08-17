@@ -19,7 +19,7 @@
                                 "kind": "ClassMethodDefinition",
                                 "async": false,
                                 "generator": false,
-                                "computed": false,
+                                "computed": true,
                                 "static": false,
                                 "key": {
                                     "kind": "AwaitExpression",

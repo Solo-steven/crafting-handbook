@@ -12,6 +12,7 @@ export interface ClassLexicalScope {
   readonly type: "ClassLexicalScope";
   isExtend: boolean;
   isInCtor: boolean;
+  haveCtor: boolean;
   isInDelete: boolean;
   isInPropertyName: boolean;
   undefinedPrivateName: Set<string>;
@@ -302,6 +303,7 @@ export function createLexicalScopeRecorder() {
       type: "ClassLexicalScope",
       isExtend,
       isInCtor: false,
+      haveCtor: false,
       isInDelete: false,
       isInPropertyName: false,
       undefinedPrivateName: new Set(),
@@ -579,6 +581,14 @@ export function createLexicalScopeRecorder() {
     const scope = helperFindLastClassScope();
     return !!scope && scope.isInPropertyName;
   }
+  function testAndSetCtor(): boolean {
+    const scope = helperFindLastClassScope();
+    let isExist = scope ? scope.haveCtor : false;
+    if (scope) {
+      scope.haveCtor = true;
+    }
+    return isExist;
+  }
   /**=============================================
    * Setter to Function scope attribute
    * =============================================
@@ -745,6 +755,7 @@ export function createLexicalScopeRecorder() {
     isInClassScope,
     isCurrentClassExtend,
     isCurrentInDelete,
+    testAndSetCtor,
     /**
      * Await and Yield condition
      */

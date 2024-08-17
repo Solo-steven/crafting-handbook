@@ -12,11 +12,8 @@ const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 const TempIgnoreCases: Set<string> = new Set([
   // === (feature) record to parent arrow scope.
   "/babel/es2022/class-properties/await-in-computed-property-in-params-of-async-arrow",
-  // uncatgory
+  // === (feature) use strict active timing.
   "/babel/core/regression/use-strict-with-pre-semi",
-  "/babel/core/regression/non-octal-float",
-  "/babel/core/opts/allowAwaitOutsideFunction-true",
-  "/babel/core/opts/allowNewTargetOutsideFunction-true",
   // (featture) ts or flow
   "/babel/estree/class-method/flow",
   "/babel/estree/class-method/typescript",
@@ -64,18 +61,9 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/comments/html/first-line",
   "/babel/comments/interpreter-directive/interpreter-directive-import",
   "/babel/comments/interpreter-directive/interpreter-directive-object",
-  // === (dunplicate construcotr)
-  "/babel/es2015/uncategorised/125",
   // === (feature) regex content and flag check
-  "/babel/es2024/regexp-unicode-sets/vu-error",
-  "/babel/es2024/regexp-unicode-sets/uv-error",
-  "/babel/es2015/regex/duplicate-flags",
   "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-4-hex",
   "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-var-hex",
-  "/babel/core/uncategorised/108",
-  "/babel/core/uncategorised/366",
-  "/babel/core/uncategorised/380",
-  "/babel/core/uncategorised/441",
   /**
    * Scope Id and reference feature
    */

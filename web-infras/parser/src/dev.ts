@@ -48,7 +48,7 @@ function printLexer(code: string) {
   );
 }
 function printParser(code: string) {
-  const ast = createParser(code, { sourceType: "module", plugins: ["importAttributes"] }).parse();
+  const ast = createParser(code, { allowNewTargetOutsideFunction: true }).parse();
   transformSyntaxKindToLiteral(ast);
   console.log(JSON.stringify(ast, null, 4));
   return 0;

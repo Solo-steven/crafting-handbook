@@ -22,7 +22,11 @@
                 "kind": "ClassBody",
                 "body": [
                     {
-                        "kind": "ClassConstructor",
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "constructor",
@@ -37,6 +41,7 @@
                                 "index": 27
                             }
                         },
+                        "params": [],
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -51,7 +56,6 @@
                                 "index": 31
                             }
                         },
-                        "params": [],
                         "start": {
                             "row": 1,
                             "col": 17,
@@ -64,7 +68,11 @@
                         }
                     },
                     {
-                        "kind": "ClassConstructor",
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "constructor",
@@ -79,6 +87,7 @@
                                 "index": 50
                             }
                         },
+                        "params": [],
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -93,7 +102,6 @@
                                 "index": 54
                             }
                         },
-                        "params": [],
                         "start": {
                             "row": 1,
                             "col": 40,

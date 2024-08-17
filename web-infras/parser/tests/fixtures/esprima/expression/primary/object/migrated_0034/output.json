@@ -10,7 +10,7 @@
                         "kind": "ObjectMethodDefinition",
                         "async": false,
                         "generator": false,
-                        "computed": false,
+                        "computed": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "a",

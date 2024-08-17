@@ -362,7 +362,11 @@
                         }
                     },
                     {
-                        "kind": "ClassConstructor",
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "constructor",
@@ -377,6 +381,7 @@
                                 "index": 181
                             }
                         },
+                        "params": [],
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -391,7 +396,6 @@
                                 "index": 189
                             }
                         },
-                        "params": [],
                         "start": {
                             "row": 31,
                             "col": 3,

@@ -199,27 +199,36 @@ export function createLexer(code: string) {
    */
   function readRegex(): { pattern: string; flag: string } {
     let pattern = "";
-    let isEscape = false;
-    let isInSet = false;
     let flag = "";
     let startIndex = getCurrentIndex();
-    while (!isEOF()) {
+    loop: while (!isEOF()) {
       const code = getCharCodePoint() as number;
-      if (code === UnicodePoints.Divide && !isEscape && !isInSet) {
-        break;
+      switch (code) {
+        case UnicodePoints.Divide:
+          break loop;
+        // read set
+        case UnicodePoints.BracketLeft: {
+          readSetInRegexPattern();
+          break;
+        }
+        // read escap
+        case UnicodePoints.BackSlash: {
+          readEscapSequenceInRegexPattern();
+          break;
+        }
+        // change line
+        case UnicodePoints.ChangeLine:
+        case UnicodePoints.CR:
+        case UnicodePoints.LS:
+        case UnicodePoints.PS: {
+          throw lexicalError(ErrorMessageMap.syntax_error_invalid_regular_expression_flags);
+        }
+        // other,
+        default: {
+          eatChar();
+          break;
+        }
       }
-      if (code === UnicodePoints.BracketLeft && !isEscape) {
-        isInSet = true;
-        eatChar();
-        continue;
-      }
-      if (code === UnicodePoints.BracketRight && !isEscape) {
-        isInSet = false;
-        eatChar();
-        continue;
-      }
-      isEscape = code === UnicodePoints.BackSlash && !isEscape;
-      eatChar();
     }
     if (isEOF()) {
       throw lexicalError("regex unterminate stop");
@@ -228,17 +237,110 @@ export function createLexer(code: string) {
     // eat `/`
     eatChar();
     /** tokenize flag  */
-    startIndex = getCurrentIndex();
+    flag = readFlagsInRegexLiteral();
+    finishToken(SyntaxKinds.RegexLiteral, pattern + flag);
+    return { pattern, flag };
+  }
+  function readSetInRegexPattern() {
+    eatChar(); // eat [
+    while (!isEOF()) {
+      const code = getCharCodePoint() as number;
+      if (code === UnicodePoints.BracketRight) {
+        eatChar();
+        break;
+      }
+      if (code === UnicodePoints.BackSlash) {
+        readEscapSequenceInRegexPattern();
+        continue;
+      }
+      eatChar();
+    }
+  }
+  function readEscapSequenceInRegexPattern() {
+    eatChar(); // eat \
+    const code = getCharCodePoint();
+    switch (code) {
+      case UnicodePoints.LowerCaseU: {
+        readEscapeSequenceInStringLiteral();
+        break;
+      }
+      case UnicodePoints.ChangeLine:
+      case UnicodePoints.CR:
+      case UnicodePoints.LS:
+      case UnicodePoints.PS: {
+        throw lexicalError(ErrorMessageMap.syntax_error_invalid_regular_expression_flags);
+      }
+      default: {
+        eatChar();
+      }
+    }
+  }
+  function readFlagsInRegexLiteral() {
+    const startIndex = getCurrentIndex();
+    const existFlagRecord: Record<string, number> = {
+      d: 0,
+      g: 0,
+      i: 0,
+      m: 0,
+      s: 0,
+      u: 0,
+      v: 0,
+      y: 0,
+    };
     while (!isEOF()) {
       const code = getCharCodePoint() as number;
       if (!isIdentifierChar(code)) {
         break;
       }
+      // validate flag
+      switch (code) {
+        case UnicodePoints.LowerCaseD: {
+          existFlagRecord["d"]++;
+          break;
+        }
+        case UnicodePoints.LowerCaseG: {
+          existFlagRecord["g"]++;
+          break;
+        }
+        case UnicodePoints.LowerCaseI: {
+          existFlagRecord["i"]++;
+          break;
+        }
+        case UnicodePoints.LowerCaseM: {
+          existFlagRecord["m"]++;
+          break;
+        }
+        case UnicodePoints.LowerCaseS: {
+          existFlagRecord["s"]++;
+          break;
+        }
+        case UnicodePoints.LowerCaseU: {
+          existFlagRecord["u"]++;
+          break;
+        }
+        case UnicodePoints.LowerCaseV: {
+          existFlagRecord["v"]++;
+          break;
+        }
+        case UnicodePoints.LowerCaseY: {
+          existFlagRecord["y"]++;
+          break;
+        }
+        default: {
+          throw lexicalError(ErrorMessageMap.syntax_error_invalid_regular_expression_flags);
+        }
+      }
+      for (const [_, value] of Object.entries(existFlagRecord)) {
+        if (value >= 2) {
+          throw lexicalError(ErrorMessageMap.syntax_error_invalid_regular_expression_flags);
+        }
+      }
+      if (existFlagRecord["u"] + existFlagRecord["v"] === 2) {
+        throw lexicalError(ErrorMessageMap.syntax_error_invalid_regular_expression_flags);
+      }
       eatChar();
     }
-    flag = getSliceStringFromCode(startIndex, getCurrentIndex());
-    finishToken(SyntaxKinds.RegexLiteral, pattern + flag);
-    return { pattern, flag };
+    return getSliceStringFromCode(startIndex, getCurrentIndex());
   }
   return {
     getTokenKind,
