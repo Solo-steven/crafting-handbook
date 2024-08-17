@@ -17,16 +17,6 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-4-hex/input.js",
-      "fileId": "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-4-hex"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-var-hex/input.js",
-      "fileId": "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-var-hex"
-    },
-    {
-      "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/427/input.js",
       "fileId": "/babel/core/uncategorised/427"
     },

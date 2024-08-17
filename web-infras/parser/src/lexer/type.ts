@@ -1,12 +1,13 @@
 import { SyntaxKinds } from "web-infra-common";
 import { SourcePosition } from "web-infra-common";
 
-export type LexerCursorContext = {
+export type LexerCursorState = {
   code: string;
   pos: number;
   currentLine: number;
   currentLineStart: number;
 };
+
 /**
  * Base Property of a token, without
  * contextual information (which only
@@ -35,7 +36,7 @@ export type LookaheadToken = {
  * like line terminator flag and before value
  * is lazy compute.
  */
-export type LexerTokenContext = {
+export type LexerTokenState = {
   kind: SyntaxKinds | null;
   value: string;
   startPosition: SourcePosition;
@@ -43,7 +44,7 @@ export type LexerTokenContext = {
   lastTokenEndPosition: SourcePosition;
 };
 
-export type LexerSematicContext = {
+export type LexerSematicState = {
   isTemplateLiteralBreakEscapRule: boolean;
   isKeywordContainUnicodeEscap: boolean;
   isStringLiteralContainNonStrictEscap: boolean;
@@ -51,13 +52,4 @@ export type LexerSematicContext = {
 
 export type LexerTemplateContext = {
   stackCounter: Array<number>;
-  isTagged: boolean;
-};
-
-export type LexerEscFlagContext = {
-  flag: boolean;
-};
-// for
-export type LexerStringLiteralContext = {
-  breakStrictRule: boolean;
 };

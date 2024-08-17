@@ -7,11 +7,10 @@ import {
   createSourcePosition,
 } from "web-infra-common";
 import {
-  LexerCursorContext,
-  LexerEscFlagContext,
-  LexerStringLiteralContext,
   LexerTemplateContext,
-  LexerTokenContext,
+  LexerCursorState,
+  LexerSematicState,
+  LexerTokenState,
   LookaheadToken,
 } from "./type";
 import {
@@ -27,17 +26,15 @@ import { ErrorMessageMap } from "./error";
 interface Context {
   // Cursot for char stream, `pos` is a pointer which point to current
   // char in source code.
-  cursor: LexerCursorContext;
-  // Token context stoe all relative info about a token, include
+  cursor: LexerCursorState;
+  // Token state stoe all relative info about a token, include
   // a kind, string value, position info, and other info we will
   // need for syntax check (like line terminator).
-  tokenContext: LexerTokenContext;
-  // Ad-hoc data structure for tokenize template literal.
+  tokenState: LexerTokenState;
+  // Token state for sematic check from parser
+  sematicState: LexerSematicState;
+  // Ad-hoc data structure for tokenize template literal in context
   templateContext: LexerTemplateContext;
-  // Ad-hoc data structure for escape char when tokenize.
-  escapeMeta: LexerEscFlagContext;
-  // Ad-hoc data structure for Is string literal break strict mode rule
-  stringLiteralContext: LexerStringLiteralContext;
 }
 /**
  * Create a empty lexer context
@@ -47,16 +44,19 @@ interface Context {
 function createContext(code: string): Context {
   return {
     cursor: { code, pos: 0, currentLine: 1, currentLineStart: 0 },
-    tokenContext: {
+    tokenState: {
       value: "",
       kind: null,
       startPosition: createSourcePosition(),
       endPosition: createSourcePosition(),
       lastTokenEndPosition: createSourcePosition(),
     },
-    templateContext: { stackCounter: [], isTagged: false },
-    escapeMeta: { flag: false },
-    stringLiteralContext: { breakStrictRule: false },
+    sematicState: {
+      isKeywordContainUnicodeEscap: false,
+      isStringLiteralContainNonStrictEscap: false,
+      isTemplateLiteralBreakEscapRule: false,
+    },
+    templateContext: { stackCounter: [] },
   };
 }
 /**
@@ -67,15 +67,16 @@ function createContext(code: string): Context {
 function cloneContext(source: Context): Context {
   return {
     cursor: { ...source.cursor },
-    tokenContext: {
-      ...source.tokenContext,
-      startPosition: cloneSourcePosition(source.tokenContext.startPosition),
-      endPosition: cloneSourcePosition(source.tokenContext.endPosition),
-      lastTokenEndPosition: cloneSourcePosition(source.tokenContext.lastTokenEndPosition),
+    tokenState: {
+      ...source.tokenState,
+      startPosition: cloneSourcePosition(source.tokenState.startPosition),
+      endPosition: cloneSourcePosition(source.tokenState.endPosition),
+      lastTokenEndPosition: cloneSourcePosition(source.tokenState.lastTokenEndPosition),
     },
-    templateContext: { ...source.templateContext, stackCounter: [...source.templateContext.stackCounter] },
-    escapeMeta: { ...source.escapeMeta },
-    stringLiteralContext: { ...source.stringLiteralContext },
+    sematicState: {
+      ...source.sematicState,
+    },
+    templateContext: { stackCounter: [...source.templateContext.stackCounter] },
   };
 }
 
@@ -103,8 +104,8 @@ export function createLexer(code: string) {
   function getLineTerminatorFlag(): boolean {
     return /[\n\u000D\u2028\u2029]/.test(
       context.cursor.code.slice(
-        context.tokenContext.lastTokenEndPosition.index,
-        context.tokenContext.startPosition.index,
+        context.tokenState.lastTokenEndPosition.index,
+        context.tokenState.startPosition.index,
       ),
     );
   }
@@ -114,20 +115,20 @@ export function createLexer(code: string) {
    * @returns {boolean}
    */
   function getEscFlag(): boolean {
-    return context.escapeMeta.flag;
+    return context.sematicState.isKeywordContainUnicodeEscap;
   }
   function getStringLiteralFlag(): boolean {
-    return context.stringLiteralContext.breakStrictRule;
+    return context.sematicState.isStringLiteralContainNonStrictEscap;
   }
   function getTemplateLiteralTag(): boolean {
-    return context.templateContext.isTagged;
+    return context.sematicState.isTemplateLiteralBreakEscapRule;
   }
   /**
    * Public API for getting token's string value
    * @returns {string}
    */
   function getSourceValue(): string {
-    return context.tokenContext.value;
+    return context.tokenState.value;
   }
   /**
    * Public API for getting string value which range from
@@ -137,8 +138,8 @@ export function createLexer(code: string) {
    */
   function getBeforeValue(): string {
     return getSliceStringFromCode(
-      context.tokenContext.lastTokenEndPosition.index,
-      context.tokenContext.startPosition.index,
+      context.tokenState.lastTokenEndPosition.index,
+      context.tokenState.startPosition.index,
     );
   }
   /**
@@ -146,24 +147,24 @@ export function createLexer(code: string) {
    * @returns {SourcePosition}
    */
   function getStartPosition(): SourcePosition {
-    return context.tokenContext.startPosition;
+    return context.tokenState.startPosition;
   }
   /**
    * Public API for get end position of current token
    * @returns {SourcePosition}
    */
   function getEndPosition(): SourcePosition {
-    return context.tokenContext.endPosition;
+    return context.tokenState.endPosition;
   }
   /**
    * Public API for get current token kind.
    * @returns {SyntaxKinds}
    */
   function getTokenKind(): SyntaxKinds {
-    if (context.tokenContext.kind === null) {
-      context.tokenContext.kind = scan();
+    if (context.tokenState.kind === null) {
+      context.tokenState.kind = scan();
     }
-    return context.tokenContext.kind;
+    return context.tokenState.kind;
   }
   /**
    * Public API for moving to next token.
@@ -181,10 +182,10 @@ export function createLexer(code: string) {
     const lastContext = cloneContext(context);
     nextToken();
     const lookaheadToken = {
-      kind: context.tokenContext.kind!,
-      value: context.tokenContext.value,
-      startPosition: context.tokenContext.startPosition,
-      endPosition: context.tokenContext.endPosition,
+      kind: context.tokenState.kind!,
+      value: context.tokenState.value,
+      startPosition: context.tokenState.startPosition,
+      endPosition: context.tokenState.endPosition,
       lineTerminatorFlag: getLineTerminatorFlag(),
     };
     // resume last context
@@ -379,10 +380,10 @@ export function createLexer(code: string) {
    * @returns {void}
    */
   function startToken(): void {
-    context.escapeMeta.flag = false;
-    context.templateContext.isTagged = false;
-    context.stringLiteralContext.breakStrictRule = false;
-    context.tokenContext.startPosition = creaetSourcePositionFromCursor();
+    // context.sematicState.isKeywordContainUnicodeEscap = false;
+    // context.sematicState.isTemplateLiteralBreakEscapRule = false;
+    // context.sematicState.isStringLiteralContainNonStrictEscap = false;
+    context.tokenState.startPosition = creaetSourcePositionFromCursor();
   }
   /**
    * Private API for finish a token, store token relative data:
@@ -398,15 +399,12 @@ export function createLexer(code: string) {
    * @returns
    */
   function finishToken(kind: SyntaxKinds, value?: string): SyntaxKinds {
-    context.tokenContext.kind = kind;
-    context.tokenContext.lastTokenEndPosition = context.tokenContext.endPosition;
-    context.tokenContext.endPosition = creaetSourcePositionFromCursor();
-    context.tokenContext.value =
+    context.tokenState.kind = kind;
+    context.tokenState.lastTokenEndPosition = context.tokenState.endPosition;
+    context.tokenState.endPosition = creaetSourcePositionFromCursor();
+    context.tokenState.value =
       value ??
-      context.cursor.code.slice(
-        context.tokenContext.startPosition.index,
-        context.tokenContext.endPosition.index,
-      );
+      context.cursor.code.slice(context.tokenState.startPosition.index, context.tokenState.endPosition.index);
     return kind;
   }
   /**
@@ -540,7 +538,7 @@ export function createLexer(code: string) {
    */
   function lexicalError(content: string): Error {
     return new Error(
-      `[Error]: Lexical Error, ${content}, start position is (${context.tokenContext.startPosition.row}, ${context.tokenContext.startPosition.col})`,
+      `[Error]: Lexical Error, ${content}, start position is (${context.tokenState.startPosition.row}, ${context.tokenState.startPosition.col})`,
     );
   }
   /**
@@ -1105,6 +1103,7 @@ export function createLexer(code: string) {
    * @returns {SyntaxKinds}
    */
   function readTemplateLiteral(meetEnd: SyntaxKinds, meetMiddle: SyntaxKinds): SyntaxKinds {
+    context.sematicState.isTemplateLiteralBreakEscapRule = false;
     // eat '`'
     eatChar();
     let isEscape = false;
@@ -1180,7 +1179,7 @@ export function createLexer(code: string) {
       case UnicodePoints.LowerCaseX: {
         eatChar();
         for (let i = 0; i < 2; ++i) {
-          context.templateContext.isTagged ||= !isHex();
+          context.sematicState.isTemplateLiteralBreakEscapRule ||= !isHex();
           eatChar();
         }
         return;
@@ -1190,7 +1189,7 @@ export function createLexer(code: string) {
         try {
           readUnicodeEscapeSequence();
         } catch (e) {
-          context.templateContext.isTagged = true;
+          context.sematicState.isTemplateLiteralBreakEscapRule = true;
         }
         return;
       }
@@ -1205,7 +1204,7 @@ export function createLexer(code: string) {
         if (next) {
           const needTagged = next <= UnicodePoints.Digital9 && next >= UnicodePoints.Digital0;
           eatTwoChar();
-          context.templateContext.isTagged = needTagged;
+          context.sematicState.isTemplateLiteralBreakEscapRule = needTagged;
         } else {
           eatChar();
         }
@@ -1214,7 +1213,7 @@ export function createLexer(code: string) {
       // NonEscapeCharacter
       default: {
         if (code && code >= UnicodePoints.Digital1 && code <= UnicodePoints.Digital9) {
-          context.templateContext.isTagged = true;
+          context.sematicState.isTemplateLiteralBreakEscapRule = true;
         }
         eatChar();
       }
@@ -1516,6 +1515,7 @@ export function createLexer(code: string) {
    * @returns {SyntaxKinds}
    */
   function readStringLiteral(mode: "Single" | "Double"): SyntaxKinds {
+    context.sematicState.isStringLiteralContainNonStrictEscap = false;
     // eat mode
     const modeInCodepoint = mode === "Single" ? UnicodePoints.SingleQuote : UnicodePoints.DoubleQuote;
     eatChar();
@@ -1614,7 +1614,7 @@ export function createLexer(code: string) {
       case UnicodePoints.Digital5:
       case UnicodePoints.Digital6:
       case UnicodePoints.Digital7: {
-        context.stringLiteralContext.breakStrictRule ||= true;
+        context.sematicState.isStringLiteralContainNonStrictEscap ||= true;
         /**
          * The condition could be more simple.
          */
@@ -1668,7 +1668,7 @@ export function createLexer(code: string) {
       // NonOctalDecimalEscapeSequence
       case UnicodePoints.Digital8:
       case UnicodePoints.Digital9: {
-        context.stringLiteralContext.breakStrictRule ||= true;
+        context.sematicState.isStringLiteralContainNonStrictEscap ||= true;
         eatChar();
         return;
       }
@@ -1693,12 +1693,13 @@ export function createLexer(code: string) {
    * @returns {SyntaxKinds}
    */
   function readIdentifierOrKeyword(): SyntaxKinds {
+    context.sematicState.isKeywordContainUnicodeEscap = false;
     const word = readWordAsIdentifier();
     // @ts-ignore
     if (KeywordLiteralSet.has(word)) {
       // @ts-ignore
       const keywordKind = KeywordLiteralMapSyntaxKind[word];
-      if (context.escapeMeta.flag) {
+      if (context.sematicState.isKeywordContainUnicodeEscap) {
         // TODO: error handle
         throw new Error("keyword can not have any escap unicode");
       }
@@ -1714,7 +1715,7 @@ export function createLexer(code: string) {
       if (code === UnicodePoints.BackSlash) {
         const next = getNextCharCodePoint();
         if (next === UnicodePoints.LowerCaseU || next === UnicodePoints.UpperCaseU) {
-          context.escapeMeta.flag = true;
+          context.sematicState.isKeywordContainUnicodeEscap = true;
           word += getSliceStringFromCode(startIndex, getCurrentIndex());
           eatTwoChar(); // eat \u \U
           const anyUnicodeString = readUnicodeEscapeSequence();

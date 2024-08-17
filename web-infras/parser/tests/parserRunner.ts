@@ -10,10 +10,19 @@ const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 // const isCI = Boolean(process.env.TEST_CI) || false;
 
 const TempIgnoreCases: Set<string> = new Set([
-  // === (feature) record to parent arrow scope.
-  "/babel/es2022/class-properties/await-in-computed-property-in-params-of-async-arrow",
+  /**
+   * Hard to do it
+   */
+  // === (feature) tokenze ?.3 vs ?.
+  "/babel/es2020/optional-chaining/conditional-decimal",
   // === (feature) use strict active timing.
   "/babel/core/regression/use-strict-with-pre-semi",
+  // === (feature) regex content and flag check
+  "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-4-hex",
+  "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-var-hex",
+  /**
+   * Experimental Feature
+   */
   // (featture) ts or flow
   "/babel/estree/class-method/flow",
   "/babel/estree/class-method/typescript",
@@ -26,12 +35,15 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2022/class-static-block/invalid-decorators",
   // (feature?) async do plugin
   "/babel/comments/basic/async-do-expression",
+  /**
+   * Relative easy
+   */
+  // === (feature) record to parent arrow scope.
+  "/babel/es2022/class-properties/await-in-computed-property-in-params-of-async-arrow",
   // === (feature) ban async of
   "/babel/es2021/for-async-of/forbidden",
   // === (feature) tokenize ??=
   "/babel/es2021/logical-assignment-operator/qq-equals",
-  // === (feature) tokenze ?.3 vs ?.
-  "/babel/es2020/optional-chaining/conditional-decimal",
   // === (feature) tokenize a number can not be followed by a idstart
   "/babel/core/uncategorised/348",
   "/babel/core/uncategorised/358",
@@ -61,9 +73,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/comments/html/first-line",
   "/babel/comments/interpreter-directive/interpreter-directive-import",
   "/babel/comments/interpreter-directive/interpreter-directive-object",
-  // === (feature) regex content and flag check
-  "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-4-hex",
-  "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-var-hex",
   /**
    * Scope Id and reference feature
    */
