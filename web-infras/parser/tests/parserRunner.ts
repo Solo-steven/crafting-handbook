@@ -42,20 +42,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2022/class-properties/await-in-computed-property-in-params-of-async-arrow",
   // === (feature) ban async of
   "/babel/es2021/for-async-of/forbidden",
-  // === (feature) tokenize a number can not be followed by a idstart
-  "/babel/core/uncategorised/348",
-  "/babel/core/uncategorised/358",
-  "/babel/core/uncategorised/359",
-  // === (feature) html comment.
-  "/esprima/comment/migrated_0036",
-  "/esprima/comment/migrated_0038",
-  "/esprima/comment/migrated_0039",
-  "/esprima/comment/migrated_0040",
-  "/esprima/comment/migrated_0041",
-  "/esprima/comment/migrated_0042",
-  "/babel/core/uncategorised/343",
-  "/babel/core/uncategorised/538",
-  "/babel/comments/html/first-line",
   /**
    * Scope Id and reference feature
    */

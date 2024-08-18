@@ -1462,9 +1462,9 @@ export function createParser(code: string, option?: ParserConfig) {
         test = parseExpressionAllowIn();
       } else if (match(SyntaxKinds.DefaultKeyword)) {
         nextToken();
-        if(haveDefault) {
+        if (haveDefault) {
           throw createMessageError(ErrorMessageMap.v8_error_more_than_one_default_clause_in_switch_statement);
-        }else {
+        } else {
           haveDefault = true;
         }
       }
@@ -1545,7 +1545,7 @@ export function createParser(code: string, option?: ParserConfig) {
       // TODO: unreach
     }
     const label = parseIdentifierReference();
-    if(lexicalScopeRecorder.enterVirtualBlockScope("Label", label.name)) {
+    if (lexicalScopeRecorder.enterVirtualBlockScope("Label", label.name)) {
       throw createMessageError(ErrorMessageMap.v8_error_label_has_already_been_declared);
     }
     expect(SyntaxKinds.ColonPunctuator);
@@ -4253,6 +4253,7 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     const children = parseJSXChildren();
     const closingElement = parseJSXClosingElement();
+    staticSematicEarlyErrorForJSXElement(opeingElement, closingElement);
     return Factory.createJSXElement(
       opeingElement,
       closingElement,
@@ -4260,6 +4261,22 @@ export function createParser(code: string, option?: ParserConfig) {
       cloneSourcePosition(opeingElement.start),
       cloneSourcePosition(opeingElement.end),
     );
+  }
+  function staticSematicEarlyErrorForJSXElement(
+    openingElement: JSXOpeningElement,
+    closingElement: JSXClosingElement,
+  ) {
+    const openElementSourceText = lexer.getSourceValueByIndex(
+      openingElement.name.start.index,
+      openingElement.name.end.index,
+    );
+    const closeElementSourceText = lexer.getSourceValueByIndex(
+      closingElement.name.start.index,
+      closingElement.name.end.index,
+    );
+    if (openElementSourceText !== closeElementSourceText) {
+      throw new Error();
+    }
   }
   /**
    * Parse JSXOpeingElement

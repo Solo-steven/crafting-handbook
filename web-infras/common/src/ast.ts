@@ -193,8 +193,8 @@ export type NumberLiteral =
   | OctalIntegerLiteral
   | HexIntegerLiteral
   | LegacyOctalIntegerLiteral
-  | BinaryBigIntegerLiteral 
-  | HexBigIntegerLiteral 
+  | BinaryBigIntegerLiteral
+  | HexBigIntegerLiteral
   | OctalBigIntegerLiteral
   | DecimalBigIntegerLiteral;
 export interface StringLiteral extends ExpressionModuleItem {
@@ -696,9 +696,9 @@ export function isNumnerLiteral(node: ModuleItem): node is NumberLiteral {
     node.kind === SyntaxKinds.OctalIntegerLiteral ||
     node.kind === SyntaxKinds.HexIntegerLiteral ||
     node.kind === SyntaxKinds.LegacyOctalIntegerLiteral ||
-    node.kind === SyntaxKinds.DecimalBigIntegerLiteral || 
+    node.kind === SyntaxKinds.DecimalBigIntegerLiteral ||
     node.kind === SyntaxKinds.BinaryBigIntegerLiteral ||
-    node.kind === SyntaxKinds.HexBigIntegerLiteral || 
+    node.kind === SyntaxKinds.HexBigIntegerLiteral ||
     node.kind === SyntaxKinds.OctalBigIntegerLiteral
   );
 }

@@ -1,3 +1,4 @@
+import { JSXOpeningFragment } from "dist/index";
 import {
   BinaryExpression,
   ModuleItem,
@@ -89,6 +90,18 @@ import {
   DecimalBigIntegerLiteral,
   OctalBigIntegerLiteral,
   HexBigIntegerLiteral,
+  JSXClosingElement,
+  JSXAttribute,
+  JSXElement,
+  JSXIdentifier,
+  JSXMemberExpression,
+  JSXNamespacedName,
+  JSXOpeningElement,
+  JSXSpreadAttribute,
+  JSXText,
+  JSXExpressionContainer,
+  JSXFragment,
+  JSXClosingFragment,
 } from "./ast";
 import { SyntaxKinds } from "./kind";
 
@@ -109,8 +122,8 @@ export type Visitor = {
   [SyntaxKinds.LegacyOctalIntegerLiteral]?: (node: LegacyOctalIntegerLiteral, visior: Visitor) => void;
   [SyntaxKinds.DecimalBigIntegerLiteral]?: (node: DecimalBigIntegerLiteral, visitor: Visitor) => void;
   [SyntaxKinds.BinaryBigIntegerLiteral]?: (node: BinaryIntegerLiteral, visitor: Visitor) => void;
-  [SyntaxKinds.OctalBigIntegerLiteral]?:  (node: OctalBigIntegerLiteral, visitor: Visitor) => void;
-  [SyntaxKinds.HexBigIntegerLiteral]?:  (node: HexBigIntegerLiteral, visitor: Visitor) => void;
+  [SyntaxKinds.OctalBigIntegerLiteral]?: (node: OctalBigIntegerLiteral, visitor: Visitor) => void;
+  [SyntaxKinds.HexBigIntegerLiteral]?: (node: HexBigIntegerLiteral, visitor: Visitor) => void;
   [SyntaxKinds.StringLiteral]?: (node: StringLiteral, visitor: Visitor) => void;
   [SyntaxKinds.Identifier]?: (node: Identifier, visitor: Visitor) => void;
   [SyntaxKinds.Super]?: (node: Super, visitor: Visitor) => void;
@@ -186,6 +199,20 @@ export type Visitor = {
   [SyntaxKinds.ExportDefaultDeclaration]?: (node: ExportDefaultDeclaration, visitor: Visitor) => void;
   [SyntaxKinds.ExportAllDeclaration]?: (node: ExportAllDeclaration, visitor: Visitor) => void;
   [SyntaxKinds.ImportAttribute]?: (node: ImportAttribute, visior: Visitor) => void;
+  [SyntaxKinds.JSXElement]?: (node: JSXElement, visitor: Visitor) => void;
+  [SyntaxKinds.JSXIdentifier]?: (node: JSXIdentifier, visitor: Visitor) => void;
+  [SyntaxKinds.JSXMemberExpression]?: (node: JSXMemberExpression, visitor: Visitor) => void;
+  [SyntaxKinds.JSXNamespaceName]?: (node: JSXNamespacedName, visitor: Visitor) => void;
+  [SyntaxKinds.JSXAttribute]?: (node: JSXAttribute, visitor: Visitor) => void;
+  [SyntaxKinds.JSXSpreadAttribute]?: (node: JSXSpreadAttribute, visitor: Visitor) => void;
+  [SyntaxKinds.JSXOpeningElement]?: (node: JSXOpeningElement, visitor: Visitor) => void;
+  [SyntaxKinds.JSXClosingElement]?: (node: JSXClosingElement, visitor: Visitor) => void;
+  [SyntaxKinds.JSXSpreadChild]?: (node: JSXSpreadAttribute, visitor: Visitor) => void;
+  [SyntaxKinds.JSXText]?: (node: JSXText, visitor: Visitor) => void;
+  [SyntaxKinds.JSXExpressionContainer]?: (node: JSXExpressionContainer, visitor: Visitor) => void;
+  [SyntaxKinds.JSXFragment]?: (node: JSXFragment, visitor: Visitor) => void;
+  [SyntaxKinds.JSXOpeningFragment]?: (node: JSXOpeningFragment, visitor: Visitor) => void;
+  [SyntaxKinds.JSXClosingFragment]?: (node: JSXClosingFragment, visitor: Visitor) => void;
 };
 
 export const PropagationtVisitorTable: Visitor = {
@@ -534,6 +561,48 @@ export const PropagationtVisitorTable: Visitor = {
     visitNode(node.key, visitor);
     visitNode(node.value, visitor);
   },
+  [SyntaxKinds.JSXElement]: function (node: JSXElement, visitor: Visitor) {
+    visitNode(node.openingElement, visitor);
+    visitNodes(node.children, visitor);
+    visitNode(node.closingElement, visitor);
+  },
+  [SyntaxKinds.JSXIdentifier]: function (node: JSXIdentifier, visitor: Visitor) {},
+  [SyntaxKinds.JSXMemberExpression]: function (node: JSXMemberExpression, visitor: Visitor) {
+    visitNode(node.object, visitor);
+    visitNode(node.property, visitor);
+  },
+  [SyntaxKinds.JSXNamespaceName]: function (node: JSXNamespacedName, visitor: Visitor) {
+    visitNode(node.namespace, visitor);
+    visitNode(node.name, visitor);
+  },
+  [SyntaxKinds.JSXAttribute]: function (node: JSXAttribute, visitor: Visitor) {
+    visitNode(node.name, visitor);
+    visitNode(node.value, visitor);
+  },
+  [SyntaxKinds.JSXSpreadAttribute]: function (node: JSXSpreadAttribute, visitor: Visitor) {
+    visitNode(node.argument, visitor);
+  },
+  [SyntaxKinds.JSXOpeningElement]: function (node: JSXOpeningElement, visitor: Visitor) {
+    visitNode(node.name, visitor);
+    visitNodes(node.attributes, visitor);
+  },
+  [SyntaxKinds.JSXClosingElement]: function (node: JSXClosingElement, visitor: Visitor) {
+    visitNode(node.name, visitor);
+  },
+  [SyntaxKinds.JSXSpreadChild]: function (node: JSXSpreadAttribute, visitor: Visitor) {
+    visitNode(node.argument, visitor);
+  },
+  [SyntaxKinds.JSXText]: function (node: JSXText, visitor: Visitor) {},
+  [SyntaxKinds.JSXExpressionContainer]: function (node: JSXExpressionContainer, visitor: Visitor) {
+    visitNode(node.expression, visitor);
+  },
+  [SyntaxKinds.JSXFragment]: function (node: JSXFragment, visitor: Visitor) {
+    visitNode(node.openingFragment, visitor);
+    visitNodes(node.children, visitor);
+    visitNode(node.closingFragment, visitor);
+  },
+  [SyntaxKinds.JSXOpeningFragment]: function (node: JSXOpeningFragment, visitor: Visitor) {},
+  [SyntaxKinds.JSXClosingFragment]: function (node: JSXClosingFragment, visitor: Visitor) {},
 };
 
 export function visitNode<T extends ModuleItem>(node: T | null | undefined, visitor: Visitor) {

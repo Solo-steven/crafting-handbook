@@ -109,12 +109,13 @@ export function createDecimalBigIntegerLiteral(
   rawValue: string,
   start: SourcePosition,
   end: SourcePosition,
-): AST.DecimalBigIntegerLiteral{
+): AST.DecimalBigIntegerLiteral {
   return {
     kind: SyntaxKinds.DecimalBigIntegerLiteral,
     rawValue,
-    start, end,
-  }
+    start,
+    end,
+  };
 }
 export function createBinaryBigIntegerLiteral(
   rawValue: string,
@@ -124,9 +125,9 @@ export function createBinaryBigIntegerLiteral(
   return {
     kind: SyntaxKinds.BinaryBigIntegerLiteral,
     rawValue,
-    start, 
+    start,
     end,
-  }
+  };
 }
 export function createOctBigIntegerLiteral(
   rawValue: string,
@@ -136,9 +137,9 @@ export function createOctBigIntegerLiteral(
   return {
     kind: SyntaxKinds.OctalBigIntegerLiteral,
     rawValue,
-    start, 
+    start,
     end,
-  }
+  };
 }
 export function createHexBigIntegerLiteral(
   rawValue: string,
@@ -148,9 +149,9 @@ export function createHexBigIntegerLiteral(
   return {
     kind: SyntaxKinds.HexBigIntegerLiteral,
     rawValue,
-    start, 
+    start,
     end,
-  }
+  };
 }
 export function createStringLiteral(
   value: string,

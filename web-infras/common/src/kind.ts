@@ -713,7 +713,7 @@ export const AssigmentOperators = [
   SyntaxKinds.BitwiseLeftShiftAssginOperator, // <<=
   SyntaxKinds.BitwiseRightShiftAssginOperator, // >>=
   SyntaxKinds.BitwiseRightShiftFillAssginOperator, // >>>=
-  SyntaxKinds.NullishAssignOperator
+  SyntaxKinds.NullishAssignOperator,
 ];
 export type BinaryOperatorKinds =
   | SyntaxKinds.PlusOperator // +

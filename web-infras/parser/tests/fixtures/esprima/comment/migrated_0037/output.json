@@ -22,65 +22,8 @@
                         }
                     },
                     "init": {
-                        "kind": "BinaryExpression",
-                        "operator": "<",
-                        "left": {
-                            "kind": "DecimalLiteral",
-                            "rawValue": "1",
-                            "start": {
-                                "row": 1,
-                                "col": 9,
-                                "index": 8
-                            },
-                            "end": {
-                                "row": 1,
-                                "col": 10,
-                                "index": 9
-                            }
-                        },
-                        "right": {
-                            "kind": "UnaryExpression",
-                            "operator": "!",
-                            "argument": {
-                                "kind": "UpdateExpression",
-                                "operator": "--",
-                                "prefix": true,
-                                "argument": {
-                                    "kind": "Identifer",
-                                    "name": "foo",
-                                    "start": {
-                                        "row": 1,
-                                        "col": 14,
-                                        "index": 13
-                                    },
-                                    "end": {
-                                        "row": 1,
-                                        "col": 17,
-                                        "index": 16
-                                    }
-                                },
-                                "start": {
-                                    "row": 1,
-                                    "col": 12,
-                                    "index": 11
-                                },
-                                "end": {
-                                    "row": 1,
-                                    "col": 17,
-                                    "index": 16
-                                }
-                            },
-                            "start": {
-                                "row": 1,
-                                "col": 11,
-                                "index": 10
-                            },
-                            "end": {
-                                "row": 1,
-                                "col": 17,
-                                "index": 16
-                            }
-                        },
+                        "kind": "DecimalLiteral",
+                        "rawValue": "1",
                         "start": {
                             "row": 1,
                             "col": 9,
@@ -88,8 +31,8 @@
                         },
                         "end": {
                             "row": 1,
-                            "col": 17,
-                            "index": 16
+                            "col": 10,
+                            "index": 9
                         }
                     },
                     "start": {
@@ -99,8 +42,8 @@
                     },
                     "end": {
                         "row": 1,
-                        "col": 17,
-                        "index": 16
+                        "col": 10,
+                        "index": 9
                     }
                 }
             ],
@@ -111,8 +54,8 @@
             },
             "end": {
                 "row": 1,
-                "col": 17,
-                "index": 16
+                "col": 10,
+                "index": 9
             }
         }
     ],

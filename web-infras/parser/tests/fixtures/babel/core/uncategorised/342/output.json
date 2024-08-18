@@ -5,7 +5,7 @@
             "kind": "ExpressionStatement",
             "expr": {
                 "kind": "BinaryExpression",
-                "operator": "<",
+                "operator": "+",
                 "left": {
                     "kind": "Identifer",
                     "name": "foo",
@@ -21,69 +21,12 @@
                     }
                 },
                 "right": {
-                    "kind": "BinaryExpression",
-                    "operator": "+",
-                    "left": {
-                        "kind": "UnaryExpression",
-                        "operator": "!",
-                        "argument": {
-                            "kind": "UpdateExpression",
-                            "operator": "--",
-                            "prefix": true,
-                            "argument": {
-                                "kind": "Identifer",
-                                "name": "bar",
-                                "start": {
-                                    "row": 1,
-                                    "col": 9,
-                                    "index": 8
-                                },
-                                "end": {
-                                    "row": 1,
-                                    "col": 12,
-                                    "index": 11
-                                }
-                            },
-                            "start": {
-                                "row": 1,
-                                "col": 7,
-                                "index": 6
-                            },
-                            "end": {
-                                "row": 1,
-                                "col": 12,
-                                "index": 11
-                            }
-                        },
-                        "start": {
-                            "row": 1,
-                            "col": 6,
-                            "index": 5
-                        },
-                        "end": {
-                            "row": 1,
-                            "col": 12,
-                            "index": 11
-                        }
-                    },
-                    "right": {
-                        "kind": "Identifer",
-                        "name": "baz",
-                        "start": {
-                            "row": 2,
-                            "col": 2,
-                            "index": 13
-                        },
-                        "end": {
-                            "row": 2,
-                            "col": 5,
-                            "index": 16
-                        }
-                    },
+                    "kind": "Identifer",
+                    "name": "baz",
                     "start": {
-                        "row": 1,
-                        "col": 6,
-                        "index": 5
+                        "row": 2,
+                        "col": 2,
+                        "index": 13
                     },
                     "end": {
                         "row": 2,

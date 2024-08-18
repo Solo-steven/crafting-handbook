@@ -130,6 +130,9 @@ export function createLexer(code: string) {
   function getSourceValue(): string {
     return context.tokenState.value;
   }
+  function getSourceValueByIndex(start: number, end: number) {
+    return getSliceStringFromCode(start, end);
+  }
   /**
    * Public API for getting string value which range from
    * last end token finish index and current token start index
@@ -346,6 +349,7 @@ export function createLexer(code: string) {
   return {
     getTokenKind,
     getSourceValue,
+    getSourceValueByIndex,
     getBeforeValue,
     getStartPosition,
     getEndPosition,
@@ -501,7 +505,22 @@ export function createLexer(code: string) {
           const next = getNextCharCodePoint();
           if (next === UnicodePoints.Not) {
             readHashTahComment();
-            return skipWhiteSpaceChangeLine();
+            break;
+          }
+          return;
+        }
+        case UnicodePoints.LessThen: {
+          const next = getNextCharCodePoint();
+          if (next === UnicodePoints.Not) {
+            eatTwoChar();
+            const ahead = getCharCodePoint();
+            const aheadNext = getNextCharCodePoint();
+            if (ahead === UnicodePoints.Minus && aheadNext === UnicodePoints.Minus) {
+              readComment();
+              break;
+            }
+            // should error <! is a unexpect token
+            throw new Error();
           }
           return;
         }
@@ -509,13 +528,13 @@ export function createLexer(code: string) {
           const next = getNextCharCodePoint();
           if (next === UnicodePoints.Divide) {
             readComment();
-            return skipWhiteSpaceChangeLine();
+            break;
           }
           if (next === UnicodePoints.Multi) {
             readCommentBlock();
-            return skipWhiteSpaceChangeLine();
+            break;
           }
-          // fall thorugh
+          return;
         }
         default:
           return;
@@ -672,7 +691,11 @@ export function createLexer(code: string) {
       case UnicodePoints.Digital8:
       case UnicodePoints.Digital9: {
         // Number Literal
-        return readNumberLiteral();
+        const numberLieral = readNumberLiteral();
+        if (isIdentifierNameStart()) {
+          throw lexicalError(ErrorMessageMap.babel_error_Identifier_directly_after_number);
+        }
+        return numberLieral;
       }
       case UnicodePoints.DoubleQuote: {
         // String Literal
@@ -757,10 +780,15 @@ export function createLexer(code: string) {
       case UnicodePoints.Equal:
         eatChar();
         return finishToken(SyntaxKinds.MinusAssignOperator);
-      // --
-      case UnicodePoints.Minus:
+      // -- or --->
+      case UnicodePoints.Minus: {
+        if (getNextCharCodePoint() === UnicodePoints.Minus) {
+          readComment();
+          return scan();
+        }
         eatChar();
         return finishToken(SyntaxKinds.DecreOperator);
+      }
       // -
       default:
         return finishToken(SyntaxKinds.MinusOperator);
@@ -998,10 +1026,10 @@ export function createLexer(code: string) {
         return finishToken(SyntaxKinds.QustionDotOperator);
       case UnicodePoints.Question:
         eatChar();
-        switch(getCharCodePoint()) {
+        switch (getCharCodePoint()) {
           case UnicodePoints.Equal: {
             eatChar();
-            return finishToken(SyntaxKinds.NullishAssignOperator)
+            return finishToken(SyntaxKinds.NullishAssignOperator);
           }
           default: {
             return finishToken(SyntaxKinds.NullishOperator);

@@ -158,8 +158,9 @@ export const ErrorMessageMap = {
   v8_error_invalid_hexadecimal_escape_sequence: "SyntaxError: Invalid hexadecimal escape sequence",
   // try: duplicate ctor in v8 runtime.
   v8_error_a_class_may_only_have_one_constructor: "SyntaxError: A class may only have one constructor",
-  // try: multi default in switch case 
-  v8_error_more_than_one_default_clause_in_switch_statement: "SyntaxError: More than one default clause in switch statement",
+  // try: multi default in switch case
+  v8_error_more_than_one_default_clause_in_switch_statement:
+    "SyntaxError: More than one default clause in switch statement",
   // try: `x: while (true) { x: while (true) { } }` in v8 runtime,
   v8_error_label_has_already_been_declared: "SyntaxError: Label has already been declared",
   // try: `import.meta` in babel playground when sourceType is script
