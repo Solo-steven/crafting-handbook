@@ -2890,7 +2890,7 @@ export function createParser(code: string, option?: ParserConfig) {
   function parsePrimaryExpression(): Expression {
     switch (getToken()) {
       case SyntaxKinds.LtOperator:
-        return parseJSXElementOrJSXFragment();
+        return parseJSXElementOrJSXFragment(false);
       case SyntaxKinds.DivideOperator:
       case SyntaxKinds.DivideAssignOperator:
         return parseRegexLiteral();
@@ -4224,12 +4224,12 @@ export function createParser(code: string, option?: ParserConfig) {
    *                   := JSXFragment
    * ```
    */
-  function parseJSXElementOrJSXFragment(): JSXElement | JSXFragment {
+  function parseJSXElementOrJSXFragment(inJSXChildren: boolean): JSXElement | JSXFragment {
     const lookaheadToken = lookahead();
     if (lookaheadToken.kind !== SyntaxKinds.GtOperator) {
-      return parseJSXElement();
+      return parseJSXElement(inJSXChildren);
     } else {
-      return parseJSXFragment();
+      return parseJSXFragment(inJSXChildren);
     }
   }
   /**
@@ -4240,8 +4240,8 @@ export function createParser(code: string, option?: ParserConfig) {
    * ```
    * @returns {JSXElement}
    */
-  function parseJSXElement(): JSXElement {
-    const opeingElement = parseJSXOpeingElement();
+  function parseJSXElement(inJSXChildren: boolean): JSXElement {
+    const opeingElement = parseJSXOpeingElement(inJSXChildren);
     if (opeingElement.selfClosing) {
       return Factory.createJSXElement(
         opeingElement,
@@ -4252,7 +4252,7 @@ export function createParser(code: string, option?: ParserConfig) {
       );
     }
     const children = parseJSXChildren();
-    const closingElement = parseJSXClosingElement();
+    const closingElement = parseJSXClosingElement(inJSXChildren);
     staticSematicEarlyErrorForJSXElement(opeingElement, closingElement);
     return Factory.createJSXElement(
       opeingElement,
@@ -4286,23 +4286,25 @@ export function createParser(code: string, option?: ParserConfig) {
    * ```
    * @returns {JSXOpeningElement}
    */
-  function parseJSXOpeingElement(): JSXOpeningElement {
+  function parseJSXOpeingElement(inJSXChildren: boolean): JSXOpeningElement {
     const { start } = expect(SyntaxKinds.LtOperator);
     const name = parseJSXElementName();
     const attributes = parseJSXAttributes();
     if (match(SyntaxKinds.GtOperator)) {
-      const { end } = expect(SyntaxKinds.GtOperator);
+      const end = getEndPosition();
+      nextTokenInJSXChildren(true);
       return Factory.createJSXOpeningElement(name, attributes, false, start, end);
     }
     if (match(SyntaxKinds.JSXSelfClosedToken)) {
-      const { end } = expect(SyntaxKinds.JSXSelfClosedToken);
+      const end = getEndPosition();
+      nextTokenInJSXChildren(inJSXChildren);
       return Factory.createJSXOpeningElement(name, attributes, true, start, end);
     }
     // for  `/ >`
     if(match(SyntaxKinds.DivideOperator) && lookahead().kind === SyntaxKinds.GtOperator) {
       nextToken();
       const end = getEndPosition();
-      nextToken();
+      nextTokenInJSXChildren(inJSXChildren)
       return Factory.createJSXOpeningElement(name, attributes, true, start, end);
     }
     throw createUnexpectError(null);
@@ -4396,8 +4398,10 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       // parse value
       if (match(SyntaxKinds.AssginOperator)) {
+        lexer.setJSXcontext(true);
         nextToken();
         if (match(SyntaxKinds.StringLiteral)) {
+          lexer.setJSXcontext(false);
           const value = parseStringLiteral();
           attribute.push(
             Factory.createJSXAttribute(
@@ -4410,7 +4414,7 @@ export function createParser(code: string, option?: ParserConfig) {
           continue;
         }
         if (match(SyntaxKinds.BracesLeftPunctuator)) {
-          const expression = parseJSXExpressionContainer();
+          const expression = parseJSXExpressionContainer(false);
           if (!expression.expression) {
             throw new Error("right hand side of jsx attribute must have expression if start with `{`");
           }
@@ -4424,7 +4428,7 @@ export function createParser(code: string, option?: ParserConfig) {
           );
           continue;
         }
-        const element = parseJSXElementOrJSXFragment();
+        const element = parseJSXElementOrJSXFragment(false);
         attribute.push(
           Factory.createJSXAttribute(
             name,
@@ -4464,7 +4468,7 @@ export function createParser(code: string, option?: ParserConfig) {
     const children: JSXElement["children"] = [];
     while (!match(SyntaxKinds.JSXCloseTagStart) && !match(SyntaxKinds.EOFToken)) {
       if (match(SyntaxKinds.LtOperator)) {
-        children.push(parseJSXElementOrJSXFragment());
+        children.push(parseJSXElementOrJSXFragment(true));
         continue;
       }
       if (match(SyntaxKinds.BracesLeftPunctuator)) {
@@ -4481,7 +4485,7 @@ export function createParser(code: string, option?: ParserConfig) {
             ),
           );
         }
-        children.push(parseJSXExpressionContainer());
+        children.push(parseJSXExpressionContainer(true));
         continue;
       }
       children.push(parseJSXText());
@@ -4495,10 +4499,10 @@ export function createParser(code: string, option?: ParserConfig) {
    * ```
    * @returns {JSXExpressionContainer}
    */
-  function parseJSXExpressionContainer(): JSXExpressionContainer {
+  function parseJSXExpressionContainer(inJSXChildren: boolean): JSXExpressionContainer {
     const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
     const expression = match(SyntaxKinds.BracesRightPunctuator) ? null : parseAssignmentExpressionAllowIn();
-    const { end } = expect(SyntaxKinds.BracesRightPunctuator);
+    const { end } = expectInJSXChildren(SyntaxKinds.BracesRightPunctuator, inJSXChildren);
     return Factory.createsJSXExpressionContainer(expression, start, end);
   }
   /**
@@ -4508,32 +4512,38 @@ export function createParser(code: string, option?: ParserConfig) {
    * ```
    * @returns {JSXClosingElement}
    */
-  function parseJSXClosingElement(): JSXClosingElement {
+  function parseJSXClosingElement(inJSXChildren: boolean): JSXClosingElement {
     const { start } = expect(SyntaxKinds.JSXCloseTagStart);
     const name = parseJSXElementName();
-    const { end } = expect(SyntaxKinds.GtOperator);
+    const { end } = expectInJSXChildren(SyntaxKinds.GtOperator, inJSXChildren);
     return Factory.createJSXClosingElement(name, start, end);
   }
   /**
-   * Same as `parseIdentifierWithKeyword` function.
+   * 
    * @returns {JSXIdentifier}
    */
   function parseJSXIdentifier(): JSXIdentifier {
-    const { start, end, value } = expect(IdentiferWithKeyworArray);
+    let { start, end } = expect(IdentiferWithKeyworArray);
+    while(1) {
+      if(match(SyntaxKinds.MinusOperator)) {
+        end = getEndPosition();
+        nextToken();
+      }else {
+        break;
+      }
+      if(match(IdentiferWithKeyworArray)) {
+        end = getEndPosition();
+        nextToken();
+      }else {
+        break;
+      }
+    }
+    const value = lexer.getSourceValueByIndex(start.index, end.index);
     return Factory.createJSXIdentifier(value, start, end);
   }
-  function parseJSXText(): JSXText {
-    let value = "";
-    const start = getStartPosition();
-    let end = getEndPosition();
-    while (!match([SyntaxKinds.EOFToken, SyntaxKinds.JSXCloseTagStart, SyntaxKinds.BracesLeftPunctuator])) {
-      value += lexer.getBeforeValue();
-      value += getSourceValue();
-      end = getEndPosition();
-      nextToken();
-    }
-    value += lexer.getBeforeValue();
-    return Factory.createJSXText(value, start, end);
+  function parseJSXText() {
+    const { start, end , value } = expect(SyntaxKinds.JSXText);
+    return Factory.createJSXText(value, start, end,);
   }
   /**
    * Parse JSXFragment
@@ -4542,12 +4552,12 @@ export function createParser(code: string, option?: ParserConfig) {
    * ```
    * @returns {JSXFragment}
    */
-  function parseJSXFragment(): JSXFragment {
+  function parseJSXFragment(inJSXChildren: boolean): JSXFragment {
     const { start: openingStart } = expect(SyntaxKinds.LtOperator);
-    const { end: openingEnd } = expect(SyntaxKinds.GtOperator);
+    const { end: openingEnd } = expectInJSXChildren(SyntaxKinds.GtOperator, true);
     const children = parseJSXChildren();
     const { start: closingStart } = expect(SyntaxKinds.JSXCloseTagStart);
-    const { end: closingEnd } = expect(SyntaxKinds.GtOperator);
+    const { end: closingEnd } = expectInJSXChildren(SyntaxKinds.GtOperator, inJSXChildren);
     return Factory.createJSXFragment(
       Factory.createJSXOpeningFragment(openingStart, openingEnd),
       Factory.createJSXClosingFragment(closingStart, closingEnd),
@@ -4556,7 +4566,29 @@ export function createParser(code: string, option?: ParserConfig) {
       cloneSourcePosition(closingEnd),
     );
   }
-
+  function expectInJSXChildren(kind: SyntaxKinds, inJSXChildren: boolean) {
+    if (match(kind)) {
+      const metaData = {
+        value: getSourceValue(),
+        start: getStartPosition(),
+        end: getEndPosition(),
+      };
+      if(inJSXChildren) {
+        lexer.nextTokenInJSXChildren();
+      }else {
+        lexer.nextToken();
+      }
+      return metaData;
+    }
+    throw createUnexpectError(kind, "");
+  }
+  function nextTokenInJSXChildren(inJSXChildren: boolean) {
+    if(inJSXChildren) {
+      lexer.nextTokenInJSXChildren();
+    }else {
+      lexer.nextToken();
+    }
+  }
   /** ================================================================================
    *  Parse Pattern
    *  entry point: https://tc39.es/ecma262/#sec-destructuring-binding-patterns

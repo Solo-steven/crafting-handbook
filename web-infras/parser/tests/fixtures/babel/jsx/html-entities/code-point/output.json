@@ -1,0 +1,113 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "JSXElement",
+                "openingElement": {
+                    "kind": "JSXOpeningElement",
+                    "name": {
+                        "kind": "JSXIdentifier",
+                        "name": "a",
+                        "start": {
+                            "row": 1,
+                            "col": 2,
+                            "index": 1
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 3,
+                            "index": 2
+                        }
+                    },
+                    "selfClosing": false,
+                    "attributes": [],
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 4,
+                        "index": 3
+                    }
+                },
+                "closingElement": {
+                    "kind": "JSXClosingElement",
+                    "name": {
+                        "kind": "JSXIdentifier",
+                        "name": "a",
+                        "start": {
+                            "row": 2,
+                            "col": 107,
+                            "index": 110
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 108,
+                            "index": 111
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 105,
+                        "index": 108
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 109,
+                        "index": 112
+                    }
+                },
+                "children": [
+                    {
+                        "kind": 10223,
+                        "value": "&#1234;\n    &#xABC;\n    &#00000000000000000000001234;\n    &#x0000000000000000000000ABC;\n    &#0000;\n",
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 105,
+                            "index": 108
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 4,
+                    "index": 3
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 4,
+                "index": 3
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 113
+    }
+}

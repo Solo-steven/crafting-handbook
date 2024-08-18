@@ -1,0 +1,157 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "it",
+                "start": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "generator": true,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "ExpressionStatement",
+                        "expr": {
+                            "kind": "YieldExpression",
+                            "argument": {
+                                "kind": "JSXElement",
+                                "openingElement": {
+                                    "kind": "JSXOpeningElement",
+                                    "name": {
+                                        "kind": "JSXIdentifier",
+                                        "name": "a",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 12,
+                                            "index": 26
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 13,
+                                            "index": 27
+                                        }
+                                    },
+                                    "selfClosing": false,
+                                    "attributes": [],
+                                    "start": {
+                                        "row": 2,
+                                        "col": 11,
+                                        "index": 25
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 14,
+                                        "index": 28
+                                    }
+                                },
+                                "closingElement": {
+                                    "kind": "JSXClosingElement",
+                                    "name": {
+                                        "kind": "JSXIdentifier",
+                                        "name": "a",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 16,
+                                            "index": 30
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 17,
+                                            "index": 31
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 2,
+                                        "col": 14,
+                                        "index": 28
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 18,
+                                        "index": 32
+                                    }
+                                },
+                                "children": [],
+                                "start": {
+                                    "row": 2,
+                                    "col": 11,
+                                    "index": 25
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 14,
+                                    "index": 28
+                                }
+                            },
+                            "delegate": false,
+                            "start": {
+                                "row": 2,
+                                "col": 5,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 14,
+                                "index": 28
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 19
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 14,
+                            "index": 28
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 14,
+                    "index": 13
+                },
+                "end": {
+                    "row": 3,
+                    "col": 2,
+                    "index": 35
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 3,
+                "col": 2,
+                "index": 35
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 36
+    }
+}

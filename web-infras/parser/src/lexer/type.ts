@@ -53,3 +53,7 @@ export type LexerSematicState = {
 export type LexerTemplateContext = {
   stackCounter: Array<number>;
 };
+
+export type LexerJSXContext = {
+  shouldParseStringLiteralAsJSXStringLiteral: boolean;
+};

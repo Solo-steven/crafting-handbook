@@ -12,6 +12,7 @@ import {
   LexerSematicState,
   LexerTokenState,
   LookaheadToken,
+  LexerJSXContext,
 } from "./type";
 import {
   isCodePointLineTerminate,
@@ -35,6 +36,8 @@ interface Context {
   sematicState: LexerSematicState;
   // Ad-hoc data structure for tokenize template literal in context
   templateContext: LexerTemplateContext;
+  // Ad-hoc data structure for tokenize template literal with context.
+  jsxContext: LexerJSXContext
 }
 /**
  * Create a empty lexer context
@@ -57,6 +60,7 @@ function createContext(code: string): Context {
       isTemplateLiteralBreakEscapRule: false,
     },
     templateContext: { stackCounter: [] },
+    jsxContext: { shouldParseStringLiteralAsJSXStringLiteral: false }
   };
 }
 /**
@@ -77,6 +81,7 @@ function cloneContext(source: Context): Context {
       ...source.sematicState,
     },
     templateContext: { stackCounter: [...source.templateContext.stackCounter] },
+    jsxContext: {...source.jsxContext},
   };
 }
 
@@ -134,18 +139,6 @@ export function createLexer(code: string) {
     return getSliceStringFromCode(start, end);
   }
   /**
-   * Public API for getting string value which range from
-   * last end token finish index and current token start index
-   * - NOTE: this API only used for JSX parse
-   * @returns {string}
-   */
-  function getBeforeValue(): string {
-    return getSliceStringFromCode(
-      context.tokenState.lastTokenEndPosition.index,
-      context.tokenState.startPosition.index,
-    );
-  }
-  /**
    * Public API for get source position of current token
    * @returns {SourcePosition}
    */
@@ -175,6 +168,15 @@ export function createLexer(code: string) {
    */
   function nextToken(): void {
     scan();
+  }
+  /**
+   * 
+   */
+  function nextTokenInJSXChildren(): void {
+    scanInJSXChildren();
+  }
+  function setJSXcontext(flag: boolean): void {
+    context.jsxContext.shouldParseStringLiteralAsJSXStringLiteral = flag;
   }
   /**
    * Public API for lookahead token.
@@ -350,7 +352,6 @@ export function createLexer(code: string) {
     getTokenKind,
     getSourceValue,
     getSourceValueByIndex,
-    getBeforeValue,
     getStartPosition,
     getEndPosition,
     getLineTerminatorFlag,
@@ -360,6 +361,9 @@ export function createLexer(code: string) {
     nextToken,
     lookahead,
     readRegex,
+    // only used by JSX
+    nextTokenInJSXChildren,
+    setJSXcontext
   };
   /** ===========================================================
    *             Private API for Lexer
@@ -594,14 +598,14 @@ export function createLexer(code: string) {
    * to other sub state mahine for reading token.
    * @returns {SyntaxKinds}
    */
-  function scan(): SyntaxKinds {
+  function scan(): SyntaxKinds { 
     skipWhiteSpaceChangeLine();
     const char = getCharCodePoint();
     startToken();
-    if (!char) {
-      return finishToken(SyntaxKinds.EOFToken);
-    }
     switch (char) {
+      case undefined: {
+        return finishToken(SyntaxKinds.EOFToken);
+      }
       /** ==========================================
        *              Punctuators
        *  ==========================================
@@ -746,6 +750,29 @@ export function createLexer(code: string) {
         throw lexicalError(ErrorMessageMap.v8_error_invalid_unicode_escape_sequence);
       }
     }
+  }
+  function scanInJSXChildren() {
+    let isJSXTextExist = false;
+    skipWhiteSpaceChangeLine();
+    startToken();
+    loop: while(!isEOF()) {
+      const code = getCharCodePoint();
+      switch(code) {
+        case undefined:
+        case UnicodePoints.BracesLeft:
+        case UnicodePoints.LessThen: {
+          break loop;
+        }
+        default: {
+          isJSXTextExist = true;
+          eatChar();
+        }
+      }
+    }
+    if(!isJSXTextExist) {
+      return scan();
+    }
+    return finishToken(SyntaxKinds.JSXText);
   }
   function isIdentifierNameStart() {
     const code = getCharCodePoint();
@@ -1621,6 +1648,9 @@ export function createLexer(code: string) {
    * @returns {SyntaxKinds}
    */
   function readStringLiteral(mode: "Single" | "Double"): SyntaxKinds {
+    if(context.jsxContext.shouldParseStringLiteralAsJSXStringLiteral) {
+      return readJSXStringLiteral(mode);
+    }
     context.sematicState.isStringLiteralContainNonStrictEscap = false;
     // eat mode
     const modeInCodepoint = mode === "Single" ? UnicodePoints.SingleQuote : UnicodePoints.DoubleQuote;
@@ -1790,6 +1820,17 @@ export function createLexer(code: string) {
         return;
       }
     }
+  }
+  function readJSXStringLiteral(mode: "Single" | "Double") {
+    const modeInCodepoint = mode === "Single" ? UnicodePoints.SingleQuote : UnicodePoints.DoubleQuote;
+    eatChar();
+    const indexAfterStartMode = getCurrentIndex();
+    while(!isEOF() && getCharCodePoint() !== modeInCodepoint) {
+      eatChar();
+    }
+    const indexBeforeEndMode = getCurrentIndex();
+    eatChar();
+    return finishToken(SyntaxKinds.StringLiteral,getSourceValueByIndex(indexAfterStartMode, indexBeforeEndMode));
   }
   //  ===========================================================
   //       Identifier and Keywrod Sub state mahcine

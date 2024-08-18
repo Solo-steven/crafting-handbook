@@ -1,0 +1,645 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "JSXFragment",
+                "openingFragment": {
+                    "kind": "JSXOpeningFragment",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 3,
+                        "index": 2
+                    }
+                },
+                "closingFragment": {
+                    "kind": "JSXClosingFragment",
+                    "start": {
+                        "row": 6,
+                        "col": 1,
+                        "index": 150
+                    },
+                    "end": {
+                        "row": 6,
+                        "col": 4,
+                        "index": 153
+                    }
+                },
+                "children": [
+                    {
+                        "kind": "JSXElement",
+                        "openingElement": {
+                            "kind": "JSXOpeningElement",
+                            "name": {
+                                "kind": "JSXIdentifier",
+                                "name": "Select",
+                                "start": {
+                                    "row": 2,
+                                    "col": 2,
+                                    "index": 4
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 8,
+                                    "index": 10
+                                }
+                            },
+                            "selfClosing": true,
+                            "attributes": [
+                                {
+                                    "kind": "JSXAttribute",
+                                    "name": {
+                                        "kind": "JSXIdentifier",
+                                        "name": "prop",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 9,
+                                            "index": 11
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 13,
+                                            "index": 15
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "JSXExpressionContainer",
+                                        "expression": {
+                                            "kind": "ObjectExpression",
+                                            "properties": [
+                                                {
+                                                    "kind": "ObjectProperty",
+                                                    "computed": false,
+                                                    "shorted": false,
+                                                    "key": {
+                                                        "kind": "Identifer",
+                                                        "name": "function",
+                                                        "start": {
+                                                            "row": 2,
+                                                            "col": 17,
+                                                            "index": 19
+                                                        },
+                                                        "end": {
+                                                            "row": 2,
+                                                            "col": 25,
+                                                            "index": 27
+                                                        }
+                                                    },
+                                                    "value": {
+                                                        "kind": "StringLiteral",
+                                                        "value": "test",
+                                                        "start": {
+                                                            "row": 2,
+                                                            "col": 27,
+                                                            "index": 29
+                                                        },
+                                                        "end": {
+                                                            "row": 2,
+                                                            "col": 33,
+                                                            "index": 35
+                                                        }
+                                                    },
+                                                    "start": {
+                                                        "row": 2,
+                                                        "col": 17,
+                                                        "index": 19
+                                                    },
+                                                    "end": {
+                                                        "row": 2,
+                                                        "col": 33,
+                                                        "index": 35
+                                                    }
+                                                }
+                                            ],
+                                            "trailingComma": false,
+                                            "start": {
+                                                "row": 2,
+                                                "col": 15,
+                                                "index": 17
+                                            },
+                                            "end": {
+                                                "row": 2,
+                                                "col": 35,
+                                                "index": 37
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 2,
+                                            "col": 14,
+                                            "index": 16
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 36,
+                                            "index": 38
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 2,
+                                        "col": 9,
+                                        "index": 11
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 36,
+                                        "index": 38
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 2,
+                                "col": 1,
+                                "index": 3
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 39,
+                                "index": 41
+                            }
+                        },
+                        "closingElement": null,
+                        "children": [],
+                        "start": {
+                            "row": 2,
+                            "col": 1,
+                            "index": 3
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 39,
+                            "index": 41
+                        }
+                    },
+                    {
+                        "kind": "JSXElement",
+                        "openingElement": {
+                            "kind": "JSXOpeningElement",
+                            "name": {
+                                "kind": "JSXIdentifier",
+                                "name": "Select",
+                                "start": {
+                                    "row": 3,
+                                    "col": 2,
+                                    "index": 43
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 8,
+                                    "index": 49
+                                }
+                            },
+                            "selfClosing": true,
+                            "attributes": [
+                                {
+                                    "kind": "JSXAttribute",
+                                    "name": {
+                                        "kind": "JSXIdentifier",
+                                        "name": "prop",
+                                        "start": {
+                                            "row": 3,
+                                            "col": 9,
+                                            "index": 50
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 13,
+                                            "index": 54
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "JSXExpressionContainer",
+                                        "expression": {
+                                            "kind": "ObjectExpression",
+                                            "properties": [
+                                                {
+                                                    "kind": "ObjectProperty",
+                                                    "computed": false,
+                                                    "shorted": false,
+                                                    "key": {
+                                                        "kind": "Identifer",
+                                                        "name": "class",
+                                                        "start": {
+                                                            "row": 3,
+                                                            "col": 17,
+                                                            "index": 58
+                                                        },
+                                                        "end": {
+                                                            "row": 3,
+                                                            "col": 22,
+                                                            "index": 63
+                                                        }
+                                                    },
+                                                    "value": {
+                                                        "kind": "StringLiteral",
+                                                        "value": "test",
+                                                        "start": {
+                                                            "row": 3,
+                                                            "col": 24,
+                                                            "index": 65
+                                                        },
+                                                        "end": {
+                                                            "row": 3,
+                                                            "col": 30,
+                                                            "index": 71
+                                                        }
+                                                    },
+                                                    "start": {
+                                                        "row": 3,
+                                                        "col": 17,
+                                                        "index": 58
+                                                    },
+                                                    "end": {
+                                                        "row": 3,
+                                                        "col": 30,
+                                                        "index": 71
+                                                    }
+                                                }
+                                            ],
+                                            "trailingComma": false,
+                                            "start": {
+                                                "row": 3,
+                                                "col": 15,
+                                                "index": 56
+                                            },
+                                            "end": {
+                                                "row": 3,
+                                                "col": 32,
+                                                "index": 73
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 3,
+                                            "col": 14,
+                                            "index": 55
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 33,
+                                            "index": 74
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 3,
+                                        "col": 9,
+                                        "index": 50
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 33,
+                                        "index": 74
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 3,
+                                "col": 1,
+                                "index": 42
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 36,
+                                "index": 77
+                            }
+                        },
+                        "closingElement": null,
+                        "children": [],
+                        "start": {
+                            "row": 3,
+                            "col": 1,
+                            "index": 42
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 36,
+                            "index": 77
+                        }
+                    },
+                    {
+                        "kind": "JSXElement",
+                        "openingElement": {
+                            "kind": "JSXOpeningElement",
+                            "name": {
+                                "kind": "JSXIdentifier",
+                                "name": "Select",
+                                "start": {
+                                    "row": 4,
+                                    "col": 2,
+                                    "index": 79
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 8,
+                                    "index": 85
+                                }
+                            },
+                            "selfClosing": true,
+                            "attributes": [
+                                {
+                                    "kind": "JSXAttribute",
+                                    "name": {
+                                        "kind": "JSXIdentifier",
+                                        "name": "prop",
+                                        "start": {
+                                            "row": 4,
+                                            "col": 9,
+                                            "index": 86
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 13,
+                                            "index": 90
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "JSXExpressionContainer",
+                                        "expression": {
+                                            "kind": "ObjectExpression",
+                                            "properties": [
+                                                {
+                                                    "kind": "ObjectProperty",
+                                                    "computed": false,
+                                                    "shorted": false,
+                                                    "key": {
+                                                        "kind": "Identifer",
+                                                        "name": "delete",
+                                                        "start": {
+                                                            "row": 4,
+                                                            "col": 17,
+                                                            "index": 94
+                                                        },
+                                                        "end": {
+                                                            "row": 4,
+                                                            "col": 23,
+                                                            "index": 100
+                                                        }
+                                                    },
+                                                    "value": {
+                                                        "kind": "StringLiteral",
+                                                        "value": "test",
+                                                        "start": {
+                                                            "row": 4,
+                                                            "col": 25,
+                                                            "index": 102
+                                                        },
+                                                        "end": {
+                                                            "row": 4,
+                                                            "col": 31,
+                                                            "index": 108
+                                                        }
+                                                    },
+                                                    "start": {
+                                                        "row": 4,
+                                                        "col": 17,
+                                                        "index": 94
+                                                    },
+                                                    "end": {
+                                                        "row": 4,
+                                                        "col": 31,
+                                                        "index": 108
+                                                    }
+                                                }
+                                            ],
+                                            "trailingComma": false,
+                                            "start": {
+                                                "row": 4,
+                                                "col": 15,
+                                                "index": 92
+                                            },
+                                            "end": {
+                                                "row": 4,
+                                                "col": 33,
+                                                "index": 110
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 4,
+                                            "col": 14,
+                                            "index": 91
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 34,
+                                            "index": 111
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 4,
+                                        "col": 9,
+                                        "index": 86
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 34,
+                                        "index": 111
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 4,
+                                "col": 1,
+                                "index": 78
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 37,
+                                "index": 114
+                            }
+                        },
+                        "closingElement": null,
+                        "children": [],
+                        "start": {
+                            "row": 4,
+                            "col": 1,
+                            "index": 78
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 37,
+                            "index": 114
+                        }
+                    },
+                    {
+                        "kind": "JSXElement",
+                        "openingElement": {
+                            "kind": "JSXOpeningElement",
+                            "name": {
+                                "kind": "JSXIdentifier",
+                                "name": "Select",
+                                "start": {
+                                    "row": 5,
+                                    "col": 2,
+                                    "index": 116
+                                },
+                                "end": {
+                                    "row": 5,
+                                    "col": 8,
+                                    "index": 122
+                                }
+                            },
+                            "selfClosing": true,
+                            "attributes": [
+                                {
+                                    "kind": "JSXAttribute",
+                                    "name": {
+                                        "kind": "JSXIdentifier",
+                                        "name": "prop",
+                                        "start": {
+                                            "row": 5,
+                                            "col": 9,
+                                            "index": 123
+                                        },
+                                        "end": {
+                                            "row": 5,
+                                            "col": 13,
+                                            "index": 127
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "JSXExpressionContainer",
+                                        "expression": {
+                                            "kind": "ObjectExpression",
+                                            "properties": [
+                                                {
+                                                    "kind": "ObjectProperty",
+                                                    "computed": false,
+                                                    "shorted": false,
+                                                    "key": {
+                                                        "kind": "Identifer",
+                                                        "name": "enum",
+                                                        "start": {
+                                                            "row": 5,
+                                                            "col": 17,
+                                                            "index": 131
+                                                        },
+                                                        "end": {
+                                                            "row": 5,
+                                                            "col": 21,
+                                                            "index": 135
+                                                        }
+                                                    },
+                                                    "value": {
+                                                        "kind": "StringLiteral",
+                                                        "value": "test",
+                                                        "start": {
+                                                            "row": 5,
+                                                            "col": 23,
+                                                            "index": 137
+                                                        },
+                                                        "end": {
+                                                            "row": 5,
+                                                            "col": 29,
+                                                            "index": 143
+                                                        }
+                                                    },
+                                                    "start": {
+                                                        "row": 5,
+                                                        "col": 17,
+                                                        "index": 131
+                                                    },
+                                                    "end": {
+                                                        "row": 5,
+                                                        "col": 29,
+                                                        "index": 143
+                                                    }
+                                                }
+                                            ],
+                                            "trailingComma": false,
+                                            "start": {
+                                                "row": 5,
+                                                "col": 15,
+                                                "index": 129
+                                            },
+                                            "end": {
+                                                "row": 5,
+                                                "col": 31,
+                                                "index": 145
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 5,
+                                            "col": 14,
+                                            "index": 128
+                                        },
+                                        "end": {
+                                            "row": 5,
+                                            "col": 32,
+                                            "index": 146
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 5,
+                                        "col": 9,
+                                        "index": 123
+                                    },
+                                    "end": {
+                                        "row": 5,
+                                        "col": 32,
+                                        "index": 146
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 5,
+                                "col": 1,
+                                "index": 115
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 35,
+                                "index": 149
+                            }
+                        },
+                        "closingElement": null,
+                        "children": [],
+                        "start": {
+                            "row": 5,
+                            "col": 1,
+                            "index": 115
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 35,
+                            "index": 149
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 6,
+                    "col": 4,
+                    "index": 153
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 6,
+                "col": 4,
+                "index": 153
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 7,
+        "col": 1,
+        "index": 154
+    }
+}

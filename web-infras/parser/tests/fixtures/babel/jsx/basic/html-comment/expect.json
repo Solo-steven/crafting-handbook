@@ -1,0 +1,10 @@
+{
+  "expect": "Pass",
+  "config": {
+    "sourceType": "script",
+    "plugins": [
+      "jsx",
+      "flow"
+    ]
+  }
+}

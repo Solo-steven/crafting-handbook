@@ -2,8 +2,28 @@
   "failedResult": [
     {
       "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no-plugin-fragment/input.js",
+      "fileId": "/babel/jsx/errors/_no-plugin-fragment"
+    },
+    {
+      "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no-plugin-jsx-expression/input.js",
+      "fileId": "/babel/jsx/errors/_no-plugin-jsx-expression"
+    },
+    {
+      "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2022/module-string-names/export-name-has-lone-surrogate/input.js",
       "fileId": "/babel/es2022/module-string-names/export-name-has-lone-surrogate"
+    },
+    {
+      "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no_plugin/input.js",
+      "fileId": "/babel/jsx/errors/_no_plugin"
+    },
+    {
+      "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no_plugin-non-BMP-identifier/input.js",
+      "fileId": "/babel/jsx/errors/_no_plugin-non-BMP-identifier"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -12,8 +32,23 @@
     },
     {
       "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/html-comment-module/input.js",
+      "fileId": "/babel/jsx/errors/html-comment-module"
+    },
+    {
+      "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/jsx-text-closing-curly-brace/input.js",
+      "fileId": "/babel/jsx/errors/jsx-text-closing-curly-brace"
+    },
+    {
+      "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/expression/primary/literal/regular-expression/migrated_0006/input.js",
       "fileId": "/esprima/expression/primary/literal/regular-expression/migrated_0006"
+    },
+    {
+      "kind": "ExpectFailedButPass",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/unicode-escape-in-identifier/input.js",
+      "fileId": "/babel/jsx/errors/unicode-escape-in-identifier"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -33,5 +68,46 @@
       "reason": "Parse Error"
     }
   ],
-  "skipResult": []
+  "skipResult": [
+    {
+      "fileId": "/babel/jsx/errors/_no-plugin-ts-type-param",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no-plugin-ts-type-param/input.js"
+    },
+    {
+      "fileId": "/babel/jsx/errors/_no-plugin-ts-type-param-no-flow",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no-plugin-ts-type-param-no-flow/input.js"
+    },
+    {
+      "fileId": "/babel/jsx/errors/_no-plugin-ts-type-param-no-flow-babel-7",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no-plugin-ts-type-param-no-flow-babel-7/input.js"
+    },
+    {
+      "fileId": "/babel/jsx/basic/2",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/basic/2/input.js"
+    },
+    {
+      "fileId": "/babel/jsx/basic/21",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/basic/21/input.js"
+    },
+    {
+      "fileId": "/babel/jsx/basic/3",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/basic/3/input.js"
+    },
+    {
+      "fileId": "/babel/jsx/errors/attribute-sequence-expression-babel-7",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/attribute-sequence-expression-babel-7/input.js"
+    },
+    {
+      "fileId": "/babel/jsx/errors/sequence-expression-babel-7",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/sequence-expression-babel-7/input.js"
+    },
+    {
+      "fileId": "/babel/jsx/basic/jsx-text-closing-angle-bracket-babel-7",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/basic/jsx-text-closing-angle-bracket-babel-7/input.js"
+    },
+    {
+      "fileId": "/babel/jsx/basic/spread-text",
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/basic/spread-text/input.js"
+    }
+  ]
 }
