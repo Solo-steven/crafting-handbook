@@ -1,0 +1,368 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "JSXElement",
+                "openingElement": {
+                    "kind": "JSXOpeningElement",
+                    "name": {
+                        "kind": "JSXMemberExpression",
+                        "object": {
+                            "kind": "JSXMemberExpression",
+                            "object": {
+                                "kind": "JSXMemberExpression",
+                                "object": {
+                                    "kind": "JSXMemberExpression",
+                                    "object": {
+                                        "kind": "JSXMemberExpression",
+                                        "object": {
+                                            "kind": "JSXIdentifier",
+                                            "name": "SolarSystem",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 2,
+                                                "index": 1
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 13,
+                                                "index": 12
+                                            }
+                                        },
+                                        "property": {
+                                            "kind": "JSXIdentifier",
+                                            "name": "Earth",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 14,
+                                                "index": 13
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 19,
+                                                "index": 18
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 1,
+                                            "col": 2,
+                                            "index": 1
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 19,
+                                            "index": 18
+                                        }
+                                    },
+                                    "property": {
+                                        "kind": "JSXIdentifier",
+                                        "name": "America",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 20,
+                                            "index": 19
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 27,
+                                            "index": 26
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 2,
+                                        "index": 1
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 27,
+                                        "index": 26
+                                    }
+                                },
+                                "property": {
+                                    "kind": "JSXIdentifier",
+                                    "name": "USA",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 28,
+                                        "index": 27
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 31,
+                                        "index": 30
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 2,
+                                    "index": 1
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 31,
+                                    "index": 30
+                                }
+                            },
+                            "property": {
+                                "kind": "JSXIdentifier",
+                                "name": "California",
+                                "start": {
+                                    "row": 1,
+                                    "col": 32,
+                                    "index": 31
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 42,
+                                    "index": 41
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 2,
+                                "index": 1
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 42,
+                                "index": 41
+                            }
+                        },
+                        "property": {
+                            "kind": "JSXIdentifier",
+                            "name": "mountainView",
+                            "start": {
+                                "row": 1,
+                                "col": 43,
+                                "index": 42
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 55,
+                                "index": 54
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 2,
+                            "index": 1
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 55,
+                            "index": 54
+                        }
+                    },
+                    "selfClosing": false,
+                    "attributes": [],
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 56,
+                        "index": 55
+                    }
+                },
+                "closingElement": {
+                    "kind": "JSXClosingElement",
+                    "name": {
+                        "kind": "JSXMemberExpression",
+                        "object": {
+                            "kind": "JSXMemberExpression",
+                            "object": {
+                                "kind": "JSXMemberExpression",
+                                "object": {
+                                    "kind": "JSXMemberExpression",
+                                    "object": {
+                                        "kind": "JSXMemberExpression",
+                                        "object": {
+                                            "kind": "JSXIdentifier",
+                                            "name": "SolarSystem",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 58,
+                                                "index": 57
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 69,
+                                                "index": 68
+                                            }
+                                        },
+                                        "property": {
+                                            "kind": "JSXIdentifier",
+                                            "name": "Earth",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 70,
+                                                "index": 69
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 75,
+                                                "index": 74
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 1,
+                                            "col": 58,
+                                            "index": 57
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 75,
+                                            "index": 74
+                                        }
+                                    },
+                                    "property": {
+                                        "kind": "JSXIdentifier",
+                                        "name": "America",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 76,
+                                            "index": 75
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 83,
+                                            "index": 82
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 58,
+                                        "index": 57
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 83,
+                                        "index": 82
+                                    }
+                                },
+                                "property": {
+                                    "kind": "JSXIdentifier",
+                                    "name": "USA",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 84,
+                                        "index": 83
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 87,
+                                        "index": 86
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 58,
+                                    "index": 57
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 87,
+                                    "index": 86
+                                }
+                            },
+                            "property": {
+                                "kind": "JSXIdentifier",
+                                "name": "California",
+                                "start": {
+                                    "row": 1,
+                                    "col": 88,
+                                    "index": 87
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 98,
+                                    "index": 97
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 58,
+                                "index": 57
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 98,
+                                "index": 97
+                            }
+                        },
+                        "property": {
+                            "kind": "JSXIdentifier",
+                            "name": "mountainView",
+                            "start": {
+                                "row": 1,
+                                "col": 99,
+                                "index": 98
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 111,
+                                "index": 110
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 58,
+                            "index": 57
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 111,
+                            "index": 110
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 56,
+                        "index": 55
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 112,
+                        "index": 111
+                    }
+                },
+                "children": [],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 56,
+                    "index": 55
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 56,
+                "index": 55
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 112
+    }
+}

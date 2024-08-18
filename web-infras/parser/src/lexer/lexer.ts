@@ -429,9 +429,19 @@ export function createLexer(code: string) {
    * @returns {string}
    */
   function getNextCharCodePoint(): number | undefined {
-    const curCodePoint = getCharCodePoint() as number;
+    const curCodePoint = getCharCodePoint();
+    if(!curCodePoint) return;
     const nextCharStep = curCodePoint > 0xffff ? 2 : 1;
     return context.cursor.code.codePointAt(context.cursor.pos + nextCharStep);
+  }
+  function getNextNextCharCodePoint(): number | undefined {
+    const curCodePoint = getCharCodePoint();
+    if(!curCodePoint) return;
+    const nextCharStep = curCodePoint > 0xffff ? 2 : 1;
+    const nextCodePoint = context.cursor.code.codePointAt(context.cursor.pos + nextCharStep);
+    if(!nextCodePoint) return;
+    const nextNextCharStep = nextCodePoint > 0xffff ? 2: 1;
+    return context.cursor.code.codePointAt(context.cursor.pos + nextCharStep + nextNextCharStep);
   }
   /**
    * Private API for checking is current reach EOF or not,
@@ -475,6 +485,7 @@ export function createLexer(code: string) {
    * @return {void}
    */
   function skipWhiteSpaceChangeLine(): void {
+    let haveChangeLine = context.cursor.pos === 0;
     while (!isEOF()) {
       switch (getCharCodePoint()) {
         case UnicodePoints.ChangeLine:
@@ -482,6 +493,7 @@ export function createLexer(code: string) {
         case UnicodePoints.LS:
         case UnicodePoints.PS:
           eatChangeLine();
+          haveChangeLine = true;
           break;
         case UnicodePoints.WhiteSpace:
         case UnicodePoints.NoBreakSpace:
@@ -532,6 +544,16 @@ export function createLexer(code: string) {
           }
           if (next === UnicodePoints.Multi) {
             readCommentBlock();
+            break;
+          }
+          return;
+        }
+        // HTML close comment
+        case UnicodePoints.Minus: {
+          const next = getNextCharCodePoint();
+          if(haveChangeLine && next === UnicodePoints.Minus && getNextNextCharCodePoint() === UnicodePoints.GreaterThen) {
+            eatChar();
+            readComment();
             break;
           }
           return;
@@ -780,12 +802,8 @@ export function createLexer(code: string) {
       case UnicodePoints.Equal:
         eatChar();
         return finishToken(SyntaxKinds.MinusAssignOperator);
-      // -- or --->
+      // --
       case UnicodePoints.Minus: {
-        if (getNextCharCodePoint() === UnicodePoints.Minus) {
-          readComment();
-          return scan();
-        }
         eatChar();
         return finishToken(SyntaxKinds.DecreOperator);
       }

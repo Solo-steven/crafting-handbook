@@ -1,0 +1,152 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "JSXElement",
+                "openingElement": {
+                    "kind": "JSXOpeningElement",
+                    "name": {
+                        "kind": "JSXNamespaceName",
+                        "namespace": {
+                            "kind": "JSXIdentifier",
+                            "name": "svg",
+                            "start": {
+                                "row": 1,
+                                "col": 2,
+                                "index": 1
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 5,
+                                "index": 4
+                            }
+                        },
+                        "name": {
+                            "kind": "JSXIdentifier",
+                            "name": "path",
+                            "start": {
+                                "row": 1,
+                                "col": 6,
+                                "index": 5
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 10,
+                                "index": 9
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 2,
+                            "index": 1
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        }
+                    },
+                    "selfClosing": false,
+                    "attributes": [],
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 11,
+                        "index": 10
+                    }
+                },
+                "closingElement": {
+                    "kind": "JSXClosingElement",
+                    "name": {
+                        "kind": "JSXNamespaceName",
+                        "namespace": {
+                            "kind": "JSXIdentifier",
+                            "name": "svg",
+                            "start": {
+                                "row": 1,
+                                "col": 13,
+                                "index": 12
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 16,
+                                "index": 15
+                            }
+                        },
+                        "name": {
+                            "kind": "JSXIdentifier",
+                            "name": "path",
+                            "start": {
+                                "row": 1,
+                                "col": 17,
+                                "index": 16
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 13,
+                            "index": 12
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 11,
+                        "index": 10
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 22,
+                        "index": 21
+                    }
+                },
+                "children": [],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 11,
+                "index": 10
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 22
+    }
+}

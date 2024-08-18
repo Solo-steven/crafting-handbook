@@ -1,0 +1,113 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "JSXFragment",
+                "openingFragment": {
+                    "kind": "JSXOpeningFragment",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 3,
+                        "index": 2
+                    }
+                },
+                "closingFragment": {
+                    "kind": "JSXClosingFragment",
+                    "start": {
+                        "row": 1,
+                        "col": 10,
+                        "index": 9
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    }
+                },
+                "children": [
+                    {
+                        "kind": "JSXElement",
+                        "openingElement": {
+                            "kind": "JSXOpeningElement",
+                            "name": {
+                                "kind": "JSXIdentifier",
+                                "name": "div",
+                                "start": {
+                                    "row": 1,
+                                    "col": 4,
+                                    "index": 3
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 7,
+                                    "index": 6
+                                }
+                            },
+                            "selfClosing": true,
+                            "attributes": [],
+                            "start": {
+                                "row": 1,
+                                "col": 3,
+                                "index": 2
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 10,
+                                "index": 9
+                            }
+                        },
+                        "closingElement": null,
+                        "children": [],
+                        "start": {
+                            "row": 1,
+                            "col": 3,
+                            "index": 2
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 13,
+                "index": 12
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 13
+    }
+}

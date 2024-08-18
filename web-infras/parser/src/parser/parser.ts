@@ -4298,6 +4298,13 @@ export function createParser(code: string, option?: ParserConfig) {
       const { end } = expect(SyntaxKinds.JSXSelfClosedToken);
       return Factory.createJSXOpeningElement(name, attributes, true, start, end);
     }
+    // for  `/ >`
+    if(match(SyntaxKinds.DivideOperator) && lookahead().kind === SyntaxKinds.GtOperator) {
+      nextToken();
+      const end = getEndPosition();
+      nextToken();
+      return Factory.createJSXOpeningElement(name, attributes, true, start, end);
+    }
     throw createUnexpectError(null);
   }
   /**
@@ -4357,7 +4364,8 @@ export function createParser(code: string, option?: ParserConfig) {
     while (
       !match(SyntaxKinds.EOFToken) &&
       !match(SyntaxKinds.GtOperator) &&
-      !match(SyntaxKinds.JSXSelfClosedToken)
+      !match(SyntaxKinds.JSXSelfClosedToken) &&
+      !(match(SyntaxKinds.DivideOperator) && lookahead().kind === SyntaxKinds.GtOperator)
     ) {
       // parse spread
       if (match(SyntaxKinds.BracesLeftPunctuator)) {

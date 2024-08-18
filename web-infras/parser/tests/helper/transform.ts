@@ -121,7 +121,6 @@ const VisitorTable: Visitor = {
   [SyntaxKinds.ExportSpecifier]: transformKind,
   [SyntaxKinds.ExportDefaultDeclaration]: transformKind,
   [SyntaxKinds.ExportAllDeclaration]: transformKind,
-  // @ts-expect-error
   [SyntaxKinds.JSXElement]: transformKind,
   [SyntaxKinds.JSXOpeningElement]: transformKind,
   [SyntaxKinds.JSXClosingElement]: transformKind,

@@ -1,0 +1,158 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "JSXElement",
+                "openingElement": {
+                    "kind": "JSXOpeningElement",
+                    "name": {
+                        "kind": "JSXIdentifier",
+                        "name": "a",
+                        "start": {
+                            "row": 1,
+                            "col": 2,
+                            "index": 1
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 3,
+                            "index": 2
+                        }
+                    },
+                    "selfClosing": false,
+                    "attributes": [],
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 4,
+                        "index": 3
+                    }
+                },
+                "closingElement": {
+                    "kind": "JSXClosingElement",
+                    "name": {
+                        "kind": "JSXIdentifier",
+                        "name": "a",
+                        "start": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 12,
+                        "index": 11
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 16,
+                        "index": 15
+                    }
+                },
+                "children": [
+                    {
+                        "kind": "JSXExpressionContainer",
+                        "expression": {
+                            "kind": "TemplateLiteral",
+                            "quasis": [
+                                {
+                                    "kind": "TemplateElement",
+                                    "value": "}`",
+                                    "tail": true,
+                                    "start": {
+                                        "row": 1,
+                                        "col": 9,
+                                        "index": 8
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 11,
+                                        "index": 10
+                                    }
+                                }
+                            ],
+                            "expressions": [
+                                {
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "1",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 8,
+                                        "index": 7
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 9,
+                                        "index": 8
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 5,
+                                "index": 4
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 11,
+                                "index": 10
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 4,
+                            "index": 3
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 4,
+                    "index": 3
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 4,
+                "index": 3
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 16
+    }
+}

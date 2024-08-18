@@ -4,15 +4,14 @@ JS parser written in Typescript.
 ## JS Test Fixture Folder structure
 - `esprima` folder: test case from `esprima/test/fixture` folder in repo, skip following test case:
     - `tokenize`: move to token folder
-    - `JSX`: JSX not in current scope.
     - `tolerant-parse`: not in scope.
     - `invalid-syntax`: WIP.
 
 - `babel` folder : test case from `babel-parser/tests/fixtures` folder in babel monorepo, skip following test case:
     - `typescript`: TS not in current scope.
     - `estree/typescript`: TS not in current scope.
-    - `jsx`: JSX not in current scope.
-    - `estree/JSX`: JSX not in current scope.
+    - `jsx`: WIP
+    - `estree/JSX`: WIP.
     - `comment/decorators`: WIP
     - `flow`: Flow is not support.
     - `core/scope`: Sematic Scope Not in current scope.

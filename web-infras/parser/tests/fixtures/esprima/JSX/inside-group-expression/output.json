@@ -1,0 +1,103 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "el",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        }
+                    },
+                    "init": {
+                        "kind": "JSXElement",
+                        "openingElement": {
+                            "kind": "JSXOpeningElement",
+                            "name": {
+                                "kind": "JSXIdentifier",
+                                "name": "span",
+                                "start": {
+                                    "row": 1,
+                                    "col": 13,
+                                    "index": 12
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 17,
+                                    "index": 16
+                                }
+                            },
+                            "selfClosing": true,
+                            "attributes": [],
+                            "start": {
+                                "row": 1,
+                                "col": 12,
+                                "index": 11
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 20,
+                                "index": 19
+                            }
+                        },
+                        "closingElement": null,
+                        "children": [],
+                        "start": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 20,
+                            "index": 19
+                        },
+                        "parentheses": true
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 20,
+                        "index": 19
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 20,
+                "index": 19
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 22
+    }
+}

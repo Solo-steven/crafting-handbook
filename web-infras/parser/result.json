@@ -33,30 +33,5 @@
       "reason": "Parse Error"
     }
   ],
-  "skipResult": [
-    {
-      "fileId": "/babel/comments/html/first-line",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/comments/html/first-line/input.js"
-    },
-    {
-      "fileId": "/esprima/comment/migrated_0038",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/comment/migrated_0038/input.js"
-    },
-    {
-      "fileId": "/esprima/comment/migrated_0040",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/comment/migrated_0040/input.js"
-    },
-    {
-      "fileId": "/esprima/comment/migrated_0041",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/comment/migrated_0041/input.js"
-    },
-    {
-      "fileId": "/esprima/comment/migrated_0042",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/comment/migrated_0042/input.js"
-    },
-    {
-      "fileId": "/babel/core/uncategorised/343",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/core/uncategorised/343/input.js"
-    }
-  ]
+  "skipResult": []
 }

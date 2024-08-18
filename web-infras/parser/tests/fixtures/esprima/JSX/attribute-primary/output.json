@@ -1,0 +1,127 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "JSXElement",
+                "openingElement": {
+                    "kind": "JSXOpeningElement",
+                    "name": {
+                        "kind": "JSXIdentifier",
+                        "name": "img",
+                        "start": {
+                            "row": 1,
+                            "col": 2,
+                            "index": 1
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        }
+                    },
+                    "selfClosing": true,
+                    "attributes": [
+                        {
+                            "kind": "JSXAttribute",
+                            "name": {
+                                "kind": "JSXIdentifier",
+                                "name": "width",
+                                "start": {
+                                    "row": 1,
+                                    "col": 6,
+                                    "index": 5
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 11,
+                                    "index": 10
+                                }
+                            },
+                            "value": {
+                                "kind": "JSXExpressionContainer",
+                                "expression": {
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "320",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 13,
+                                        "index": 12
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 16,
+                                        "index": 15
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 12,
+                                    "index": 11
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 17,
+                                    "index": 16
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 6,
+                                "index": 5
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 17,
+                                "index": 16
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 19,
+                        "index": 18
+                    }
+                },
+                "closingElement": null,
+                "children": [],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 19,
+                    "index": 18
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 19,
+                "index": 18
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 19
+    }
+}
