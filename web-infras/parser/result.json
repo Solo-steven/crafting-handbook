@@ -22,18 +22,13 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/expression/primary/literal/regular-expression/migrated_0006/input.js",
-      "fileId": "/esprima/expression/primary/literal/regular-expression/migrated_0006"
-    },
-    {
-      "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/unicode-escape-in-identifier/input.js",
       "fileId": "/babel/jsx/errors/unicode-escape-in-identifier"
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2015/modules/invalid-xml-comment-in-module/input.js",
-      "fileId": "/babel/es2015/modules/invalid-xml-comment-in-module"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/expression/primary/literal/regular-expression/migrated_0006/input.js",
+      "fileId": "/esprima/expression/primary/literal/regular-expression/migrated_0006"
     },
     {
       "kind": "ExpectPassButFailed",
@@ -49,18 +44,6 @@
     }
   ],
   "skipResult": [
-    {
-      "fileId": "/babel/jsx/errors/_no-plugin-ts-type-param",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no-plugin-ts-type-param/input.js"
-    },
-    {
-      "fileId": "/babel/jsx/errors/_no-plugin-ts-type-param-no-flow",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no-plugin-ts-type-param-no-flow/input.js"
-    },
-    {
-      "fileId": "/babel/jsx/errors/_no-plugin-ts-type-param-no-flow-babel-7",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no-plugin-ts-type-param-no-flow-babel-7/input.js"
-    },
     {
       "fileId": "/babel/jsx/errors/attribute-sequence-expression-babel-7",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/attribute-sequence-expression-babel-7/input.js"

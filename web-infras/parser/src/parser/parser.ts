@@ -490,20 +490,24 @@ export function createParser(code: string, option?: ParserConfig) {
     asyncArrowExprScopeRecorder.enterBlankAsyncArrowExpressionScope();
     strictModeScopeRecorder.enterRHSStrictModeScope();
     lexicalScopeRecorder.enterFunctionLexicalScope(isAsync, isGenerator);
+    lexer.setStrictModeContext(isInStrictMode());
   }
   function exitFunctionScope() {
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
     strictModeScopeRecorder.exitStrictModeScope();
     lexicalScopeRecorder.exitFunctionLexicalScope();
+    lexer.setStrictModeContext(isInStrictMode());
   }
   function enterProgram() {
     lexicalScopeRecorder.enterProgramLexicalScope(
       config.allowAwaitOutsideFunction || false,
       config.sourceType === "module",
     );
+    lexer.setStrictModeContext(config.sourceType === "module");
   }
   function exitProgram() {
     lexicalScopeRecorder.exitProgramLexicalScope();
+    lexer.setStrictModeContext(false);
   }
   function enterBlockScope() {
     lexicalScopeRecorder.enterBlockLexicalScope();
@@ -595,6 +599,7 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function setCurrentFunctionContextAsStrictMode() {
     lexicalScopeRecorder.setCurrentFunctionLexicalScopeAsStrictMode();
+    lexer.setStrictModeContext(true);
   }
   /**
    * Private API for `For-In` parsering problem.
@@ -2217,6 +2222,9 @@ export function createParser(code: string, option?: ParserConfig) {
       cloneSourcePosition(expr.end),
     );
   }
+  /**
+   * Implement part of NOTE section in 14.5
+   */
   function preStaticSematicEarlyErrorForExpressionStatement() {
     if (match(SyntaxKinds.LetKeyword)) {
       const { kind, lineTerminatorFlag } = lookahead();
@@ -2225,10 +2233,15 @@ export function createParser(code: string, option?: ParserConfig) {
         (!lineTerminatorFlag &&
           (kind === SyntaxKinds.BracesLeftPunctuator || kind === SyntaxKinds.Identifier))
       ) {
-        throw createMessageError("lexical binding wrong position");
+        throw createMessageError(
+          ErrorMessageMap.v8_error_lexical_declaration_cannot_appear_in_a_single_statement_context,
+        );
       }
     }
   }
+  /**
+   * Implement part of NOTE section in 14.5
+   */
   function postStaticSematicEarlyErrorForExpressionStatement(expr: Expression) {
     if (!expr.parentheses) {
       if (isFunctionExpression(expr) || isClassExpression(expr)) {
@@ -3276,11 +3289,6 @@ export function createParser(code: string, option?: ParserConfig) {
     }
   }
   function parseStringLiteral() {
-    if (isInStrictMode() && lexer.getStringLiteralFlag()) {
-      throw createMessageError(
-        ErrorMessageMap.syntax_error_Octal_escape_sequences_are_not_allowed_in_strict_mode,
-      );
-    }
     const { start, end, value } = expect(SyntaxKinds.StringLiteral);
     return Factory.createStringLiteral(value, start, end);
   }
@@ -4225,8 +4233,8 @@ export function createParser(code: string, option?: ParserConfig) {
    * ```
    */
   function parseJSXElementOrJSXFragment(inJSXChildren: boolean): JSXElement | JSXFragment {
-    if(!config.plugins.includes("jsx")) {
-      throw createMessageError("need jsx");
+    if (!config.plugins.includes("jsx")) {
+      throw createMessageError(ErrorMessageMap.babel_error_need_enable_jsx);
     }
     const lookaheadToken = lookahead();
     if (lookaheadToken.kind !== SyntaxKinds.GtOperator) {
@@ -4304,10 +4312,10 @@ export function createParser(code: string, option?: ParserConfig) {
       return Factory.createJSXOpeningElement(name, attributes, true, start, end);
     }
     // for  `/ >`
-    if(match(SyntaxKinds.DivideOperator) && lookahead().kind === SyntaxKinds.GtOperator) {
+    if (match(SyntaxKinds.DivideOperator) && lookahead().kind === SyntaxKinds.GtOperator) {
       nextToken();
       const end = getEndPosition();
-      nextTokenInJSXChildren(inJSXChildren)
+      nextTokenInJSXChildren(inJSXChildren);
       return Factory.createJSXOpeningElement(name, attributes, true, start, end);
     }
     throw createUnexpectError(null);
@@ -4523,22 +4531,22 @@ export function createParser(code: string, option?: ParserConfig) {
     return Factory.createJSXClosingElement(name, start, end);
   }
   /**
-   * 
+   *
    * @returns {JSXIdentifier}
    */
   function parseJSXIdentifier(): JSXIdentifier {
     let { start, end } = expect(IdentiferWithKeyworArray);
-    while(1) {
-      if(match(SyntaxKinds.MinusOperator)) {
+    while (1) {
+      if (match(SyntaxKinds.MinusOperator)) {
         end = getEndPosition();
         nextToken();
-      }else {
+      } else {
         break;
       }
-      if(match(IdentiferWithKeyworArray)) {
+      if (match(IdentiferWithKeyworArray)) {
         end = getEndPosition();
         nextToken();
-      }else {
+      } else {
         break;
       }
     }
@@ -4546,8 +4554,8 @@ export function createParser(code: string, option?: ParserConfig) {
     return Factory.createJSXIdentifier(value, start, end);
   }
   function parseJSXText() {
-    const { start, end , value } = expect(SyntaxKinds.JSXText);
-    return Factory.createJSXText(value, start, end,);
+    const { start, end, value } = expect(SyntaxKinds.JSXText);
+    return Factory.createJSXText(value, start, end);
   }
   /**
    * Parse JSXFragment
@@ -4577,9 +4585,9 @@ export function createParser(code: string, option?: ParserConfig) {
         start: getStartPosition(),
         end: getEndPosition(),
       };
-      if(inJSXChildren) {
+      if (inJSXChildren) {
         lexer.nextTokenInJSXChildren();
-      }else {
+      } else {
         lexer.nextToken();
       }
       return metaData;
@@ -4587,9 +4595,9 @@ export function createParser(code: string, option?: ParserConfig) {
     throw createUnexpectError(kind, "");
   }
   function nextTokenInJSXChildren(inJSXChildren: boolean) {
-    if(inJSXChildren) {
+    if (inJSXChildren) {
       lexer.nextTokenInJSXChildren();
-    }else {
+    } else {
       lexer.nextToken();
     }
   }

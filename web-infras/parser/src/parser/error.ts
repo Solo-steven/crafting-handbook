@@ -163,6 +163,9 @@ export const ErrorMessageMap = {
     "SyntaxError: More than one default clause in switch statement",
   // try: `x: while (true) { x: while (true) { } }` in v8 runtime,
   v8_error_label_has_already_been_declared: "SyntaxError: Label has already been declared",
+  // try: using lexical declaration in VariableDeclarationStatement
+  v8_error_lexical_declaration_cannot_appear_in_a_single_statement_context:
+    "SyntaxError: Lexical declaration cannot appear in a single-statement context.",
   // try: `import.meta` in babel playground when sourceType is script
   babel_error_import_meta_may_appear_only_with_source_type_module: `SyntaxError: import.meta may appear only with 'sourceType: "module"`,
   // try `import.name` in babel playground
@@ -170,4 +173,6 @@ export const ErrorMessageMap = {
     "SyntaxError: The only valid meta property for import is import.meta.",
   // try any import or export in module type is script
   babel_error_import_and_export_may_appear_only_with_sourceType_module: `SyntaxError: 'import' and 'export' may appear only with 'sourceType: "module"'`,
+  // try jsx but not enable preset
+  babel_error_need_enable_jsx: "This experimental syntax requires enabling jsx plugins",
 };

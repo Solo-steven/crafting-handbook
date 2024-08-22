@@ -5,6 +5,9 @@
 export const ErrorMessageMap = {
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_regexp_flag
   syntax_error_invalid_regular_expression_flags: "SyntaxError: Invalid regular expression flags",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Deprecated_octal_escape_sequence
+  syntax_error_Octal_escape_sequences_are_not_allowed_in_strict_mode:
+    "SyntaxError: Octal escape sequences are not allowed in strict mode.",
   v8_error_invalid_unicode_escape_sequence: "SyntaxError: Invalid Unicode escape sequence",
   // try `"\xfG"` in v8 runtime
   v8_error_invalid_hexadecimal_escape_sequence: "SyntaxError: Invalid hexadecimal escape sequence",

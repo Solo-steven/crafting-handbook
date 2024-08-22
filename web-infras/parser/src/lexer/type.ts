@@ -47,7 +47,6 @@ export type LexerTokenState = {
 export type LexerSematicState = {
   isTemplateLiteralBreakEscapRule: boolean;
   isKeywordContainUnicodeEscap: boolean;
-  isStringLiteralContainNonStrictEscap: boolean;
 };
 
 export type LexerTemplateContext = {
@@ -56,4 +55,9 @@ export type LexerTemplateContext = {
 
 export type LexerJSXContext = {
   shouldParseStringLiteralAsJSXStringLiteral: boolean;
+};
+
+export type LexerStrictModeContext = {
+  isInStrictMode: boolean;
+  isStringLiteralBreakStrictMode: boolean;
 };

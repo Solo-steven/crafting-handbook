@@ -13,6 +13,7 @@ import {
   LexerTokenState,
   LookaheadToken,
   LexerJSXContext,
+  LexerStrictModeContext,
 } from "./type";
 import {
   isCodePointLineTerminate,
@@ -37,7 +38,8 @@ interface Context {
   // Ad-hoc data structure for tokenize template literal in context
   templateContext: LexerTemplateContext;
   // Ad-hoc data structure for tokenize template literal with context.
-  jsxContext: LexerJSXContext
+  jsxContext: LexerJSXContext;
+  strictModeContext: LexerStrictModeContext;
 }
 /**
  * Create a empty lexer context
@@ -56,11 +58,11 @@ function createContext(code: string): Context {
     },
     sematicState: {
       isKeywordContainUnicodeEscap: false,
-      isStringLiteralContainNonStrictEscap: false,
       isTemplateLiteralBreakEscapRule: false,
     },
     templateContext: { stackCounter: [] },
-    jsxContext: { shouldParseStringLiteralAsJSXStringLiteral: false }
+    jsxContext: { shouldParseStringLiteralAsJSXStringLiteral: false },
+    strictModeContext: { isInStrictMode: false, isStringLiteralBreakStrictMode: false },
   };
 }
 /**
@@ -81,7 +83,8 @@ function cloneContext(source: Context): Context {
       ...source.sematicState,
     },
     templateContext: { stackCounter: [...source.templateContext.stackCounter] },
-    jsxContext: {...source.jsxContext},
+    jsxContext: { ...source.jsxContext },
+    strictModeContext: { ...source.strictModeContext },
   };
 }
 
@@ -121,9 +124,6 @@ export function createLexer(code: string) {
    */
   function getEscFlag(): boolean {
     return context.sematicState.isKeywordContainUnicodeEscap;
-  }
-  function getStringLiteralFlag(): boolean {
-    return context.sematicState.isStringLiteralContainNonStrictEscap;
   }
   function getTemplateLiteralTag(): boolean {
     return context.sematicState.isTemplateLiteralBreakEscapRule;
@@ -170,7 +170,7 @@ export function createLexer(code: string) {
     scan();
   }
   /**
-   * 
+   *
    */
   function nextTokenInJSXChildren(): void {
     scanInJSXChildren();
@@ -348,6 +348,9 @@ export function createLexer(code: string) {
     }
     return getSliceStringFromCode(startIndex, getCurrentIndex());
   }
+  function setStrictModeContext(strictMode: boolean) {
+    context.strictModeContext.isInStrictMode = strictMode;
+  }
   return {
     getTokenKind,
     getSourceValue,
@@ -356,14 +359,15 @@ export function createLexer(code: string) {
     getEndPosition,
     getLineTerminatorFlag,
     getEscFlag,
-    getStringLiteralFlag,
     getTemplateLiteralTag,
     nextToken,
     lookahead,
     readRegex,
     // only used by JSX
     nextTokenInJSXChildren,
-    setJSXcontext
+    setJSXcontext,
+    // only used by strict mode
+    setStrictModeContext,
   };
   /** ===========================================================
    *             Private API for Lexer
@@ -434,17 +438,17 @@ export function createLexer(code: string) {
    */
   function getNextCharCodePoint(): number | undefined {
     const curCodePoint = getCharCodePoint();
-    if(!curCodePoint) return;
+    if (!curCodePoint) return;
     const nextCharStep = curCodePoint > 0xffff ? 2 : 1;
     return context.cursor.code.codePointAt(context.cursor.pos + nextCharStep);
   }
   function getNextNextCharCodePoint(): number | undefined {
     const curCodePoint = getCharCodePoint();
-    if(!curCodePoint) return;
+    if (!curCodePoint) return;
     const nextCharStep = curCodePoint > 0xffff ? 2 : 1;
     const nextCodePoint = context.cursor.code.codePointAt(context.cursor.pos + nextCharStep);
-    if(!nextCodePoint) return;
-    const nextNextCharStep = nextCodePoint > 0xffff ? 2: 1;
+    if (!nextCodePoint) return;
+    const nextNextCharStep = nextCodePoint > 0xffff ? 2 : 1;
     return context.cursor.code.codePointAt(context.cursor.pos + nextCharStep + nextNextCharStep);
   }
   /**
@@ -526,6 +530,9 @@ export function createLexer(code: string) {
           return;
         }
         case UnicodePoints.LessThen: {
+          if (context.strictModeContext.isInStrictMode) {
+            return;
+          }
           const next = getNextCharCodePoint();
           if (next === UnicodePoints.Not) {
             eatTwoChar();
@@ -554,8 +561,15 @@ export function createLexer(code: string) {
         }
         // HTML close comment
         case UnicodePoints.Minus: {
+          if (context.strictModeContext.isInStrictMode) {
+            return;
+          }
           const next = getNextCharCodePoint();
-          if(haveChangeLine && next === UnicodePoints.Minus && getNextNextCharCodePoint() === UnicodePoints.GreaterThen) {
+          if (
+            haveChangeLine &&
+            next === UnicodePoints.Minus &&
+            getNextNextCharCodePoint() === UnicodePoints.GreaterThen
+          ) {
             eatChar();
             readComment();
             break;
@@ -598,7 +612,7 @@ export function createLexer(code: string) {
    * to other sub state mahine for reading token.
    * @returns {SyntaxKinds}
    */
-  function scan(): SyntaxKinds { 
+  function scan(): SyntaxKinds {
     skipWhiteSpaceChangeLine();
     const char = getCharCodePoint();
     startToken();
@@ -755,9 +769,9 @@ export function createLexer(code: string) {
     let isJSXTextExist = false;
     skipWhiteSpaceChangeLine();
     startToken();
-    loop: while(!isEOF()) {
+    loop: while (!isEOF()) {
       const code = getCharCodePoint();
-      switch(code) {
+      switch (code) {
         case undefined:
         case UnicodePoints.BracesLeft:
         case UnicodePoints.LessThen: {
@@ -769,7 +783,7 @@ export function createLexer(code: string) {
         }
       }
     }
-    if(!isJSXTextExist) {
+    if (!isJSXTextExist) {
       return scan();
     }
     return finishToken(SyntaxKinds.JSXText);
@@ -1648,10 +1662,10 @@ export function createLexer(code: string) {
    * @returns {SyntaxKinds}
    */
   function readStringLiteral(mode: "Single" | "Double"): SyntaxKinds {
-    if(context.jsxContext.shouldParseStringLiteralAsJSXStringLiteral) {
+    if (context.jsxContext.shouldParseStringLiteralAsJSXStringLiteral) {
       return readJSXStringLiteral(mode);
     }
-    context.sematicState.isStringLiteralContainNonStrictEscap = false;
+    context.strictModeContext.isStringLiteralBreakStrictMode = false;
     // eat mode
     const modeInCodepoint = mode === "Single" ? UnicodePoints.SingleQuote : UnicodePoints.DoubleQuote;
     eatChar();
@@ -1681,6 +1695,12 @@ export function createLexer(code: string) {
     }
     if (isEOF()) {
       throw new Error(ErrorMessageMap.babel_error_unterminated_string_constant);
+    }
+    if (
+      context.strictModeContext.isInStrictMode &&
+      context.strictModeContext.isStringLiteralBreakStrictMode
+    ) {
+      throw createLexer(ErrorMessageMap.syntax_error_Octal_escape_sequences_are_not_allowed_in_strict_mode);
     }
     // get end index before ending char ' or "
     const indexBeforeEndMode = getCurrentIndex();
@@ -1750,7 +1770,7 @@ export function createLexer(code: string) {
       case UnicodePoints.Digital5:
       case UnicodePoints.Digital6:
       case UnicodePoints.Digital7: {
-        context.sematicState.isStringLiteralContainNonStrictEscap ||= true;
+        context.strictModeContext.isStringLiteralBreakStrictMode ||= true;
         /**
          * The condition could be more simple.
          */
@@ -1804,7 +1824,7 @@ export function createLexer(code: string) {
       // NonOctalDecimalEscapeSequence
       case UnicodePoints.Digital8:
       case UnicodePoints.Digital9: {
-        context.sematicState.isStringLiteralContainNonStrictEscap ||= true;
+        context.strictModeContext.isStringLiteralBreakStrictMode ||= true;
         eatChar();
         return;
       }
@@ -1825,12 +1845,15 @@ export function createLexer(code: string) {
     const modeInCodepoint = mode === "Single" ? UnicodePoints.SingleQuote : UnicodePoints.DoubleQuote;
     eatChar();
     const indexAfterStartMode = getCurrentIndex();
-    while(!isEOF() && getCharCodePoint() !== modeInCodepoint) {
+    while (!isEOF() && getCharCodePoint() !== modeInCodepoint) {
       eatChar();
     }
     const indexBeforeEndMode = getCurrentIndex();
     eatChar();
-    return finishToken(SyntaxKinds.StringLiteral,getSourceValueByIndex(indexAfterStartMode, indexBeforeEndMode));
+    return finishToken(
+      SyntaxKinds.StringLiteral,
+      getSourceValueByIndex(indexAfterStartMode, indexBeforeEndMode),
+    );
   }
   //  ===========================================================
   //       Identifier and Keywrod Sub state mahcine
