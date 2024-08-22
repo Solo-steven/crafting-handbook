@@ -1,3 +1,4 @@
 {
-  "expect": "Failed"
+  "expect": "Failed",
+  "plugins": ["jsx"]
 }

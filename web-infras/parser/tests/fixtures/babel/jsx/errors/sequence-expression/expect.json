@@ -1,6 +1,7 @@
 {
   "expect": "Failed",
   "config": {
-    "BABEL_8_BREAKING": true
+    "BABEL_8_BREAKING": true,
+    "plugins": ["jsx"]
   }
 }

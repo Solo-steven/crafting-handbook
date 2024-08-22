@@ -133,7 +133,7 @@
                         },
                         "property": {
                             "kind": "JSXIdentifier",
-                            "name": "mountainView",
+                            "name": "mountain-view",
                             "start": {
                                 "row": 1,
                                 "col": 43,
@@ -141,8 +141,8 @@
                             },
                             "end": {
                                 "row": 1,
-                                "col": 55,
-                                "index": 54
+                                "col": 56,
+                                "index": 55
                             }
                         },
                         "start": {
@@ -152,8 +152,8 @@
                         },
                         "end": {
                             "row": 1,
-                            "col": 55,
-                            "index": 54
+                            "col": 56,
+                            "index": 55
                         }
                     },
                     "selfClosing": false,
@@ -165,8 +165,8 @@
                     },
                     "end": {
                         "row": 1,
-                        "col": 56,
-                        "index": 55
+                        "col": 57,
+                        "index": 56
                     }
                 },
                 "closingElement": {
@@ -186,13 +186,13 @@
                                             "name": "SolarSystem",
                                             "start": {
                                                 "row": 1,
-                                                "col": 58,
-                                                "index": 57
+                                                "col": 59,
+                                                "index": 58
                                             },
                                             "end": {
                                                 "row": 1,
-                                                "col": 69,
-                                                "index": 68
+                                                "col": 70,
+                                                "index": 69
                                             }
                                         },
                                         "property": {
@@ -200,24 +200,24 @@
                                             "name": "Earth",
                                             "start": {
                                                 "row": 1,
-                                                "col": 70,
-                                                "index": 69
+                                                "col": 71,
+                                                "index": 70
                                             },
                                             "end": {
                                                 "row": 1,
-                                                "col": 75,
-                                                "index": 74
+                                                "col": 76,
+                                                "index": 75
                                             }
                                         },
                                         "start": {
                                             "row": 1,
-                                            "col": 58,
-                                            "index": 57
+                                            "col": 59,
+                                            "index": 58
                                         },
                                         "end": {
                                             "row": 1,
-                                            "col": 75,
-                                            "index": 74
+                                            "col": 76,
+                                            "index": 75
                                         }
                                     },
                                     "property": {
@@ -225,24 +225,24 @@
                                         "name": "America",
                                         "start": {
                                             "row": 1,
-                                            "col": 76,
-                                            "index": 75
+                                            "col": 77,
+                                            "index": 76
                                         },
                                         "end": {
                                             "row": 1,
-                                            "col": 83,
-                                            "index": 82
+                                            "col": 84,
+                                            "index": 83
                                         }
                                     },
                                     "start": {
                                         "row": 1,
-                                        "col": 58,
-                                        "index": 57
+                                        "col": 59,
+                                        "index": 58
                                     },
                                     "end": {
                                         "row": 1,
-                                        "col": 83,
-                                        "index": 82
+                                        "col": 84,
+                                        "index": 83
                                     }
                                 },
                                 "property": {
@@ -250,24 +250,24 @@
                                     "name": "USA",
                                     "start": {
                                         "row": 1,
-                                        "col": 84,
-                                        "index": 83
+                                        "col": 85,
+                                        "index": 84
                                     },
                                     "end": {
                                         "row": 1,
-                                        "col": 87,
-                                        "index": 86
+                                        "col": 88,
+                                        "index": 87
                                     }
                                 },
                                 "start": {
                                     "row": 1,
-                                    "col": 58,
-                                    "index": 57
+                                    "col": 59,
+                                    "index": 58
                                 },
                                 "end": {
                                     "row": 1,
-                                    "col": 87,
-                                    "index": 86
+                                    "col": 88,
+                                    "index": 87
                                 }
                             },
                             "property": {
@@ -275,60 +275,60 @@
                                 "name": "California",
                                 "start": {
                                     "row": 1,
-                                    "col": 88,
-                                    "index": 87
+                                    "col": 89,
+                                    "index": 88
                                 },
                                 "end": {
                                     "row": 1,
-                                    "col": 98,
-                                    "index": 97
+                                    "col": 99,
+                                    "index": 98
                                 }
                             },
                             "start": {
                                 "row": 1,
-                                "col": 58,
-                                "index": 57
+                                "col": 59,
+                                "index": 58
                             },
                             "end": {
                                 "row": 1,
-                                "col": 98,
-                                "index": 97
+                                "col": 99,
+                                "index": 98
                             }
                         },
                         "property": {
                             "kind": "JSXIdentifier",
-                            "name": "mountainView",
+                            "name": "mountain-view",
                             "start": {
                                 "row": 1,
-                                "col": 99,
-                                "index": 98
+                                "col": 100,
+                                "index": 99
                             },
                             "end": {
                                 "row": 1,
-                                "col": 111,
-                                "index": 110
+                                "col": 113,
+                                "index": 112
                             }
                         },
                         "start": {
                             "row": 1,
-                            "col": 58,
-                            "index": 57
+                            "col": 59,
+                            "index": 58
                         },
                         "end": {
                             "row": 1,
-                            "col": 111,
-                            "index": 110
+                            "col": 113,
+                            "index": 112
                         }
                     },
                     "start": {
                         "row": 1,
-                        "col": 56,
-                        "index": 55
+                        "col": 57,
+                        "index": 56
                     },
                     "end": {
                         "row": 1,
-                        "col": 112,
-                        "index": 111
+                        "col": 114,
+                        "index": 113
                     }
                 },
                 "children": [],
@@ -339,8 +339,8 @@
                 },
                 "end": {
                     "row": 1,
-                    "col": 56,
-                    "index": 55
+                    "col": 57,
+                    "index": 56
                 }
             },
             "start": {
@@ -350,8 +350,8 @@
             },
             "end": {
                 "row": 1,
-                "col": 56,
-                "index": 55
+                "col": 57,
+                "index": 56
             }
         }
     ],
@@ -363,6 +363,6 @@
     "end": {
         "row": 2,
         "col": 1,
-        "index": 112
+        "index": 114
     }
 }

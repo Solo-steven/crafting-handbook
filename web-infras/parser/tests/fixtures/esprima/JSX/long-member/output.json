@@ -133,7 +133,7 @@
                         },
                         "property": {
                             "kind": "JSXIdentifier",
-                            "name": "mountainView",
+                            "name": "mountain-view",
                             "start": {
                                 "row": 1,
                                 "col": 43,
@@ -141,8 +141,8 @@
                             },
                             "end": {
                                 "row": 1,
-                                "col": 55,
-                                "index": 54
+                                "col": 56,
+                                "index": 55
                             }
                         },
                         "start": {
@@ -152,8 +152,8 @@
                         },
                         "end": {
                             "row": 1,
-                            "col": 55,
-                            "index": 54
+                            "col": 56,
+                            "index": 55
                         }
                     },
                     "selfClosing": true,
@@ -165,8 +165,8 @@
                     },
                     "end": {
                         "row": 1,
-                        "col": 58,
-                        "index": 57
+                        "col": 59,
+                        "index": 58
                     }
                 },
                 "closingElement": null,
@@ -178,8 +178,8 @@
                 },
                 "end": {
                     "row": 1,
-                    "col": 58,
-                    "index": 57
+                    "col": 59,
+                    "index": 58
                 }
             },
             "start": {
@@ -189,8 +189,8 @@
             },
             "end": {
                 "row": 1,
-                "col": 58,
-                "index": 57
+                "col": 59,
+                "index": 58
             }
         }
     ],
@@ -202,6 +202,6 @@
     "end": {
         "row": 2,
         "col": 1,
-        "index": 58
+        "index": 59
     }
 }

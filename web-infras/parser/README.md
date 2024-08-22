@@ -10,7 +10,7 @@ JS parser written in Typescript.
 - `babel` folder : test case from `babel-parser/tests/fixtures` folder in babel monorepo, skip following test case:
     - `typescript`: TS not in current scope.
     - `estree/typescript`: TS not in current scope.
-    - `jsx`: WIP
+    - `jsx/errors_no-plugin-ts-*`: TS not in current scope.
     - `estree/JSX`: WIP.
     - `comment/decorators`: WIP
     - `flow`: Flow is not support.

@@ -2,28 +2,8 @@
   "failedResult": [
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no-plugin-fragment/input.js",
-      "fileId": "/babel/jsx/errors/_no-plugin-fragment"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no-plugin-jsx-expression/input.js",
-      "fileId": "/babel/jsx/errors/_no-plugin-jsx-expression"
-    },
-    {
-      "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/es2022/module-string-names/export-name-has-lone-surrogate/input.js",
       "fileId": "/babel/es2022/module-string-names/export-name-has-lone-surrogate"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no_plugin/input.js",
-      "fileId": "/babel/jsx/errors/_no_plugin"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no_plugin-non-BMP-identifier/input.js",
-      "fileId": "/babel/jsx/errors/_no_plugin-non-BMP-identifier"
     },
     {
       "kind": "ExpectFailedButPass",
@@ -80,18 +60,6 @@
     {
       "fileId": "/babel/jsx/errors/_no-plugin-ts-type-param-no-flow-babel-7",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/_no-plugin-ts-type-param-no-flow-babel-7/input.js"
-    },
-    {
-      "fileId": "/babel/jsx/basic/2",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/basic/2/input.js"
-    },
-    {
-      "fileId": "/babel/jsx/basic/21",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/basic/21/input.js"
-    },
-    {
-      "fileId": "/babel/jsx/basic/3",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/basic/3/input.js"
     },
     {
       "fileId": "/babel/jsx/errors/attribute-sequence-expression-babel-7",

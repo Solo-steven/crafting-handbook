@@ -1,3 +1,6 @@
 {
-  "expect": "Pass"
+  "expect": "Pass",
+  "config": {
+    "plugins": ["jsx"]
+  }
 }

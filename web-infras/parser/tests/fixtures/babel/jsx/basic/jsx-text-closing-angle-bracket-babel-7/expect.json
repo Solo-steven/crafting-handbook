@@ -1,6 +1,7 @@
 {
   "expect": "Pass",
   "config": {
-    "BABEL_8_BREAKING": false
+    "BABEL_8_BREAKING": false,
+    "plugins": ["jsx"]
   }
 }

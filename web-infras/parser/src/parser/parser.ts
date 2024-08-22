@@ -4225,6 +4225,9 @@ export function createParser(code: string, option?: ParserConfig) {
    * ```
    */
   function parseJSXElementOrJSXFragment(inJSXChildren: boolean): JSXElement | JSXFragment {
+    if(!config.plugins.includes("jsx")) {
+      throw createMessageError("need jsx");
+    }
     const lookaheadToken = lookahead();
     if (lookaheadToken.kind !== SyntaxKinds.GtOperator) {
       return parseJSXElement(inJSXChildren);
@@ -4387,7 +4390,7 @@ export function createParser(code: string, option?: ParserConfig) {
       // parse name
       let name: JSXIdentifier | JSXNamespacedName = parseJSXIdentifier();
       if (match(SyntaxKinds.ColonPunctuator)) {
-        nextToken;
+        nextToken();
         const subName = parseJSXIdentifier();
         name = Factory.createJSXNamespacedName(
           name,
@@ -4484,6 +4487,7 @@ export function createParser(code: string, option?: ParserConfig) {
               cloneSourcePosition(expression.end),
             ),
           );
+          continue;
         }
         children.push(parseJSXExpressionContainer(true));
         continue;
