@@ -4293,8 +4293,11 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function parseJSXOpeingElement(inJSXChildren: boolean): JSXOpeningElement {
     const { start } = expect(SyntaxKinds.LtOperator);
+    const lastLexerJSXEndTagContext = lexer.getJSXGtContext();
+    lexer.setJSXGtContext(true);
     const name = parseJSXElementName();
     const attributes = parseJSXAttributes();
+    lexer.setJSXGtContext(lastLexerJSXEndTagContext);
     if (match(SyntaxKinds.GtOperator)) {
       const end = getEndPosition();
       nextTokenInJSXChildren(true);
@@ -4403,10 +4406,10 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       // parse value
       if (match(SyntaxKinds.AssginOperator)) {
-        lexer.setJSXcontext(true);
+        lexer.setJSXStringContext(true);
         nextToken();
         if (match(SyntaxKinds.StringLiteral)) {
-          lexer.setJSXcontext(false);
+          lexer.setJSXStringContext(false);
           const value = parseStringLiteral();
           attribute.push(
             Factory.createJSXAttribute(
@@ -4520,8 +4523,11 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function parseJSXClosingElement(inJSXChildren: boolean): JSXClosingElement {
     const { start } = expect(SyntaxKinds.JSXCloseTagStart);
+    const lastLexerJSXEndTagContext = lexer.getJSXGtContext();
+    lexer.setJSXGtContext(true);
     const name = parseJSXElementName();
     const { end } = expectInJSXChildren(SyntaxKinds.GtOperator, inJSXChildren);
+    lexer.setJSXGtContext(lastLexerJSXEndTagContext);
     return Factory.createJSXClosingElement(name, start, end);
   }
   /**
@@ -4582,7 +4588,7 @@ export function createParser(code: string, option?: ParserConfig) {
         end: getEndPosition(),
       };
       if (inJSXChildren) {
-        lexer.nextTokenInJSXChildren();
+        lexer.nextTokenInJSXChildrenContext();
       } else {
         lexer.nextToken();
       }
@@ -4592,7 +4598,7 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function nextTokenInJSXChildren(inJSXChildren: boolean) {
     if (inJSXChildren) {
-      lexer.nextTokenInJSXChildren();
+      lexer.nextTokenInJSXChildrenContext();
     } else {
       lexer.nextToken();
     }
