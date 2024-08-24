@@ -1,4 +1,3 @@
-import { JSXOpeningFragment } from "dist/index";
 import {
   BinaryExpression,
   ModuleItem,
@@ -102,6 +101,7 @@ import {
   JSXExpressionContainer,
   JSXFragment,
   JSXClosingFragment,
+  JSXOpeningFragment,
 } from "./ast";
 import { SyntaxKinds } from "./kind";
 

@@ -1,0 +1,30 @@
+name: "Basic Test For Web-Infras Packages"
+on: ["pull_request", "push"]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Branch
+        uses: action/checkout@v4
+      - name: Install Deps
+        uses: "./install-node-dep"
+      - name: Run Linter on Common Package
+        run: yarn lint
+        working-directory: "web-infras/common"
+      - name: Run Linter on Parser Package
+        run: yarn lint
+        working-directory: "web-infras/parser"
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Branch
+        uses: action/checkout@v4
+      - name: Install Deps
+        uses: "./install-node-dep"
+      - name: Run Linter on Common Package
+        run: yarn prettier
+        working-directory: "web-infras/common"
+      - name: Run Linter on Parser Package
+        run: yarn prettier
+        working-directory: "web-infras/parser"

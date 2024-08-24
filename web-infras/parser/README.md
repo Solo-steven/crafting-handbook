@@ -1,5 +1,5 @@
 # Web Infra Parser
-JS parser written in Typescript.
+JS/JSX parser written in Typescript.
 
 ## JS Test Fixture Folder structure
 - `esprima` folder: test case from `esprima/test/fixture` folder in repo, skip following test case:

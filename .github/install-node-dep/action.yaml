@@ -1,0 +1,17 @@
+name: "Install JavaScript Dep"
+description: "Install JavaScript Dep For Every Yarn Workspace."
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    ## Install All packages
+    - run: yarn
+      shell: bash
+    ## Parser need common package to work, so build common first
+    - run: yarn workspace web-infra-common build
+      shell: bash
+
+      
+
