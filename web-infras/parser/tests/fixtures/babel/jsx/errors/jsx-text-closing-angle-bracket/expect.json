@@ -1,5 +1,5 @@
 {
-  "expect": "Failed",
+  "expect": "Pass",
   "config": {
     "BABEL_8_BREAKING": true,
     "plugins": ["jsx"]

@@ -12,23 +12,8 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/jsx-text-closing-angle-bracket/input.js",
-      "fileId": "/babel/jsx/errors/jsx-text-closing-angle-bracket"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/jsx-text-closing-curly-brace/input.js",
-      "fileId": "/babel/jsx/errors/jsx-text-closing-curly-brace"
-    },
-    {
-      "kind": "ExpectFailedButPass",
       "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/expression/primary/literal/regular-expression/migrated_0006/input.js",
       "fileId": "/esprima/expression/primary/literal/regular-expression/migrated_0006"
-    },
-    {
-      "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/unicode-escape-in-identifier/input.js",
-      "fileId": "/babel/jsx/errors/unicode-escape-in-identifier"
     },
     {
       "kind": "ExpectPassButFailed",
@@ -43,10 +28,5 @@
       "reason": "Parse Error"
     }
   ],
-  "skipResult": [
-    {
-      "fileId": "/babel/jsx/basic/spread-text",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/basic/spread-text/input.js"
-    }
-  ]
+  "skipResult": []
 }
