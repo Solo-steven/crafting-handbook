@@ -219,36 +219,35 @@ export const PropagationtVisitorTable: Visitor = {
   [SyntaxKinds.Program]: function visitProgram(node: Program, visitor: Visitor) {
     visitNodes(node.body, visitor);
   },
-  [SyntaxKinds.RegexLiteral]: function visitRegexLiteral(node: RegexLiteral, visior: Visitor) {},
-  [SyntaxKinds.NullLiteral]: function visitNullLiteral(node: NullLiteral, visitor: Visitor) {},
+  [SyntaxKinds.RegexLiteral]: function visitRegexLiteral(_node: RegexLiteral, _visior: Visitor) {},
+  [SyntaxKinds.NullLiteral]: function visitNullLiteral(_node: NullLiteral, _visitor: Visitor) {},
   [SyntaxKinds.UndefinedLiteral]: function visitUndefinedLiteral(
-    node: UndefinbedLiteral,
-    visitor: Visitor,
+    _node: UndefinbedLiteral,
+    _visitor: Visitor,
   ) {},
-  [SyntaxKinds.BooleanLiteral]: function visitBoolLiteral(node: BoolLiteral, visior: Visitor) {},
-  [SyntaxKinds.StringLiteral]: function visitStringLiteral(node: StringLiteral, visitor: Visitor) {},
-  [SyntaxKinds.DecimalLiteral]: function (node: DecimalLiteral, visitor: Visitor) {},
-  [SyntaxKinds.NonOctalDecimalLiteral]: function (node: NonOctalDecimalLiteral, visior: Visitor) {},
-  [SyntaxKinds.BinaryIntegerLiteral]: function (node: BinaryIntegerLiteral, visior: Visitor) {},
-  [SyntaxKinds.OctalIntegerLiteral]: function (node: OctalIntegerLiteral, visior: Visitor) {},
-  [SyntaxKinds.HexIntegerLiteral]: function (node: HexIntegerLiteral, visior: Visitor) {},
-  [SyntaxKinds.LegacyOctalIntegerLiteral]: function (node: LegacyOctalIntegerLiteral, visior: Visitor) {},
-  [SyntaxKinds.DecimalBigIntegerLiteral]: function (node: DecimalBigIntegerLiteral, visitor: Visitor) {},
-  [SyntaxKinds.BinaryBigIntegerLiteral]: function (node: BinaryIntegerLiteral, visitor: Visitor) {},
-  [SyntaxKinds.OctalBigIntegerLiteral]: function (node: OctalBigIntegerLiteral, visitor: Visitor) {},
-  [SyntaxKinds.HexBigIntegerLiteral]: function (node: HexBigIntegerLiteral, visitor: Visitor) {},
-  [SyntaxKinds.Identifier]: function bindIdentifier(node: Identifier, visitor: Visitor) {},
-  [SyntaxKinds.Super]: function bindSuper(node: Super, visitor: Visitor) {},
-  [SyntaxKinds.Import]: function bindImport(node: Import, visitor: Visitor) {},
-  [SyntaxKinds.ThisExpression]: function bindThisExpression(node: ThisExpression, visitor: Visitor) {},
-  [SyntaxKinds.PrivateName]: function bindPrivateName(node: PrivateName, visitor: Visitor) {},
+  [SyntaxKinds.BooleanLiteral]: function visitBoolLiteral(_node: BoolLiteral, _visior: Visitor) {},
+  [SyntaxKinds.StringLiteral]: function visitStringLiteral(_node: StringLiteral, _visitor: Visitor) {},
+  [SyntaxKinds.DecimalLiteral]: function (_node: DecimalLiteral, _visitor: Visitor) {},
+  [SyntaxKinds.NonOctalDecimalLiteral]: function (_node: NonOctalDecimalLiteral, _visior: Visitor) {},
+  [SyntaxKinds.BinaryIntegerLiteral]: function (_node: BinaryIntegerLiteral, _visior: Visitor) {},
+  [SyntaxKinds.OctalIntegerLiteral]: function (_node: OctalIntegerLiteral, _visior: Visitor) {},
+  [SyntaxKinds.HexIntegerLiteral]: function (_node: HexIntegerLiteral, _visior: Visitor) {},
+  [SyntaxKinds.LegacyOctalIntegerLiteral]: function (_node: LegacyOctalIntegerLiteral, _visior: Visitor) {},
+  [SyntaxKinds.DecimalBigIntegerLiteral]: function (_node: DecimalBigIntegerLiteral, _visitor: Visitor) {},
+  [SyntaxKinds.BinaryBigIntegerLiteral]: function (_node: BinaryIntegerLiteral, _visitor: Visitor) {},
+  [SyntaxKinds.OctalBigIntegerLiteral]: function (_node: OctalBigIntegerLiteral, _visitor: Visitor) {},
+  [SyntaxKinds.HexBigIntegerLiteral]: function (_node: HexBigIntegerLiteral, _visitor: Visitor) {},
+  [SyntaxKinds.Identifier]: function bindIdentifier(_node: Identifier, _visitor: Visitor) {},
+  [SyntaxKinds.Super]: function bindSuper(_node: Super, _visitor: Visitor) {},
+  [SyntaxKinds.Import]: function bindImport(_node: Import, _visitor: Visitor) {},
+  [SyntaxKinds.ThisExpression]: function bindThisExpression(_node: ThisExpression, _visitor: Visitor) {},
+  [SyntaxKinds.PrivateName]: function bindPrivateName(_node: PrivateName, _visitor: Visitor) {},
   [SyntaxKinds.TemplateLiteral]: function bindTemplateLiteral(node: TemplateLiteral, visitor: Visitor) {
     visitNodes(node.expressions, visitor);
     visitNodes(node.quasis, visitor);
   },
-  [SyntaxKinds.TemplateElement]: function bindTemplateElement(node: TemplateElement, visitor: Visitor) {},
+  [SyntaxKinds.TemplateElement]: function bindTemplateElement(_node: TemplateElement, _visitor: Visitor) {},
   [SyntaxKinds.ObjectExpression]: function bindObjectExpression(node: ObjectExpression, visitor: Visitor) {
-    // @ts-ignore
     visitNodes(node.properties, visitor);
   },
   [SyntaxKinds.ObjectProperty]: function bindObjectProperty(node: ObjectProperty, visitor: Visitor) {
@@ -437,10 +436,10 @@ export const PropagationtVisitorTable: Visitor = {
     visitNode(node.body, visitor);
   },
   [SyntaxKinds.DebuggerStatement]: function bindDebuggerStatement(
-    node: DebuggerStatement,
-    visitor: Visitor,
+    _node: DebuggerStatement,
+    _visitor: Visitor,
   ) {},
-  [SyntaxKinds.EmptyStatement]: function visitEmptyStatement(node: EmptyStatement, visitor: Visitor) {},
+  [SyntaxKinds.EmptyStatement]: function visitEmptyStatement(_node: EmptyStatement, _visitor: Visitor) {},
   [SyntaxKinds.ForStatement]: function bindForStatement(node: ForStatement, visitor: Visitor) {
     visitNode(node.test, visitor);
     visitNode(node.init, visitor);
@@ -566,7 +565,7 @@ export const PropagationtVisitorTable: Visitor = {
     visitNodes(node.children, visitor);
     visitNode(node.closingElement, visitor);
   },
-  [SyntaxKinds.JSXIdentifier]: function (node: JSXIdentifier, visitor: Visitor) {},
+  [SyntaxKinds.JSXIdentifier]: function (_node: JSXIdentifier, _visitor: Visitor) {},
   [SyntaxKinds.JSXMemberExpression]: function (node: JSXMemberExpression, visitor: Visitor) {
     visitNode(node.object, visitor);
     visitNode(node.property, visitor);
@@ -592,7 +591,7 @@ export const PropagationtVisitorTable: Visitor = {
   [SyntaxKinds.JSXSpreadChild]: function (node: JSXSpreadAttribute, visitor: Visitor) {
     visitNode(node.argument, visitor);
   },
-  [SyntaxKinds.JSXText]: function (node: JSXText, visitor: Visitor) {},
+  [SyntaxKinds.JSXText]: function (_node: JSXText, _visitor: Visitor) {},
   [SyntaxKinds.JSXExpressionContainer]: function (node: JSXExpressionContainer, visitor: Visitor) {
     visitNode(node.expression, visitor);
   },
@@ -601,13 +600,13 @@ export const PropagationtVisitorTable: Visitor = {
     visitNodes(node.children, visitor);
     visitNode(node.closingFragment, visitor);
   },
-  [SyntaxKinds.JSXOpeningFragment]: function (node: JSXOpeningFragment, visitor: Visitor) {},
-  [SyntaxKinds.JSXClosingFragment]: function (node: JSXClosingFragment, visitor: Visitor) {},
+  [SyntaxKinds.JSXOpeningFragment]: function (_node: JSXOpeningFragment, _visitor: Visitor) {},
+  [SyntaxKinds.JSXClosingFragment]: function (_node: JSXClosingFragment, _visitor: Visitor) {},
 };
 
 export function visitNode<T extends ModuleItem>(node: T | null | undefined, visitor: Visitor) {
   if (!node) return;
-  // @ts-expect-error
+  // @ts-expect-error Kind of a AST node must can index a callback in table
   const handler = visitor[node.kind] || PropagationtVisitorTable[node.kind];
   if (handler) {
     handler(node, visitor);

@@ -81,8 +81,8 @@ const TempIgnoreCases: Set<string> = new Set([
 ]);
 
 function getFailedKindCount(failedTestCases: Array<FailedTestCasesResult>) {
-  let expectFailedButPass: Array<FailedTestCasesResult> = [];
-  let expectPassButFailed: Array<FailedTestCasesResult> = [];
+  const expectFailedButPass: Array<FailedTestCasesResult> = [];
+  const expectPassButFailed: Array<FailedTestCasesResult> = [];
   for (const testCase of failedTestCases) {
     if (TempIgnoreCases.has(testCase.fileId)) {
       continue;
@@ -127,7 +127,8 @@ async function report(testResult: TestResult) {
   console.log(` |--> Expect Pass But Failed : ${expectPassButFailed.length}`);
   if (isVerbose) {
     for (const failedcase of expectPassButFailed) {
-      console.log(`  |---> File ${(failedcase as any).reason}: ${failedcase.fileId}`);
+      if (failedcase.kind === "ExpectPassButFailed")
+        console.log(`  |---> File ${failedcase.reason}: ${failedcase.fileId}`);
     }
   }
   await stroeResult({

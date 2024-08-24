@@ -8,16 +8,21 @@
     "dev": "ts-node --swc ./src/dev.ts",
     "prettier:check": "yarn prettier .",
     "prettier:write": "yarn prettier . --write",
+    "lint": "yarn eslint",
+    "lint:fix": "yarn eslint --fix",
     "test": "ts-node ./tests/index.ts",
     "test:verbose": "TEST_VERBOSE=1 yarn test",
     "test:update": "TEST_UPDATE=1 yarn test",
     "test:ci": "TEST_CI=1 ts-node yarn test"
   },
   "devDependencies": {
+    "@eslint/js": "^9.9.0",
     "@rollup/plugin-typescript": "^11.1.5",
     "@swc/core": "^1.7.10",
+    "@types/eslint": "^9",
+    "@types/eslint__js": "^8.42.3",
     "chalk": "4.1.2",
-    "lint-staged": "^15.2.7",
+    "eslint": "^9.9.0",
     "nodemon": "^3.0.1",
     "prettier": "^3.3.2",
     "rollup": "^4.1.4",
@@ -26,9 +31,13 @@
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2",
+    "typescript-eslint": "^8.2.0",
     "web-infra-common": "workspace:*"
   },
   "lint-staged": {
-    "*.{ts}": "yarn prettier:write"
+    "*.{ts}": [
+      "yarn prettier:write",
+      "yarn lint:fix"
+    ]
   }
 }

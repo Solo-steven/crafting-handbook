@@ -11,6 +11,7 @@ export function parse(code: string, config?: ParserConfig) {
 export function tokenize(code: string): Array<Token> {
   const lexer = createLexer(code);
   const tokens: Array<Token> = [];
+  // eslint-disable-next-line no-constant-condition
   while (1) {
     const tokenKind = lexer.getTokenKind();
     tokens.push({

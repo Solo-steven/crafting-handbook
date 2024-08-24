@@ -23,7 +23,7 @@ function tryParseCodeStringIntoASTString(code: string, config?: ParserConfig): s
     const ast = parse(code, config);
     transformSyntaxKindToLiteral(ast);
     return JSON.stringify(ast, null, 4);
-  } catch (e) {
+  } catch {
     return null;
   }
 }

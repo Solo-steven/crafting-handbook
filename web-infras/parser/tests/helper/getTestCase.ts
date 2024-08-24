@@ -4,7 +4,6 @@ import { ExpectPassTestCase, ExpectFailedTestCase, TestSuite, ExpectConfig } fro
 import { readFile } from "fs/promises";
 import { existsSync } from "fs";
 
-// eslint-disable-next-line no-useless-escape
 const jsFileRegex = new RegExp(".*.js$");
 /**
  *

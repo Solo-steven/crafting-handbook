@@ -595,7 +595,7 @@ export function createLexicalScopeRecorder() {
   }
   function testAndSetCtor(): boolean {
     const scope = helperFindLastClassScope();
-    let isExist = scope ? scope.haveCtor : false;
+    const isExist = scope ? scope.haveCtor : false;
     if (scope) {
       scope.haveCtor = true;
     }

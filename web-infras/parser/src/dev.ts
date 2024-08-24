@@ -1,5 +1,5 @@
 import { createLexer } from "@/src/lexer";
-import { SyntaxKinds, SytaxKindsMapLexicalLiteral, ModuleItem } from "web-infra-common";
+import { SyntaxKinds, SytaxKindsMapLexicalLiteral } from "web-infra-common";
 import { createParser } from "@/src/parser";
 import { transformSyntaxKindToLiteral } from "../tests/helper/transform";
 import fs from "fs";
@@ -23,6 +23,7 @@ const code = fs.readFileSync(path.join(__dirname, "test.js")).toString();
 // printLexer(code);
 printParser(code);
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function printLexer(code: string) {
   console.log("=================================");
   console.log("=================================");

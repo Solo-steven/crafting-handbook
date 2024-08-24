@@ -22,13 +22,13 @@
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/unicode-escape-in-identifier/input.js",
-      "fileId": "/babel/jsx/errors/unicode-escape-in-identifier"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/expression/primary/literal/regular-expression/migrated_0006/input.js",
+      "fileId": "/esprima/expression/primary/literal/regular-expression/migrated_0006"
     },
     {
       "kind": "ExpectFailedButPass",
-      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/esprima/expression/primary/literal/regular-expression/migrated_0006/input.js",
-      "fileId": "/esprima/expression/primary/literal/regular-expression/migrated_0006"
+      "filePath": "/Users/litingwei/Desktop/projects/for-myself/crafting-handbook/web-infras/parser/tests/fixtures/babel/jsx/errors/unicode-escape-in-identifier/input.js",
+      "fileId": "/babel/jsx/errors/unicode-escape-in-identifier"
     },
     {
       "kind": "ExpectPassButFailed",

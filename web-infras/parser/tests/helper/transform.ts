@@ -53,17 +53,17 @@ const VisitorTable: Visitor = {
   [SyntaxKinds.TaggedTemplateExpression]: transformKind,
   [SyntaxKinds.ChainExpression]: transformKind,
   [SyntaxKinds.UpdateExpression]: function UpdateExpression(node: UpdateExpression, visitor: Visitor) {
-    // @ts-expect-error
+    // @ts-expect-error Overwrite operator as string
     node.operator = SytaxKindsMapLexicalLiteral[node.operator];
     transformKind(node, visitor);
   },
   [SyntaxKinds.UnaryExpression]: function UnaryExpression(node: UnaryExpression, visitor: Visitor) {
-    // @ts-expect-error
+    // @ts-expect-error Overwrite operator as string
     node.operator = SytaxKindsMapLexicalLiteral[node.operator];
     transformKind(node, visitor);
   },
   [SyntaxKinds.BinaryExpression]: function BinaryExpression(node: BinaryExpression, visitor: Visitor) {
-    // @ts-expect-error
+    // @ts-expect-error Overwrite operator as string
     node.operator = SytaxKindsMapLexicalLiteral[node.operator];
     transformKind(node, visitor);
   },
@@ -73,7 +73,7 @@ const VisitorTable: Visitor = {
     node: AssigmentExpression,
     visitor: Visitor,
   ) {
-    // @ts-expect-error
+    // @ts-expect-error Overwrite operator as string
     node.operator = SytaxKindsMapLexicalLiteral[node.operator];
     transformKind(node, visitor);
   },
@@ -136,9 +136,9 @@ const VisitorTable: Visitor = {
   [SyntaxKinds.JSXClosingFragment]: transformKind,
 };
 function transformKind(node: ModuleItem, visior: Visitor) {
-  // @ts-expect-error
+  // @ts-expect-error a ast node's syntax kind must be table.
   const visitChild = PropagationtVisitorTable[node.kind];
-  // @ts-expect-error
+  // @ts-expect-error Overwrite kind as string
   node.kind = SytaxKindsMapLexicalLiteral[node.kind];
   visitChild(node, visior);
 }
@@ -147,6 +147,5 @@ function transformKind(node: ModuleItem, visior: Visitor) {
  * @param {Program} program
  */
 export function transformSyntaxKindToLiteral(program: Program): void {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   visitNode(program, VisitorTable);
 }

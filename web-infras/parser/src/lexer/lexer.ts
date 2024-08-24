@@ -110,6 +110,7 @@ export function createLexer(code: string) {
    * @returns {boolean}
    */
   function getLineTerminatorFlag(): boolean {
+    // eslint-disable-next-line no-control-regex
     return /[\n\u000D\u2028\u2029]/.test(
       context.cursor.code.slice(
         context.tokenState.lastTokenEndPosition.index,
@@ -206,7 +207,7 @@ export function createLexer(code: string) {
   function readRegex(): { pattern: string; flag: string } {
     let pattern = "";
     let flag = "";
-    let startIndex = getCurrentIndex();
+    const startIndex = getCurrentIndex();
     loop: while (!isEOF()) {
       const code = getCharCodePoint() as number;
       switch (code) {
@@ -628,13 +629,14 @@ export function createLexer(code: string) {
         context.templateContext.stackCounter.push(-1);
         eatChar();
         return finishToken(SyntaxKinds.BracesLeftPunctuator);
-      case UnicodePoints.BracesRight:
+      case UnicodePoints.BracesRight: {
         const result = context.templateContext.stackCounter.pop();
         if (result && result > 0) {
           return readTemplateLiteral(SyntaxKinds.TemplateTail, SyntaxKinds.TemplateMiddle);
         }
         eatChar();
         return finishToken(SyntaxKinds.BracesRightPunctuator);
+      }
       case UnicodePoints.BracketLeft:
         eatChar();
         return finishToken(SyntaxKinds.BracketLeftPunctuator);
@@ -1220,7 +1222,6 @@ export function createLexer(code: string) {
     context.sematicState.isTemplateLiteralBreakEscapRule = false;
     // eat '`'
     eatChar();
-    let isEscape = false;
     while (!isEOF()) {
       // safe, since we call it under the isEOF.
       const code = getCharCodePoint() as number;
@@ -1302,7 +1303,7 @@ export function createLexer(code: string) {
         eatChar();
         try {
           readUnicodeEscapeSequence();
-        } catch (e) {
+        } catch {
           context.sematicState.isTemplateLiteralBreakEscapRule = true;
         }
         return;
@@ -1865,12 +1866,10 @@ export function createLexer(code: string) {
   function readIdentifierOrKeyword(): SyntaxKinds {
     context.sematicState.isKeywordContainUnicodeEscap = false;
     const word = readWordAsIdentifier();
-    // @ts-ignore
     if (KeywordLiteralSet.has(word)) {
-      // @ts-ignore
+      // @ts-expect-error When word exist in keyword literal set, it must can map to syntaxkind
       const keywordKind = KeywordLiteralMapSyntaxKind[word];
       if (context.sematicState.isKeywordContainUnicodeEscap) {
-        // TODO: error handle
         throw new Error("keyword can not have any escap unicode");
       }
       return finishToken(keywordKind as SyntaxKinds, word);

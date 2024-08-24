@@ -1,9 +1,16 @@
 {
-    "private": true,
-    "workspaces": [
-        "web-infras/parser",
-        "web-infras/common",
-        "web-infras/analyzer",
-        "website/frontend"
-    ]
+  "private": true,
+  "workspaces": [
+    "web-infras/parser",
+    "web-infras/common",
+    "web-infras/analyzer",
+    "website/frontend"
+  ],
+  "devDependencies": {
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.9"
+  },
+  "scripts": {
+    "precommit": "lint-staged"
+  }
 }

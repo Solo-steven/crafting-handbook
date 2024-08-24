@@ -5,17 +5,29 @@
     "types": "./dist/index.d.ts",
     "scripts": {
         "build": "rollup --config  --bundleConfigAsCjs  rollup.config.js",
+        "lint": "yarn eslint",
+        "lint:fix": "yarn eslint --fix",
         "prettier:check": "yarn prettier . --check",
-        "prettier:write": "yarn prettier . --write",
-        "typecheck": "tsc . --check"
+        "prettier:write": "yarn prettier . --write"
     },
     "devDependencies": {
+        "@eslint/js": "^9.9.1",
         "@rollup/plugin-typescript": "^11.1.1",
+        "@types/eslint": "^9",
+        "@types/eslint__js": "^8.42.3",
+        "eslint": "^9.9.1",
         "prettier": "^3.3.3",
         "rollup": "^4.1.4",
         "rollup-plugin-dts": "^5.3.0",
         "tsconfig-paths": "^4.2.0",
         "tslib": "^2.6.2",
-        "typescript": "^5.2.2"
+        "typescript": "^5.2.2",
+        "typescript-eslint": "^8.2.0"
+    },
+    "lint-staged": {
+        "*.{ts}": [
+            "yarn prettier:write",
+            "yarn lint:fix"
+        ]
     }
 }

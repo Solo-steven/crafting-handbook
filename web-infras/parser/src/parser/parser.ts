@@ -49,7 +49,6 @@ import {
   ExportSpecifier,
   ExportDefaultDeclaration,
   FunctionDeclaration,
-  FunctionExpression,
   ClassDeclaration,
   ClassExpression,
   ObjectAccessor,
@@ -78,7 +77,6 @@ import {
   AssigmentExpression,
   isRestElement,
   isSpreadElement,
-  KeywordLiteralMapSyntaxKind,
   isAssignmentPattern,
   isVarDeclaration,
   RegexLiteral,
@@ -91,19 +89,15 @@ import {
   isMemberExpression,
   LexicalLiteral,
   isAwaitExpression,
-  isYieldExpression,
   isObjectPatternProperty,
   ArrorFunctionExpression,
   YieldExpression,
   isCallExpression,
-  isAssignmentExpression,
   isStringLiteral,
   ExpressionStatement,
   Program,
-  ClassProperty,
   isPattern,
   isUnaryExpression,
-  isBinaryExpression,
   JSXElement,
   JSXOpeningElement,
   JSXAttribute,
@@ -112,15 +106,8 @@ import {
   JSXNamespacedName,
   JSXFragment,
   JSXMemberExpression,
-  JSXText,
   JSXExpressionContainer,
-  JSXSpreadChild,
   JSXClosingElement,
-  createSourcePosition,
-  isObjectProperty,
-  BinaryExpression,
-  MemberExpression,
-  CallExpression,
   isNumnerLiteral,
   isFunctionExpression,
   isPrivateName,
@@ -140,11 +127,11 @@ import { createLexer } from "../lexer/index";
 import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } from "./scope/arrowExprScope";
 import { createStrictModeScopeRecorder, StrictModeScope } from "./scope/strictModeScope";
 import { ExpressionScopeKind } from "./scope/type";
-import { BlockType, createLexicalScopeRecorder, PrivateNameDefKind } from "./scope/lexicalScope";
+import { createLexicalScopeRecorder, PrivateNameDefKind } from "./scope/lexicalScope";
 interface Context {
   maybeArrowStart: number;
   inOperatorStack: Array<boolean>;
-  propertiesInitSet: Set<any>;
+  propertiesInitSet: Set<ModuleItem>;
   propertiesProtoDuplicateSet: Set<PropertyName>;
 }
 
@@ -174,7 +161,12 @@ const BindingIdentifierSyntaxKindArray = [
   SyntaxKinds.LetKeyword,
 ];
 const PreserveWordSet = new Set(LexicalLiteral.preserveword);
-const KeywordSet = new Set(LexicalLiteral.keywords);
+const KeywordSet = new Set([
+  ...LexicalLiteral.keywords,
+  ...LexicalLiteral.BooleanLiteral,
+  ...LexicalLiteral.NullLiteral,
+  ...LexicalLiteral.UndefinbedLiteral,
+]);
 /**
  * create parser for input code.
  * @param {string} code
@@ -409,7 +401,7 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function createMessageError(messsage: string, position?: SourcePosition) {
     if (position === undefined) position = getStartPosition();
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+
     return new Error(
       `[Syntax Error]: ${messsage} (${position.row}, ${position.col}), got token ${SytaxKindsMapLexicalLiteral[getToken()]}.\n ${code.slice(getStartPosition().index - 100, getStartPosition().index)} \n ${code.slice(getStartPosition().index, getEndPosition().index)}`,
     );
@@ -448,7 +440,7 @@ export function createParser(code: string, option?: ParserConfig) {
    * @returns {Error}
    */
   function createUnreachError(startTokens: Array<SyntaxKinds> = []): Error {
-    let start = getStartPosition();
+    const start = getStartPosition();
     let message = `[Unreach Zone]: this piece of code should not be reach (${start.row}, ${start.col}), have a unexpect token ${getToken()} (${getSourceValue()}).`;
     if (startTokens.length !== 0) {
       message += " it should call with start token[";
@@ -727,12 +719,13 @@ export function createParser(code: string, option?: ParserConfig) {
   function parseModuleItem(): ModuleItem {
     const token = getToken();
     switch (token) {
-      case SyntaxKinds.ImportKeyword:
+      case SyntaxKinds.ImportKeyword: {
         const { kind } = lookahead();
         if (kind === SyntaxKinds.DotOperator || kind === SyntaxKinds.ParenthesesLeftPunctuator) {
           return parseStatementListItem();
         }
         return parseImportDeclaration();
+      }
       case SyntaxKinds.ExportKeyword:
         return parseExportDeclaration();
       default:
@@ -1688,7 +1681,7 @@ export function createParser(code: string, option?: ParserConfig) {
    * @returns {VariableDeclaration}
    */
   function parseVariableDeclaration(inForInit: boolean = false): VariableDeclaration {
-    let variableKind = match(SyntaxKinds.VarKeyword) ? "var" : "lexical";
+    const variableKind = match(SyntaxKinds.VarKeyword) ? "var" : "lexical";
     const { start: keywordStart, value: variant } = expect([
       SyntaxKinds.VarKeyword,
       SyntaxKinds.ConstKeyword,
@@ -2939,13 +2932,14 @@ export function createParser(code: string, option?: ParserConfig) {
       case SyntaxKinds.TemplateHead:
       case SyntaxKinds.TemplateNoSubstitution:
         return parseTemplateLiteral(false);
-      case SyntaxKinds.ImportKeyword:
+      case SyntaxKinds.ImportKeyword: {
         const { kind } = lookahead();
         if (kind === SyntaxKinds.DotOperator) return parseImportMeta();
         if (kind === SyntaxKinds.ParenthesesLeftPunctuator) {
           return parseImportCall();
         }
         throw createUnexpectError(null);
+      }
       case SyntaxKinds.NewKeyword: {
         const { kind } = lookahead();
         if (kind === SyntaxKinds.DotOperator) {
@@ -3093,8 +3087,9 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function parseRegexLiteral(): RegexLiteral {
     expectButNotEat([SyntaxKinds.DivideOperator, SyntaxKinds.DivideAssignOperator]);
-    let startWithAssignOperator = match(SyntaxKinds.DivideAssignOperator);
+    const startWithAssignOperator = match(SyntaxKinds.DivideAssignOperator);
     const start = getStartPosition();
+    // eslint-disable-next-line prefer-const
     let { pattern, flag } = readRegex();
     nextToken();
     if (startWithAssignOperator) {
@@ -4099,8 +4094,6 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       if (nodes.length === 1) {
         nodes[0].parentheses = true;
-        if (nodes[0].kind === SyntaxKinds.ArrowFunctionExpression) {
-        }
         return nodes[0];
       }
       if (nodes.length === 0) {
@@ -4535,7 +4528,9 @@ export function createParser(code: string, option?: ParserConfig) {
    * @returns {JSXIdentifier}
    */
   function parseJSXIdentifier(): JSXIdentifier {
+    // eslint-disable-next-line prefer-const
     let { start, end } = expect(IdentiferWithKeyworArray);
+    // eslint-disable-next-line no-constant-condition
     while (1) {
       if (match(SyntaxKinds.MinusOperator)) {
         end = getEndPosition();
@@ -4996,8 +4991,7 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       const imported = parseModuleExportName();
       if (!isContextKeyword("as")) {
-        // @ts-ignore
-        if (isIdentifer(imported) && KeywordLiteralMapSyntaxKind[imported.name]) {
+        if (isIdentifer(imported) && KeywordSet.has(imported.name)) {
           throw createMessageError(ErrorMessageMap.keyword_can_not_use_in_imported_when_just_a_specifier);
         } else if (isStringLiteral(imported)) {
           throw createMessageError(ErrorMessageMap.string_literal_cannot_be_used_as_an_imported_binding);
