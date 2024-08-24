@@ -49,15 +49,21 @@ export type LexerSematicState = {
   isKeywordContainUnicodeEscap: boolean;
 };
 
+// TODO: refactor lexer context into state and context
+// export type LexerState = {
+//   cursor: LexerCursorState;
+//   token: LexerTokenState;
+// }
+
 export type LexerTemplateContext = {
   stackCounter: Array<number>;
 };
 
 export type LexerJSXContext = {
-  shouldParseStringLiteralAsJSXStringLiteral: boolean;
+  shouldTokenizeStringLiteralAsJSXStringLiteral: boolean;
+  shouldTokenizeGtWithHigherPriority: boolean;
 };
 
 export type LexerStrictModeContext = {
   isInStrictMode: boolean;
-  isStringLiteralBreakStrictMode: boolean;
 };

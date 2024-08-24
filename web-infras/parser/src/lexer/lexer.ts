@@ -61,8 +61,11 @@ function createContext(code: string): Context {
       isTemplateLiteralBreakEscapRule: false,
     },
     templateContext: { stackCounter: [] },
-    jsxContext: { shouldParseStringLiteralAsJSXStringLiteral: false },
-    strictModeContext: { isInStrictMode: false, isStringLiteralBreakStrictMode: false },
+    jsxContext: {
+      shouldTokenizeStringLiteralAsJSXStringLiteral: false,
+      shouldTokenizeGtWithHigherPriority: false,
+    },
+    strictModeContext: { isInStrictMode: false },
   };
 }
 /**
@@ -173,11 +176,17 @@ export function createLexer(code: string) {
   /**
    *
    */
-  function nextTokenInJSXChildren(): void {
-    scanInJSXChildren();
+  function nextTokenInJSXChildrenContext(): void {
+    scanInJSXChildrenContext();
   }
-  function setJSXcontext(flag: boolean): void {
-    context.jsxContext.shouldParseStringLiteralAsJSXStringLiteral = flag;
+  function setJSXStringContext(flag: boolean): void {
+    context.jsxContext.shouldTokenizeStringLiteralAsJSXStringLiteral = flag;
+  }
+  function getJSXGtContext(): boolean {
+    return context.jsxContext.shouldTokenizeGtWithHigherPriority;
+  }
+  function setJSXGtContext(flag: boolean): void {
+    context.jsxContext.shouldTokenizeGtWithHigherPriority = flag;
   }
   /**
    * Public API for lookahead token.
@@ -365,8 +374,10 @@ export function createLexer(code: string) {
     lookahead,
     readRegex,
     // only used by JSX
-    nextTokenInJSXChildren,
-    setJSXcontext,
+    nextTokenInJSXChildrenContext,
+    setJSXStringContext,
+    getJSXGtContext,
+    setJSXGtContext,
     // only used by strict mode
     setStrictModeContext,
   };
@@ -767,7 +778,7 @@ export function createLexer(code: string) {
       }
     }
   }
-  function scanInJSXChildren() {
+  function scanInJSXChildrenContext() {
     let isJSXTextExist = false;
     skipWhiteSpaceChangeLine();
     startToken();
@@ -910,6 +921,9 @@ export function createLexer(code: string) {
    */
   function readGreaterStart(): SyntaxKinds {
     eatChar();
+    if (context.jsxContext.shouldTokenizeGtWithHigherPriority) {
+      return finishToken(SyntaxKinds.GtOperator);
+    }
     switch (getCharCodePoint()) {
       case UnicodePoints.GreaterThen: {
         eatChar();
@@ -1663,10 +1677,10 @@ export function createLexer(code: string) {
    * @returns {SyntaxKinds}
    */
   function readStringLiteral(mode: "Single" | "Double"): SyntaxKinds {
-    if (context.jsxContext.shouldParseStringLiteralAsJSXStringLiteral) {
+    if (context.jsxContext.shouldTokenizeStringLiteralAsJSXStringLiteral) {
       return readJSXStringLiteral(mode);
     }
-    context.strictModeContext.isStringLiteralBreakStrictMode = false;
+    let isStringLiteralBreakStrictMode = false;
     // eat mode
     const modeInCodepoint = mode === "Single" ? UnicodePoints.SingleQuote : UnicodePoints.DoubleQuote;
     eatChar();
@@ -1685,7 +1699,10 @@ export function createLexer(code: string) {
           throw lexicalError(ErrorMessageMap.error_line_terminator_in_string_literal);
         }
         case UnicodePoints.BackSlash: {
-          readEscapeSequenceInStringLiteral();
+          // ERROR: using isStringLiteralBreakStrictMode ||= readEscapeSequenceInStringLiteral() will cause loop, not sure why.
+          if (readEscapeSequenceInStringLiteral()) {
+            isStringLiteralBreakStrictMode = true;
+          }
           break;
         }
         default: {
@@ -1697,11 +1714,8 @@ export function createLexer(code: string) {
     if (isEOF()) {
       throw new Error(ErrorMessageMap.babel_error_unterminated_string_constant);
     }
-    if (
-      context.strictModeContext.isInStrictMode &&
-      context.strictModeContext.isStringLiteralBreakStrictMode
-    ) {
-      throw createLexer(ErrorMessageMap.syntax_error_Octal_escape_sequences_are_not_allowed_in_strict_mode);
+    if (context.strictModeContext.isInStrictMode && isStringLiteralBreakStrictMode) {
+      throw lexicalError(ErrorMessageMap.syntax_error_Octal_escape_sequences_are_not_allowed_in_strict_mode);
     }
     // get end index before ending char ' or "
     const indexBeforeEndMode = getCurrentIndex();
@@ -1717,7 +1731,7 @@ export function createLexer(code: string) {
    * @param mode
    * @returns
    */
-  function readEscapeSequenceInStringLiteral() {
+  function readEscapeSequenceInStringLiteral(): boolean {
     eatChar(); // eat \
     const code = getCharCodePoint();
     switch (code) {
@@ -1740,7 +1754,7 @@ export function createLexer(code: string) {
       case UnicodePoints.DoubleQuote:
       case UnicodePoints.SingleQuote: {
         eatChar();
-        return;
+        return false;
       }
       // HexEscapeSequence
       case UnicodePoints.LowerCaseX: {
@@ -1752,14 +1766,14 @@ export function createLexer(code: string) {
             throw lexicalError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence);
           }
         }
-        return;
+        return false;
       }
       // 0 escape
       case UnicodePoints.Digital0: {
         const next = getNextCharCodePoint();
         if (next && !(next >= UnicodePoints.Digital0 && next <= UnicodePoints.Digital9)) {
           eatChar();
-          return;
+          return false;
         }
         // fall to legacy
       }
@@ -1771,7 +1785,6 @@ export function createLexer(code: string) {
       case UnicodePoints.Digital5:
       case UnicodePoints.Digital6:
       case UnicodePoints.Digital7: {
-        context.strictModeContext.isStringLiteralBreakStrictMode ||= true;
         /**
          * The condition could be more simple.
          */
@@ -1783,7 +1796,7 @@ export function createLexer(code: string) {
           (next === UnicodePoints.Digital8 || next === UnicodePoints.Digital9)
         ) {
           eatChar();
-          return;
+          return true;
         }
         // NonZeroOctalDigit [lookahead ∉ OctalDigit]
         if (
@@ -1793,7 +1806,7 @@ export function createLexer(code: string) {
           (next > UnicodePoints.Digital7 || next < UnicodePoints.Digital0)
         ) {
           eatChar();
-          return;
+          return true;
         }
         // ZeroToThree OctalDigit [lookahead ∉ OctalDigit]
         // ZeroToThree OctalDigit OctalDigit
@@ -1803,7 +1816,7 @@ export function createLexer(code: string) {
             const nextNext = getCharCodePoint();
             if (nextNext && nextNext <= UnicodePoints.Digital7 && nextNext >= UnicodePoints.Digital0) {
               eatChar();
-              return;
+              return false;
             }
           } else {
             // should error, but actually unreach. since this part if handle
@@ -1815,7 +1828,7 @@ export function createLexer(code: string) {
         if (code >= UnicodePoints.Digital4 && code <= UnicodePoints.Digital7) {
           if (next && next <= UnicodePoints.Digital7 && next >= UnicodePoints.Digital0) {
             eatTwoChar();
-            return;
+            return false;
           } else {
             // should error, but actually unreach. since this part if handle
             // by `NonZeroOctalDigit [lookahead ∉ OctalDigit]`
@@ -1825,22 +1838,22 @@ export function createLexer(code: string) {
       // NonOctalDecimalEscapeSequence
       case UnicodePoints.Digital8:
       case UnicodePoints.Digital9: {
-        context.strictModeContext.isStringLiteralBreakStrictMode ||= true;
         eatChar();
-        return;
+        return true;
       }
       // UnicodeEscapeSequence
       case UnicodePoints.LowerCaseU: {
         eatChar();
         readUnicodeEscapeSequence();
-        return;
+        return false;
       }
       // NonEscapeCharacter
       default: {
         eatChar();
-        return;
+        return false;
       }
     }
+    return false;
   }
   function readJSXStringLiteral(mode: "Single" | "Double") {
     const modeInCodepoint = mode === "Single" ? UnicodePoints.SingleQuote : UnicodePoints.DoubleQuote;
