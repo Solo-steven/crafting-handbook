@@ -1,9 +1,9 @@
-use std::collections::HashMap;
 use super::expr_key::RightHandSideInst;
 use crate::ir::function::{BasicBlock, Function};
-use crate::ir::value::Value; 
+use crate::ir::value::Value;
 use crate::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
 use crate::ir_optimizer::anaylsis::domtree::DomTable;
+use std::collections::HashMap;
 
 pub struct ScopeInstCacheTable {
     current_index: usize,
@@ -73,30 +73,38 @@ impl ScopeReplaceValueCacheTable {
     }
 }
 
-pub fn sorted_dom_children_in_dfs_ordering<'a>(dom_table: &'a DomTable, function: &'a Function ) -> HashMap<BasicBlock, Vec<BasicBlock>> {
+pub fn sorted_dom_children_in_dfs_ordering<'a>(
+    dom_table: &'a DomTable,
+    function: &'a Function,
+) -> HashMap<BasicBlock, Vec<BasicBlock>> {
     let mut map = HashMap::new();
     let mut dfs_order_anaylsis = DFSOrdering::new();
     let mut id_map_order = HashMap::new();
     let mut index = 0 as usize;
-    for block_id in dfs_order_anaylsis.get_order(function.entry_block[0].clone(), &function.blocks) {
+    for block_id in dfs_order_anaylsis.get_order(function.entry_block[0].clone(), &function.blocks)
+    {
         id_map_order.insert(block_id, index);
         index += 1;
     }
     for (block_id, entry) in dom_table {
-        let mut children = entry.dom_tree_children.clone().into_iter().collect::<Vec<_>>();
+        let mut children = entry
+            .dom_tree_children
+            .clone()
+            .into_iter()
+            .collect::<Vec<_>>();
         if children.len() == 0 {
             map.insert(block_id.clone(), children);
             continue;
         }
-        for i in 0..(children.len()-1) {
-            for j in 0..(children.len()-1-i) {
+        for i in 0..(children.len() - 1) {
+            for j in 0..(children.len() - 1 - i) {
                 let current_id = children[j];
-                let next_id = children[j+1];
+                let next_id = children[j + 1];
                 if id_map_order.get(&current_id).unwrap() > id_map_order.get(&next_id).unwrap() {
                     let temp = current_id;
-                    children[j] = children[j+1];
-                    children[j+1] = temp;
-                } 
+                    children[j] = children[j + 1];
+                    children[j + 1] = temp;
+                }
             }
         }
         map.insert(block_id.clone(), children);

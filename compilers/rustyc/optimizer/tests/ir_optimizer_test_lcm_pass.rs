@@ -7,12 +7,18 @@ fn get_pass() -> LCMPass {
 }
 fn get_table_path() -> String {
     String::from(
-        get_tests_folder_root_path().join("ir_optimizer/lcm/").as_os_str().to_str().unwrap()
+        get_tests_folder_root_path()
+            .join("ir_optimizer/lcm/")
+            .as_os_str()
+            .to_str()
+            .unwrap(),
     )
 }
-generate_pass_cases!(
-    (lcm_graph_from_cmu, "lcm_graph_from_cmu", &mut create_lcm_test_graph())
-);
+generate_pass_cases!((
+    lcm_graph_from_cmu,
+    "lcm_graph_from_cmu",
+    &mut create_lcm_test_graph()
+));
 
 /// ## Generate Test Function For LCM 1
 /// This function graph is reference from CMU lecture in Page 21

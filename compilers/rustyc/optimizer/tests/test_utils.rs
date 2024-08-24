@@ -1,12 +1,12 @@
 use std::env;
-use std::path::PathBuf;
 use std::fs::read_to_string;
 use std::fs::File;
 use std::io::Write;
+use std::path::PathBuf;
 
 use rustyc_frontend::parser::Parser;
-use rustyc_optimizer::ir_converter::Converter;
 use rustyc_optimizer::ir::function::Function;
+use rustyc_optimizer::ir_converter::Converter;
 use rustyc_optimizer::ir_optimizer::anaylsis::DebuggerAnaylsis;
 use rustyc_optimizer::ir_optimizer::anaylsis::OptimizerAnaylsis;
 use rustyc_optimizer::ir_optimizer::pass::DebuggerPass;
@@ -20,9 +20,9 @@ pub fn get_assets_folder_root_path() -> PathBuf {
 }
 #[allow(dead_code)]
 pub fn get_tests_folder_root_path() -> PathBuf {
-  let mut package_root = env::current_dir().unwrap();
-  package_root.push("./tests");
-  package_root   
+    let mut package_root = env::current_dir().unwrap();
+    package_root.push("./tests");
+    package_root
 }
 #[allow(dead_code)]
 pub fn test_convert(name: &'static str, mut c_path: String, mut ir_path: String) {
@@ -70,20 +70,25 @@ macro_rules! generate_converter_cases {
     (
         $(
             ($func_name: ident, $test_case: expr)
-        ),* 
+        ),*
     ) => {
         $(
             test_convert_case!(
-                $func_name, 
-                $test_case, 
-                get_c_code_folder_path(), 
+                $func_name,
+                $test_case,
+                get_c_code_folder_path(),
                 get_ir_test_result_folder_path()
             );
         )*
     };
 }
 #[allow(dead_code)]
-pub fn test_pass(name: &'static str, function: &mut Function, mut table_path: String, mut pass: impl OptimizerPass + DebuggerPass) {
+pub fn test_pass(
+    name: &'static str,
+    function: &mut Function,
+    mut table_path: String,
+    mut pass: impl OptimizerPass + DebuggerPass,
+) {
     table_path.push_str(name);
     table_path.push_str(".table");
     let is_update = env::var("UPDATE").is_ok();
@@ -106,7 +111,7 @@ macro_rules! generate_pass_cases {
     (
         $(
             ($func_name: ident, $test_case: expr, $function: expr)
-        ),* 
+        ),*
     ) => {
         $(
             #[test]
@@ -117,7 +122,12 @@ macro_rules! generate_pass_cases {
     };
 }
 
-pub fn test_anaylsis<T, Anaylsier : OptimizerAnaylsis<T> + DebuggerAnaylsis<T>>(name: &'static str, function: &Function, mut table_path: String, mut anaylsis : Anaylsier) {
+pub fn test_anaylsis<T, Anaylsier: OptimizerAnaylsis<T> + DebuggerAnaylsis<T>>(
+    name: &'static str,
+    function: &Function,
+    mut table_path: String,
+    mut anaylsis: Anaylsier,
+) {
     table_path.push_str(name);
     table_path.push_str(".table");
     let is_update = env::var("UPDATE").is_ok();
@@ -135,4 +145,3 @@ pub fn test_anaylsis<T, Anaylsier : OptimizerAnaylsis<T> + DebuggerAnaylsis<T>>(
         Err(_) => panic!("Can not read table of anaylsis - {}", table_path),
     }
 }
-

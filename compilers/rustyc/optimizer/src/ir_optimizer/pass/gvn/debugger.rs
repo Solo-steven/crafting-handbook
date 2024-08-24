@@ -1,8 +1,8 @@
+use super::GVNPass;
 use crate::ir::function::Function;
 use crate::ir_optimizer::pass::DebuggerPass;
-use super::GVNPass;
 
-impl <'a> DebuggerPass for GVNPass<'a> {
+impl<'a> DebuggerPass for GVNPass<'a> {
     fn debugger(&self, _function: &Function) -> String {
         let mut output = String::new();
         output.push_str("Remove Inst:\n");

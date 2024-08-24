@@ -14,10 +14,7 @@ pub struct Mem2RegPass<'a> {
 
 impl<'a> OptimizerPass for Mem2RegPass<'a> {
     /// Mutate the function and promte the usage of memory to just register.
-    fn process(
-        &mut self,
-        function: &mut Function,
-    ) {
+    fn process(&mut self, function: &mut Function) {
         // find all alloc pointer
         let alloc_pointers_and_bb_ids = self.find_all_alloc_inst_from_entry_block(function);
         // insert phi is df of store inst of alloc use.
@@ -45,11 +42,8 @@ impl<'a> OptimizerPass for Mem2RegPass<'a> {
                 }
             } else {
                 // if there is no pointer access and use is in multiple block, perform ssa construct algorithm for phi inst.
-                let rename_phis = self.insert_phi_node_in_df_of_store_inst(
-                    alloc_pointer,
-                    function,
-                    use_table,
-                );
+                let rename_phis =
+                    self.insert_phi_node_in_df_of_store_inst(alloc_pointer, function, use_table);
                 if !self.rename_load_and_store_inst(
                     bb_id.clone(),
                     function,
@@ -67,10 +61,7 @@ impl<'a> OptimizerPass for Mem2RegPass<'a> {
 
 impl<'a> Mem2RegPass<'a> {
     /// Create a new instance to performan mem2reg.
-    pub fn new(
-        use_def_table: &'a UseDefTable,
-        dom_table: &'a DomTable,
-    ) -> Self {
+    pub fn new(use_def_table: &'a UseDefTable, dom_table: &'a DomTable) -> Self {
         Self {
             use_def_table,
             dom_table,

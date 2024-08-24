@@ -1,5 +1,5 @@
-use crate::ir::function::Function;
 use crate::ir::function::BasicBlock;
+use crate::ir::function::Function;
 
 static DIVIDE_CHAR: &'static str = "-";
 
@@ -26,12 +26,12 @@ pub fn sort_block_ids(mut block_ids: Vec<BasicBlock>) -> Vec<BasicBlock> {
     if block_ids.len() == 0 {
         return block_ids;
     }
-    for i in 0..block_ids.len()-1 {
-        for j in 0..(block_ids.len()-1 - i) {
-            if block_ids[j].0 > block_ids[j+1].0 {
-               let temp = block_ids[j];
-               block_ids[j] = block_ids[j+1];
-               block_ids[j+1] = temp;
+    for i in 0..block_ids.len() - 1 {
+        for j in 0..(block_ids.len() - 1 - i) {
+            if block_ids[j].0 > block_ids[j + 1].0 {
+                let temp = block_ids[j];
+                block_ids[j] = block_ids[j + 1];
+                block_ids[j + 1] = temp;
             }
         }
     }

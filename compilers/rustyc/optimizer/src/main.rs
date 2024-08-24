@@ -14,14 +14,13 @@ use std::io::Write;
 use crate::ir_optimizer::anaylsis::domtree::DomAnaylsier;
 use crate::ir_optimizer::anaylsis::use_def_chain::*;
 use crate::ir_optimizer::pass::copy_propagation::CopyPropagationPass;
+use crate::ir_optimizer::pass::gvn::GVNPass;
 use crate::ir_optimizer::pass::lazy_code_motion::{
     print_lazy_code_motion_table, LazyCodeMotionPass,
 };
 use crate::ir_optimizer::pass::lcm::LCMPass;
-use crate::ir_optimizer::pass::gvn::GVNPass;
 use crate::ir_optimizer::pass::mem2reg::Mem2RegPass;
 use crate::ir_optimizer::pass::value_numbering::ValueNumberingPass;
-
 
 fn main() {
     // let program = Parser::new("
@@ -55,9 +54,8 @@ fn main() {
     // write!(file,"{}", func.print_to_string()).unwrap();
     // let out = lcm_pass.debugger(&func);
     let mut file1 = File::create("./debug.txt").unwrap();
-    write!(file1,"{}", out).unwrap();
+    write!(file1, "{}", out).unwrap();
     // lcm_pass.process(&mut func);
-
 
     // let mut dom = DomAnaylsier::new();
     // let dom_table = dom.anaylsis(&mut func);
@@ -189,7 +187,7 @@ fn create_gvn_graph_from_conrnell() -> Function {
     function.connect_block(b2, b3);
     function.connect_block(b3, b4);
 
-    let mut add_to_param = || { 
+    let mut add_to_param = || {
         let temp = function.add_register(IrValueType::I16);
         function.params_value.push(temp);
         temp
@@ -202,7 +200,7 @@ fn create_gvn_graph_from_conrnell() -> Function {
     let f0 = add_to_param();
 
     function.switch_to_block(b1);
-    let u0 = function.build_add_inst(a0,b0);
+    let u0 = function.build_add_inst(a0, b0);
     let v0 = function.build_add_inst(c0, d0);
     let w0 = function.build_add_inst(e0, f0);
     let cond = function.build_icmp_inst(u0, v0, ir::instructions::CmpFlag::Eq);
@@ -214,23 +212,23 @@ fn create_gvn_graph_from_conrnell() -> Function {
     function.build_jump_inst(b4);
 
     function.switch_to_block(b3);
-    let u1 = function.build_add_inst(a0,b0);
+    let u1 = function.build_add_inst(a0, b0);
     let x1 = function.build_add_inst(e0, f0);
     let y1 = function.build_add_inst(e0, f0);
     function.build_jump_inst(b4);
 
     function.switch_to_block(b4);
-    let u2 = function.build_phi_inst(vec![(b2,u0 ), (b3, u1)]);
-    let x2 = function.build_phi_inst(vec![(b2,x0 ), (b3, x1)]);
-    let y2 = function.build_phi_inst(vec![(b2,y0 ), (b3, y1)]);
+    let u2 = function.build_phi_inst(vec![(b2, u0), (b3, u1)]);
+    let x2 = function.build_phi_inst(vec![(b2, x0), (b3, x1)]);
+    let y2 = function.build_phi_inst(vec![(b2, y0), (b3, y1)]);
     function.build_add_inst(u2, y2);
-    function.build_add_inst(a0,b0);
+    function.build_add_inst(a0, b0);
     function.build_ret_inst(None);
 
     let result = function.print_to_string();
 
     let mut file = File::create("./test.txt").unwrap();
-    write!(file,"{}", result).unwrap();
+    write!(file, "{}", result).unwrap();
 
     function
 }

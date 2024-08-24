@@ -1,8 +1,7 @@
+mod debugger;
 mod expr_key;
 mod scope_table;
-mod debugger;
 
-use std::collections::HashMap;
 use crate::ir::function::{BasicBlock, Function};
 use crate::ir::instructions::OpCode;
 use crate::ir::instructions::{Instruction, InstructionData};
@@ -10,7 +9,10 @@ use crate::ir::value::Value;
 use crate::ir_optimizer::anaylsis::domtree::DomTable;
 use crate::ir_optimizer::pass::OptimizerPass;
 use expr_key::get_right_hand_side_inst_key;
-use scope_table::{ScopeInstCacheTable, ScopeReplaceValueCacheTable, sorted_dom_children_in_dfs_ordering};
+use scope_table::{
+    sorted_dom_children_in_dfs_ordering, ScopeInstCacheTable, ScopeReplaceValueCacheTable,
+};
+use std::collections::HashMap;
 
 pub struct GVNPass<'a> {
     dom_table: &'a DomTable,
@@ -35,7 +37,12 @@ impl<'a> GVNPass<'a> {
             need_remove_insts: Default::default(),
         }
     }
-    fn visit_block(&mut self, function: &mut Function, block_id: BasicBlock, sorted_dom_chilren: &HashMap<BasicBlock, Vec<BasicBlock>>) {
+    fn visit_block(
+        &mut self,
+        function: &mut Function,
+        block_id: BasicBlock,
+        sorted_dom_chilren: &HashMap<BasicBlock, Vec<BasicBlock>>,
+    ) {
         self.cache_inst_table.enter_scope();
         self.replaceable_value_table.enter_scope();
         let block_data = function.blocks.get(&block_id).unwrap();

@@ -1,9 +1,9 @@
 mod debugger;
-use std::collections::{HashMap, HashSet};
-use std::mem::replace;
 use crate::ir::function::*;
 use crate::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
 use crate::ir_optimizer::anaylsis::OptimizerAnaylsis;
+use std::collections::{HashMap, HashSet};
+use std::mem::replace;
 /// Table for record every block's dom and idom and dom-frontier
 pub type DomTable = HashMap<BasicBlock, DomTableEntry>;
 /// Entry for record dom, idom and dom-frontier for a bb.
@@ -138,7 +138,9 @@ impl DomAnaylsier {
         }
         for (block_id, entry) in &mut self.dom_table {
             entry.dom_tree_children = replace(
-                dom_tree_children_map.get_mut(block_id).unwrap_or(&mut HashSet::new()),
+                dom_tree_children_map
+                    .get_mut(block_id)
+                    .unwrap_or(&mut HashSet::new()),
                 Default::default(),
             );
         }
