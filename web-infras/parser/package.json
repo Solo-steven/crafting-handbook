@@ -38,6 +38,9 @@
     "*.{ts}": [
       "yarn format:write",
       "yarn lint:fix"
+    ],
+    "*.md": [
+      "yarn format:write"
     ]
   }
 }
