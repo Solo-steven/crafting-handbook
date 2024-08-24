@@ -8,7 +8,7 @@ jobs:
       - name: Checkout Branch
         uses: actions/checkout@v4
       - name: Install Deps
-        uses: "./install-node-dep"
+        uses: "./.github/install-node-dep"
       - name: Run Linter on Common Package
         run: yarn lint
         working-directory: "web-infras/common"
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout Branch
         uses: actions/checkout@v4
       - name: Install Deps
-        uses: "./install-node-dep"
+        uses: "./.github/install-node-dep"
       - name: Run Linter on Common Package
         run: yarn prettier
         working-directory: "web-infras/common"
