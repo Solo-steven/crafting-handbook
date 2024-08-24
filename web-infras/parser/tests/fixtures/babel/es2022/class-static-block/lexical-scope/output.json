@@ -56,6 +56,7 @@
                                 "index": 27
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 10,
@@ -68,16 +69,16 @@
                         }
                     },
                     {
-                        "kind": 10177,
+                        "kind": 10179,
                         "body": [
                             {
-                                "kind": 10152,
+                                "kind": 10153,
                                 "variant": "const",
                                 "declarations": [
                                     {
-                                        "kind": 10153,
+                                        "kind": 10154,
                                         "id": {
-                                            "kind": 10129,
+                                            "kind": 10130,
                                             "name": "C",
                                             "start": {
                                                 "row": 4,
@@ -91,7 +92,7 @@
                                             }
                                         },
                                         "init": {
-                                            "kind": 10168,
+                                            "kind": 10169,
                                             "properties": [],
                                             "trailingComma": false,
                                             "start": {
@@ -161,7 +162,8 @@
                 "row": 6,
                 "col": 2,
                 "index": 62
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

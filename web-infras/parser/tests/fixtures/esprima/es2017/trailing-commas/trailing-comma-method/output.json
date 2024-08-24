@@ -85,6 +85,7 @@
                                 "index": 21
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 1,
                             "col": 11,
@@ -117,7 +118,8 @@
                 "row": 1,
                 "col": 24,
                 "index": 23
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

@@ -70,7 +70,8 @@
                     "row": 1,
                     "col": 37,
                     "index": 36
-                }
+                },
+                "decorators": null
             },
             "body": {
                 "kind": "ClassBody",
@@ -95,7 +96,8 @@
                 "row": 1,
                 "col": 40,
                 "index": 39
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

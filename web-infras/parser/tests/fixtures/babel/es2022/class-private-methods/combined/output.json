@@ -54,6 +54,7 @@
                                 "index": 19
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -61,8 +62,8 @@
                         },
                         "end": {
                             "row": 2,
-                            "col": 8,
-                            "index": 19
+                            "col": 4,
+                            "index": 15
                         }
                     },
                     {
@@ -157,6 +158,7 @@
                                 "index": 52
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 4,
                             "col": 3,
@@ -201,6 +203,7 @@
                                 "index": 62
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 8,
                             "col": 3,
@@ -208,8 +211,8 @@
                         },
                         "end": {
                             "row": 8,
-                            "col": 9,
-                            "index": 62
+                            "col": 5,
+                            "index": 58
                         }
                     },
                     {
@@ -273,6 +276,7 @@
                         },
                         "type": "get",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 10,
                             "col": 3,
@@ -360,6 +364,7 @@
                         },
                         "type": "set",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 11,
                             "col": 3,
@@ -478,6 +483,7 @@
                                 "index": 157
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 13,
                             "col": 3,
@@ -510,7 +516,8 @@
                 "row": 16,
                 "col": 2,
                 "index": 159
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

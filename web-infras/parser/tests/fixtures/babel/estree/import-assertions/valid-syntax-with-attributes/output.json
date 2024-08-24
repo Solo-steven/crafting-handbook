@@ -48,7 +48,7 @@
             },
             "attributes": [
                 {
-                    "kind": 10210,
+                    "kind": 10213,
                     "key": {
                         "kind": "Identifer",
                         "name": "type",

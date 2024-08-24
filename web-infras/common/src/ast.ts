@@ -576,6 +576,7 @@ export interface Class extends Omit<ModuleItem, "kind"> {
   id: Identifier | null;
   superClass: Expression | null;
   body: ClassBody;
+  decorators: Decorator[] | null;
 }
 export interface ClassBody extends ModuleItem {
   kind: SyntaxKinds.ClassBody;
@@ -583,9 +584,15 @@ export interface ClassBody extends ModuleItem {
 }
 export interface ClassProperty extends Property {
   kind: SyntaxKinds.ClassProperty;
+  decorators: Decorator[] | null;
+}
+export interface ClassAccessorProperty extends Property {
+  kind: SyntaxKinds.ClassAccessorProperty;
+  decorators: Decorator[] | null;
 }
 export interface ClassMethodDefinition extends Omit<MethodDefinition, "type"> {
   kind: SyntaxKinds.ClassMethodDefinition;
+  decorators: Decorator[] | null;
 }
 export interface ClassConstructor
   extends Omit<MethodDefinition, "generator" | "async" | "static" | "computed" | "type"> {
@@ -595,6 +602,7 @@ export interface ClassConstructor
 export interface ClassAccessor extends Omit<MethodDefinition, "generator" | "async" | "static"> {
   kind: SyntaxKinds.ClassAccessor;
   type: "get" | "set";
+  decorators: Decorator[] | null;
 }
 export interface ClassStaticBlock extends ModuleItem {
   kind: SyntaxKinds.ClassStaticBlock;
@@ -602,12 +610,17 @@ export interface ClassStaticBlock extends ModuleItem {
 }
 export type ClassElement =
   | ClassProperty
+  | ClassAccessorProperty
   | ClassMethodDefinition
   | ClassAccessor
   | ClassConstructor
   | ClassStaticBlock;
 export interface ClassDeclaration extends ModuleItem, Class {
   kind: SyntaxKinds.ClassDeclaration;
+}
+export interface Decorator extends ModuleItem {
+  kind: SyntaxKinds.Decorator;
+  expression: Expression;
 }
 export type Declaration = FunctionDeclaration | VariableDeclaration | ClassDeclaration;
 

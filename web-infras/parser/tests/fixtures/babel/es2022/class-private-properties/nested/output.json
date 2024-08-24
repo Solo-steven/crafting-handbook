@@ -54,6 +54,7 @@
                                 "index": 22
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -61,8 +62,8 @@
                         },
                         "end": {
                             "row": 2,
-                            "col": 9,
-                            "index": 22
+                            "col": 5,
+                            "index": 18
                         }
                     },
                     {
@@ -98,6 +99,7 @@
                                 "index": 32
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 3,
                             "col": 3,
@@ -105,8 +107,8 @@
                         },
                         "end": {
                             "row": 3,
-                            "col": 9,
-                            "index": 32
+                            "col": 5,
+                            "index": 28
                         }
                     },
                     {
@@ -412,6 +414,7 @@
                                                                 "index": 137
                                                             }
                                                         },
+                                                        "decorators": null,
                                                         "start": {
                                                             "row": 10,
                                                             "col": 7,
@@ -419,8 +422,8 @@
                                                         },
                                                         "end": {
                                                             "row": 10,
-                                                            "col": 13,
-                                                            "index": 137
+                                                            "col": 9,
+                                                            "index": 133
                                                         }
                                                     },
                                                     {
@@ -456,6 +459,7 @@
                                                                 "index": 151
                                                             }
                                                         },
+                                                        "decorators": null,
                                                         "start": {
                                                             "row": 11,
                                                             "col": 7,
@@ -463,8 +467,8 @@
                                                         },
                                                         "end": {
                                                             "row": 11,
-                                                            "col": 13,
-                                                            "index": 151
+                                                            "col": 9,
+                                                            "index": 147
                                                         }
                                                     },
                                                     {
@@ -879,6 +883,7 @@
                                                         },
                                                         "type": "get",
                                                         "computed": false,
+                                                        "decorators": null,
                                                         "start": {
                                                             "row": 18,
                                                             "col": 7,
@@ -1037,6 +1042,7 @@
                                                         },
                                                         "type": "set",
                                                         "computed": false,
+                                                        "decorators": null,
                                                         "start": {
                                                             "row": 19,
                                                             "col": 7,
@@ -1138,6 +1144,7 @@
                                                         },
                                                         "type": "get",
                                                         "computed": false,
+                                                        "decorators": null,
                                                         "start": {
                                                             "row": 21,
                                                             "col": 7,
@@ -1296,6 +1303,7 @@
                                                         },
                                                         "type": "set",
                                                         "computed": false,
+                                                        "decorators": null,
                                                         "start": {
                                                             "row": 22,
                                                             "col": 7,
@@ -1585,6 +1593,7 @@
                                                                 "index": 452
                                                             }
                                                         },
+                                                        "decorators": null,
                                                         "start": {
                                                             "row": 24,
                                                             "col": 7,
@@ -1778,6 +1787,7 @@
                                                                 "index": 516
                                                             }
                                                         },
+                                                        "decorators": null,
                                                         "start": {
                                                             "row": 26,
                                                             "col": 7,
@@ -1810,7 +1820,8 @@
                                                 "row": 27,
                                                 "col": 6,
                                                 "index": 522
-                                            }
+                                            },
+                                            "decorators": null
                                         },
                                         "start": {
                                             "row": 9,
@@ -2031,6 +2042,7 @@
                         },
                         "type": "get",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 30,
                             "col": 3,
@@ -2189,6 +2201,7 @@
                         },
                         "type": "set",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 31,
                             "col": 3,
@@ -2290,6 +2303,7 @@
                         },
                         "type": "get",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 33,
                             "col": 3,
@@ -2448,6 +2462,7 @@
                         },
                         "type": "set",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 34,
                             "col": 3,
@@ -2737,6 +2752,7 @@
                                 "index": 720
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 36,
                             "col": 3,
@@ -2930,6 +2946,7 @@
                                 "index": 780
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 38,
                             "col": 3,
@@ -2962,7 +2979,8 @@
                 "row": 39,
                 "col": 2,
                 "index": 782
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

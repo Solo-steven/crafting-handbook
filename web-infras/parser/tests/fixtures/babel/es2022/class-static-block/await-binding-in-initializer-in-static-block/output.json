@@ -72,12 +72,12 @@
                         "kind": "ClassBody",
                         "body": [
                             {
-                                "kind": 10177,
+                                "kind": 10179,
                                 "body": [
                                     {
-                                        "kind": 10157,
+                                        "kind": 10158,
                                         "id": {
-                                            "kind": 10129,
+                                            "kind": 10130,
                                             "name": "D",
                                             "start": {
                                                 "row": 3,
@@ -92,15 +92,15 @@
                                         },
                                         "superClass": null,
                                         "body": {
-                                            "kind": 10158,
+                                            "kind": 10159,
                                             "body": [
                                                 {
-                                                    "kind": 10173,
+                                                    "kind": 10174,
                                                     "computed": false,
                                                     "static": false,
                                                     "shorted": false,
                                                     "key": {
-                                                        "kind": 10129,
+                                                        "kind": 10130,
                                                         "name": "x",
                                                         "start": {
                                                             "row": 3,
@@ -114,7 +114,7 @@
                                                         }
                                                     },
                                                     "value": {
-                                                        "kind": 10129,
+                                                        "kind": 10130,
                                                         "name": "await",
                                                         "start": {
                                                             "row": 3,
@@ -127,6 +127,7 @@
                                                             "index": 48
                                                         }
                                                     },
+                                                    "decorators": null,
                                                     "start": {
                                                         "row": 3,
                                                         "col": 32,
@@ -134,8 +135,8 @@
                                                     },
                                                     "end": {
                                                         "row": 3,
-                                                        "col": 41,
-                                                        "index": 48
+                                                        "col": 33,
+                                                        "index": 40
                                                     }
                                                 }
                                             ],
@@ -159,7 +160,8 @@
                                             "row": 3,
                                             "col": 43,
                                             "index": 50
-                                        }
+                                        },
+                                        "decorators": null
                                     }
                                 ],
                                 "start": {
@@ -194,7 +196,8 @@
                         "row": 3,
                         "col": 47,
                         "index": 54
-                    }
+                    },
+                    "decorators": null
                 },
                 "start": {
                     "row": 3,

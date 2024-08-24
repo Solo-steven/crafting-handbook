@@ -66,7 +66,8 @@
                                     "row": 1,
                                     "col": 33,
                                     "index": 32
-                                }
+                                },
+                                "decorators": null
                             },
                             "delegate": false,
                             "start": {

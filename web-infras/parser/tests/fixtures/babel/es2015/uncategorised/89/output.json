@@ -85,7 +85,8 @@
                 "row": 2,
                 "col": 17,
                 "index": 38
-            }
+            },
+            "decorators": null
         },
         {
             "kind": "ExportNamedDeclaration",

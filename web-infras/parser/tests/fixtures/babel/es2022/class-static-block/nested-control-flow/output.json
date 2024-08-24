@@ -56,6 +56,7 @@
                                 "index": 27
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 10,
@@ -68,16 +69,16 @@
                         }
                     },
                     {
-                        "kind": 10177,
+                        "kind": 10179,
                         "body": [
                             {
-                                "kind": 10141,
+                                "kind": 10142,
                                 "test": {
-                                    "kind": 10185,
+                                    "kind": 10188,
                                     "computed": false,
                                     "optional": false,
                                     "object": {
-                                        "kind": 10165,
+                                        "kind": 10166,
                                         "name": "this",
                                         "start": {
                                             "row": 4,
@@ -91,7 +92,7 @@
                                         }
                                     },
                                     "property": {
-                                        "kind": 10129,
+                                        "kind": 10130,
                                         "name": "foo",
                                         "start": {
                                             "row": 4,
@@ -116,16 +117,16 @@
                                     }
                                 },
                                 "body": {
-                                    "kind": 10134,
+                                    "kind": 10135,
                                     "body": [
                                         {
-                                            "kind": 10133,
+                                            "kind": 10134,
                                             "test": {
-                                                "kind": 10185,
+                                                "kind": 10188,
                                                 "computed": false,
                                                 "optional": false,
                                                 "object": {
-                                                    "kind": 10165,
+                                                    "kind": 10166,
                                                     "name": "this",
                                                     "start": {
                                                         "row": 5,
@@ -139,7 +140,7 @@
                                                     }
                                                 },
                                                 "property": {
-                                                    "kind": 10129,
+                                                    "kind": 10130,
                                                     "name": "foo",
                                                     "start": {
                                                         "row": 5,
@@ -164,10 +165,10 @@
                                                 }
                                             },
                                             "conseqence": {
-                                                "kind": 10134,
+                                                "kind": 10135,
                                                 "body": [
                                                     {
-                                                        "kind": 10138,
+                                                        "kind": 10139,
                                                         "label": null,
                                                         "start": {
                                                             "row": 6,
@@ -193,10 +194,10 @@
                                                 }
                                             },
                                             "alternative": {
-                                                "kind": 10134,
+                                                "kind": 10135,
                                                 "body": [
                                                     {
-                                                        "kind": 10139,
+                                                        "kind": 10140,
                                                         "label": null,
                                                         "start": {
                                                             "row": 8,
@@ -256,9 +257,9 @@
                                 }
                             },
                             {
-                                "kind": 10157,
+                                "kind": 10158,
                                 "id": {
-                                    "kind": 10129,
+                                    "kind": 10130,
                                     "name": "C2",
                                     "start": {
                                         "row": 11,
@@ -273,16 +274,16 @@
                                 },
                                 "superClass": null,
                                 "body": {
-                                    "kind": 10158,
+                                    "kind": 10159,
                                     "body": [
                                         {
-                                            "kind": 10176,
+                                            "kind": 10178,
                                             "async": false,
                                             "generator": false,
                                             "computed": false,
                                             "static": false,
                                             "key": {
-                                                "kind": 10129,
+                                                "kind": 10130,
                                                 "name": "bar",
                                                 "start": {
                                                     "row": 12,
@@ -297,10 +298,10 @@
                                             },
                                             "params": [],
                                             "body": {
-                                                "kind": 10156,
+                                                "kind": 10157,
                                                 "body": [
                                                     {
-                                                        "kind": 10140,
+                                                        "kind": 10141,
                                                         "argu": null,
                                                         "start": {
                                                             "row": 13,
@@ -325,6 +326,7 @@
                                                     "index": 198
                                                 }
                                             },
+                                            "decorators": null,
                                             "start": {
                                                 "row": 12,
                                                 "col": 7,
@@ -357,7 +359,8 @@
                                     "row": 15,
                                     "col": 6,
                                     "index": 204
-                                }
+                                },
+                                "decorators": null
                             }
                         ],
                         "start": {
@@ -392,7 +395,8 @@
                 "row": 17,
                 "col": 2,
                 "index": 210
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

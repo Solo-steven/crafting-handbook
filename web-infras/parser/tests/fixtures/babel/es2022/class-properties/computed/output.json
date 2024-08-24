@@ -40,6 +40,7 @@
                                 "index": 16
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 4,
@@ -70,6 +71,7 @@
                                 "index": 24
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 3,
                             "col": 4,
@@ -102,7 +104,8 @@
                 "row": 4,
                 "col": 2,
                 "index": 27
-            }
+            },
+            "decorators": null
         },
         {
             "kind": "ClassDeclaration",
@@ -143,6 +146,7 @@
                                 "index": 46
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 7,
                             "col": 4,
@@ -189,6 +193,7 @@
                                 "index": 59
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 8,
                             "col": 4,
@@ -221,7 +226,8 @@
                 "row": 9,
                 "col": 2,
                 "index": 61
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

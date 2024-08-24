@@ -56,6 +56,7 @@
                                 "index": 23
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -102,6 +103,7 @@
                                 "index": 38
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 5,
                             "col": 3,
@@ -148,6 +150,7 @@
                                 "index": 56
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 8,
                             "col": 3,
@@ -194,6 +197,7 @@
                                 "index": 73
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 11,
                             "col": 3,
@@ -240,6 +244,7 @@
                                 "index": 91
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 15,
                             "col": 3,
@@ -286,6 +291,7 @@
                                 "index": 108
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 18,
                             "col": 3,
@@ -332,6 +338,7 @@
                                 "index": 127
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 21,
                             "col": 3,
@@ -378,6 +385,7 @@
                                 "index": 152
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 26,
                             "col": 3,
@@ -424,6 +432,7 @@
                                 "index": 176
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 30,
                             "col": 3,
@@ -470,6 +479,7 @@
                                 "index": 203
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 34,
                             "col": 3,
@@ -516,6 +526,7 @@
                                 "index": 229
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 38,
                             "col": 3,
@@ -562,6 +573,7 @@
                                 "index": 251
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 42,
                             "col": 3,
@@ -606,6 +618,7 @@
                         },
                         "type": "get",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 46,
                             "col": 3,
@@ -650,6 +663,7 @@
                         },
                         "type": "get",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 52,
                             "col": 3,
@@ -682,7 +696,8 @@
                 "row": 55,
                 "col": 2,
                 "index": 311
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

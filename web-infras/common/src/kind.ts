@@ -104,6 +104,7 @@ export enum SyntaxKinds {
   SemiPunctuator, // ;
   ColonPunctuator, // :
   HashTagPunctuator, // #
+  AtPunctuator,
   // ========== Template ===========
   TemplateHead,
   TemplateTail,
@@ -184,10 +185,12 @@ export enum SyntaxKinds {
   ObjectMethodDefintion,
   ClassExpression,
   ClassProperty,
+  ClassAccessorProperty,
   ClassAccessor,
   ClassConstructor,
   ClassMethodDefinition,
   ClassStaticBlock,
+  Decorator,
   FunctionExpression,
   TemplateLiteral,
   TemplateElement,
@@ -535,6 +538,7 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.SemiPunctuator]: ";", // ;
   [SyntaxKinds.ColonPunctuator]: ":", // :
   [SyntaxKinds.HashTagPunctuator]: "#", // #
+  [SyntaxKinds.AtPunctuator]: "@", // @
   // ========== Template ===========
   [SyntaxKinds.TemplateHead]: "TemplateHead",
   [SyntaxKinds.TemplateTail]: "TemplateTail",
@@ -615,10 +619,12 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.ObjectMethodDefintion]: "ObjectMethodDefinition",
   [SyntaxKinds.ClassExpression]: "ClassExpression",
   [SyntaxKinds.ClassProperty]: "ClassProperty",
+  [SyntaxKinds.ClassAccessorProperty]: "ClassAccessorProperty",
   [SyntaxKinds.ClassAccessor]: "ClassAccessor",
   [SyntaxKinds.ClassConstructor]: "ClassConstructor",
   [SyntaxKinds.ClassMethodDefinition]: "ClassMethodDefinition",
   [SyntaxKinds.ClassStaticBlock]: "ClassStaticBlock",
+  [SyntaxKinds.Decorator]: "Decorator",
   [SyntaxKinds.FunctionExpression]: "FunctionExpression",
   [SyntaxKinds.TemplateLiteral]: "TemplateLiteral",
   [SyntaxKinds.TemplateElement]: "TemplateElement",

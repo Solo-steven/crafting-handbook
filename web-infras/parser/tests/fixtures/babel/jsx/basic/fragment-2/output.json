@@ -33,7 +33,7 @@
                 },
                 "children": [
                     {
-                        "kind": 10223,
+                        "kind": 10226,
                         "value": "Hi, I'm a string!",
                         "start": {
                             "row": 1,

@@ -1,6 +1,7 @@
 {
   "expect": "Pass",
   "config": {
+    "sourceType": "module",
     "plugins": [
       "estree",
       "decorators-legacy"

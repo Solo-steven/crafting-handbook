@@ -56,6 +56,7 @@
                                 "index": 27
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 10,
@@ -68,12 +69,12 @@
                         }
                     },
                     {
-                        "kind": 10177,
+                        "kind": 10179,
                         "body": [
                             {
-                                "kind": 10196,
+                                "kind": 10199,
                                 "expr": {
-                                    "kind": 10115,
+                                    "kind": 10116,
                                     "value": "use strict",
                                     "start": {
                                         "row": 4,
@@ -98,16 +99,16 @@
                                 }
                             },
                             {
-                                "kind": 10196,
+                                "kind": 10199,
                                 "expr": {
-                                    "kind": 10193,
+                                    "kind": 10196,
                                     "operator": 10078,
                                     "left": {
-                                        "kind": 10185,
+                                        "kind": 10188,
                                         "computed": false,
                                         "optional": false,
                                         "object": {
-                                            "kind": 10165,
+                                            "kind": 10166,
                                             "name": "this",
                                             "start": {
                                                 "row": 5,
@@ -121,7 +122,7 @@
                                             }
                                         },
                                         "property": {
-                                            "kind": 10129,
+                                            "kind": 10130,
                                             "name": "bar",
                                             "start": {
                                                 "row": 5,
@@ -146,11 +147,11 @@
                                         }
                                     },
                                     "right": {
-                                        "kind": 10185,
+                                        "kind": 10188,
                                         "computed": false,
                                         "optional": false,
                                         "object": {
-                                            "kind": 10165,
+                                            "kind": 10166,
                                             "name": "this",
                                             "start": {
                                                 "row": 5,
@@ -164,7 +165,7 @@
                                             }
                                         },
                                         "property": {
-                                            "kind": 10129,
+                                            "kind": 10130,
                                             "name": "foo",
                                             "start": {
                                                 "row": 5,
@@ -243,7 +244,8 @@
                 "row": 7,
                 "col": 2,
                 "index": 123
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

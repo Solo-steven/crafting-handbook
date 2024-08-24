@@ -54,6 +54,7 @@
                                 "index": 22
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -61,8 +62,8 @@
                         },
                         "end": {
                             "row": 2,
-                            "col": 9,
-                            "index": 22
+                            "col": 5,
+                            "index": 18
                         }
                     },
                     {
@@ -98,6 +99,7 @@
                                 "index": 32
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 3,
                             "col": 3,
@@ -105,8 +107,8 @@
                         },
                         "end": {
                             "row": 3,
-                            "col": 9,
-                            "index": 32
+                            "col": 5,
+                            "index": 28
                         }
                     },
                     {
@@ -521,6 +523,7 @@
                         },
                         "type": "get",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 10,
                             "col": 3,
@@ -679,6 +682,7 @@
                         },
                         "type": "set",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 11,
                             "col": 3,
@@ -780,6 +784,7 @@
                         },
                         "type": "get",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 13,
                             "col": 3,
@@ -938,6 +943,7 @@
                         },
                         "type": "set",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 14,
                             "col": 3,
@@ -1227,6 +1233,7 @@
                                 "index": 297
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 16,
                             "col": 3,
@@ -1420,6 +1427,7 @@
                                 "index": 357
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 18,
                             "col": 3,
@@ -1452,7 +1460,8 @@
                 "row": 19,
                 "col": 2,
                 "index": 359
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

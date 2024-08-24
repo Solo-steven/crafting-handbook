@@ -22,16 +22,16 @@
                 "kind": "ClassBody",
                 "body": [
                     {
-                        "kind": 10177,
+                        "kind": 10179,
                         "body": [
                             {
-                                "kind": 10152,
+                                "kind": 10153,
                                 "variant": "var",
                                 "declarations": [
                                     {
-                                        "kind": 10153,
+                                        "kind": 10154,
                                         "id": {
-                                            "kind": 10129,
+                                            "kind": 10130,
                                             "name": "x",
                                             "start": {
                                                 "row": 3,
@@ -69,9 +69,9 @@
                                 }
                             },
                             {
-                                "kind": 10155,
+                                "kind": 10156,
                                 "name": {
-                                    "kind": 10129,
+                                    "kind": 10130,
                                     "name": "x",
                                     "start": {
                                         "row": 4,
@@ -87,7 +87,7 @@
                                 "generator": false,
                                 "async": false,
                                 "body": {
-                                    "kind": 10156,
+                                    "kind": 10157,
                                     "body": [],
                                     "start": {
                                         "row": 4,
@@ -145,7 +145,8 @@
                 "row": 6,
                 "col": 2,
                 "index": 65
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

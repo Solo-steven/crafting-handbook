@@ -29,10 +29,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/estree/class-private-property/flow",
   "/babel/core/sourcetype-unambiguous/flow",
   "/babel/estree/class-private-property/typescript",
-  // (feature) decorator
-  "/babel/estree/export/decorator-before-export",
-  "/babel/es2022/class-static-block/invalid-legacy-decorators",
-  "/babel/es2022/class-static-block/invalid-decorators",
   // (feature?) async do plugin
   "/babel/comments/basic/async-do-expression",
   /**

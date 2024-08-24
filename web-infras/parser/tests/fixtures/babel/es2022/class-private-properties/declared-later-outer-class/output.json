@@ -127,6 +127,7 @@
                                                         "index": 53
                                                     }
                                                 },
+                                                "decorators": null,
                                                 "start": {
                                                     "row": 4,
                                                     "col": 7,
@@ -134,8 +135,8 @@
                                                 },
                                                 "end": {
                                                     "row": 4,
-                                                    "col": 19,
-                                                    "index": 53
+                                                    "col": 9,
+                                                    "index": 43
                                                 }
                                             }
                                         ],
@@ -159,7 +160,8 @@
                                         "row": 5,
                                         "col": 6,
                                         "index": 60
-                                    }
+                                    },
+                                    "decorators": null
                                 }
                             ],
                             "start": {
@@ -173,6 +175,7 @@
                                 "index": 64
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -203,6 +206,7 @@
                                 "index": 70
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 8,
                             "col": 3,
@@ -235,7 +239,8 @@
                 "row": 9,
                 "col": 2,
                 "index": 73
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

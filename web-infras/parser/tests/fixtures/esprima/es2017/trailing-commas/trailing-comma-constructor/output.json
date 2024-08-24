@@ -99,7 +99,8 @@
                 "row": 1,
                 "col": 31,
                 "index": 30
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

@@ -666,6 +666,9 @@ export function createLexer(code: string) {
       case UnicodePoints.Semi:
         eatChar();
         return finishToken(SyntaxKinds.SemiPunctuator);
+      case UnicodePoints.AtSign:
+        eatChar();
+        return finishToken(SyntaxKinds.AtPunctuator);
       /** ==========================================
        *                Operators
        *  ==========================================

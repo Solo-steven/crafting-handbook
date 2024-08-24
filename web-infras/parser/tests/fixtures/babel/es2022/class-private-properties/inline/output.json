@@ -40,6 +40,7 @@
                                 "index": 12
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 1,
                             "col": 11,
@@ -70,6 +71,7 @@
                                 "index": 16
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 1,
                             "col": 15,
@@ -102,7 +104,8 @@
                 "row": 1,
                 "col": 20,
                 "index": 19
-            }
+            },
+            "decorators": null
         },
         {
             "kind": "ClassDeclaration",
@@ -157,6 +160,7 @@
                                 "index": 37
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 3,
                             "col": 11,
@@ -164,8 +168,8 @@
                         },
                         "end": {
                             "row": 3,
-                            "col": 17,
-                            "index": 37
+                            "col": 13,
+                            "index": 33
                         }
                     },
                     {
@@ -201,6 +205,7 @@
                                 "index": 45
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 3,
                             "col": 19,
@@ -208,8 +213,8 @@
                         },
                         "end": {
                             "row": 3,
-                            "col": 25,
-                            "index": 45
+                            "col": 21,
+                            "index": 41
                         }
                     }
                 ],
@@ -233,7 +238,8 @@
                 "row": 3,
                 "col": 28,
                 "index": 48
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {
