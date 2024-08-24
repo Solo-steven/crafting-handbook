@@ -1,3 +1,7 @@
 {
-  "expect": "Failed"
+  "expect": "Failed",
+  "config": {
+    "sourceType": "module",
+    "plugins": ["jsx"]
+  }
 }

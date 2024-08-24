@@ -1,4 +1,6 @@
 {
   "expect": "Failed",
-  "plugins": ["jsx"]
+  "config": {
+    "plugins": ["jsx"]
+  }
 }
