@@ -23,7 +23,6 @@ const code = fs.readFileSync(path.join(__dirname, "test.js")).toString();
 printLexer(code);
 printParser(code);
 
- 
 function printLexer(code: string) {
   console.log("=================================");
   console.log("=================================");
