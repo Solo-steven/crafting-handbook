@@ -204,6 +204,7 @@
                                     },
                                     "type": "get",
                                     "computed": true,
+                                    "decorators": null,
                                     "start": {
                                         "row": 4,
                                         "col": 5,
@@ -320,6 +321,7 @@
                                     },
                                     "type": "set",
                                     "computed": true,
+                                    "decorators": null,
                                     "start": {
                                         "row": 5,
                                         "col": 5,
@@ -352,7 +354,8 @@
                             "row": 6,
                             "col": 4,
                             "index": 142
-                        }
+                        },
+                        "decorators": null
                     },
                     {
                         "kind": "ExpressionStatement",

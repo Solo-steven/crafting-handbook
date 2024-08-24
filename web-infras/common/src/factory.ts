@@ -620,10 +620,23 @@ export function transFormFunctionToFunctionDeclaration(func: AST.Function): AST.
     ...func,
   } as AST.FunctionDeclaration;
 }
+export function createDecorator(
+  expr: AST.Decorator["expression"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.Decorator {
+  return {
+    kind: SyntaxKinds.Decorator,
+    expression: expr,
+    start,
+    end,
+  };
+}
 export function createClass(
   name: AST.Class["id"],
   superClass: AST.Class["superClass"],
   body: AST.Class["body"],
+  decorators: AST.Class["decorators"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.Class {
@@ -633,6 +646,7 @@ export function createClass(
     body,
     start,
     end,
+    decorators,
   };
 }
 export function createClassBody(
@@ -653,6 +667,7 @@ export function createClassProperty(
   computed: AST.ClassProperty["computed"],
   isStatic: AST.ClassProperty["static"],
   shorted: AST.ClassProperty["shorted"],
+  decorators: AST.Class["decorators"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.ClassProperty {
@@ -663,6 +678,29 @@ export function createClassProperty(
     shorted,
     key,
     value,
+    decorators,
+    start,
+    end,
+  };
+}
+export function createClassAccessorProperty(
+  key: AST.ClassProperty["key"],
+  value: AST.ClassProperty["value"],
+  computed: AST.ClassProperty["computed"],
+  isStatic: AST.ClassProperty["static"],
+  shorted: AST.ClassProperty["shorted"],
+  decorators: AST.Class["decorators"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.ClassAccessorProperty {
+  return {
+    kind: SyntaxKinds.ClassAccessorProperty,
+    computed,
+    static: isStatic,
+    shorted,
+    key,
+    value,
+    decorators,
     start,
     end,
   };
@@ -675,6 +713,7 @@ export function createClassMethodDefintion(
   generator: AST.ClassMethodDefinition["generator"],
   computed: AST.ClassMethodDefinition["computed"],
   isStatic: AST.ClassMethodDefinition["static"],
+  decorators: AST.Class["decorators"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.ClassMethodDefinition {
@@ -687,6 +726,7 @@ export function createClassMethodDefintion(
     key,
     params,
     body,
+    decorators,
     start,
     end,
   };
@@ -713,6 +753,7 @@ export function createClassAccessor(
   params: AST.ClassAccessor["params"],
   type: AST.ClassAccessor["type"],
   computed: AST.ClassAccessor["computed"],
+  decorators: AST.Class["decorators"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.ClassAccessor {
@@ -723,6 +764,7 @@ export function createClassAccessor(
     body,
     type,
     computed,
+    decorators,
     start,
     end,
   };

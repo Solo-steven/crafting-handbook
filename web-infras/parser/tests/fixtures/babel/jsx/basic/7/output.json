@@ -105,7 +105,7 @@
                 },
                 "children": [
                     {
-                        "kind": 10223,
+                        "kind": 10226,
                         "value": "bar\nbaz\n",
                         "start": {
                             "row": 3,

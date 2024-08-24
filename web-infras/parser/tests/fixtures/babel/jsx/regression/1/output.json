@@ -63,7 +63,7 @@
                 },
                 "children": [
                     {
-                        "kind": 10223,
+                        "kind": 10226,
                         "value": "foo ",
                         "start": {
                             "row": 1,
@@ -178,7 +178,7 @@
                         },
                         "children": [
                             {
-                                "kind": 10223,
+                                "kind": 10226,
                                 "value": "bar",
                                 "start": {
                                     "row": 1,
@@ -204,7 +204,7 @@
                         }
                     },
                     {
-                        "kind": 10223,
+                        "kind": 10226,
                         "value": "baz",
                         "start": {
                             "row": 1,

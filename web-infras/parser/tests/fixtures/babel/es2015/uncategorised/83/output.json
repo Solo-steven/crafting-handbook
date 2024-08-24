@@ -43,7 +43,8 @@
                     "row": 1,
                     "col": 26,
                     "index": 25
-                }
+                },
+                "decorators": null
             },
             "start": {
                 "row": 1,

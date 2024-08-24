@@ -175,4 +175,10 @@ export const ErrorMessageMap = {
   babel_error_import_and_export_may_appear_only_with_sourceType_module: `SyntaxError: 'import' and 'export' may appear only with 'sourceType: "module"'`,
   // try jsx but not enable preset
   babel_error_need_enable_jsx: "This experimental syntax requires enabling jsx plugins",
+  // try using decorator in static block
+  babel_error_decorators_can_not_be_used_with_a_static_block:
+    "SyntaxError: Decorators can't be used with a static block.",
+  // try using decorator with constructor
+  babel_error_decorators_can_not_be_used_with_a_constructor:
+    "SyntaxError: Decorators can't be used with a constructor.",
 };

@@ -56,6 +56,7 @@
                                 "index": 27
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 10,
@@ -88,7 +89,8 @@
                 "row": 3,
                 "col": 2,
                 "index": 29
-            }
+            },
+            "decorators": null
         },
         {
             "kind": "ClassDeclaration",
@@ -124,19 +126,19 @@
                 "kind": "ClassBody",
                 "body": [
                     {
-                        "kind": 10177,
+                        "kind": 10179,
                         "body": [
                             {
-                                "kind": 10196,
+                                "kind": 10199,
                                 "expr": {
-                                    "kind": 10193,
+                                    "kind": 10196,
                                     "operator": 10078,
                                     "left": {
-                                        "kind": 10185,
+                                        "kind": 10188,
                                         "computed": false,
                                         "optional": false,
                                         "object": {
-                                            "kind": 10165,
+                                            "kind": 10166,
                                             "name": "this",
                                             "start": {
                                                 "row": 6,
@@ -150,7 +152,7 @@
                                             }
                                         },
                                         "property": {
-                                            "kind": 10129,
+                                            "kind": 10130,
                                             "name": "bar",
                                             "start": {
                                                 "row": 6,
@@ -175,11 +177,11 @@
                                         }
                                     },
                                     "right": {
-                                        "kind": 10185,
+                                        "kind": 10188,
                                         "computed": false,
                                         "optional": false,
                                         "object": {
-                                            "kind": 10163,
+                                            "kind": 10164,
                                             "name": "super",
                                             "start": {
                                                 "row": 6,
@@ -193,7 +195,7 @@
                                             }
                                         },
                                         "property": {
-                                            "kind": 10129,
+                                            "kind": 10130,
                                             "name": "foo",
                                             "start": {
                                                 "row": 6,
@@ -272,7 +274,8 @@
                 "row": 8,
                 "col": 2,
                 "index": 92
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

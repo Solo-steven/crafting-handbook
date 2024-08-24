@@ -84,7 +84,8 @@
                 "row": 1,
                 "col": 29,
                 "index": 28
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

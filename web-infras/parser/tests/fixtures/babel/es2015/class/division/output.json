@@ -50,7 +50,8 @@
                             "row": 1,
                             "col": 12,
                             "index": 11
-                        }
+                        },
+                        "decorators": null
                     },
                     "right": {
                         "kind": "Identifer",
@@ -151,7 +152,8 @@
                                 "row": 3,
                                 "col": 12,
                                 "index": 30
-                            }
+                            },
+                            "decorators": null
                         },
                         "right": {
                             "kind": "Identifer",
@@ -246,7 +248,8 @@
                                                 "row": 6,
                                                 "col": 13,
                                                 "index": 54
-                                            }
+                                            },
+                                            "decorators": null
                                         },
                                         "right": {
                                             "kind": "Identifer",
@@ -347,7 +350,8 @@
                                                 "row": 8,
                                                 "col": 13,
                                                 "index": 75
-                                            }
+                                            },
+                                            "decorators": null
                                         },
                                         "right": {
                                             "kind": "Identifer",

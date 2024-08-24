@@ -79,16 +79,16 @@
                 "kind": "ClassBody",
                 "body": [
                     {
-                        "kind": 10177,
+                        "kind": 10179,
                         "body": [
                             {
-                                "kind": 10152,
+                                "kind": 10153,
                                 "variant": "var",
                                 "declarations": [
                                     {
-                                        "kind": 10153,
+                                        "kind": 10154,
                                         "id": {
-                                            "kind": 10129,
+                                            "kind": 10130,
                                             "name": "x",
                                             "start": {
                                                 "row": 2,
@@ -102,7 +102,7 @@
                                             }
                                         },
                                         "init": {
-                                            "kind": 10116,
+                                            "kind": 10117,
                                             "rawValue": "42",
                                             "start": {
                                                 "row": 2,
@@ -139,13 +139,13 @@
                                 }
                             },
                             {
-                                "kind": 10152,
+                                "kind": 10153,
                                 "variant": "var",
                                 "declarations": [
                                     {
-                                        "kind": 10153,
+                                        "kind": 10154,
                                         "id": {
-                                            "kind": 10129,
+                                            "kind": 10130,
                                             "name": "y",
                                             "start": {
                                                 "row": 2,
@@ -215,7 +215,8 @@
                 "row": 2,
                 "col": 42,
                 "index": 54
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

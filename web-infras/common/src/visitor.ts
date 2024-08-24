@@ -102,6 +102,8 @@ import {
   JSXFragment,
   JSXClosingFragment,
   JSXOpeningFragment,
+  Decorator,
+  ClassAccessorProperty,
 } from "./ast";
 import { SyntaxKinds } from "./kind";
 
@@ -186,10 +188,12 @@ export type Visitor = {
   [SyntaxKinds.FunctionDeclaration]?: (node: FunctionDeclaration, visitor: Visitor) => void;
   [SyntaxKinds.ClassBody]?: (node: ClassBody, visitor: Visitor) => void;
   [SyntaxKinds.ClassProperty]?: (node: ClassProperty, visitor: Visitor) => void;
+  [SyntaxKinds.ClassAccessorProperty]?: (node: ClassAccessorProperty, visitor: Visitor) => void;
   [SyntaxKinds.ClassMethodDefinition]?: (node: ClassMethodDefinition, visitor: Visitor) => void;
   [SyntaxKinds.ClassConstructor]?: (node: ClassConstructor, visitor: Visitor) => void;
   [SyntaxKinds.ClassAccessor]?: (node: ClassAccessor, visitor: Visitor) => void;
   [SyntaxKinds.ClassDeclaration]?: (node: ClassDeclaration, visitor: Visitor) => void;
+  [SyntaxKinds.Decorator]?: (node: Decorator, visitor: Visitor) => void;
   [SyntaxKinds.ImportDeclaration]?: (node: ImportDeclaration, visitor: Visitor) => void;
   [SyntaxKinds.ImportDefaultSpecifier]?: (node: ImportDefaultSpecifier, visitor: Visitor) => void;
   [SyntaxKinds.ImportSpecifier]?: (node: ImportSpecifier, visitor: Visitor) => void;
@@ -486,6 +490,12 @@ export const PropagationtVisitorTable: Visitor = {
   [SyntaxKinds.ClassProperty]: function bindClassProperty(node: ClassProperty, visitor: Visitor) {
     visitNode(node.key, visitor);
     visitNode(node.value, visitor);
+    visitNodes(node.decorators, visitor);
+  },
+  [SyntaxKinds.ClassAccessorProperty]: function (node: ClassAccessorProperty, visitor: Visitor) {
+    visitNode(node.key, visitor);
+    visitNode(node.value, visitor);
+    visitNodes(node.decorators, visitor);
   },
   [SyntaxKinds.ClassMethodDefinition]: function bindClassMethodDefiniton(
     node: ClassMethodDefinition,
@@ -494,6 +504,7 @@ export const PropagationtVisitorTable: Visitor = {
     visitNode(node.key, visitor);
     visitNodes(node.params, visitor);
     visitNode(node.body, visitor);
+    visitNodes(node.decorators, visitor);
   },
   [SyntaxKinds.ClassConstructor]: function bindClassConstructor(node: ClassConstructor, visitor: Visitor) {
     visitNode(node.key, visitor);
@@ -504,11 +515,16 @@ export const PropagationtVisitorTable: Visitor = {
     visitNode(node.key, visitor);
     visitNodes(node.params, visitor);
     visitNode(node.body, visitor);
+    visitNodes(node.decorators, visitor);
+  },
+  [SyntaxKinds.Decorator]: function (node: Decorator, visitor: Visitor) {
+    visitNode(node.expression, visitor);
   },
   [SyntaxKinds.ClassDeclaration]: function bindClassDeclaration(node: ClassDeclaration, visitor: Visitor) {
     visitNode(node.id, visitor);
     visitNode(node.superClass, visitor);
     visitNode(node.body, visitor);
+    visitNodes(node.decorators, visitor);
   },
   [SyntaxKinds.ImportDeclaration]: function bindImportDeclaration(node: ImportDeclaration, visitor: Visitor) {
     visitNodes(node.specifiers, visitor);

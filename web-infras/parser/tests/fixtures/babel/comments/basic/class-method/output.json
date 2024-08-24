@@ -60,6 +60,7 @@
                                     "index": 91
                                 }
                             },
+                            "decorators": null,
                             "start": {
                                 "row": 1,
                                 "col": 34,
@@ -93,6 +94,7 @@
                     "col": 103,
                     "index": 102
                 },
+                "decorators": null,
                 "parentheses": true
             },
             "start": {
@@ -165,6 +167,7 @@
                                     "index": 198
                                 }
                             },
+                            "decorators": null,
                             "start": {
                                 "row": 2,
                                 "col": 26,
@@ -198,6 +201,7 @@
                     "col": 95,
                     "index": 208
                 },
+                "decorators": null,
                 "parentheses": true
             },
             "start": {

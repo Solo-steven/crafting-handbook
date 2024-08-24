@@ -63,7 +63,7 @@
                 },
                 "children": [
                     {
-                        "kind": 10223,
+                        "kind": 10226,
                         "value": "One\r\nTwo\r\nThree\r\n",
                         "start": {
                             "row": 3,

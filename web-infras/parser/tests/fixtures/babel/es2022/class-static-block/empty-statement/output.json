@@ -56,6 +56,7 @@
                                 "index": 27
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 10,
@@ -68,7 +69,7 @@
                         }
                     },
                     {
-                        "kind": 10177,
+                        "kind": 10179,
                         "body": [],
                         "start": {
                             "row": 3,
@@ -102,7 +103,8 @@
                 "row": 4,
                 "col": 2,
                 "index": 41
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

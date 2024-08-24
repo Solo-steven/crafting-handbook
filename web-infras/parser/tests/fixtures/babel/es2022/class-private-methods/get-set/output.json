@@ -97,6 +97,7 @@
                         },
                         "type": "get",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -214,6 +215,7 @@
                         },
                         "type": "set",
                         "computed": false,
+                        "decorators": null,
                         "start": {
                             "row": 5,
                             "col": 3,
@@ -246,7 +248,8 @@
                 "row": 8,
                 "col": 2,
                 "index": 99
-            }
+            },
+            "decorators": null
         }
     ],
     "start": {

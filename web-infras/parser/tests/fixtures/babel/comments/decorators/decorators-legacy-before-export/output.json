@@ -1,0 +1,171 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "ClassDeclaration",
+                "id": {
+                    "kind": "Identifer",
+                    "name": "C",
+                    "start": {
+                        "row": 2,
+                        "col": 30,
+                        "index": 65
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 31,
+                        "index": 66
+                    }
+                },
+                "superClass": null,
+                "body": {
+                    "kind": "ClassBody",
+                    "body": [],
+                    "start": {
+                        "row": 2,
+                        "col": 40,
+                        "index": 75
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 51,
+                        "index": 86
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 16,
+                    "index": 51
+                },
+                "end": {
+                    "row": 2,
+                    "col": 51,
+                    "index": 86
+                },
+                "decorators": null
+            },
+            "source": null,
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 36
+            },
+            "end": {
+                "row": 2,
+                "col": 51,
+                "index": 86
+            }
+        },
+        {
+            "kind": "ExportDefaultDeclaration",
+            "declaration": {
+                "kind": "ClassDeclaration",
+                "id": null,
+                "superClass": null,
+                "body": {
+                    "kind": "ClassBody",
+                    "body": [],
+                    "start": {
+                        "row": 5,
+                        "col": 46,
+                        "index": 177
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 57,
+                        "index": 188
+                    }
+                },
+                "start": {
+                    "row": 5,
+                    "col": 32,
+                    "index": 163
+                },
+                "end": {
+                    "row": 5,
+                    "col": 57,
+                    "index": 188
+                },
+                "decorators": [
+                    {
+                        "kind": "Decorator",
+                        "expression": {
+                            "kind": "Identifer",
+                            "name": "dec1",
+                            "start": {
+                                "row": 4,
+                                "col": 10,
+                                "index": 105
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 14,
+                                "index": 109
+                            }
+                        },
+                        "start": {
+                            "row": 4,
+                            "col": 9,
+                            "index": 104
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 14,
+                            "index": 109
+                        }
+                    },
+                    {
+                        "kind": "Decorator",
+                        "expression": {
+                            "kind": "Identifer",
+                            "name": "dec2",
+                            "start": {
+                                "row": 4,
+                                "col": 24,
+                                "index": 119
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 28,
+                                "index": 123
+                            }
+                        },
+                        "start": {
+                            "row": 4,
+                            "col": 23,
+                            "index": 118
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 28,
+                            "index": 123
+                        }
+                    }
+                ]
+            },
+            "start": {
+                "row": 5,
+                "col": 1,
+                "index": 132
+            },
+            "end": {
+                "row": 5,
+                "col": 57,
+                "index": 188
+            }
+        }
+    ],
+    "start": {
+        "row": 2,
+        "col": 1,
+        "index": 36
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 197
+    }
+}

@@ -92,7 +92,7 @@
                         },
                         "children": [
                             {
-                                "kind": 10223,
+                                "kind": 10226,
                                 "value": "hi\n  ",
                                 "start": {
                                     "row": 3,
@@ -177,7 +177,7 @@
                         },
                         "children": [
                             {
-                                "kind": 10223,
+                                "kind": 10226,
                                 "value": "bye",
                                 "start": {
                                     "row": 4,

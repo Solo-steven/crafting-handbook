@@ -72,17 +72,17 @@
                         "kind": "ClassBody",
                         "body": [
                             {
-                                "kind": 10177,
+                                "kind": 10179,
                                 "body": [
                                     {
-                                        "kind": 10196,
+                                        "kind": 10199,
                                         "expr": {
-                                            "kind": 10181,
+                                            "kind": 10184,
                                             "expressionBody": true,
                                             "async": false,
                                             "arguments": [],
                                             "body": {
-                                                "kind": 10129,
+                                                "kind": 10130,
                                                 "name": "await",
                                                 "start": {
                                                     "row": 3,
@@ -150,7 +150,8 @@
                         "row": 3,
                         "col": 37,
                         "index": 71
-                    }
+                    },
+                    "decorators": null
                 },
                 "start": {
                     "row": 3,

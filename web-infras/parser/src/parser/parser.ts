@@ -118,6 +118,7 @@ import {
   NumberLiteral,
   UnaryExpression,
   ImportAttribute,
+  Decorator,
 } from "web-infra-common";
 import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
@@ -133,6 +134,9 @@ interface Context {
   inOperatorStack: Array<boolean>;
   propertiesInitSet: Set<ModuleItem>;
   propertiesProtoDuplicateSet: Set<PropertyName>;
+  cache: {
+    decorators: Decorator[] | null;
+  };
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -150,6 +154,9 @@ function createContext(): Context {
     inOperatorStack: [],
     propertiesInitSet: new Set(),
     propertiesProtoDuplicateSet: new Set(),
+    cache: {
+      decorators: null,
+    },
   };
 }
 
@@ -686,6 +693,18 @@ export function createParser(code: string, option?: ParserConfig) {
   function isInPropertyName(): boolean {
     return lexicalScopeRecorder.isInPropertyName();
   }
+  function takeCacheDecorator() {
+    const list = context.cache.decorators;
+    context.cache.decorators = null;
+    return list;
+  }
+  function mergeDecoratorList(input1: Decorator[] | null, input2: Decorator[] | null) {
+    const list = [...(input1 || []), ...(input2 || [])];
+    if (list.length === 0) {
+      return null;
+    }
+    return list;
+  }
 
   /** ===========================================================
    *            Parser internal Parse API
@@ -717,6 +736,9 @@ export function createParser(code: string, option?: ParserConfig) {
     );
   }
   function parseModuleItem(): ModuleItem {
+    if (match(SyntaxKinds.AtPunctuator)) {
+      parseDecoratorListToCache();
+    }
     const token = getToken();
     switch (token) {
       case SyntaxKinds.ImportKeyword: {
@@ -742,6 +764,7 @@ export function createParser(code: string, option?: ParserConfig) {
       case SyntaxKinds.ConstKeyword:
       case SyntaxKinds.FunctionKeyword:
       case SyntaxKinds.ClassKeyword:
+      case SyntaxKinds.AtPunctuator:
         return parseDeclaration();
       case SyntaxKinds.Identifier:
         if (isContextKeyword("async")) {
@@ -814,8 +837,10 @@ export function createParser(code: string, option?: ParserConfig) {
       case SyntaxKinds.ConstKeyword:
       case SyntaxKinds.LetKeyword:
         return parseVariableDeclaration();
+      case SyntaxKinds.AtPunctuator:
+        return parseClassDeclaration(parseDecoratorList());
       case SyntaxKinds.ClassKeyword:
-        return parseClassDeclaration();
+        return parseClassDeclaration(null);
       default:
         throw createUnreachError([
           SyntaxKinds.ClassKeyword,
@@ -2019,12 +2044,69 @@ export function createParser(code: string, option?: ParserConfig) {
       }
     }
   }
+  function parseDecoratorListToCache() {
+    const decoratorList = parseDecoratorList();
+    context.cache.decorators = decoratorList;
+  }
+  function parseDecoratorList(): Array<Decorator> {
+    const decoratorList: Array<Decorator> = [parseDecorator()];
+    while (match(SyntaxKinds.AtPunctuator)) {
+      decoratorList.push(parseDecorator());
+    }
+    if (
+      match(SyntaxKinds.ClassKeyword) ||
+      (match(SyntaxKinds.ExportKeyword) && config.sourceType === "module") ||
+      isInClassScope()
+    ) {
+      return decoratorList;
+    }
+    throw createMessageError("");
+  }
+  function parseDecorator(): Decorator {
+    const { start } = expect(SyntaxKinds.AtPunctuator);
+    switch (getToken()) {
+      case SyntaxKinds.ParenthesesLeftPunctuator: {
+        nextToken();
+        const expr = parseExpressionAllowIn();
+        expect(SyntaxKinds.ParenthesesRightPunctuator);
+        return Factory.createDecorator(expr, start, expr.end);
+      }
+      default: {
+        let expr: Expression = parseIdentifierName();
+        while (match(SyntaxKinds.DotOperator)) {
+          nextToken();
+          const property = match(SyntaxKinds.PrivateName) ? parsePrivateName() : parseIdentifierName();
+          expr = Factory.createMemberExpression(
+            false,
+            property,
+            expr,
+            false,
+            cloneSourcePosition(expr.start),
+            cloneSourcePosition(property.end),
+          );
+        }
+        if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
+          const { nodes, end } = parseArguments();
+          const callExpr = Factory.createCallExpression(
+            expr,
+            nodes,
+            false,
+            cloneSourcePosition(expr.start),
+            end,
+          );
+          return Factory.createDecorator(callExpr, start, cloneSourcePosition(callExpr.end));
+        }
+        return Factory.createDecorator(expr, start, expr.end);
+      }
+    }
+  }
+
   /**
    *
    */
-  function parseClassDeclaration(): ClassDeclaration {
+  function parseClassDeclaration(decoratorList: Decorator[] | null): ClassDeclaration {
     expectButNotEat(SyntaxKinds.ClassKeyword);
-    const classDelcar = parseClass();
+    const classDelcar = parseClass(decoratorList);
     if (classDelcar.id === null) {
       throw createMessageError("class declaration must have class id");
     }
@@ -2037,7 +2119,7 @@ export function createParser(code: string, option?: ParserConfig) {
    * ```
    * @returns {Class}
    */
-  function parseClass(): Class {
+  function parseClass(decoratorList: Decorator[] | null): Class {
     const { start } = expect(SyntaxKinds.ClassKeyword);
     let name: Identifier | null = null;
     if (match(BindingIdentifierSyntaxKindArray)) {
@@ -2053,7 +2135,7 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     const body = parseClassBody();
     existClassScope();
-    return Factory.createClass(name, superClass, body, start, cloneSourcePosition(body.end));
+    return Factory.createClass(name, superClass, body, decoratorList, start, cloneSourcePosition(body.end));
   }
   /**
    * Parse ClassBody
@@ -2095,12 +2177,19 @@ export function createParser(code: string, option?: ParserConfig) {
    * @returns {ClassElement}
    */
   function parseClassElement(): ClassElement {
+    let decorators: Decorator[] | null = null;
+    if (match(SyntaxKinds.AtPunctuator)) {
+      decorators = parseDecoratorList();
+    }
     // parse static modifier
     const isStatic = checkIsMethodStartWithStaticModifier();
     if (checkIsMethodStartWithModifier()) {
-      return parseMethodDefintion(true, undefined, isStatic) as ClassMethodDefinition;
+      return parseMethodDefintion(true, undefined, isStatic, decorators) as ClassMethodDefinition;
     }
     if (match(SyntaxKinds.BracesLeftPunctuator) && isStatic) {
+      if (decorators) {
+        throw createMessageError(ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_static_block);
+      }
       const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
       const body: Array<StatementListItem> = [];
       while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
@@ -2108,6 +2197,14 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       const { end } = expect(SyntaxKinds.BracesRightPunctuator);
       return Factory.createClassStaticBlock(body, start, end);
+    }
+    let accessor = false;
+    if (isContextKeyword("accessor")) {
+      const { kind, lineTerminatorFlag } = lookahead();
+      if (kind === SyntaxKinds.Identifier && !lineTerminatorFlag) {
+        nextToken();
+        accessor = true;
+      }
     }
     // parse ClassElementName
     const isComputedRef = { isComputed: false };
@@ -2119,31 +2216,43 @@ export function createParser(code: string, option?: ParserConfig) {
       key = parsePropertyName(isComputedRef);
     }
     if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-      return parseMethodDefintion(true, [key, isComputedRef.isComputed], isStatic) as ClassMethodDefinition;
+      return parseMethodDefintion(
+        true,
+        [key, isComputedRef.isComputed],
+        isStatic,
+        decorators,
+      ) as ClassMethodDefinition;
     }
     helperSematicCheckClassPropertyName(key, isComputedRef.isComputed, isStatic);
+    let propertyValue = undefined,
+      shorted = true;
     if (match([SyntaxKinds.AssginOperator])) {
       nextToken();
+      shorted = false;
       const [value, scope] = parseWithCatpureLayer(parseAssignmentExpressionAllowIn);
+      propertyValue = value;
       checkStrictModeScopeError(scope);
-      shouldInsertSemi();
-      return Factory.createClassProperty(
-        key,
-        value,
-        isComputedRef.isComputed,
-        isStatic,
-        false,
-        cloneSourcePosition(key.start),
-        cloneSourcePosition(value.end),
-      );
     }
     shouldInsertSemi();
+    if (accessor) {
+      return Factory.createClassAccessorProperty(
+        key,
+        propertyValue,
+        isComputedRef.isComputed,
+        isStatic,
+        shorted,
+        decorators,
+        cloneSourcePosition(key.start),
+        cloneSourcePosition(key.end),
+      );
+    }
     return Factory.createClassProperty(
       key,
-      undefined,
+      propertyValue,
       isComputedRef.isComputed,
       isStatic,
-      true,
+      shorted,
+      decorators,
       cloneSourcePosition(key.start),
       cloneSourcePosition(key.end),
     );
@@ -2958,8 +3067,11 @@ export function createParser(code: string, option?: ParserConfig) {
         return parseArrayExpression();
       case SyntaxKinds.FunctionKeyword:
         return parseFunctionExpression(false);
+      case SyntaxKinds.AtPunctuator: {
+        return parseClassExpression(parseDecoratorList());
+      }
       case SyntaxKinds.ClassKeyword:
-        return parseClassExpression();
+        return parseClassExpression(null);
       case SyntaxKinds.ParenthesesLeftPunctuator:
         return parseCoverExpressionORArrowFunction();
       // TODO: consider wrap as function or default case ?
@@ -3792,6 +3904,7 @@ export function createParser(code: string, option?: ParserConfig) {
     inClass: boolean = false,
     withPropertyName: [PropertyName | PrivateName, boolean] | undefined = undefined,
     isStatic: boolean = false,
+    decorators: Decorator[] | null = null,
   ): ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor | ClassConstructor {
     if (!checkIsMethodStartWithModifier() && !withPropertyName) {
       throw createUnreachError([SyntaxKinds.MultiplyAssignOperator, SyntaxKinds.Identifier]);
@@ -3878,6 +3991,9 @@ export function createParser(code: string, option?: ParserConfig) {
      */
     if (inClass) {
       if (isCtor) {
+        if (decorators) {
+          throw createMessageError(ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_constructor);
+        }
         return Factory.createClassConstructor(
           propertyName as ClassConstructor["key"],
           body,
@@ -3893,6 +4009,7 @@ export function createParser(code: string, option?: ParserConfig) {
           parmas,
           type,
           computed,
+          decorators,
           start as SourcePosition,
           cloneSourcePosition(body.end),
         );
@@ -3905,6 +4022,7 @@ export function createParser(code: string, option?: ParserConfig) {
         generator,
         computed,
         isStatic,
+        decorators,
         start ? start : cloneSourcePosition(propertyName.start),
         cloneSourcePosition(body.end),
       );
@@ -4075,8 +4193,8 @@ export function createParser(code: string, option?: ParserConfig) {
     exitFunctionScope();
     return Factory.transFormFunctionToFunctionExpression(funcExpr);
   }
-  function parseClassExpression() {
-    return Factory.transFormClassToClassExpression(parseClass());
+  function parseClassExpression(decoratorList: Decorator[] | null) {
+    return Factory.transFormClassToClassExpression(parseClass(decoratorList));
   }
   function parseCoverExpressionORArrowFunction() {
     const possibleBeArrow = canParseAsArrowFunction();
@@ -5108,8 +5226,12 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function parseExportDefaultDeclaration(start: SourcePosition): ExportDefaultDeclaration {
     expect(SyntaxKinds.DefaultKeyword);
-    if (match(SyntaxKinds.ClassKeyword)) {
-      let classDeclar = parseClass();
+    if (match([SyntaxKinds.ClassKeyword, SyntaxKinds.AtPunctuator])) {
+      let decoratorList = takeCacheDecorator();
+      if (match(SyntaxKinds.AtPunctuator)) {
+        decoratorList = mergeDecoratorList(decoratorList, parseDecoratorList());
+      }
+      let classDeclar = parseClass(decoratorList);
       classDeclar = Factory.transFormClassToClassDeclaration(classDeclar);
       return Factory.createExportDefaultDeclaration(
         classDeclar as ClassDeclaration | ClassExpression,

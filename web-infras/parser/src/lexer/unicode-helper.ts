@@ -118,6 +118,7 @@ export const UnicodePoints = {
   GraveAccent: codePoint("`"),
   DollarSign: codePoint("$"),
   PoundSign: codePoint("#"),
+  AtSign: codePoint("@"),
   Underscore: codePoint("_"),
   WhiteSpace: codePoint(" "),
   Tab: codePoint("\t"),

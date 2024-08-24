@@ -71,6 +71,7 @@
                                 "index": 91
                             }
                         },
+                        "decorators": null,
                         "start": {
                             "row": 1,
                             "col": 19,
@@ -103,7 +104,8 @@
                 "row": 1,
                 "col": 94,
                 "index": 93
-            }
+            },
+            "decorators": null
         },
         {
             "kind": "ExpressionStatement",
@@ -149,6 +151,7 @@
                                     "index": 125
                                 }
                             },
+                            "decorators": null,
                             "start": {
                                 "row": 2,
                                 "col": 10,
@@ -182,6 +185,7 @@
                     "col": 34,
                     "index": 127
                 },
+                "decorators": null,
                 "parentheses": true
             },
             "start": {

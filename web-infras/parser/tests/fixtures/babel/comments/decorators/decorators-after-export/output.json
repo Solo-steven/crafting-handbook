@@ -1,0 +1,226 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "ClassDeclaration",
+                "id": {
+                    "kind": "Identifer",
+                    "name": "C",
+                    "start": {
+                        "row": 2,
+                        "col": 23,
+                        "index": 65
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 24,
+                        "index": 66
+                    }
+                },
+                "superClass": null,
+                "body": {
+                    "kind": "ClassBody",
+                    "body": [],
+                    "start": {
+                        "row": 2,
+                        "col": 33,
+                        "index": 75
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 44,
+                        "index": 86
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 9,
+                    "index": 51
+                },
+                "end": {
+                    "row": 2,
+                    "col": 44,
+                    "index": 86
+                },
+                "decorators": [
+                    {
+                        "kind": "Decorator",
+                        "expression": {
+                            "kind": "Identifer",
+                            "name": "dec1",
+                            "start": {
+                                "row": 1,
+                                "col": 25,
+                                "index": 24
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 29,
+                                "index": 28
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 29,
+                            "index": 28
+                        }
+                    },
+                    {
+                        "kind": "Decorator",
+                        "expression": {
+                            "kind": "Identifer",
+                            "name": "dec2",
+                            "start": {
+                                "row": 1,
+                                "col": 39,
+                                "index": 38
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 43,
+                                "index": 42
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 38,
+                            "index": 37
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 43,
+                            "index": 42
+                        }
+                    }
+                ]
+            },
+            "source": null,
+            "start": {
+                "row": 1,
+                "col": 9,
+                "index": 8
+            },
+            "end": {
+                "row": 2,
+                "col": 44,
+                "index": 86
+            }
+        },
+        {
+            "kind": "ExportDefaultDeclaration",
+            "declaration": {
+                "kind": "ClassDeclaration",
+                "id": null,
+                "superClass": null,
+                "body": {
+                    "kind": "ClassBody",
+                    "body": [],
+                    "start": {
+                        "row": 5,
+                        "col": 23,
+                        "index": 177
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 34,
+                        "index": 188
+                    }
+                },
+                "start": {
+                    "row": 5,
+                    "col": 9,
+                    "index": 163
+                },
+                "end": {
+                    "row": 5,
+                    "col": 34,
+                    "index": 188
+                },
+                "decorators": [
+                    {
+                        "kind": "Decorator",
+                        "expression": {
+                            "kind": "Identifer",
+                            "name": "dec1",
+                            "start": {
+                                "row": 4,
+                                "col": 41,
+                                "index": 136
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 45,
+                                "index": 140
+                            }
+                        },
+                        "start": {
+                            "row": 4,
+                            "col": 40,
+                            "index": 135
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 45,
+                            "index": 140
+                        }
+                    },
+                    {
+                        "kind": "Decorator",
+                        "expression": {
+                            "kind": "Identifer",
+                            "name": "dec2",
+                            "start": {
+                                "row": 4,
+                                "col": 55,
+                                "index": 150
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 59,
+                                "index": 154
+                            }
+                        },
+                        "start": {
+                            "row": 4,
+                            "col": 54,
+                            "index": 149
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 59,
+                            "index": 154
+                        }
+                    }
+                ]
+            },
+            "start": {
+                "row": 4,
+                "col": 9,
+                "index": 104
+            },
+            "end": {
+                "row": 5,
+                "col": 34,
+                "index": 188
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 9,
+        "index": 8
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 197
+    }
+}

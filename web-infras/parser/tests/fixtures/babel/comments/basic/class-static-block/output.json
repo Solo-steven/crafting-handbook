@@ -11,7 +11,7 @@
                     "kind": "ClassBody",
                     "body": [
                         {
-                            "kind": 10177,
+                            "kind": 10179,
                             "body": [],
                             "start": {
                                 "row": 1,
@@ -46,6 +46,7 @@
                     "col": 60,
                     "index": 59
                 },
+                "decorators": null,
                 "parentheses": true
             },
             "start": {

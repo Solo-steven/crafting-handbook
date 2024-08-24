@@ -92,7 +92,7 @@
                         },
                         "children": [
                             {
-                                "kind": 10223,
+                                "kind": 10226,
                                 "value": "JSXElement",
                                 "start": {
                                     "row": 1,
@@ -118,7 +118,7 @@
                         }
                     },
                     {
-                        "kind": 10223,
+                        "kind": 10226,
                         "value": "JSXText",
                         "start": {
                             "row": 1,
