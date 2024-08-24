@@ -23,8 +23,8 @@ jobs:
       - name: Install Deps
         uses: "./.github/install-node-dep"
       - name: Run Linter on Common Package
-        run: yarn prettier
+        run: yarn format
         working-directory: "web-infras/common"
       - name: Run Linter on Parser Package
-        run: yarn prettier
+        run: yarn format
         working-directory: "web-infras/parser"
