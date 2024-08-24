@@ -7,8 +7,8 @@
         "build": "rollup --config  --bundleConfigAsCjs  rollup.config.js",
         "lint": "yarn eslint",
         "lint:fix": "yarn eslint --fix",
-        "prettier:check": "yarn prettier . --check",
-        "prettier:write": "yarn prettier . --write"
+        "format": "yarn prettier . --check",
+        "format:write": "yarn prettier . --write"
     },
     "devDependencies": {
         "@eslint/js": "^9.9.1",
@@ -26,7 +26,7 @@
     },
     "lint-staged": {
         "*.{ts}": [
-            "yarn prettier:write",
+            "yarn format:write",
             "yarn lint:fix"
         ]
     }

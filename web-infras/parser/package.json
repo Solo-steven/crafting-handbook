@@ -6,8 +6,8 @@
   "scripts": {
     "build": "rollup --config  --bundleConfigAsCjs  rollup.config.js",
     "dev": "ts-node --swc ./src/dev.ts",
-    "prettier:check": "yarn prettier .",
-    "prettier:write": "yarn prettier . --write",
+    "format": "yarn prettier . --check",
+    "format:write": "yarn prettier . --write",
     "lint": "yarn eslint",
     "lint:fix": "yarn eslint --fix",
     "test": "ts-node ./tests/index.ts",
@@ -36,7 +36,7 @@
   },
   "lint-staged": {
     "*.{ts}": [
-      "yarn prettier:write",
+      "yarn format:write",
       "yarn lint:fix"
     ]
   }
