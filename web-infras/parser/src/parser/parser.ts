@@ -923,6 +923,7 @@ export function createParser(code: string, option?: ParserConfig) {
           return node as Pattern;
         }
       // fall to error
+      // eslint-disable-next-line no-fallthrough
       default:
         throw createMessageError(ErrorMessageMap.syntax_error_invalid_assignment_left_hand_side);
     }
@@ -2153,14 +2154,14 @@ export function createParser(code: string, option?: ParserConfig) {
       switch (kind) {
         // static <name>
         // static get/set/async
+        // static { <static-block>
+        // static [<compute-name>]
+        // static *
         case SyntaxKinds.Identifier:
         case SyntaxKinds.PrivateName:
         case SyntaxKinds.StringLiteral:
-        // static { <static-block>
         case SyntaxKinds.BracesLeftPunctuator:
-        // static [<compute-name>]
         case SyntaxKinds.BracketLeftPunctuator:
-        // static *
         case SyntaxKinds.MultiplyOperator:
           nextToken();
           return true;
