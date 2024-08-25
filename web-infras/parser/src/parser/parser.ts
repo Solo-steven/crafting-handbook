@@ -2060,7 +2060,9 @@ export function createParser(code: string, option?: ParserConfig) {
     ) {
       return decoratorList;
     }
-    throw createMessageError("");
+    throw createMessageError(
+      ErrorMessageMap.babel_error_leading_decorators_must_be_attached_to_a_class_declaration,
+    );
   }
   function parseDecorator(): Decorator {
     const { start } = expect(SyntaxKinds.AtPunctuator);

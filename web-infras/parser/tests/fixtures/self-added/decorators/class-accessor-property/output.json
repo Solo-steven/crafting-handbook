@@ -1,0 +1,151 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassAccessorProperty",
+                        "computed": false,
+                        "static": false,
+                        "shorted": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "prop",
+                            "start": {
+                                "row": 2,
+                                "col": 14,
+                                "index": 23
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 18,
+                                "index": 27
+                            }
+                        },
+                        "value": {
+                            "kind": "DecimalLiteral",
+                            "rawValue": "10",
+                            "start": {
+                                "row": 2,
+                                "col": 21,
+                                "index": 30
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 23,
+                                "index": 32
+                            }
+                        },
+                        "decorators": null,
+                        "start": {
+                            "row": 2,
+                            "col": 14,
+                            "index": 23
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 18,
+                            "index": 27
+                        }
+                    },
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "accessor",
+                            "start": {
+                                "row": 3,
+                                "col": 5,
+                                "index": 38
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 13,
+                                "index": 46
+                            }
+                        },
+                        "params": [],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 3,
+                                "col": 16,
+                                "index": 49
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 6,
+                                "index": 65
+                            }
+                        },
+                        "decorators": null,
+                        "start": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 38
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 6,
+                            "index": 65
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 6,
+                    "col": 2,
+                    "index": 67
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 6,
+                "col": 2,
+                "index": 67
+            },
+            "decorators": null
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 2,
+        "index": 67
+    }
+}

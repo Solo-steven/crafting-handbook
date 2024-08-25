@@ -1,0 +1,6 @@
+class A {
+    @autobind
+    constructor() {
+        
+    }
+}
