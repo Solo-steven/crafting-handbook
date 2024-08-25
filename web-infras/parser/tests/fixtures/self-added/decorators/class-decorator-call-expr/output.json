@@ -1,0 +1,58 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 2,
+                    "col": 7,
+                    "index": 49
+                },
+                "end": {
+                    "row": 2,
+                    "col": 8,
+                    "index": 50
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [],
+                "start": {
+                    "row": 2,
+                    "col": 9,
+                    "index": 51
+                },
+                "end": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 59
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 43
+            },
+            "end": {
+                "row": 4,
+                "col": 2,
+                "index": 59
+            },
+            "decorators": null
+        }
+    ],
+    "start": {
+        "row": 2,
+        "col": 1,
+        "index": 43
+    },
+    "end": {
+        "row": 4,
+        "col": 2,
+        "index": 59
+    }
+}

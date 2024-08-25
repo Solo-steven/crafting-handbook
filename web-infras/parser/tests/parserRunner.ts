@@ -127,10 +127,6 @@ async function report(testResult: TestResult) {
         console.log(`  |---> File ${failedcase.reason}: ${failedcase.fileId}`);
     }
   }
-  await stroeResult({
-    failedResult: [...expectFailedButPass, ...expectPassButFailed],
-    skipResult,
-  });
 }
 
 function getTestCaseSet(testResult: Pick<TestResult, "failedResult" | "skipResult">) {
@@ -164,6 +160,7 @@ async function compareReport(testResult: TestResult) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function stroeResult(testResult: Pick<TestResult, "failedResult" | "skipResult">) {
   console.log();
   await writeFile("./result.json", JSON.stringify(testResult, null, 2));

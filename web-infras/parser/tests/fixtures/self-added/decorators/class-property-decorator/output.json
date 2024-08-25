@@ -1,0 +1,132 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": false,
+                        "shorted": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "property",
+                            "start": {
+                                "row": 3,
+                                "col": 5,
+                                "index": 33
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 13,
+                                "index": 41
+                            }
+                        },
+                        "value": {
+                            "kind": "DecimalLiteral",
+                            "rawValue": "10",
+                            "start": {
+                                "row": 3,
+                                "col": 16,
+                                "index": 44
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 18,
+                                "index": 46
+                            }
+                        },
+                        "decorators": [
+                            {
+                                "kind": "Decorator",
+                                "expression": {
+                                    "kind": "Identifer",
+                                    "name": "someDecorator",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 6,
+                                        "index": 15
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 19,
+                                        "index": 28
+                                    }
+                                },
+                                "start": {
+                                    "row": 2,
+                                    "col": 5,
+                                    "index": 14
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 19,
+                                    "index": 28
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 33
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 13,
+                            "index": 41
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 49
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 4,
+                "col": 2,
+                "index": 49
+            },
+            "decorators": null
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 2,
+        "index": 49
+    }
+}

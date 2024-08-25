@@ -1,0 +1,4 @@
+@testDe
+class A {
+    
+}

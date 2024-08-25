@@ -1,0 +1,324 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "privatedecorator",
+                            "start": {
+                                "row": 2,
+                                "col": 5,
+                                "index": 14
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 22,
+                                "index": 31
+                            }
+                        },
+                        "params": [
+                            {
+                                "kind": "Identifer",
+                                "name": "value",
+                                "start": {
+                                    "row": 2,
+                                    "col": 23,
+                                    "index": 32
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 28,
+                                    "index": 37
+                                }
+                            }
+                        ],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [
+                                {
+                                    "kind": "ReturnStatement",
+                                    "argu": {
+                                        "kind": "BinaryExpression",
+                                        "operator": "*",
+                                        "left": {
+                                            "kind": "Identifer",
+                                            "name": "value",
+                                            "start": {
+                                                "row": 3,
+                                                "col": 14,
+                                                "index": 54
+                                            },
+                                            "end": {
+                                                "row": 3,
+                                                "col": 19,
+                                                "index": 59
+                                            }
+                                        },
+                                        "right": {
+                                            "kind": "DecimalLiteral",
+                                            "rawValue": "2",
+                                            "start": {
+                                                "row": 3,
+                                                "col": 22,
+                                                "index": 62
+                                            },
+                                            "end": {
+                                                "row": 3,
+                                                "col": 23,
+                                                "index": 63
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 3,
+                                            "col": 14,
+                                            "index": 54
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 23,
+                                            "index": 63
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 3,
+                                        "col": 7,
+                                        "index": 47
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 23,
+                                        "index": 63
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 2,
+                                "col": 30,
+                                "index": 39
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 6,
+                                "index": 70
+                            }
+                        },
+                        "decorators": null,
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 14
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 6,
+                            "index": 70
+                        }
+                    },
+                    {
+                        "kind": "ClassMethodDefinition",
+                        "async": false,
+                        "generator": false,
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "publicMethod",
+                            "start": {
+                                "row": 7,
+                                "col": 5,
+                                "index": 103
+                            },
+                            "end": {
+                                "row": 7,
+                                "col": 17,
+                                "index": 115
+                            }
+                        },
+                        "params": [
+                            {
+                                "kind": "Identifer",
+                                "name": "value",
+                                "start": {
+                                    "row": 7,
+                                    "col": 18,
+                                    "index": 116
+                                },
+                                "end": {
+                                    "row": 7,
+                                    "col": 23,
+                                    "index": 121
+                                }
+                            }
+                        ],
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [
+                                {
+                                    "kind": "ReturnStatement",
+                                    "argu": {
+                                        "kind": "Identifer",
+                                        "name": "value",
+                                        "start": {
+                                            "row": 8,
+                                            "col": 14,
+                                            "index": 138
+                                        },
+                                        "end": {
+                                            "row": 8,
+                                            "col": 19,
+                                            "index": 143
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 8,
+                                        "col": 7,
+                                        "index": 131
+                                    },
+                                    "end": {
+                                        "row": 8,
+                                        "col": 19,
+                                        "index": 143
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 7,
+                                "col": 25,
+                                "index": 123
+                            },
+                            "end": {
+                                "row": 9,
+                                "col": 6,
+                                "index": 149
+                            }
+                        },
+                        "decorators": [
+                            {
+                                "kind": "Decorator",
+                                "expression": {
+                                    "kind": "MemberExpression",
+                                    "computed": false,
+                                    "optional": false,
+                                    "object": {
+                                        "kind": "PrivateName",
+                                        "name": "privatedecorator",
+                                        "start": {
+                                            "row": 6,
+                                            "col": 8,
+                                            "index": 81
+                                        },
+                                        "end": {
+                                            "row": 6,
+                                            "col": 25,
+                                            "index": 98
+                                        }
+                                    },
+                                    "property": {
+                                        "kind": "Identifer",
+                                        "name": "A",
+                                        "start": {
+                                            "row": 6,
+                                            "col": 6,
+                                            "index": 79
+                                        },
+                                        "end": {
+                                            "row": 6,
+                                            "col": 7,
+                                            "index": 80
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 6,
+                                        "col": 6,
+                                        "index": 79
+                                    },
+                                    "end": {
+                                        "row": 6,
+                                        "col": 25,
+                                        "index": 98
+                                    }
+                                },
+                                "start": {
+                                    "row": 6,
+                                    "col": 5,
+                                    "index": 78
+                                },
+                                "end": {
+                                    "row": 6,
+                                    "col": 25,
+                                    "index": 98
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 7,
+                            "col": 5,
+                            "index": 103
+                        },
+                        "end": {
+                            "row": 9,
+                            "col": 6,
+                            "index": 149
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 10,
+                    "col": 4,
+                    "index": 153
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 10,
+                "col": 4,
+                "index": 153
+            },
+            "decorators": null
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 10,
+        "col": 4,
+        "index": 153
+    }
+}

@@ -181,4 +181,7 @@ export const ErrorMessageMap = {
   // try using decorator with constructor
   babel_error_decorators_can_not_be_used_with_a_constructor:
     "SyntaxError: Decorators can't be used with a constructor.",
+  // try using decorator outside of class
+  babel_error_leading_decorators_must_be_attached_to_a_class_declaration:
+    "SyntaxError: Leading decorators must be attached to a class declaration.",
 };
