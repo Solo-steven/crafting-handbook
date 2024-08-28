@@ -1,8 +1,15 @@
 import chalk from "chalk";
-import { startController } from "./controller";
-import { FailedTestCasesResult, SkipTestCaseResult, PassTestCaseResult, TestCaseResultSuite } from "./type";
+import { startController } from "./controller/controller";
+import {
+  FailedTestCasesResult,
+  SkipTestCaseResult,
+  PassTestCaseResult,
+  TestCaseResultSuite,
+  UpdateTestCaseResultSuite,
+} from "./type";
+import { startUpdateController } from "./updateController/controller";
 
-// const isUpdate = Boolean(process.env.TEST_UPDATE) || false;
+const isUpdate = Boolean(process.env.TEST_UPDATE) || false;
 const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 // const gate = Number(process.env.TEST_GATE) || .95;
 // const isCI = Boolean(process.env.TEST_CI) || false;
@@ -95,7 +102,7 @@ function filterTestCase(skipTestCases: Array<SkipTestCaseResult | PassTestCaseRe
   return skipTestCases.filter((testCase) => !ignoreSet.has(testCase.fileId));
 }
 
-function report(testResult: TestCaseResultSuite) {
+function reportTestSuit(testResult: TestCaseResultSuite) {
   const allTestCaseCount = Object.values(testResult).reduce((count, results) => count + results.length, 0);
   const skipResult = filterTestCase(testResult.skipResult) as Array<SkipTestCaseResult>;
   console.log(chalk.bold("=========== Parser Test Case ==========="));
@@ -125,8 +132,37 @@ function report(testResult: TestCaseResultSuite) {
         console.log(`  |---> File ${failedcase.reason}: ${failedcase.fileId}`);
     }
   }
+  console.log(
+    `== ${chalk.red("Timeout Test Case")} : ${testResult.timeoutResult.length} / ${allTestCaseCount}`,
+  );
 }
 export default async function runParserTestCase() {
+  if (isUpdate) {
+    const resultSuite = await startUpdateController();
+    return () => {
+      reportUpdateTestSuit(resultSuite);
+    };
+  }
   const resultSuite = await startController();
-  return () => report(resultSuite);
+  return () => reportTestSuit(resultSuite);
+}
+
+function reportUpdateTestSuit(testSuite: UpdateTestCaseResultSuite) {
+  const allTestCaseCount = Object.values(testSuite).reduce((count, results) => count + results.length, 0);
+  console.log(chalk.bold("=========== Parser Test Case ==========="));
+  console.log(`== Ignore Test Case: ${TempIgnoreCases.size} / ${allTestCaseCount}`);
+  console.log(
+    `== ${chalk.green("Pass Update Test Case")} : ${testSuite.passResult.length} / ${allTestCaseCount}`,
+  );
+  console.log(
+    `== ${chalk.red("Failed Update Test Case")} : ${testSuite.failedResult.length} / ${allTestCaseCount}`,
+  );
+  if (isVerbose) {
+    for (const failedcase of testSuite.failedResult) {
+      console.log(`  |---> File: ${failedcase.fileId}`);
+    }
+  }
+  console.log(
+    `== ${chalk.red("Timeout During Update Test Case")} : ${testSuite.timeoutResult.length} / ${allTestCaseCount}`,
+  );
 }

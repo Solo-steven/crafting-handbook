@@ -1,6 +1,6 @@
 import path from "path";
 import { readdir, stat } from "fs/promises";
-import { ExpectPassTestCase, ExpectFailedTestCase, ExpectConfig, TestCase } from "./type";
+import { ExpectPassTestCase, ExpectFailedTestCase, ExpectConfig, TestCase } from "../type";
 import { readFile } from "fs/promises";
 import { existsSync } from "fs";
 

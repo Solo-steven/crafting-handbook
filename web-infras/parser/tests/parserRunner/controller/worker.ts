@@ -1,5 +1,5 @@
-import { TestCase } from "./type";
-import { runExpectFailedTestCase, runExpectPassTestCase } from "./testRunner";
+import { TestCase } from "../type";
+import { runExpectFailedTestCase, runExpectPassTestCase } from "../helpers/testRunner";
 
 process.on("message", async (testCase: TestCase) => {
   if (testCase.kind === "ExpectPassTestCase") {

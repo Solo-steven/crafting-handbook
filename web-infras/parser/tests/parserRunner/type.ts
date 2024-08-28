@@ -90,3 +90,29 @@ export type TestCaseResultSuite = {
   skipResult: Array<SkipTestCaseResult>;
   timeoutResult: Array<TimeoutTestCaseResult>;
 };
+
+/**
+ * A update Test Case Result Suite
+ */
+
+export type UpdatePassTestCaseResult = PassTestCaseResult;
+
+export type UpdateTimeoutTestCaseResult = TimeoutTestCaseResult;
+
+export type UpdateFailedTestCaseResult = {
+  kind: "ExpectPassButFailed";
+  reason: string | Error;
+  fileId: string;
+  filePath: string;
+};
+
+export type UpdateTestCaseResult =
+  | UpdatePassTestCaseResult
+  | UpdateTimeoutTestCaseResult
+  | UpdateFailedTestCaseResult;
+
+export type UpdateTestCaseResultSuite = {
+  passResult: Array<UpdatePassTestCaseResult>;
+  failedResult: Array<UpdateFailedTestCaseResult>;
+  timeoutResult: Array<UpdateTimeoutTestCaseResult>;
+};

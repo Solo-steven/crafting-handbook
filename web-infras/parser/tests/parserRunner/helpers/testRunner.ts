@@ -1,5 +1,5 @@
-import { readFile } from "fs/promises";
-import { ExpectPassTestCase, ExpectFailedTestCase, TestCaseResult } from "./type";
+import { readFile, writeFile } from "fs/promises";
+import { ExpectPassTestCase, ExpectFailedTestCase, TestCaseResult, UpdateTestCaseResult } from "../type";
 import { transformSyntaxKindToLiteral } from "./transform";
 import { parse } from "@/src/index";
 import { ParserConfig } from "@/src/parser/config";
@@ -55,8 +55,6 @@ export async function runExpectPassTestCase(testCase: ExpectPassTestCase) {
 /**
  * Run a test case expect to be failed.
  * @param testCase
- * @param passResult
- * @param failedResult
  * @returns
  */
 export async function runExpectFailedTestCase(testCase: ExpectFailedTestCase): Promise<TestCaseResult> {
@@ -78,64 +76,25 @@ export async function runExpectFailedTestCase(testCase: ExpectFailedTestCase): P
 /**
  * Update a test case expect to be pass
  * @param testCase
- * @param passResult
- * @param failedResult
  * @returns
  */
-// async function updateTestCase(
-//   testCase: ExpectPassTestCase,
-//   passResult: Array<PassTestCaseResult>,
-//   failedResult: Array<FailedTestCasesResult>,
-// ) {
-//   const codeBuffer = await readFile(testCase.jsFilePath);
-//   const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString(), testCase.config);
-//   if (resultASTString === null) {
-//     failedResult.push({
-//       kind: "ExpectPassButFailed",
-//       filePath: testCase.jsFilePath,
-//       fileId: testCase.fileId,
-//       reason: "Parser Failed",
-//     });
-//     return;
-//   }
-//   await writeFile(testCase.jsonFilePath, resultASTString);
-//   passResult.push({
-//     kind: "ExpectPass",
-//     fileId: testCase.fileId,
-//     filePath: testCase.jsFilePath,
-//   });
-// }
-/**
- * Run given test suit and return test result.
- * @param testSuite
- * @param isUpdate
- * @returns
- */
-// export async function runTestSuit(testSuite: TestSuite, isUpdate: boolean): Promise<TestResult> {
-//   const { expectFailedTestCases, expectPassTestCases } = testSuite;
-//   const passResult: Array<PassTestCaseResult> = [];
-//   const failedResult: Array<FailedTestCasesResult> = [];
-//   const skipResult: Array<SkipTestCaseResult> = [];
-//   await Promise.all(
-//     isUpdate
-//       ? [...expectPassTestCases.map((testCase) => updateTestCase(testCase, passResult, failedResult))]
-//       : [
-//           ...expectPassTestCases.map((testCase) =>
-//             runExpectPassTestCase(testCase, passResult, failedResult, skipResult),
-//           ),
-//           ...expectFailedTestCases.map((testCase) =>
-//             runExpectFailedTestCase(testCase, passResult, failedResult),
-//           ),
-//         ],
-//   );
-//   return {
-//     passResult,
-//     failedResult,
-//     skipResult: isUpdate
-//       ? expectFailedTestCases.map((testCase) => ({
-//           fileId: testCase.fileId,
-//           filePath: testCase.jsFilePath,
-//         }))
-//       : skipResult,
-//   };
-// }
+export async function runUpdateExpectPassTestCase(
+  testCase: ExpectPassTestCase,
+): Promise<UpdateTestCaseResult> {
+  const codeBuffer = await readFile(testCase.jsFilePath);
+  const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString(), testCase.config);
+  if (resultASTString === null) {
+    return {
+      kind: "ExpectPassButFailed",
+      filePath: testCase.jsFilePath,
+      fileId: testCase.fileId,
+      reason: "Parser Failed",
+    };
+  }
+  await writeFile(testCase.jsonFilePath, resultASTString);
+  return {
+    kind: "ExpectPass",
+    fileId: testCase.fileId,
+    filePath: testCase.jsFilePath,
+  };
+}
