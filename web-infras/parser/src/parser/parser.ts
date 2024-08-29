@@ -4303,13 +4303,10 @@ export function createParser(code: string, option?: ParserConfig) {
     arrowExprScope: AsyncArrowExpressionScope,
   ): Array<Pattern> {
     const params = functionArguments.map((node) => exprToPattern(node, true)) as Array<Pattern>;
-    if (
-      isCurrentScopeParseAwaitAsExpression() ||
-      isParentFunctionAsync() ||
-      isParentFunctionGenerator() ||
-      isInStrictMode()
-    ) {
+    if (isCurrentScopeParseAwaitAsExpression() || isParentFunctionAsync() || isParentFunctionGenerator()) {
       checkAsyncArrowExprScopeError(arrowExprScope);
+    }
+    if (isInStrictMode()) {
       checkStrictModeScopeError(strictModeScope);
     }
     const isMultiSpread = checkArrowFunctionParamsSpreadElementRule(params);
