@@ -1,7 +1,7 @@
 import { createLexer } from "@/src/lexer";
 import { SyntaxKinds, SytaxKindsMapLexicalLiteral } from "web-infra-common";
 import { createParser } from "@/src/parser";
-import { transformSyntaxKindToLiteral } from "../tests/helper/transform";
+import { transformSyntaxKindToLiteral } from "../tests/parserRunner/helpers/transform";
 import fs from "fs";
 import path from "path";
 const code = fs.readFileSync(path.join(__dirname, "test.js")).toString();

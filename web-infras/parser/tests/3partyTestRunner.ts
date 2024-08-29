@@ -1,6 +1,9 @@
 import { createParser } from "@/src/parser";
 import { ParserConfig } from "@/src/parser/config";
 import chalk from "chalk";
+
+const isUpdate = Boolean(process.env.TEST_UPDATE) || false;
+
 const thirdPartyTestCase = [
   {
     title: "Jquery uncompressed",
@@ -36,13 +39,16 @@ const thirdPartyTestCase = [
   },
   {
     title: "MUI development",
-    url: "https://unpkg.com/@mui/material@latest/umd/material-ui.development.js",
+    url: "https://unpkg.com/@babel/standalone@7.25.5/babel.min.js",
     code: "",
     pass: false,
   },
 ];
 
 export default async function run3partyTestCase() {
+  if (isUpdate) {
+    return () => {};
+  }
   await Promise.all(
     thirdPartyTestCase.map(async (testCase) => {
       const code = await fetch(testCase.url).then((resp) => resp.text());

@@ -1702,9 +1702,8 @@ export function createLexer(code: string) {
           throw lexicalError(ErrorMessageMap.error_line_terminator_in_string_literal);
         }
         case UnicodePoints.BackSlash: {
-          // ERROR: using isStringLiteralBreakStrictMode ||= readEscapeSequenceInStringLiteral() will cause loop, not sure why.
           if (readEscapeSequenceInStringLiteral()) {
-            isStringLiteralBreakStrictMode = true;
+            isStringLiteralBreakStrictMode ||= true;
           }
           break;
         }
