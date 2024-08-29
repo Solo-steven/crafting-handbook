@@ -27,7 +27,18 @@ This folder test case is test the `await` keyword use as identifier in
     - `class-body`,
     - `class-compute-name`
 
-So the enum will following below format:
+### Permutation
+All most of location, we could just use following formula:
 ```
-(location(12)) * (source-type(3)) * (context(2)) * (parent-context(2)) 
+(location) * (source-type(3)) * (context(2)) * (parent-context(2)) 
 ```
+- `func-expr-name` 
+- `func-expr-param-lhs`
+- `func-expr-param-lhs-pat`: like `{await}, {await: await}`
+- `func-expr-param-rhs`
+- `func-expr-param-rhs-pat`: like `{ name = await}`
+- `func-declar-name` 
+- `func-declar-param-lhs`
+- `func-declar-param-rhs`
+- `func-arrow-param-lhs` 
+- `func-arrow-param-rhs` 
