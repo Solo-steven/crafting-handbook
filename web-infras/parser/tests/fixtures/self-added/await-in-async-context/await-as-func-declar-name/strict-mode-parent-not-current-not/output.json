@@ -1,0 +1,131 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 13,
+                "index": 12
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "parent",
+                "start": {
+                    "row": 2,
+                    "col": 10,
+                    "index": 23
+                },
+                "end": {
+                    "row": 2,
+                    "col": 16,
+                    "index": 29
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "FunctionDeclaration",
+                        "name": {
+                            "kind": "Identifer",
+                            "name": "await",
+                            "start": {
+                                "row": 3,
+                                "col": 14,
+                                "index": 47
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 19,
+                                "index": 52
+                            }
+                        },
+                        "generator": false,
+                        "async": false,
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [],
+                            "start": {
+                                "row": 3,
+                                "col": 22,
+                                "index": 55
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 6,
+                                "index": 71
+                            }
+                        },
+                        "params": [],
+                        "start": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 38
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 6,
+                            "index": 71
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 19,
+                    "index": 32
+                },
+                "end": {
+                    "row": 6,
+                    "col": 2,
+                    "index": 73
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 14
+            },
+            "end": {
+                "row": 6,
+                "col": 2,
+                "index": 73
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 2,
+        "index": 73
+    }
+}
