@@ -74,19 +74,19 @@ async function recursivelyFindTestCase(
  */
 export async function getTestSuiteIterator(): Promise<{ next: () => TestCase | undefined }> {
   // babel test case
-  const babelJsRoot = path.join(__dirname, "../fixtures/babel");
+  const babelJsRoot = path.join(__dirname, "../../fixtures/babel");
   const babelTestCaseGetFileId = (filePath: string) => {
     const suffix = filePath.split(babelJsRoot)[1];
     return `/babel${suffix}`;
   };
   // model-checking test case
-  const selfAddedJsRoot = path.join(__dirname, "../fixtures/self-added");
+  const selfAddedJsRoot = path.join(__dirname, "../../fixtures/self-added");
   const selfAddedTestCaseGetFileId = (filePath: string) => {
     const suffix = filePath.split(selfAddedJsRoot)[1];
     return `/self-added${suffix}`;
   };
   // esprima test case
-  const esprimaJsRoot = path.join(__dirname, "../fixtures/esprima");
+  const esprimaJsRoot = path.join(__dirname, "../../fixtures/esprima");
   const esprimaTestCaseGetFileId = (filePath: string) => {
     const suffix = filePath.split(esprimaJsRoot)[1];
     return `/esprima${suffix}`;
