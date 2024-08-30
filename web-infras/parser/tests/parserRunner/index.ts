@@ -12,7 +12,7 @@ import { startUpdateController } from "./updateController/controller";
 const isUpdate = Boolean(process.env.TEST_UPDATE) || false;
 const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 // const gate = Number(process.env.TEST_GATE) || .95;
-// const isCI = Boolean(process.env.TEST_CI) || false;
+const isCI = Boolean(process.env.TEST_CI) || false;
 
 const TempIgnoreCases: Set<string> = new Set([
   /**
@@ -131,13 +131,13 @@ function reportTestSuit(testResult: TestCaseResultSuite): boolean {
     `== ${chalk.red("Failed Test Case")} : ${expectFailedButPass.length + expectPassButFailed.length} / ${allTestCaseCount}`,
   );
   console.log(` |--> Expect Failed But Pass : ${expectFailedButPass.length}`);
-  if (isVerbose) {
+  if (isVerbose || isCI) {
     for (const failedcase of expectFailedButPass) {
       console.log(`  |---> File: ${failedcase.fileId}`);
     }
   }
   console.log(` |--> Expect Pass But Failed : ${expectPassButFailed.length}`);
-  if (isVerbose) {
+  if (isVerbose || isCI) {
     for (const failedcase of expectPassButFailed) {
       if (failedcase.kind === "ExpectPassButFailed")
         console.log(`  |---> File ${failedcase.reason}: ${failedcase.fileId}`);

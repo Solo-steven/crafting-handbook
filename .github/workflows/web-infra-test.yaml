@@ -36,5 +36,5 @@ jobs:
       - name: Install Deps
         uses: "./.github/install-node-dep"
       - name: Run Test on Parser Package
-        run: yarn test:verbose
+        run: yarn test:ci
         working-directory: "web-infras/parser"
