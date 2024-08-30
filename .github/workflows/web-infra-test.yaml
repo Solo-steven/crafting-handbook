@@ -28,3 +28,13 @@ jobs:
       - name: Run Linter on Parser Package
         run: yarn format
         working-directory: "web-infras/parser"
+  test:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Checkout Branch
+        uses: actions/checkout@v4
+      - name: Install Deps
+        uses: "./.github/install-node-dep"
+      - name: Run Test on Parser Package
+        run: yarn test:verbose
+        working-directory: "web-infras/parser"
