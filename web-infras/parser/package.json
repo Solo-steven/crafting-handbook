@@ -13,7 +13,7 @@
     "test": "ts-node ./tests/index.ts",
     "test:verbose": "TEST_VERBOSE=1 yarn test",
     "test:update": "TEST_UPDATE=1 yarn test",
-    "test:ci": "TEST_CI=1 ts-node yarn test"
+    "test:ci": "TEST_CI=1 yarn test"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
