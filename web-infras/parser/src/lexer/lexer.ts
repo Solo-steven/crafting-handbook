@@ -1,19 +1,10 @@
+import { SyntaxKinds, LexicalLiteral, KeywordLiteralMapSyntaxKind, SourcePosition } from "web-infra-common";
 import {
-  SyntaxKinds,
-  LexicalLiteral,
-  KeywordLiteralMapSyntaxKind,
-  SourcePosition,
-  cloneSourcePosition,
-  createSourcePosition,
-} from "web-infra-common";
-import {
-  LexerTemplateContext,
-  LexerCursorState,
-  LexerSematicState,
-  LexerTokenState,
   LookaheadToken,
-  LexerJSXContext,
-  LexerStrictModeContext,
+  createLexerState,
+  createLexerContext,
+  cloneLexerContext,
+  cloneLexerState,
 } from "./type";
 import {
   isCodePointLineTerminate,
@@ -22,74 +13,6 @@ import {
   UnicodePoints,
 } from "./unicode-helper";
 import { ErrorMessageMap } from "./error";
-/**
- * Lexer Context.
- */
-interface Context {
-  // Cursot for char stream, `pos` is a pointer which point to current
-  // char in source code.
-  cursor: LexerCursorState;
-  // Token state stoe all relative info about a token, include
-  // a kind, string value, position info, and other info we will
-  // need for syntax check (like line terminator).
-  tokenState: LexerTokenState;
-  // Token state for sematic check from parser
-  sematicState: LexerSematicState;
-  // Ad-hoc data structure for tokenize template literal in context
-  templateContext: LexerTemplateContext;
-  // Ad-hoc data structure for tokenize template literal with context.
-  jsxContext: LexerJSXContext;
-  strictModeContext: LexerStrictModeContext;
-}
-/**
- * Create a empty lexer context
- * @param {string} code
- * @returns {Context}
- */
-function createContext(code: string): Context {
-  return {
-    cursor: { code, pos: 0, currentLine: 1, currentLineStart: 0 },
-    tokenState: {
-      value: "",
-      kind: null,
-      startPosition: createSourcePosition(),
-      endPosition: createSourcePosition(),
-      lastTokenEndPosition: createSourcePosition(),
-    },
-    sematicState: {
-      isKeywordContainUnicodeEscap: false,
-      isTemplateLiteralBreakEscapRule: false,
-    },
-    templateContext: { stackCounter: [] },
-    jsxContext: {
-      shouldTokenizeStringLiteralAsJSXStringLiteral: false,
-      shouldTokenizeGtWithHigherPriority: false,
-    },
-    strictModeContext: { isInStrictMode: false },
-  };
-}
-/**
- * Clone a lexer context, used when need to lookahead
- * @param {Context} source
- * @returns {Context}
- */
-function cloneContext(source: Context): Context {
-  return {
-    cursor: { ...source.cursor },
-    tokenState: {
-      ...source.tokenState,
-      startPosition: cloneSourcePosition(source.tokenState.startPosition),
-      endPosition: cloneSourcePosition(source.tokenState.endPosition),
-      lastTokenEndPosition: cloneSourcePosition(source.tokenState.lastTokenEndPosition),
-    },
-    sematicState: {
-      ...source.sematicState,
-    },
-    templateContext: { stackCounter: [...source.templateContext.stackCounter] },
-    jsxContext: { ...source.jsxContext },
-    strictModeContext: { ...source.strictModeContext },
-  };
-}
 
 const KeywordLiteralSet = new Set([
   ...LexicalLiteral.keywords,
@@ -100,9 +23,12 @@ const KeywordLiteralSet = new Set([
 
 export function createLexer(code: string) {
   /**
-   *
+   * state and context for lexer,
+   * - state serve as input of DFA.
+   * - context serve as stack in PDA, it will be set by parser.
    */
-  let context = createContext(code);
+  let state = createLexerState(code);
+  let context = createLexerContext();
 
   /** ===========================================================
    *             Public API of Lexer
@@ -115,56 +41,59 @@ export function createLexer(code: string) {
   function getLineTerminatorFlag(): boolean {
     // eslint-disable-next-line no-control-regex
     return /[\n\u000D\u2028\u2029]/.test(
-      context.cursor.code.slice(
-        context.tokenState.lastTokenEndPosition.index,
-        context.tokenState.startPosition.index,
-      ),
+      state.cursor.code.slice(state.token.lastTokenEndPosition.index, state.token.startPosition.index),
     );
   }
   /**
-   * Public API for getting is current value contain esc flag.
+   * Public API for getting is current value contain unicode flag.
    * - used by checking contextual keyword.
    * @returns {boolean}
    */
   function getEscFlag(): boolean {
-    return context.sematicState.isKeywordContainUnicodeEscap;
-  }
-  function getTemplateLiteralTag(): boolean {
-    return context.sematicState.isTemplateLiteralBreakEscapRule;
+    return state.semantic.isKeywordContainUnicodeEscap;
   }
   /**
-   * Public API for getting token's string value
+   * Public API for getting is template literal contain
+   * invalid char or not, when template is in tag expression,
+   * it should not raise error.
+   * @returns {boolean}
+   */
+  function getTemplateLiteralTag(): boolean {
+    return state.semantic.isTemplateLiteralBreakEscapRule;
+  }
+  /**
+   * Public API for getting token's string value.
    * @returns {string}
    */
   function getSourceValue(): string {
-    return context.tokenState.value;
+    return state.token.value;
   }
   function getSourceValueByIndex(start: number, end: number) {
     return getSliceStringFromCode(start, end);
   }
   /**
-   * Public API for get source position of current token
+   * Public API for get source position of current token.
    * @returns {SourcePosition}
    */
   function getStartPosition(): SourcePosition {
-    return context.tokenState.startPosition;
+    return state.token.startPosition;
   }
   /**
-   * Public API for get end position of current token
+   * Public API for get end position of current token.
    * @returns {SourcePosition}
    */
   function getEndPosition(): SourcePosition {
-    return context.tokenState.endPosition;
+    return state.token.endPosition;
   }
   /**
    * Public API for get current token kind.
    * @returns {SyntaxKinds}
    */
   function getTokenKind(): SyntaxKinds {
-    if (context.tokenState.kind === null) {
-      context.tokenState.kind = scan();
+    if (state.token.kind === null) {
+      state.token.kind = scan();
     }
-    return context.tokenState.kind;
+    return state.token.kind;
   }
   /**
    * Public API for moving to next token.
@@ -174,19 +103,35 @@ export function createLexer(code: string) {
     scan();
   }
   /**
-   *
+   * Public API like `readRegex`, tokenize as in JSX chilren context,
+   * which should be a html string, unless meet `{` or `<` char.
    */
   function nextTokenInJSXChildrenContext(): void {
     scanInJSXChildrenContext();
   }
+  /**
+   * Public API set when read JSX attribute, a string literal of jsx attribute
+   * can contain change line without `\` char.
+   * @param {boolean} flag
+   */
   function setJSXStringContext(flag: boolean): void {
-    context.jsxContext.shouldTokenizeStringLiteralAsJSXStringLiteral = flag;
+    context.jsx.shouldTokenizeStringLiteralAsJSXStringLiteral = flag;
   }
+  /**
+   * Public API for getting JSX Gt Context Flag.
+   * @returns {boolean}
+   */
   function getJSXGtContext(): boolean {
-    return context.jsxContext.shouldTokenizeGtWithHigherPriority;
+    return context.jsx.shouldTokenizeGtWithHigherPriority;
   }
+  /**
+   * Public API for setting context to tokenize `>` as high priority,
+   * since jsx end tag could be `>>`, `>>=`, `>>>`, `>>>=`, in those
+   * case, we should tokenize `>` at first.
+   * @param {boolean} flag
+   */
   function setJSXGtContext(flag: boolean): void {
-    context.jsxContext.shouldTokenizeGtWithHigherPriority = flag;
+    context.jsx.shouldTokenizeGtWithHigherPriority = flag;
   }
   /**
    * Public API for lookahead token.
@@ -194,17 +139,19 @@ export function createLexer(code: string) {
    */
   function lookahead(): LookaheadToken {
     // store last context
-    const lastContext = cloneContext(context);
+    const lastContext = cloneLexerContext(context);
+    const lastState = cloneLexerState(state);
     nextToken();
     const lookaheadToken = {
-      kind: context.tokenState.kind!,
-      value: context.tokenState.value,
-      startPosition: context.tokenState.startPosition,
-      endPosition: context.tokenState.endPosition,
+      kind: state.token.kind!,
+      value: state.token.value,
+      startPosition: state.token.startPosition,
+      endPosition: state.token.endPosition,
       lineTerminatorFlag: getLineTerminatorFlag(),
     };
     // resume last context
     context = lastContext;
+    state = lastState;
     return lookaheadToken;
   }
   /**
@@ -257,6 +204,9 @@ export function createLexer(code: string) {
     finishToken(SyntaxKinds.RegexLiteral, pattern + flag);
     return { pattern, flag };
   }
+  /**
+   * Private API helper for reading set regex pattern
+   */
   function readSetInRegexPattern() {
     eatChar(); // eat [
     while (!isEOF()) {
@@ -272,6 +222,10 @@ export function createLexer(code: string) {
       eatChar();
     }
   }
+  /**
+   * Private API helper for reading escap sequence of regex
+   * - the ecma def: #prod-RegularExpressionNonTerminator
+   */
   function readEscapSequenceInRegexPattern() {
     eatChar(); // eat \
     const code = getCharCodePoint();
@@ -291,6 +245,12 @@ export function createLexer(code: string) {
       }
     }
   }
+  /**
+   * Private API helper for reading flag in regex, at the same time we
+   * perform semantic checking
+   * -
+   * @returns
+   */
   function readFlagsInRegexLiteral() {
     const startIndex = getCurrentIndex();
     const existFlagRecord: Record<string, number> = {
@@ -358,8 +318,12 @@ export function createLexer(code: string) {
     }
     return getSliceStringFromCode(startIndex, getCurrentIndex());
   }
+  /**
+   * Public API for sync the strict mode context with parser.
+   * @param {boolean} strictMode
+   */
   function setStrictModeContext(strictMode: boolean) {
-    context.strictModeContext.isInStrictMode = strictMode;
+    context.strictMode.isInStrictMode = strictMode;
   }
   return {
     getTokenKind,
@@ -392,9 +356,9 @@ export function createLexer(code: string) {
    */
   function creaetSourcePositionFromCursor(): SourcePosition {
     return {
-      row: context.cursor.currentLine,
-      col: context.cursor.pos - context.cursor.currentLineStart + 1,
-      index: context.cursor.pos,
+      row: state.cursor.currentLine,
+      col: state.cursor.pos - state.cursor.currentLineStart + 1,
+      index: state.cursor.pos,
     };
   }
   /**
@@ -404,10 +368,10 @@ export function createLexer(code: string) {
    * @returns {void}
    */
   function startToken(): void {
-    // context.sematicState.isKeywordContainUnicodeEscap = false;
-    // context.sematicState.isTemplateLiteralBreakEscapRule = false;
-    // context.sematicState.isStringLiteralContainNonStrictEscap = false;
-    context.tokenState.startPosition = creaetSourcePositionFromCursor();
+    // state.semantic.isKeywordContainUnicodeEscap = false;
+    // state.semantic.isTemplateLiteralBreakEscapRule = false;
+    // state.semantic.isStringLiteralContainNonStrictEscap = false;
+    state.token.startPosition = creaetSourcePositionFromCursor();
   }
   /**
    * Private API for finish a token, store token relative data:
@@ -423,12 +387,11 @@ export function createLexer(code: string) {
    * @returns
    */
   function finishToken(kind: SyntaxKinds, value?: string): SyntaxKinds {
-    context.tokenState.kind = kind;
-    context.tokenState.lastTokenEndPosition = context.tokenState.endPosition;
-    context.tokenState.endPosition = creaetSourcePositionFromCursor();
-    context.tokenState.value =
-      value ??
-      context.cursor.code.slice(context.tokenState.startPosition.index, context.tokenState.endPosition.index);
+    state.token.kind = kind;
+    state.token.lastTokenEndPosition = state.token.endPosition;
+    state.token.endPosition = creaetSourcePositionFromCursor();
+    state.token.value =
+      value ?? state.cursor.code.slice(state.token.startPosition.index, state.token.endPosition.index);
     return kind;
   }
   /**
@@ -439,7 +402,7 @@ export function createLexer(code: string) {
    * @returns {string}
    */
   function getCharCodePoint(): number | undefined {
-    return context.cursor.code.codePointAt(context.cursor.pos);
+    return state.cursor.code.codePointAt(state.cursor.pos);
   }
   /**
    * Private API for getting current char accroding to
@@ -452,16 +415,16 @@ export function createLexer(code: string) {
     const curCodePoint = getCharCodePoint();
     if (!curCodePoint) return;
     const nextCharStep = curCodePoint > 0xffff ? 2 : 1;
-    return context.cursor.code.codePointAt(context.cursor.pos + nextCharStep);
+    return state.cursor.code.codePointAt(state.cursor.pos + nextCharStep);
   }
   function getNextNextCharCodePoint(): number | undefined {
     const curCodePoint = getCharCodePoint();
     if (!curCodePoint) return;
     const nextCharStep = curCodePoint > 0xffff ? 2 : 1;
-    const nextCodePoint = context.cursor.code.codePointAt(context.cursor.pos + nextCharStep);
+    const nextCodePoint = state.cursor.code.codePointAt(state.cursor.pos + nextCharStep);
     if (!nextCodePoint) return;
     const nextNextCharStep = nextCodePoint > 0xffff ? 2 : 1;
-    return context.cursor.code.codePointAt(context.cursor.pos + nextCharStep + nextNextCharStep);
+    return state.cursor.code.codePointAt(state.cursor.pos + nextCharStep + nextNextCharStep);
   }
   /**
    * Private API for checking is current reach EOF or not,
@@ -477,7 +440,7 @@ export function createLexer(code: string) {
    */
   function eatChar(): void {
     const codePoint = getCharCodePoint() as number;
-    context.cursor.pos += codePoint > 0xffff ? 2 : 1;
+    state.cursor.pos += codePoint > 0xffff ? 2 : 1;
   }
   /**
    * Private API for eatting current char, advance cursor with
@@ -496,8 +459,8 @@ export function createLexer(code: string) {
    */
   function eatChangeLine(): void {
     eatChar();
-    context.cursor.currentLineStart = context.cursor.pos;
-    context.cursor.currentLine++;
+    state.cursor.currentLineStart = state.cursor.pos;
+    state.cursor.currentLine++;
   }
   /**
    * Private API called before `startToken`, skip all ignoreable char and
@@ -505,7 +468,7 @@ export function createLexer(code: string) {
    * @return {void}
    */
   function skipWhiteSpaceChangeLine(): void {
-    let haveChangeLine = context.cursor.pos === 0;
+    let haveChangeLine = state.cursor.pos === 0;
     while (!isEOF()) {
       switch (getCharCodePoint()) {
         case UnicodePoints.ChangeLine:
@@ -542,7 +505,7 @@ export function createLexer(code: string) {
           return;
         }
         case UnicodePoints.LessThen: {
-          if (context.strictModeContext.isInStrictMode) {
+          if (context.strictMode.isInStrictMode) {
             return;
           }
           const next = getNextCharCodePoint();
@@ -573,7 +536,7 @@ export function createLexer(code: string) {
         }
         // HTML close comment
         case UnicodePoints.Minus: {
-          if (context.strictModeContext.isInStrictMode) {
+          if (context.strictMode.isInStrictMode) {
             return;
           }
           const next = getNextCharCodePoint();
@@ -600,14 +563,14 @@ export function createLexer(code: string) {
    * @return {number}
    */
   function getCurrentIndex(): number {
-    return context.cursor.pos;
+    return state.cursor.pos;
   }
   /**
    * Private API for getting slice string from code with start index and end index,
    * @return {string}
    */
   function getSliceStringFromCode(startIndex: number, endIndex: number): string {
-    return context.cursor.code.slice(startIndex, endIndex);
+    return state.cursor.code.slice(startIndex, endIndex);
   }
   /**
    * lexicalError is used for tokenizer unexecpt char happended. ex: string start with " can't find end ""
@@ -616,7 +579,7 @@ export function createLexer(code: string) {
    */
   function lexicalError(content: string): Error {
     return new Error(
-      `[Error]: Lexical Error, ${content}, start position is (${context.tokenState.startPosition.row}, ${context.tokenState.startPosition.col})`,
+      `[Error]: Lexical Error, ${content}, start position is (${state.token.startPosition.row}, ${state.token.startPosition.col})`,
     );
   }
   /**
@@ -637,11 +600,11 @@ export function createLexer(code: string) {
        *  ==========================================
        */
       case UnicodePoints.BracesLeft:
-        context.templateContext.stackCounter.push(-1);
+        context.template.stackCounter.push(-1);
         eatChar();
         return finishToken(SyntaxKinds.BracesLeftPunctuator);
       case UnicodePoints.BracesRight: {
-        const result = context.templateContext.stackCounter.pop();
+        const result = context.template.stackCounter.pop();
         if (result && result > 0) {
           return readTemplateLiteral(SyntaxKinds.TemplateTail, SyntaxKinds.TemplateMiddle);
         }
@@ -781,6 +744,11 @@ export function createLexer(code: string) {
       }
     }
   }
+  /**
+   * Like `readRegex`, this api using when tokenize the jsx children,
+   * which is should be tokenize as HTML text util `{` or `<` char.
+   * @returns
+   */
   function scanInJSXChildrenContext() {
     let isJSXTextExist = false;
     skipWhiteSpaceChangeLine();
@@ -804,7 +772,12 @@ export function createLexer(code: string) {
     }
     return finishToken(SyntaxKinds.JSXText);
   }
-  function isIdentifierNameStart() {
+  /**
+   * Private API, return bool mean is current code
+   * char is identifier start or not.
+   * @returns {boolean}
+   */
+  function isIdentifierNameStart(): boolean {
     const code = getCharCodePoint();
     const next = getNextCharCodePoint();
     if (code && next) {
@@ -812,7 +785,7 @@ export function createLexer(code: string) {
         return true;
       }
     }
-    return code && isIdentifierStart(code);
+    return Boolean(code && isIdentifierStart(code));
   }
   /** ===========================================================
    *                Operators Sub state mahcine
@@ -924,7 +897,7 @@ export function createLexer(code: string) {
    */
   function readGreaterStart(): SyntaxKinds {
     eatChar();
-    if (context.jsxContext.shouldTokenizeGtWithHigherPriority) {
+    if (context.jsx.shouldTokenizeGtWithHigherPriority) {
       return finishToken(SyntaxKinds.GtOperator);
     }
     switch (getCharCodePoint()) {
@@ -1236,7 +1209,7 @@ export function createLexer(code: string) {
    * @returns {SyntaxKinds}
    */
   function readTemplateLiteral(meetEnd: SyntaxKinds, meetMiddle: SyntaxKinds): SyntaxKinds {
-    context.sematicState.isTemplateLiteralBreakEscapRule = false;
+    state.semantic.isTemplateLiteralBreakEscapRule = false;
     // eat '`'
     eatChar();
     while (!isEOF()) {
@@ -1248,7 +1221,7 @@ export function createLexer(code: string) {
           eatChar();
           if (getCharCodePoint() === UnicodePoints.BracesLeft) {
             eatChar();
-            context.templateContext.stackCounter.push(1);
+            context.template.stackCounter.push(1);
             return finishToken(meetMiddle);
           }
           break;
@@ -1289,6 +1262,10 @@ export function createLexer(code: string) {
     // TODO: error handle
     throw new Error("todo error - not close template head or no subsitude");
   }
+  /**
+   * Private Helper to read the escap string in Template string.
+   * @returns
+   */
   function readEscapeSequenceInTemplateLiteral() {
     eatChar(); // eat \
     const code = getCharCodePoint();
@@ -1311,7 +1288,7 @@ export function createLexer(code: string) {
       case UnicodePoints.LowerCaseX: {
         eatChar();
         for (let i = 0; i < 2; ++i) {
-          context.sematicState.isTemplateLiteralBreakEscapRule ||= !isHex();
+          state.semantic.isTemplateLiteralBreakEscapRule ||= !isHex();
           eatChar();
         }
         return;
@@ -1321,7 +1298,7 @@ export function createLexer(code: string) {
         try {
           readUnicodeEscapeSequence();
         } catch {
-          context.sematicState.isTemplateLiteralBreakEscapRule = true;
+          state.semantic.isTemplateLiteralBreakEscapRule = true;
         }
         return;
       }
@@ -1336,7 +1313,7 @@ export function createLexer(code: string) {
         if (next) {
           const needTagged = next <= UnicodePoints.Digital9 && next >= UnicodePoints.Digital0;
           eatTwoChar();
-          context.sematicState.isTemplateLiteralBreakEscapRule = needTagged;
+          state.semantic.isTemplateLiteralBreakEscapRule = needTagged;
         } else {
           eatChar();
         }
@@ -1345,7 +1322,7 @@ export function createLexer(code: string) {
       // NonEscapeCharacter
       default: {
         if (code && code >= UnicodePoints.Digital1 && code <= UnicodePoints.Digital9) {
-          context.sematicState.isTemplateLiteralBreakEscapRule = true;
+          state.semantic.isTemplateLiteralBreakEscapRule = true;
         }
         eatChar();
       }
@@ -1434,7 +1411,8 @@ export function createLexer(code: string) {
     return readDecimalLiteral();
   }
   /**
-   *
+   * Private API for reading a Decimal string, caller should
+   * checking start with non 0.
    */
   function readDecimalLiteral() {
     // Start With Non 0
@@ -1468,7 +1446,7 @@ export function createLexer(code: string) {
     }
     const startIndex = getCurrentIndex();
     readDigitals();
-    const exponPart = context.cursor.code.slice(startIndex, context.cursor.pos);
+    const exponPart = state.cursor.code.slice(startIndex, state.cursor.pos);
     if (exponPart.length === 0) {
       // TODO: error handle
       throw new Error("todo error - expon length is 0");
@@ -1680,7 +1658,7 @@ export function createLexer(code: string) {
    * @returns {SyntaxKinds}
    */
   function readStringLiteral(mode: "Single" | "Double"): SyntaxKinds {
-    if (context.jsxContext.shouldTokenizeStringLiteralAsJSXStringLiteral) {
+    if (context.jsx.shouldTokenizeStringLiteralAsJSXStringLiteral) {
       return readJSXStringLiteral(mode);
     }
     let isStringLiteralBreakStrictMode = false;
@@ -1716,7 +1694,7 @@ export function createLexer(code: string) {
     if (isEOF()) {
       throw new Error(ErrorMessageMap.babel_error_unterminated_string_constant);
     }
-    if (context.strictModeContext.isInStrictMode && isStringLiteralBreakStrictMode) {
+    if (context.strictMode.isInStrictMode && isStringLiteralBreakStrictMode) {
       throw lexicalError(ErrorMessageMap.syntax_error_Octal_escape_sequences_are_not_allowed_in_strict_mode);
     }
     // get end index before ending char ' or "
@@ -1729,8 +1707,8 @@ export function createLexer(code: string) {
     );
   }
   /**
-   *
-   * @param mode
+   * Reading escap string in string literal
+   * - ecma spec: #prod-EscapeSequence
    * @returns
    */
   function readEscapeSequenceInStringLiteral(): boolean {
@@ -1857,6 +1835,13 @@ export function createLexer(code: string) {
     }
     return false;
   }
+  /**
+   * A JSX string literal and contain change line, and all escap string
+   * take as plain text.
+   * - JSX spec: #prod-JSXDoubleStringCharacters and #prod-JSXSingleStringCharacters
+   * @param mode
+   * @returns
+   */
   function readJSXStringLiteral(mode: "Single" | "Double") {
     const modeInCodepoint = mode === "Single" ? UnicodePoints.SingleQuote : UnicodePoints.DoubleQuote;
     eatChar();
@@ -1879,12 +1864,12 @@ export function createLexer(code: string) {
    * @returns {SyntaxKinds}
    */
   function readIdentifierOrKeyword(): SyntaxKinds {
-    context.sematicState.isKeywordContainUnicodeEscap = false;
+    state.semantic.isKeywordContainUnicodeEscap = false;
     const word = readWordAsIdentifier();
     if (KeywordLiteralSet.has(word)) {
       // @ts-expect-error When word exist in keyword literal set, it must can map to syntaxkind
       const keywordKind = KeywordLiteralMapSyntaxKind[word];
-      if (context.sematicState.isKeywordContainUnicodeEscap) {
+      if (state.semantic.isKeywordContainUnicodeEscap) {
         throw new Error("keyword can not have any escap unicode");
       }
       return finishToken(keywordKind as SyntaxKinds, word);
@@ -1899,7 +1884,7 @@ export function createLexer(code: string) {
       if (code === UnicodePoints.BackSlash) {
         const next = getNextCharCodePoint();
         if (next === UnicodePoints.LowerCaseU || next === UnicodePoints.UpperCaseU) {
-          context.sematicState.isKeywordContainUnicodeEscap = true;
+          state.semantic.isKeywordContainUnicodeEscap = true;
           word += getSliceStringFromCode(startIndex, getCurrentIndex());
           eatTwoChar(); // eat \u \U
           const anyUnicodeString = readUnicodeEscapeSequence();
