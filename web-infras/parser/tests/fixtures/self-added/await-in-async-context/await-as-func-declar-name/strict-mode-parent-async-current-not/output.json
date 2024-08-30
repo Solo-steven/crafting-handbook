@@ -1,0 +1,174 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "StringLiteral",
+                "value": "use strict",
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 13,
+                "index": 12
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "parent",
+                "start": {
+                    "row": 2,
+                    "col": 16,
+                    "index": 29
+                },
+                "end": {
+                    "row": 2,
+                    "col": 22,
+                    "index": 35
+                }
+            },
+            "generator": false,
+            "async": true,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [
+                    {
+                        "kind": "VariableDeclaration",
+                        "variant": "const",
+                        "declarations": [
+                            {
+                                "kind": "VariableDeclarator",
+                                "id": {
+                                    "kind": "Identifer",
+                                    "name": "child",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 11,
+                                        "index": 50
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 16,
+                                        "index": 55
+                                    }
+                                },
+                                "init": {
+                                    "kind": "FunctionExpression",
+                                    "name": {
+                                        "kind": "Identifer",
+                                        "name": "await",
+                                        "start": {
+                                            "row": 3,
+                                            "col": 28,
+                                            "index": 67
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 33,
+                                            "index": 72
+                                        }
+                                    },
+                                    "generator": false,
+                                    "async": false,
+                                    "body": {
+                                        "kind": "FunctionBody",
+                                        "body": [],
+                                        "start": {
+                                            "row": 3,
+                                            "col": 36,
+                                            "index": 75
+                                        },
+                                        "end": {
+                                            "row": 5,
+                                            "col": 6,
+                                            "index": 83
+                                        }
+                                    },
+                                    "params": [],
+                                    "start": {
+                                        "row": 3,
+                                        "col": 19,
+                                        "index": 58
+                                    },
+                                    "end": {
+                                        "row": 5,
+                                        "col": 6,
+                                        "index": 83
+                                    }
+                                },
+                                "start": {
+                                    "row": 3,
+                                    "col": 11,
+                                    "index": 50
+                                },
+                                "end": {
+                                    "row": 5,
+                                    "col": 6,
+                                    "index": 83
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 44
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 6,
+                            "index": 83
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 25,
+                    "index": 38
+                },
+                "end": {
+                    "row": 6,
+                    "col": 2,
+                    "index": 85
+                }
+            },
+            "params": [],
+            "start": {
+                "row": 2,
+                "col": 7,
+                "index": 20
+            },
+            "end": {
+                "row": 6,
+                "col": 2,
+                "index": 85
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 2,
+        "index": 85
+    }
+}

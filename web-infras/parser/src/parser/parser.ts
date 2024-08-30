@@ -486,7 +486,7 @@ export function createParser(code: string, option?: ParserConfig) {
    *  please reference to recorder api
    */
   function enterFunctionScope(isAsync: boolean = false, isGenerator: boolean = false) {
-    asyncArrowExprScopeRecorder.enterBlankAsyncArrowExpressionScope();
+    asyncArrowExprScopeRecorder.enterFunctionScope();
     strictModeScopeRecorder.enterRHSStrictModeScope();
     lexicalScopeRecorder.enterFunctionLexicalScope(isAsync, isGenerator);
     lexer.setStrictModeContext(isInStrictMode());
@@ -636,7 +636,7 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function enterClassScope(isExtend: boolean = false) {
     lexicalScopeRecorder.enterClassLexicalScope(isExtend);
-    asyncArrowExprScopeRecorder.enterBlankAsyncArrowExpressionScope();
+    asyncArrowExprScopeRecorder.enterAsyncArrowExpressionScope();
   }
   function existClassScope() {
     if (lexicalScopeRecorder.isDuplicatePrivateName()) {
@@ -674,6 +674,9 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function isDirectToFunctionContext(): boolean {
     return lexicalScopeRecorder.isDirectToFunctionContext();
+  }
+  function isDirectToClassScope(): boolean {
+    return lexicalScopeRecorder.isDirectToClassScope();
   }
   function isReturnValidate(): boolean {
     return config.allowReturnOutsideFunction || lexicalScopeRecorder.isReturnValidate();
@@ -3254,7 +3257,9 @@ export function createParser(code: string, option?: ParserConfig) {
           throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
         }
         const { value, start, end } = expect(SyntaxKinds.AwaitKeyword);
-        recordScope(ExpressionScopeKind.AwaitIdentifier, start);
+        if (!(isDirectToClassScope() && !isInPropertyName())) {
+          recordScope(ExpressionScopeKind.AwaitIdentifier, start);
+        }
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
@@ -4303,13 +4308,10 @@ export function createParser(code: string, option?: ParserConfig) {
     arrowExprScope: AsyncArrowExpressionScope,
   ): Array<Pattern> {
     const params = functionArguments.map((node) => exprToPattern(node, true)) as Array<Pattern>;
-    if (
-      isCurrentScopeParseAwaitAsExpression() ||
-      isParentFunctionAsync() ||
-      isParentFunctionGenerator() ||
-      isInStrictMode()
-    ) {
+    if (isCurrentScopeParseAwaitAsExpression() || isParentFunctionAsync() || isParentFunctionGenerator()) {
       checkAsyncArrowExprScopeError(arrowExprScope);
+    }
+    if (isInStrictMode()) {
       checkStrictModeScopeError(strictModeScope);
     }
     const isMultiSpread = checkArrowFunctionParamsSpreadElementRule(params);
