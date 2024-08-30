@@ -1702,9 +1702,9 @@ export function createLexer(code: string) {
           throw lexicalError(ErrorMessageMap.error_line_terminator_in_string_literal);
         }
         case UnicodePoints.BackSlash: {
-          //if (readEscapeSequenceInStringLiteral()) {
-          isStringLiteralBreakStrictMode ||= readEscapeSequenceInStringLiteral();
-          //}
+          if (readEscapeSequenceInStringLiteral()) {
+            isStringLiteralBreakStrictMode ||= true;
+          }
           break;
         }
         default: {
