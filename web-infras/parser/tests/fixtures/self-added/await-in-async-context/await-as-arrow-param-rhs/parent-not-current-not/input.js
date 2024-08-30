@@ -1,0 +1,5 @@
+function parent() {
+    (valu=await) => {
+        
+    }
+}

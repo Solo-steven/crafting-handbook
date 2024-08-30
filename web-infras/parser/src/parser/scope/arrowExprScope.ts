@@ -5,8 +5,17 @@ export type AsyncArrowExpressionScope = {
   yieldExpressionInParameter: Array<SourcePosition>;
   awaitExpressionInParameter: Array<SourcePosition>;
   awaitIdentifier: Array<SourcePosition>;
-  yieldIdentifier: Array<SourcePosition>;
 };
+
+function mergeScope(target: AsyncArrowExpressionScope, source: AsyncArrowExpressionScope) {
+  target.awaitExpressionInParameter = target.awaitExpressionInParameter.concat(
+    source.awaitExpressionInParameter,
+  );
+  target.awaitIdentifier = target.awaitIdentifier.concat(source.awaitIdentifier);
+  target.yieldExpressionInParameter = target.yieldExpressionInParameter.concat(
+    source.yieldExpressionInParameter,
+  );
+}
 
 export function createAsyncArrowExpressionScopeRecorder() {
   const asyncArrowExpressionScopes: Array<AsyncArrowExpressionScope | null> = [];
@@ -16,34 +25,29 @@ export function createAsyncArrowExpressionScopeRecorder() {
       awaitExpressionInParameter: [],
       yieldExpressionInParameter: [],
       awaitIdentifier: [],
-      yieldIdentifier: [],
     });
   }
-  function enterBlankAsyncArrowExpressionScope() {
+  function enterFunctionScope() {
     asyncArrowExpressionScopes.push(null);
+  }
+  function helperFindParentScope() {
+    for (let i = asyncArrowExpressionScopes.length - 1; i >= 0; --i) {
+      const scope = asyncArrowExpressionScopes[i];
+      if (scope) {
+        return scope;
+      }
+      if (!scope) {
+        return null;
+      }
+    }
+    return null;
   }
   function exitAsyncArrowExpressionScope() {
     const current = asyncArrowExpressionScopes.pop();
     if (!current) return;
-    let target: AsyncArrowExpressionScope | null = null;
-    for (let i = asyncArrowExpressionScopes.length - 1; i >= 0; --i) {
-      const scope = asyncArrowExpressionScopes[i];
-      if (scope) {
-        target = scope;
-      }
-      if (!scope) {
-        break;
-      }
-    }
+    const target: AsyncArrowExpressionScope | null = helperFindParentScope();
     if (target) {
-      target.awaitExpressionInParameter = target.awaitExpressionInParameter.concat(
-        current.awaitExpressionInParameter,
-      );
-      target.awaitIdentifier = target.awaitIdentifier.concat(current.awaitIdentifier);
-      target.yieldExpressionInParameter = target.yieldExpressionInParameter.concat(
-        current.yieldExpressionInParameter,
-      );
-      target.yieldIdentifier = target.yieldIdentifier.concat(current.yieldIdentifier);
+      mergeScope(target, current);
     }
   }
   function isAsyncArrowExpressionScopeHaveError(scope: AsyncArrowExpressionScope) {
@@ -74,10 +78,6 @@ export function createAsyncArrowExpressionScopeRecorder() {
         scope.awaitIdentifier.push(position);
         break;
       }
-      case ExpressionScopeKind.YieldIdentifier: {
-        scope.yieldIdentifier.push(position);
-        break;
-      }
     }
   }
 
@@ -86,7 +86,7 @@ export function createAsyncArrowExpressionScopeRecorder() {
     isAsyncArrowExpressionScopeHaveError,
     getCurrentAsyncArrowExpressionScope,
     enterAsyncArrowExpressionScope,
-    enterBlankAsyncArrowExpressionScope,
+    enterFunctionScope,
     exitAsyncArrowExpressionScope,
   };
 }

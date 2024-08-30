@@ -1,0 +1,1 @@
+async (name = class SomeClass {[await] = 10;}) => {}

@@ -574,6 +574,9 @@ export function createLexicalScopeRecorder() {
     }
     return false;
   }
+  function isDirectToClassScope(): boolean {
+    return lexicalScopes[lexicalScopes.length - 1].type === "ClassLexicalScope";
+  }
   function isReturnValidate() {
     const scope = helperFindLastClassOrFunctionLexicalScope();
     return (
@@ -767,6 +770,7 @@ export function createLexicalScopeRecorder() {
     isInClassScope,
     isCurrentClassExtend,
     isCurrentInDelete,
+    isDirectToClassScope,
     testAndSetCtor,
     /**
      * Await and Yield condition

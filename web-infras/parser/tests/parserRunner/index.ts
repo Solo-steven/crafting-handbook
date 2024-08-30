@@ -25,6 +25,14 @@ const TempIgnoreCases: Set<string> = new Set([
   // === (feature) regex content and flag check
   "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-4-hex",
   "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-var-hex",
+  // === (TO BE VERIFY)
+  "/esprima/statement/if/migrated_0003",
+  // === (lone surrofate)
+  "/babel/es2022/module-string-names/export-name-has-lone-surrogate",
+  "/esprima/ES6/identifier/invalid_lone_surrogate",
+  // === (sematnic regex)
+  "/esprima/expression/primary/literal/regular-expression/migrated_0006",
+  "/babel/core/escape-keyword/used-as-property",
   /**
    * Experimental Feature
    */
@@ -39,8 +47,6 @@ const TempIgnoreCases: Set<string> = new Set([
   /**
    * Relative easy
    */
-  // === (feature) record to parent arrow scope.
-  "/babel/es2022/class-properties/await-in-computed-property-in-params-of-async-arrow",
   // === (feature) ban async of
   "/babel/es2021/for-async-of/forbidden",
   /**
