@@ -11,7 +11,8 @@ import {
   TimeoutTestCaseResult,
 } from "../type";
 
-const WORKER_NUM = 5;
+const isCI = Boolean(process.env.TEST_CI) || false;
+const WORKER_NUM = isCI ? 1 : 5;
 
 async function createChildPorcessController(
   iter: TestCaseIterator,
