@@ -47,7 +47,7 @@ const thirdPartyTestCase = [
 
 export default async function run3partyTestCase() {
   if (isUpdate) {
-    return () => {};
+    return () => true;
   }
   await Promise.all(
     thirdPartyTestCase.map(async (testCase) => {
@@ -57,16 +57,20 @@ export default async function run3partyTestCase() {
   );
   return () => {
     console.log(chalk.bold(`=========== 3rd Party Parser Test Case ===========`));
+    let result = true;
     for (const testCode of thirdPartyTestCase) {
       try {
         const parser = createParser(testCode.code, testCode.config as ParserConfig);
         parser.parse();
         testCode.pass = true;
         console.log(`|${testCode.title}|: ${chalk.green("parse PASS")}.`);
+        result &&= true;
       } catch {
         testCode.pass = false;
         console.log(`|${testCode.title}|: ${chalk.red("parse FAILED")}.`);
+        result &&= false;
       }
     }
+    return result;
   };
 }

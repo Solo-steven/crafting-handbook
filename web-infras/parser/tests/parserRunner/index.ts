@@ -108,7 +108,12 @@ function filterTestCase(skipTestCases: Array<SkipTestCaseResult | PassTestCaseRe
   return skipTestCases.filter((testCase) => !ignoreSet.has(testCase.fileId));
 }
 
-function reportTestSuit(testResult: TestCaseResultSuite) {
+/**
+ * Return boolean value indicate is test pass or not.
+ * @param {TestCaseResultSuite} testResult
+ * @returns {boolean}
+ */
+function reportTestSuit(testResult: TestCaseResultSuite): boolean {
   const allTestCaseCount = Object.values(testResult).reduce((count, results) => count + results.length, 0);
   const skipResult = filterTestCase(testResult.skipResult) as Array<SkipTestCaseResult>;
   console.log(chalk.bold("=========== Parser Test Case ==========="));
@@ -141,18 +146,26 @@ function reportTestSuit(testResult: TestCaseResultSuite) {
   console.log(
     `== ${chalk.red("Timeout Test Case")} : ${testResult.timeoutResult.length} / ${allTestCaseCount}`,
   );
+  return (
+    testResult.timeoutResult.length === 0 &&
+    expectFailedButPass.length === 0 &&
+    expectPassButFailed.length === 0
+  );
 }
 export default async function runParserTestCase() {
   if (isUpdate) {
     const resultSuite = await startUpdateController();
-    return () => {
-      reportUpdateTestSuit(resultSuite);
-    };
+    return () => reportUpdateTestSuit(resultSuite);
   }
   const resultSuite = await startController();
   return () => reportTestSuit(resultSuite);
 }
 
+/**
+ * Return boolean value indicate is test pass or not.
+ * @param {UpdateTestCaseResultSuite} testSuite
+ * @returns
+ */
 function reportUpdateTestSuit(testSuite: UpdateTestCaseResultSuite) {
   const allTestCaseCount = Object.values(testSuite).reduce((count, results) => count + results.length, 0);
   console.log(chalk.bold("=========== Parser Test Case ==========="));
@@ -171,4 +184,5 @@ function reportUpdateTestSuit(testSuite: UpdateTestCaseResultSuite) {
   console.log(
     `== ${chalk.red("Timeout During Update Test Case")} : ${testSuite.timeoutResult.length} / ${allTestCaseCount}`,
   );
+  return testSuite.failedResult.length === 0 && testSuite.timeoutResult.length === 0;
 }
