@@ -1,5 +1,5 @@
 {
-  "expect": "Pass",
+  "expect": "Failed",
   "config": {
     "sourceType": "module"
   }

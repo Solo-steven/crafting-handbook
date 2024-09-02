@@ -86,6 +86,12 @@ export function createLexer(code: string) {
     return state.token.endPosition;
   }
   /**
+   * Public API for get end position of last token
+   */
+  function getLastTokenEndPositon(): SourcePosition {
+    return state.token.lastTokenEndPosition;
+  }
+  /**
    * Public API for get current token kind.
    * @returns {SyntaxKinds}
    */
@@ -331,6 +337,7 @@ export function createLexer(code: string) {
     getSourceValueByIndex,
     getStartPosition,
     getEndPosition,
+    getLastTokenEndPositon,
     getLineTerminatorFlag,
     getEscFlag,
     getTemplateLiteralTag,

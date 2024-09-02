@@ -1,0 +1,199 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "e",
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        }
+                    },
+                    "init": {
+                        "kind": "DecimalLiteral",
+                        "rawValue": "1000",
+                        "start": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 15,
+                        "index": 14
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 15,
+                "index": 14
+            }
+        },
+        {
+            "kind": "TryStatement",
+            "block": {
+                "kind": "BlockStatement",
+                "body": [
+                    {
+                        "kind": "VariableDeclaration",
+                        "variant": "let",
+                        "declarations": [
+                            {
+                                "kind": "VariableDeclarator",
+                                "id": {
+                                    "kind": "Identifer",
+                                    "name": "e",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 9,
+                                        "index": 30
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 10,
+                                        "index": 31
+                                    }
+                                },
+                                "init": {
+                                    "kind": "DecimalLiteral",
+                                    "rawValue": "100",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 13,
+                                        "index": 34
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 16,
+                                        "index": 37
+                                    }
+                                },
+                                "start": {
+                                    "row": 3,
+                                    "col": 9,
+                                    "index": 30
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 16,
+                                    "index": 37
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 26
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 16,
+                            "index": 37
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 5,
+                    "index": 20
+                },
+                "end": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 39
+                }
+            },
+            "handler": {
+                "kind": "CatchClause",
+                "param": {
+                    "kind": "Identifer",
+                    "name": "e",
+                    "start": {
+                        "row": 4,
+                        "col": 8,
+                        "index": 45
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 9,
+                        "index": 46
+                    }
+                },
+                "body": {
+                    "kind": "BlockStatement",
+                    "body": [],
+                    "start": {
+                        "row": 4,
+                        "col": 11,
+                        "index": 48
+                    },
+                    "end": {
+                        "row": 6,
+                        "col": 2,
+                        "index": 52
+                    }
+                },
+                "start": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 39
+                },
+                "end": {
+                    "row": 6,
+                    "col": 2,
+                    "index": 52
+                }
+            },
+            "finalizer": null,
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 16
+            },
+            "end": {
+                "row": 6,
+                "col": 2,
+                "index": 52
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 2,
+        "index": 52
+    }
+}

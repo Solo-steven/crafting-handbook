@@ -80,11 +80,6 @@ const TempIgnoreCases: Set<string> = new Set([
   "/babel/es2015/modules/duplicate-named-export-function-declaration",
   "/babel/es2015/modules/duplicate-named-export-variable-declaration",
   "/babel/es2022/module-string-names/duplicate-exported-binding-check",
-  // === (feature) checking duplicate variable in block scope
-  "/babel/es2018/object-rest-spread/11",
-  "/babel/es2018/object-rest-spread/12",
-  "/babel/es2018/object-rest-spread/13",
-  "/babel/es2018/object-rest-spread/15",
 ]);
 
 function getFailedKindCount(failedTestCases: Array<FailedTestCasesResult>) {

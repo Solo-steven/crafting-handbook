@@ -1,0 +1,157 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "let",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "i",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 6,
+                            "index": 5
+                        }
+                    },
+                    "init": {
+                        "kind": "DecimalLiteral",
+                        "rawValue": "0",
+                        "start": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 10,
+                            "index": 9
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 10,
+                        "index": 9
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 10,
+                "index": 9
+            }
+        },
+        {
+            "kind": "ForStatement",
+            "init": {
+                "kind": "VariableDeclaration",
+                "variant": "let",
+                "declarations": [
+                    {
+                        "kind": "VariableDeclarator",
+                        "id": {
+                            "kind": "Identifer",
+                            "name": "i",
+                            "start": {
+                                "row": 2,
+                                "col": 9,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 20
+                            }
+                        },
+                        "init": {
+                            "kind": "DecimalLiteral",
+                            "rawValue": "0",
+                            "start": {
+                                "row": 2,
+                                "col": 13,
+                                "index": 23
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 14,
+                                "index": 24
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 9,
+                            "index": 19
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 14,
+                            "index": 24
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 5,
+                    "index": 15
+                },
+                "end": {
+                    "row": 2,
+                    "col": 14,
+                    "index": 24
+                }
+            },
+            "test": null,
+            "update": null,
+            "body": {
+                "kind": "EmptyStatement",
+                "start": {
+                    "row": 2,
+                    "col": 18,
+                    "index": 28
+                },
+                "end": {
+                    "row": 2,
+                    "col": 19,
+                    "index": 29
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 11
+            },
+            "end": {
+                "row": 2,
+                "col": 19,
+                "index": 29
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 19,
+        "index": 29
+    }
+}

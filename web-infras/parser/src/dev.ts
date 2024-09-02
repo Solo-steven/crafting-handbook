@@ -20,9 +20,10 @@ const code = fs.readFileSync(path.join(__dirname, "test.js")).toString();
 // // Combine styled and normal strings
 // log(chalk.blue('Hello') + ' World' + chalk.red('!'));
 
-printLexer(code);
+// printLexer(code);
 printParser(code);
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function printLexer(code: string) {
   console.log("=================================");
   console.log("=================================");
@@ -48,7 +49,7 @@ function printLexer(code: string) {
   );
 }
 function printParser(code: string) {
-  const ast = createParser(code, { sourceType: "script", plugins: ["jsx"] }).parse();
+  const ast = createParser(code, { sourceType: "module", plugins: ["jsx"] }).parse();
   transformSyntaxKindToLiteral(ast);
   console.log(JSON.stringify(ast, null, 4));
   return 0;

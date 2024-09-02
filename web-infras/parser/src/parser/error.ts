@@ -166,6 +166,8 @@ export const ErrorMessageMap = {
   // try: using lexical declaration in VariableDeclarationStatement
   v8_error_lexical_declaration_cannot_appear_in_a_single_statement_context:
     "SyntaxError: Lexical declaration cannot appear in a single-statement context.",
+  // try: duplicate block identifier
+  v8_error_duplicate_identifier: "SyntaxError: Identifier has already been declared",
   // try: `import.meta` in babel playground when sourceType is script
   babel_error_import_meta_may_appear_only_with_source_type_module: `SyntaxError: import.meta may appear only with 'sourceType: "module"`,
   // try `import.name` in babel playground

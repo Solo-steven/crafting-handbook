@@ -1,6 +1,8 @@
 /**
  * Format error from MDN, using v8 based as error message value, some error is come from babel and
- * v8 engine
+ * v8 engine.
+ * If MDN message exsit for certain error, if not, using v8 error, if v8 still not, go back to use
+ * babel.
  */
 export const ErrorMessageMap = {
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_regexp_flag

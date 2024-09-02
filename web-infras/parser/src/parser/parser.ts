@@ -119,6 +119,7 @@ import {
   UnaryExpression,
   ImportAttribute,
   Decorator,
+  isBlockStatement,
 } from "web-infra-common";
 import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
@@ -129,6 +130,7 @@ import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } fr
 import { createStrictModeScopeRecorder, StrictModeScope } from "./scope/strictModeScope";
 import { ExpressionScopeKind } from "./scope/type";
 import { createLexicalScopeRecorder, PrivateNameDefKind } from "./scope/lexicalScope";
+import { createSymbolScopeRecorder, FunctionSymbolScope, SymbolType } from "./scope/symbolScope";
 interface Context {
   maybeArrowStart: number;
   inOperatorStack: Array<boolean>;
@@ -137,6 +139,7 @@ interface Context {
   cache: {
     decorators: Decorator[] | null;
   };
+  symbolKind: SymbolType | undefined;
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -157,6 +160,7 @@ function createContext(): Context {
     cache: {
       decorators: null,
     },
+    symbolKind: undefined,
   };
 }
 
@@ -184,6 +188,7 @@ export function createParser(code: string, option?: ParserConfig) {
   const context = createContext();
   const config = getConfigFromUserInput(option);
   const lexicalScopeRecorder = createLexicalScopeRecorder();
+  const symbolScopeRecorder = createSymbolScopeRecorder();
   const strictModeScopeRecorder = createStrictModeScopeRecorder();
   const asyncArrowExprScopeRecorder = createAsyncArrowExpressionScopeRecorder();
   /** ===========================================================
@@ -488,16 +493,27 @@ export function createParser(code: string, option?: ParserConfig) {
   function enterFunctionScope(isAsync: boolean = false, isGenerator: boolean = false) {
     asyncArrowExprScopeRecorder.enterFunctionScope();
     strictModeScopeRecorder.enterRHSStrictModeScope();
+    symbolScopeRecorder.enterFunctionSymbolScope();
     lexicalScopeRecorder.enterFunctionLexicalScope(isAsync, isGenerator);
     lexer.setStrictModeContext(isInStrictMode());
   }
-  function exitFunctionScope() {
+  function exitFunctionScope(focusCheck: boolean) {
+    const isNonSimpleParam = !isCurrentFunctionParameterListSimple();
+    const isStrict = isInStrictMode();
+    const symbolScope = symbolScopeRecorder.exitSymbolScope()!;
+    if (isNonSimpleParam || isStrict || focusCheck) {
+      const functionSymbolScope = symbolScope as FunctionSymbolScope;
+      if (functionSymbolScope.duplicateParams.size > 0) {
+        throw createMessageError(ErrorMessageMap.duplicate_param);
+      }
+    }
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
     strictModeScopeRecorder.exitStrictModeScope();
     lexicalScopeRecorder.exitFunctionLexicalScope();
     lexer.setStrictModeContext(isInStrictMode());
   }
   function enterProgram() {
+    symbolScopeRecorder.enterProgramSymbolScope();
     lexicalScopeRecorder.enterProgramLexicalScope(
       config.allowAwaitOutsideFunction || false,
       config.sourceType === "module",
@@ -505,14 +521,23 @@ export function createParser(code: string, option?: ParserConfig) {
     lexer.setStrictModeContext(config.sourceType === "module");
   }
   function exitProgram() {
+    symbolScopeRecorder.exitSymbolScope();
     lexicalScopeRecorder.exitProgramLexicalScope();
     lexer.setStrictModeContext(false);
   }
-  function enterBlockScope() {
+  function setIndexOfEndTokenOfPreBlockScope(index: number) {
+    symbolScopeRecorder.setIndexOfEndTokenOfPreBlockScope(index);
+  }
+  function enterPreBlockSymbolScope() {
+    symbolScopeRecorder.enterPreBlockScope();
+  }
+  function enterBlockScope(lastTokenIndex: number) {
     lexicalScopeRecorder.enterBlockLexicalScope();
+    symbolScopeRecorder.enterBlockSymbolScope(lastTokenIndex);
   }
   function exitBlockScope() {
     lexicalScopeRecorder.exitBlockLexicalScope();
+    symbolScopeRecorder.exitSymbolScope();
   }
   function parseAsLoop<T>(callback: () => T): T {
     lexicalScopeRecorder.enterVirtualBlockScope("Loop");
@@ -532,8 +557,14 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function enterArrowFunctionBodyScope(isAsync: boolean = false) {
     lexicalScopeRecorder.enterArrowFunctionBodyScope(isAsync);
+    symbolScopeRecorder.enterFunctionSymbolScope();
   }
   function exitArrowFunctionBodyScope() {
+    const symbolScope = symbolScopeRecorder.exitSymbolScope()!;
+    const functionSymbolScope = symbolScope as FunctionSymbolScope;
+    if (functionSymbolScope.duplicateParams.size > 0) {
+      throw createMessageError(ErrorMessageMap.duplicate_param);
+    }
     lexicalScopeRecorder.exitArrowFunctionBodyScope();
   }
   function parseWithArrowExpressionScope<T>(callback: () => T): [T, AsyncArrowExpressionScope] {
@@ -707,6 +738,36 @@ export function createParser(code: string, option?: ParserConfig) {
       return null;
     }
     return list;
+  }
+  function declarateSymbol(name: string, type: SymbolType | undefined) {
+    if (isInParameter() || type === undefined) {
+      symbolScopeRecorder.declarateParam(name);
+      return;
+    }
+    switch (type) {
+      case SymbolType.Const: {
+        if (!symbolScopeRecorder.declarateConstSymbol(name)) {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
+        return;
+      }
+      case SymbolType.Let: {
+        if (!symbolScopeRecorder.declarateLetSymbol(name)) {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
+        return;
+      }
+      case SymbolType.Var: {
+        if (!symbolScopeRecorder.declarateVarSymbol(name)) {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
+        return;
+      }
+    }
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function declarateExportSymbol(name: string) {
+    symbolScopeRecorder.declarateExportSymbol(name);
   }
 
   /** ===========================================================
@@ -945,6 +1006,7 @@ export function createParser(code: string, option?: ParserConfig) {
         return objectExpressionToObjectPattern(node, isBinding);
       }
       case SyntaxKinds.Identifier:
+        declarateSymbolInBindingPatternAsParam(node.name, isBinding);
         return node as Identifier;
       case SyntaxKinds.MemberExpression:
         if (!isBinding) {
@@ -1166,6 +1228,7 @@ export function createParser(code: string, option?: ParserConfig) {
           ErrorMessageMap.assignment_pattern_left_value_can_only_be_idenifier_or_pattern,
         );
       }
+      declarateSymbolInBindingPatternAsParam(objectPropertyNode.key.name, isBinding);
       return Factory.createAssignmentPattern(
         objectPropertyNode.key,
         objectPropertyNode.value as Expression,
@@ -1191,6 +1254,11 @@ export function createParser(code: string, option?: ParserConfig) {
       objectPropertyNode.end,
     );
   }
+  function declarateSymbolInBindingPatternAsParam(name: string, isBinding: boolean) {
+    if (isBinding) {
+      declarateSymbol(name, undefined);
+    }
+  }
   /**
    * Parse For-related Statement, include ForStatement, ForInStatement, ForOfStatement.
    *
@@ -1199,6 +1267,7 @@ export function createParser(code: string, option?: ParserConfig) {
    * @returns {ForStatement | ForInStatement | ForOfStatement}
    */
   function parseForStatement(): ForStatement | ForInStatement | ForOfStatement {
+    symbolScopeRecorder.enterBlockSymbolScope(-100);
     const { start: keywordStart } = expect(SyntaxKinds.ForKeyword);
     // First, parse await modifier and lefthandside or init of for-related statement,
     // init might start with let, const, var keyword, but if is let keyword need to
@@ -1267,8 +1336,8 @@ export function createParser(code: string, option?: ParserConfig) {
       if (!match(SyntaxKinds.ParenthesesRightPunctuator)) {
         update = parseExpressionAllowIn();
       }
-      expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseAsLoop(parseStatement);
+      const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
+      const body = parseForStatementBody(end.index);
       const forStatement = Factory.createForStatement(
         body,
         leftOrInit,
@@ -1307,8 +1376,8 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       nextToken();
       const right = parseExpressionAllowIn();
-      expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseAsLoop(parseStatement);
+      const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
+      const body = parseForStatementBody(end.index);
       const forInStatement = Factory.createForInStatement(
         leftOrInit,
         right,
@@ -1329,8 +1398,8 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       nextToken();
       const right = parseAssignmentExpressionAllowIn();
-      expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseAsLoop(parseStatement);
+      const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
+      const body = parseForStatementBody(end.index);
       const forOfStatement = Factory.createForOfStatement(
         isAwait,
         leftOrInit,
@@ -1344,12 +1413,19 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     throw createUnexpectError(null);
   }
+  function parseForStatementBody(lastTokenIndex: number): Statement {
+    setIndexOfEndTokenOfPreBlockScope(lastTokenIndex);
+    const stmt = parseAsLoop(parseStatement);
+    if (!isBlockStatement(stmt)) {
+      symbolScopeRecorder.exitSymbolScope();
+    }
+    return stmt;
+  }
   function staticSematicEarlyErrorForFORStatement(statement: ForStatement | ForInStatement | ForOfStatement) {
     if (checkIsLabelledFunction(statement.body)) {
       throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
     }
   }
-
   /**
    * Helper function for check sematic error of VariableDeclaration of ForInStatement and ForOfStatement,
    * please reference to comment in parseForStatement.
@@ -1452,8 +1528,9 @@ export function createParser(code: string, option?: ParserConfig) {
     }
   }
   function parseBlockStatement() {
+    const lastTokenIndex = lexer.getLastTokenEndPositon().index;
     const { start: puncStart } = expect(SyntaxKinds.BracesLeftPunctuator);
-    enterBlockScope();
+    enterBlockScope(lastTokenIndex);
     const body: Array<StatementListItem> = [];
     while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
       body.push(parseStatementListItem());
@@ -1478,6 +1555,7 @@ export function createParser(code: string, option?: ParserConfig) {
     return Factory.createSwitchStatement(discriminant, nodes, keywordStart, end);
   }
   function parseSwitchCases(): ASTArrayWithMetaData<SwitchCase> {
+    enterBlockScope(lexer.getLastTokenEndPositon().index);
     const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
     const cases: Array<SwitchCase> = [];
     let haveDefault = false;
@@ -1517,6 +1595,7 @@ export function createParser(code: string, option?: ParserConfig) {
       throw createMessageError("switch statement should wrapped by braces");
     }
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
+    exitBlockScope();
     return {
       nodes: cases,
       start,
@@ -1627,11 +1706,15 @@ export function createParser(code: string, option?: ParserConfig) {
       nextToken();
       if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
         nextToken();
+        enterPreBlockSymbolScope();
+        const lastSymbolKind = context.symbolKind;
+        context.symbolKind = SymbolType.Let;
         // catch clause should not have init
         const param = parseBindingElement(false);
+        context.symbolKind = lastSymbolKind;
         // should check param is duplicate or not.
-        checkFunctionParamIsDuplicate([param]);
-        expect(SyntaxKinds.ParenthesesRightPunctuator);
+        const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
+        setIndexOfEndTokenOfPreBlockScope(end.index);
         const body = parseBlockStatement();
         handler = Factory.createCatchClause(param, body, catchKeywordStart, cloneSourcePosition(body.end));
       } else {
@@ -1719,6 +1802,9 @@ export function createParser(code: string, option?: ParserConfig) {
     let shouldStop = false,
       isStart = true;
     const declarations: Array<VariableDeclarator> = [];
+    const lastSymbolKind = context.symbolKind;
+    context.symbolKind =
+      variant === "var" ? SymbolType.Var : variant === "const" ? SymbolType.Const : SymbolType.Let;
     while (!shouldStop) {
       if (isStart) {
         isStart = false;
@@ -1766,6 +1852,7 @@ export function createParser(code: string, option?: ParserConfig) {
         ),
       );
     }
+    context.symbolKind = lastSymbolKind;
     if (!inForInit) {
       shouldInsertSemi();
     }
@@ -1779,7 +1866,7 @@ export function createParser(code: string, option?: ParserConfig) {
   function parseFunctionDeclaration(isAsync: boolean) {
     enterFunctionScope(isAsync);
     const func = parseFunction(false);
-    exitFunctionScope();
+    exitFunctionScope(false);
     return Factory.transFormFunctionToFunctionDeclaration(func);
   }
   /**
@@ -1806,7 +1893,7 @@ export function createParser(code: string, option?: ParserConfig) {
     });
     const body = parseFunctionBody();
     checkStrictModeScopeError(scope);
-    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(name, params, false, scope);
+    postStaticSematicEarlyErrorForStrictModeOfFunction(name, scope);
     return Factory.createFunction(
       name,
       body,
@@ -1825,14 +1912,13 @@ export function createParser(code: string, option?: ParserConfig) {
    * @param name
    * @param params
    */
-  function checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(
+  function postStaticSematicEarlyErrorForStrictModeOfFunction(
     name: Identifier | null,
-    params: Array<Pattern>,
-    focusCheck: boolean,
     scope: StrictModeScope,
   ) {
     if (isInStrictMode()) {
       if (name) {
+        checkStrictModeScopeError(scope);
         if (
           name.name === "arugments" ||
           name.name === "eval" ||
@@ -1843,10 +1929,6 @@ export function createParser(code: string, option?: ParserConfig) {
           throw createMessageError("unexepct keyword in parameter list in strict mode");
         }
       }
-      checkFunctionParamIsDuplicate(params);
-      checkStrictModeScopeError(scope);
-    } else if (!isCurrentFunctionParameterListSimple() || focusCheck) {
-      checkFunctionParamIsDuplicate(params);
     }
   }
   /**
@@ -1901,6 +1983,9 @@ export function createParser(code: string, option?: ParserConfig) {
           name = parseIdentifierName();
         }
       }
+      // if(!isExpression && name) {
+      //   declarateSymbol(name.name, SymbolType.Let);
+      // }
       return name;
     });
   }
@@ -1991,59 +2076,6 @@ export function createParser(code: string, option?: ParserConfig) {
       if (!isIdentifer(param)) {
         setCurrentFunctionParameterListAsNonSimple();
         return;
-      }
-    }
-  }
-  /**
-   * this helper function is used for check duplicate param
-   * in function paramemter declaration list.
-   * @param {Array<Pattern>} params
-   */
-  function checkFunctionParamIsDuplicate(params: Array<Pattern>) {
-    const paramSet = new Set<string>();
-    for (const param of params) {
-      const workList = [param];
-      while (workList.length > 0) {
-        const currentParam = workList.pop()!;
-        switch (currentParam.kind) {
-          case SyntaxKinds.Identifier: {
-            if (paramSet.has(currentParam.name)) {
-              throw createMessageError(ErrorMessageMap.duplicate_param);
-            }
-            paramSet.add(currentParam.name);
-            break;
-          }
-          case SyntaxKinds.ArrayPattern: {
-            currentParam.elements.forEach((element) => {
-              if (element) workList.push(element);
-            });
-            break;
-          }
-          case SyntaxKinds.ObjectPattern: {
-            for (const property of currentParam.properties) {
-              if (isRestElement(property) || isAssignmentPattern(property)) {
-                workList.push(property);
-              }
-              // ({a}, a)
-              else if (property.shorted) {
-                workList.push(property.key as Pattern);
-              }
-              // ({a: a}, a)
-              else if (property.value) {
-                workList.push(property.value as Pattern);
-              }
-            }
-            break;
-          }
-          case SyntaxKinds.AssignmentPattern: {
-            workList.push(currentParam.left);
-            break;
-          }
-          case SyntaxKinds.RestElement: {
-            workList.push(currentParam.argument);
-            break;
-          }
-        }
       }
     }
   }
@@ -2196,10 +2228,12 @@ export function createParser(code: string, option?: ParserConfig) {
         throw createMessageError(ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_static_block);
       }
       const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
+      symbolScopeRecorder.enterFunctionSymbolScope();
       const body: Array<StatementListItem> = [];
       while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
         body.push(parseStatementListItem());
       }
+      symbolScopeRecorder.exitSymbolScope();
       const { end } = expect(SyntaxKinds.BracesRightPunctuator);
       return Factory.createClassStaticBlock(body, start, end);
     }
@@ -3977,8 +4011,8 @@ export function createParser(code: string, option?: ParserConfig) {
     enterFunctionScope(isAsync, generator);
     const [parmas, scope] = parseWithCatpureLayer(parseFunctionParam);
     const body = parseFunctionBody();
-    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, parmas, true, scope);
-    exitFunctionScope();
+    postStaticSematicEarlyErrorForStrictModeOfFunction(null, scope);
+    exitFunctionScope(true);
     if (isCtor) lexicalScopeRecorder.exitCtor();
     /**
      * Step 2: semantic and more concise syntax check instead just throw a unexpect
@@ -4197,7 +4231,7 @@ export function createParser(code: string, option?: ParserConfig) {
   function parseFunctionExpression(isAsync: boolean) {
     enterFunctionScope(isAsync);
     const funcExpr = parseFunction(true);
-    exitFunctionScope();
+    exitFunctionScope(false);
     return Factory.transFormFunctionToFunctionExpression(funcExpr);
   }
   function parseClassExpression(decoratorList: Decorator[] | null) {
@@ -4276,12 +4310,8 @@ export function createParser(code: string, option?: ParserConfig) {
       body = parseAssignmentExpressionInheritIn();
       isExpression = true;
     }
-    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(
-      null,
-      functionArguments,
-      true,
-      strictModeScope,
-    );
+    postStaticSematicEarlyErrorForStrictModeOfFunction(null, strictModeScope);
+    // checkFunctionParamIsDuplicate(functionArguments);
     return Factory.createArrowExpression(
       isExpression,
       body,
@@ -4784,7 +4814,9 @@ export function createParser(code: string, option?: ParserConfig) {
     return Factory.createRestElement(id, start, cloneSourcePosition(id.end));
   }
   function parseBindingIdentifier() {
-    return parseWithLHSLayer(parseIdentifierReference);
+    const id = parseWithLHSLayer(parseIdentifierReference);
+    declarateSymbol(id.name, context.symbolKind);
+    return id;
   }
   /**
    * Parse BindingPattern
@@ -4864,6 +4896,7 @@ export function createParser(code: string, option?: ParserConfig) {
         if (!isPattern(propertyName)) {
           throw createMessageError("assignment pattern left value can only allow identifier or pattern");
         }
+        declarateSymbol((propertyName as Identifier).name, context.symbolKind);
         properties.push(
           Factory.createAssignmentPattern(
             propertyName,
@@ -4881,6 +4914,7 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       // check property name is keyword or not
       checkPropertyShortedIsKeyword(propertyName);
+      declarateSymbol((propertyName as Identifier).name, context.symbolKind);
       properties.push(
         Factory.createObjectPatternProperty(
           propertyName,
@@ -5071,6 +5105,7 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function parseImportDefaultSpecifier(): ImportDefaultSpecifier {
     const name = parseIdentifierReference();
+    declarateSymbol(name.name, SymbolType.Let);
     return Factory.createImportDefaultSpecifier(
       name,
       cloneSourcePosition(name.start),
@@ -5091,6 +5126,7 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     nextToken();
     const id = parseIdentifierReference();
+    declarateSymbol(id.name, SymbolType.Let);
     return Factory.createImportNamespaceSpecifier(id, start, cloneSourcePosition(id.end));
   }
   /**
@@ -5125,6 +5161,7 @@ export function createParser(code: string, option?: ParserConfig) {
         } else if (isStringLiteral(imported)) {
           throw createMessageError(ErrorMessageMap.string_literal_cannot_be_used_as_an_imported_binding);
         }
+        declarateSymbol(imported.name, SymbolType.Let);
         specifiers.push(
           Factory.createImportSpecifier(
             imported,
@@ -5137,6 +5174,7 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       nextToken();
       const local = parseIdentifierReference();
+      declarateSymbol(local.name, SymbolType.Let);
       specifiers.push(
         Factory.createImportSpecifier(
           imported,
@@ -5246,7 +5284,7 @@ export function createParser(code: string, option?: ParserConfig) {
     if (match(SyntaxKinds.FunctionKeyword)) {
       enterFunctionScope();
       const func = parseFunction(true);
-      exitFunctionScope();
+      exitFunctionScope(false);
       const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
       return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
     }
@@ -5254,7 +5292,7 @@ export function createParser(code: string, option?: ParserConfig) {
       nextToken();
       enterFunctionScope(true);
       const func = parseFunction(true);
-      exitFunctionScope();
+      exitFunctionScope(false);
       const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
       funcDeclar.async = true;
       return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
