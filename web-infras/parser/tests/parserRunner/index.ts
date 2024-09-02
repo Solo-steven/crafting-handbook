@@ -18,8 +18,6 @@ const TempIgnoreCases: Set<string> = new Set([
   /**
    * Hard to do it
    */
-  // === (feature) tokenze ?.3 vs ?.
-  "/babel/es2020/optional-chaining/conditional-decimal",
   // === (feature) use strict active timing.
   "/babel/core/regression/use-strict-with-pre-semi",
   // === (feature) regex content and flag check

@@ -1,0 +1,151 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ConditionalExpression",
+                "test": {
+                    "kind": "BoolLterial",
+                    "value": true,
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    }
+                },
+                "consequnce": {
+                    "kind": "DecimalLiteral",
+                    "rawValue": ".3",
+                    "start": {
+                        "row": 1,
+                        "col": 6,
+                        "index": 5
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 8,
+                        "index": 7
+                    }
+                },
+                "alter": {
+                    "kind": "DecimalLiteral",
+                    "rawValue": "0",
+                    "start": {
+                        "row": 1,
+                        "col": 9,
+                        "index": 8
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 10,
+                        "index": 9
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 10,
+                "index": 9
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ConditionalExpression",
+                "test": {
+                    "kind": "BoolLterial",
+                    "value": true,
+                    "start": {
+                        "row": 3,
+                        "col": 1,
+                        "index": 11
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 5,
+                        "index": 15
+                    }
+                },
+                "consequnce": {
+                    "kind": "DecimalLiteral",
+                    "rawValue": ".3",
+                    "start": {
+                        "row": 3,
+                        "col": 8,
+                        "index": 18
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 10,
+                        "index": 20
+                    }
+                },
+                "alter": {
+                    "kind": "DecimalLiteral",
+                    "rawValue": "0",
+                    "start": {
+                        "row": 3,
+                        "col": 13,
+                        "index": 23
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 14,
+                        "index": 24
+                    }
+                },
+                "start": {
+                    "row": 3,
+                    "col": 1,
+                    "index": 11
+                },
+                "end": {
+                    "row": 3,
+                    "col": 14,
+                    "index": 24
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 11
+            },
+            "end": {
+                "row": 3,
+                "col": 14,
+                "index": 24
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 25
+    }
+}

@@ -1079,9 +1079,14 @@ export function createLexer(code: string) {
   function readQuestionStart(): SyntaxKinds {
     eatChar();
     switch (getCharCodePoint()) {
-      case UnicodePoints.Dot:
+      case UnicodePoints.Dot: {
+        const next = getNextCharCodePoint();
+        if (next && next >= UnicodePoints.Digital0 && next <= UnicodePoints.Digital9) {
+          return finishToken(SyntaxKinds.QustionOperator);
+        }
         eatChar();
         return finishToken(SyntaxKinds.QustionDotOperator);
+      }
       case UnicodePoints.Question:
         eatChar();
         switch (getCharCodePoint()) {
