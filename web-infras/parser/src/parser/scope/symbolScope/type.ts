@@ -2,6 +2,7 @@ export enum SymbolType {
   Var,
   Const,
   Let,
+  Function,
 }
 
 interface BasicSymbolScope {
@@ -14,6 +15,7 @@ export interface ProgramSymbolScope extends BasicSymbolScope {
   exportSymbol: Set<string>;
   duplicateExportSymbols: Set<string>;
   exportDefaultSymbol: string | boolean;
+  haveDefaultExport: boolean;
 }
 
 export interface FunctionSymbolScope extends BasicSymbolScope {

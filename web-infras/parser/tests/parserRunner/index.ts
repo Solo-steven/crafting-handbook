@@ -49,37 +49,6 @@ const TempIgnoreCases: Set<string> = new Set([
    */
   // === (feature) ban async of
   "/babel/es2021/for-async-of/forbidden",
-  /**
-   * Scope Id and reference feature
-   */
-  // === (feature) duplicate among export declaration
-  "/babel/es2015/modules/duplicate-export-default",
-  "/babel/es2015/modules/duplicate-export-default-and-export-as-default",
-  "/babel/es2015/modules/duplicate-named-export",
-  "/babel/es2015/modules/duplicate-named-export-class-declaration",
-  "/babel/es2015/modules/duplicate-named-export-destructuring-assignment",
-  "/babel/es2015/modules/duplicate-named-export-destructuring",
-  "/babel/es2015/modules/duplicate-named-export-destructuring2",
-  "/babel/es2015/modules/duplicate-named-export-destructuring3",
-  "/babel/es2015/modules/duplicate-named-export-destructuring4",
-  "/babel/es2015/modules/duplicate-named-export-destructuring5",
-  "/babel/es2015/modules/duplicate-named-export-destructuring6",
-  "/babel/es2015/modules/duplicate-named-export-destructuring7",
-  "/babel/es2015/modules/duplicate-named-export-destructuring8",
-  "/babel/es2015/modules/duplicate-named-export-destructuring9",
-  "/babel/es2015/modules/duplicate-named-export-destructuring10",
-  "/babel/es2015/modules/duplicate-named-export-destructuring11",
-  "/babel/es2015/modules/duplicate-named-export-destructuring12",
-  "/babel/es2015/modules/duplicate-named-export-destructuring13",
-  "/babel/es2015/modules/duplicate-named-export-destructuring14",
-  "/babel/es2015/modules/duplicate-named-export-destructuring15",
-  "/babel/es2015/modules/duplicate-named-export-destructuring16",
-  "/babel/es2015/modules/duplicate-named-export-destructuring17",
-  "/babel/es2015/modules/duplicate-named-export-destructuring18",
-  "/babel/es2015/modules/duplicate-named-export-destructuring19",
-  "/babel/es2015/modules/duplicate-named-export-function-declaration",
-  "/babel/es2015/modules/duplicate-named-export-variable-declaration",
-  "/babel/es2022/module-string-names/duplicate-exported-binding-check",
 ]);
 
 function getFailedKindCount(failedTestCases: Array<FailedTestCasesResult>) {

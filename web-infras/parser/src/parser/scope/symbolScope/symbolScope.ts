@@ -35,6 +35,7 @@ export function createSymbolScopeRecorder() {
       exportDefaultSymbol: false,
       exportSymbol: new Set(),
       duplicateExportSymbols: new Set(),
+      haveDefaultExport: false,
       symbol: new Map(),
       //undefinedSymbol: new Map,
     });
@@ -91,6 +92,9 @@ export function createSymbolScopeRecorder() {
   function helperFindClosedSymbolScope(): SymbolScope {
     return symbolScopes[symbolScopes.length - 1]!;
   }
+  function helperIsOnlySymbolKind(existedSymbols: [SymbolType], expectType: SymbolType) {
+    return existedSymbols.length === 1 && existedSymbols[0] === expectType;
+  }
   /**
    * Helper to try insert a symbol to scope, return true if sucess
    * return false if failed(duplicate).
@@ -101,8 +105,13 @@ export function createSymbolScopeRecorder() {
     switch (type) {
       case SymbolType.Const:
       case SymbolType.Let: {
-        if (existedSymbols || isDeclarateInParam) {
+        if (isDeclarateInParam) {
           return false;
+        }
+        if (existedSymbols) {
+          if (!helperIsOnlySymbolKind(existedSymbols, SymbolType.Function)) {
+            return false;
+          }
         }
         scope.symbol.set(name, [type]);
         return true;
@@ -114,7 +123,14 @@ export function createSymbolScopeRecorder() {
         }
         // for VariableDeclarationStatement, it is ok to duplicate a identifier, if the identifier is
         // also declarate under VariableDeclarationStatement or in param, otherwise, it should be a error
-        return type === SymbolType.Var && existedSymbols.length === 1 && existedSymbols[0] === SymbolType.Var;
+        return helperIsOnlySymbolKind(existedSymbols, SymbolType.Var);
+      }
+      case SymbolType.Function: {
+        if (!existedSymbols) {
+          scope.symbol.set(name, [type]);
+          return true;
+        }
+        return helperIsOnlySymbolKind(existedSymbols, SymbolType.Var);
       }
     }
   }
@@ -123,13 +139,26 @@ export function createSymbolScopeRecorder() {
    * also is  a local variable.
    * @param {string} name
    */
-  function declarateExportSymbol(name: string) {
+  function declarateExportSymbol(name: string): boolean {
     const programScope = symbolScopes[0] as ProgramSymbolScope;
     if (programScope.exportSymbol.has(name)) {
       programScope.duplicateExportSymbols.add(name);
+      return false;
     } else {
       programScope.exportSymbol.add(name);
+      return true;
     }
+  }
+  /**
+   * Test is default export already exist, if yes return false
+   * otherwise set flag and return true
+   * @returns {bool} isSuccess
+   */
+  function testAndSetDefaultExport(): boolean {
+    const programScope = symbolScopes[0] as ProgramSymbolScope;
+    const result = programScope.haveDefaultExport;
+    programScope.haveDefaultExport = true;
+    return !result;
   }
   /**
    * Public API to declarate a identifier from `VarableDeclarationStatement`.
@@ -160,6 +189,15 @@ export function createSymbolScopeRecorder() {
   function declarateConstSymbol(name: string): boolean {
     const symbolScope = helperFindClosedSymbolScope();
     return helperTryInsertSymbolToScope(symbolScope, name, SymbolType.Const);
+  }
+  /**
+   * Public API to declarate a identifier as function name.
+   * @param {string} name
+   * @returns {boolean}
+   */
+  function declarateFuncrtionSymbol(name: string): boolean {
+    const symbolScope = helperFindClosedSymbolScope();
+    return helperTryInsertSymbolToScope(symbolScope, name, SymbolType.Function);
   }
   /**
    * Declarate a param in function scope, it will not check the duplication or not.
@@ -196,8 +234,11 @@ export function createSymbolScopeRecorder() {
     declarateVarSymbol,
     declarateConstSymbol,
     declarateLetSymbol,
+    declarateFuncrtionSymbol,
     declarateParam,
-    declarateExportSymbol,
     isFunctionParamDuplicate,
+    // export declarate
+    declarateExportSymbol,
+    testAndSetDefaultExport,
   };
 }

@@ -140,6 +140,7 @@ interface Context {
     decorators: Decorator[] | null;
   };
   symbolKind: SymbolType | undefined;
+  exportContext: "Not In Export" | "In Export" | "In Export Binding";
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -161,6 +162,7 @@ function createContext(): Context {
       decorators: null,
     },
     symbolKind: undefined,
+    exportContext: "Not In Export",
   };
 }
 
@@ -742,11 +744,15 @@ export function createParser(code: string, option?: ParserConfig) {
   function declarateSymbol(name: string, type: SymbolType | undefined) {
     if (isInParameter() || type === undefined) {
       symbolScopeRecorder.declarateParam(name);
+      declarateExportSymbolIfInContext(name);
       return;
     }
     switch (type) {
       case SymbolType.Const: {
         if (!symbolScopeRecorder.declarateConstSymbol(name)) {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
+        if (!declarateExportSymbolIfInContext(name)) {
           throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
         }
         return;
@@ -755,19 +761,47 @@ export function createParser(code: string, option?: ParserConfig) {
         if (!symbolScopeRecorder.declarateLetSymbol(name)) {
           throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
         }
+        if (!declarateExportSymbolIfInContext(name)) {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
         return;
       }
       case SymbolType.Var: {
         if (!symbolScopeRecorder.declarateVarSymbol(name)) {
           throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
         }
+        if (!declarateExportSymbolIfInContext(name)) {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
+        return;
+      }
+      case SymbolType.Function: {
+        if (!symbolScopeRecorder.declarateFuncrtionSymbol(name) && config.sourceType === "module") {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
+        if (!declarateExportSymbolIfInContext(name)) {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
         return;
       }
     }
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function declarateExportSymbolIfInContext(name: string) {
+    switch (context.exportContext) {
+      case "Not In Export":
+        return true;
+      case "In Export": {
+        context.exportContext = "Not In Export";
+        return declarateExportSymbol(name);
+      }
+      case "In Export Binding": {
+        return declarateExportSymbol(name);
+      }
+    }
+  }
   function declarateExportSymbol(name: string) {
-    symbolScopeRecorder.declarateExportSymbol(name);
+    const a = symbolScopeRecorder.declarateExportSymbol(name);
+    return a;
   }
 
   /** ===========================================================
@@ -1805,6 +1839,9 @@ export function createParser(code: string, option?: ParserConfig) {
     const lastSymbolKind = context.symbolKind;
     context.symbolKind =
       variant === "var" ? SymbolType.Var : variant === "const" ? SymbolType.Const : SymbolType.Let;
+    if (context.exportContext === "In Export") {
+      context.exportContext = "In Export Binding";
+    }
     while (!shouldStop) {
       if (isStart) {
         isStart = false;
@@ -1853,6 +1890,7 @@ export function createParser(code: string, option?: ParserConfig) {
       );
     }
     context.symbolKind = lastSymbolKind;
+    context.exportContext = "Not In Export";
     if (!inForInit) {
       shouldInsertSemi();
     }
@@ -1867,6 +1905,9 @@ export function createParser(code: string, option?: ParserConfig) {
     enterFunctionScope(isAsync);
     const func = parseFunction(false);
     exitFunctionScope(false);
+    // for function declaration, symbol should declar in parent scope.
+    const name = func.name!;
+    declarateSymbol(name.name, SymbolType.Function);
     return Factory.transFormFunctionToFunctionDeclaration(func);
   }
   /**
@@ -1917,8 +1958,8 @@ export function createParser(code: string, option?: ParserConfig) {
     scope: StrictModeScope,
   ) {
     if (isInStrictMode()) {
+      checkStrictModeScopeError(scope);
       if (name) {
-        checkStrictModeScopeError(scope);
         if (
           name.name === "arugments" ||
           name.name === "eval" ||
@@ -2161,6 +2202,7 @@ export function createParser(code: string, option?: ParserConfig) {
     let name: Identifier | null = null;
     if (match(BindingIdentifierSyntaxKindArray)) {
       name = parseIdentifierReference();
+      declarateSymbol(name.name, SymbolType.Let);
     }
     let superClass: Expression | null = null;
     if (match(SyntaxKinds.ExtendsKeyword)) {
@@ -5242,6 +5284,7 @@ export function createParser(code: string, option?: ParserConfig) {
    * @returns {ExportDeclaration}
    */
   function parseExportDeclaration(): ExportDeclaration {
+    context.exportContext = "In Export";
     const { start } = expect(SyntaxKinds.ExportKeyword);
     if (config.sourceType === "script") {
       throw createMessageError(
@@ -5249,15 +5292,22 @@ export function createParser(code: string, option?: ParserConfig) {
       );
     }
     if (match(SyntaxKinds.DefaultKeyword)) {
-      return parseExportDefaultDeclaration(start);
+      const exportDeclar = parseExportDefaultDeclaration(start);
+      context.exportContext = "Not In Export";
+      return exportDeclar;
     }
     if (match(SyntaxKinds.MultiplyOperator)) {
-      return parseExportAllDeclaration(start);
+      const exportDeclar = parseExportAllDeclaration(start);
+      context.exportContext = "Not In Export";
+      return exportDeclar;
     }
     if (match(SyntaxKinds.BracesLeftPunctuator)) {
-      return parseExportNamedDeclaration(start);
+      const exportDeclar = parseExportNamedDeclaration(start);
+      context.exportContext = "Not In Export";
+      return exportDeclar;
     }
     const declaration = match(SyntaxKinds.VarKeyword) ? parseVariableDeclaration() : parseDeclaration();
+    context.exportContext = "Not In Export";
     return Factory.createExportNamedDeclaration(
       [],
       declaration,
@@ -5275,6 +5325,9 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       let classDeclar = parseClass(decoratorList);
       classDeclar = Factory.transFormClassToClassDeclaration(classDeclar);
+      if (!symbolScopeRecorder.testAndSetDefaultExport()) {
+        throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+      }
       return Factory.createExportDefaultDeclaration(
         classDeclar as ClassDeclaration | ClassExpression,
         start,
@@ -5286,6 +5339,13 @@ export function createParser(code: string, option?: ParserConfig) {
       const func = parseFunction(true);
       exitFunctionScope(false);
       const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
+      if (!symbolScopeRecorder.testAndSetDefaultExport()) {
+        throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+      }
+      const name = funcDeclar.name;
+      if (name) {
+        declarateSymbol(name.name, SymbolType.Function);
+      }
       return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
     }
     if (isContextKeyword("async") && lookahead().kind === SyntaxKinds.FunctionKeyword) {
@@ -5295,11 +5355,21 @@ export function createParser(code: string, option?: ParserConfig) {
       exitFunctionScope(false);
       const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
       funcDeclar.async = true;
+      if (!symbolScopeRecorder.testAndSetDefaultExport()) {
+        throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+      }
+      const name = funcDeclar.name;
+      if (name) {
+        declarateSymbol(name.name, SymbolType.Function);
+      }
       return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
     }
     // TODO: parse export default from ""; (experimental feature)
     const expr = parseAssignmentExpressionAllowIn();
     shouldInsertSemi();
+    if (!symbolScopeRecorder.testAndSetDefaultExport()) {
+      throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+    }
     return Factory.createExportDefaultDeclaration(expr, start, cloneSourcePosition(expr.end));
   }
   function parseExportNamedDeclaration(start: SourcePosition): ExportNamedDeclarations {
@@ -5324,6 +5394,15 @@ export function createParser(code: string, option?: ParserConfig) {
       if (isContextKeyword("as")) {
         nextToken();
         const local = parseModuleExportName();
+        if (!declarateExportSymbol(helperGetValueOfExportName(local))) {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
+        if (
+          helperGetValueOfExportName(local) === "default" &&
+          !symbolScopeRecorder.testAndSetDefaultExport()
+        ) {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
         specifier.push(
           Factory.createExportSpecifier(
             exported,
@@ -5333,6 +5412,15 @@ export function createParser(code: string, option?: ParserConfig) {
           ),
         );
         continue;
+      }
+      if (!declarateExportSymbol(helperGetValueOfExportName(exported))) {
+        throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+      }
+      if (
+        helperGetValueOfExportName(exported) === "default" &&
+        !symbolScopeRecorder.testAndSetDefaultExport()
+      ) {
+        throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
       }
       specifier.push(
         Factory.createExportSpecifier(
@@ -5395,5 +5483,11 @@ export function createParser(code: string, option?: ParserConfig) {
       return parseStringLiteral();
     }
     return parseIdentifierName();
+  }
+  function helperGetValueOfExportName(exportName: StringLiteral | Identifier) {
+    if (isIdentifer(exportName)) {
+      return exportName.name;
+    }
+    return exportName.value;
   }
 }

@@ -15,6 +15,7 @@ export interface ClassLexicalScope {
   haveCtor: boolean;
   isInDelete: boolean;
   isInPropertyName: boolean;
+  // for private name
   undefinedPrivateName: Set<string>;
   undefinedPrivateNameKinds: Map<string, Set<PrivateNameDefKind>>;
   definiedPrivateName: Set<string>;
