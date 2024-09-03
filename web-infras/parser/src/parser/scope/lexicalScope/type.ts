@@ -28,12 +28,6 @@ export interface ClassLexicalScope {
   haveCtor: boolean;
   isInDelete: boolean;
   isInPropertyName: boolean;
-  // for private name
-  undefinedPrivateName: Set<string>;
-  undefinedPrivateNameKinds: Map<string, Set<PrivateNameDefKind>>;
-  definiedPrivateName: Set<string>;
-  definedPrivateNameKinds: Map<string, Set<PrivateNameDefKind>>;
-  duplicatePrivateName: Set<string>;
 }
 
 export type BlockType = "Loop" | "Switch" | "Label";
@@ -54,31 +48,3 @@ export type LexicalScope =
   | FunctionLexicalScope
   | BlockLexicalScope
   | VirtualLexicalScope;
-
-export function isPrivateNameExist(scope: ClassLexicalScope, name: string, type: PrivateNameDefKind) {
-  if (scope.definiedPrivateName.has(name)) {
-    switch (type) {
-      case "other": {
-        const kinds = scope.definedPrivateNameKinds.get(name)!;
-        return kinds.size > 0;
-      }
-      case "set": {
-        const kinds = scope.definedPrivateNameKinds.get(name)!;
-        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("get")));
-      }
-      case "get": {
-        const kinds = scope.definedPrivateNameKinds.get(name)!;
-        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("set")));
-      }
-      case "static-get": {
-        const kinds = scope.definedPrivateNameKinds.get(name)!;
-        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("static-set")));
-      }
-      case "static-set": {
-        const kinds = scope.definedPrivateNameKinds.get(name)!;
-        return !(kinds.size === 0 || (kinds.size === 1 && kinds.has("static-get")));
-      }
-    }
-  }
-  return false;
-}

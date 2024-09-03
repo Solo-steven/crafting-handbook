@@ -1,9 +1,13 @@
 import {
+  ClassSymbolScope,
+  DeclaratableScope,
   FunctionSymbolScope,
+  PrivateNameDefKind,
   ProgramSymbolScope,
   SymbolScope,
   SymbolType,
   createSymbolScopeRecorderContext,
+  isPrivateNameExist,
 } from "./type";
 /**
  * Symbol recorder is used to check the duplicate identifier, it should work the the lexical
@@ -69,6 +73,30 @@ export function createSymbolScopeRecorder() {
   function exitSymbolScope() {
     return symbolScopes.pop();
   }
+  function enterClassSymbolScope() {
+    symbolScopes.push({
+      kind: "ClassSymbolScope",
+      undefinedPrivateName: new Set(),
+      undefinedPrivateNameKinds: new Map(),
+      definiedPrivateName: new Set(),
+      definedPrivateNameKinds: new Map(),
+      duplicatePrivateName: new Set(),
+    });
+  }
+  function exitClassSymbolScope() {
+    const currentScope = symbolScopes.pop() as ClassSymbolScope;
+    const parentScope = helperFindLastClassScope();
+    if (currentScope && parentScope) {
+      parentScope.undefinedPrivateName = new Set([
+        ...parentScope.undefinedPrivateName.values(),
+        ...currentScope.undefinedPrivateName.values(),
+      ]);
+      parentScope.undefinedPrivateNameKinds = new Map([
+        ...parentScope.undefinedPrivateNameKinds.entries(),
+        ...currentScope.undefinedPrivateNameKinds.entries(),
+      ]);
+    }
+  }
   /**
    * Helper to get the closed functional scope, which could possible be function or global scope.
    * since the programSymbolScope will be the last one of scope, this function will always find a
@@ -89,8 +117,28 @@ export function createSymbolScopeRecorder() {
    * Helper to get the last scope.
    * @returns {SymbolScope}
    */
-  function helperFindClosedSymbolScope(): SymbolScope {
-    return symbolScopes[symbolScopes.length - 1]!;
+  function helperFindClosedDeclaratableSymbolScope(): DeclaratableScope {
+    for (let index = symbolScopes.length - 1; index >= 0; --index) {
+      const scope = symbolScopes[index];
+      if (scope.kind === "ClassSymbolScope") {
+        continue;
+      }
+      return scope;
+    }
+    throw new Error("unreach");
+  }
+  /**
+   *
+   * @returns
+   */
+  function helperFindLastClassScope(): ClassSymbolScope | null {
+    for (let index = symbolScopes.length - 1; index >= 0; --index) {
+      const scope = symbolScopes[index];
+      if (scope.kind === "ClassSymbolScope") {
+        return scope;
+      }
+    }
+    return null;
   }
   function helperIsOnlySymbolKind(existedSymbols: [SymbolType], expectType: SymbolType) {
     return existedSymbols.length === 1 && existedSymbols[0] === expectType;
@@ -99,7 +147,11 @@ export function createSymbolScopeRecorder() {
    * Helper to try insert a symbol to scope, return true if sucess
    * return false if failed(duplicate).
    */
-  function helperTryInsertSymbolToScope(scope: SymbolScope, name: string, type: SymbolType) {
+  function helperTryInsertDeclaratableSymbolToScope(
+    scope: DeclaratableScope,
+    name: string,
+    type: SymbolType,
+  ) {
     const existedSymbols = scope.symbol.get(name);
     const isDeclarateInParam = scope.kind === "FunctionSymbolScope" && scope.params.has(name);
     switch (type) {
@@ -168,7 +220,7 @@ export function createSymbolScopeRecorder() {
    */
   function declarateVarSymbol(name: string): boolean {
     const functionalScope = helperFindClosedFunctionalScope();
-    return helperTryInsertSymbolToScope(functionalScope, name, SymbolType.Var);
+    return helperTryInsertDeclaratableSymbolToScope(functionalScope, name, SymbolType.Var);
   }
   /**
    * Public API to declarate a identifier in `LexicalDeclaration` with let binding
@@ -177,8 +229,8 @@ export function createSymbolScopeRecorder() {
    * @returns {boolean}
    */
   function declarateLetSymbol(name: string): boolean {
-    const symbolScope = helperFindClosedSymbolScope();
-    return helperTryInsertSymbolToScope(symbolScope, name, SymbolType.Let);
+    const symbolScope = helperFindClosedDeclaratableSymbolScope();
+    return helperTryInsertDeclaratableSymbolToScope(symbolScope, name, SymbolType.Let);
   }
   /**
    * Public API to declarate a identifier in `LexicalDeclaration` with const binding
@@ -187,8 +239,8 @@ export function createSymbolScopeRecorder() {
    * @returns {boolean}
    */
   function declarateConstSymbol(name: string): boolean {
-    const symbolScope = helperFindClosedSymbolScope();
-    return helperTryInsertSymbolToScope(symbolScope, name, SymbolType.Const);
+    const symbolScope = helperFindClosedDeclaratableSymbolScope();
+    return helperTryInsertDeclaratableSymbolToScope(symbolScope, name, SymbolType.Const);
   }
   /**
    * Public API to declarate a identifier as function name.
@@ -196,8 +248,8 @@ export function createSymbolScopeRecorder() {
    * @returns {boolean}
    */
   function declarateFuncrtionSymbol(name: string): boolean {
-    const symbolScope = helperFindClosedSymbolScope();
-    return helperTryInsertSymbolToScope(symbolScope, name, SymbolType.Function);
+    const symbolScope = helperFindClosedDeclaratableSymbolScope();
+    return helperTryInsertDeclaratableSymbolToScope(symbolScope, name, SymbolType.Function);
   }
   /**
    * Declarate a param in function scope, it will not check the duplication or not.
@@ -221,6 +273,89 @@ export function createSymbolScopeRecorder() {
     const functionalScope = helperFindClosedFunctionalScope();
     return functionalScope.kind === "FunctionSymbolScope" && functionalScope.duplicateParams.size > 0;
   }
+  /**=============================================
+   * Class Scope private name
+   * =============================================
+   */
+  function defPrivateName(name: string, type: PrivateNameDefKind = "other") {
+    const scope = helperFindLastClassScope();
+    let isDuplicate = false;
+    if (scope) {
+      if (isPrivateNameExist(scope, name, type)) {
+        scope.duplicatePrivateName.add(name);
+        isDuplicate = true;
+      }
+      scope.definiedPrivateName.add(name);
+      if (scope.definedPrivateNameKinds.has(name)) {
+        const kinds = scope.definedPrivateNameKinds.get(name)!;
+        kinds.add(type);
+      } else {
+        scope.definedPrivateNameKinds.set(name, new Set([type]));
+      }
+      if (scope.undefinedPrivateName.has(name)) {
+        const kinds = scope.undefinedPrivateNameKinds.get(name)!;
+        if (kinds.has(type)) {
+          if (kinds.size == 1) {
+            scope.undefinedPrivateName.delete(name);
+            scope.undefinedPrivateNameKinds.delete(name);
+          } else {
+            kinds.delete(type);
+          }
+        }
+      }
+    }
+    return isDuplicate;
+  }
+  function usePrivateName(name: string, type: PrivateNameDefKind = "other") {
+    let scope: ClassSymbolScope | null = null;
+    for (const s of symbolScopes) {
+      if (s.kind === "ClassSymbolScope") {
+        scope = s;
+        if (isPrivateNameExist(scope, name, type)) {
+          return;
+        }
+      }
+    }
+    if (scope) {
+      scope.undefinedPrivateName.add(name);
+      if (scope.undefinedPrivateNameKinds.has(name)) {
+        const kinds = scope.undefinedPrivateNameKinds.get(name)!;
+        kinds.add(type);
+      } else {
+        scope.undefinedPrivateNameKinds.set(name, new Set([type]));
+      }
+    }
+  }
+  function isUndeinfedPrivateName() {
+    const scope = helperFindLastClassScope();
+    let parentScope: ClassSymbolScope | null = null,
+      flag = false;
+    for (let index = symbolScopes.length - 1; index >= 0; --index) {
+      const scope = symbolScopes[index];
+      if (scope.kind === "ClassSymbolScope") {
+        if (flag) {
+          parentScope = scope;
+          break;
+        } else {
+          flag = true;
+        }
+      }
+    }
+    if (scope && scope.undefinedPrivateName.size > 0) {
+      if (parentScope) {
+        return null;
+      }
+      return scope.undefinedPrivateName;
+    }
+    return null;
+  }
+  function isDuplicatePrivateName() {
+    const scope = helperFindLastClassScope();
+    if (scope && scope.duplicatePrivateName.size > 0) {
+      return scope.duplicatePrivateName;
+    }
+    return null;
+  }
   return {
     // enter and exsit scope
     enterPreBlockScope,
@@ -228,6 +363,8 @@ export function createSymbolScopeRecorder() {
     enterFunctionSymbolScope,
     enterBlockSymbolScope,
     exitSymbolScope,
+    enterClassSymbolScope,
+    exitClassSymbolScope,
     // set the pre scope context
     setIndexOfEndTokenOfPreBlockScope,
     // declarate symbol.
@@ -240,5 +377,10 @@ export function createSymbolScopeRecorder() {
     // export declarate
     declarateExportSymbol,
     testAndSetDefaultExport,
+    // private name
+    defPrivateName,
+    usePrivateName,
+    isDuplicatePrivateName,
+    isUndeinfedPrivateName,
   };
 }

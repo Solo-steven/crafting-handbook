@@ -3,11 +3,9 @@ import {
   FunctionLexicalScope,
   ClassLexicalScope,
   BlockType,
-  PrivateNameDefKind,
   ProgramLexicalScope,
   ExportContext,
 } from "./type";
-import { isPrivateNameExist } from "./type";
 
 /**
  * Lexical Scope Recorder is focus on the position of the current
@@ -282,29 +280,13 @@ export function createLexicalScopeRecorder() {
       haveCtor: false,
       isInDelete: false,
       isInPropertyName: false,
-      undefinedPrivateName: new Set(),
-      undefinedPrivateNameKinds: new Map(),
-      definiedPrivateName: new Set(),
-      definedPrivateNameKinds: new Map(),
-      duplicatePrivateName: new Set(),
     });
   }
   /**
    * Private API called when finish parse class scope.
    */
   function exitClassLexicalScope() {
-    const currentScope = lexicalScopes.pop() as ClassLexicalScope;
-    const parentScope = helperFindLastClassScope();
-    if (currentScope && parentScope) {
-      parentScope.undefinedPrivateName = new Set([
-        ...parentScope.undefinedPrivateName.values(),
-        ...currentScope.undefinedPrivateName.values(),
-      ]);
-      parentScope.undefinedPrivateNameKinds = new Map([
-        ...parentScope.undefinedPrivateNameKinds.entries(),
-        ...currentScope.undefinedPrivateNameKinds.entries(),
-      ]);
-    }
+    lexicalScopes.pop();
   }
   function enterPropertyName() {
     const scope = helperFindLastClassScope();
@@ -617,89 +599,6 @@ export function createLexicalScopeRecorder() {
     const scope = helperFindLastFunctionLexicalScope();
     if (scope.type === "FunctionLexicalScope") scope.isSimpleParameter = false;
   }
-  /**=============================================
-   * Class Scope private name
-   * =============================================
-   */
-  function defPrivateName(name: string, type: PrivateNameDefKind = "other") {
-    const scope = helperFindLastClassScope();
-    let isDuplicate = false;
-    if (scope) {
-      if (isPrivateNameExist(scope, name, type)) {
-        scope.duplicatePrivateName.add(name);
-        isDuplicate = true;
-      }
-      scope.definiedPrivateName.add(name);
-      if (scope.definedPrivateNameKinds.has(name)) {
-        const kinds = scope.definedPrivateNameKinds.get(name)!;
-        kinds.add(type);
-      } else {
-        scope.definedPrivateNameKinds.set(name, new Set([type]));
-      }
-      if (scope.undefinedPrivateName.has(name)) {
-        const kinds = scope.undefinedPrivateNameKinds.get(name)!;
-        if (kinds.has(type)) {
-          if (kinds.size == 1) {
-            scope.undefinedPrivateName.delete(name);
-            scope.undefinedPrivateNameKinds.delete(name);
-          } else {
-            kinds.delete(type);
-          }
-        }
-      }
-    }
-    return isDuplicate;
-  }
-  function usePrivateName(name: string, type: PrivateNameDefKind = "other") {
-    let scope: ClassLexicalScope | null = null;
-    for (const s of lexicalScopes) {
-      if (s.type === "ClassLexicalScope") {
-        scope = s;
-        if (isPrivateNameExist(scope, name, type)) {
-          return;
-        }
-      }
-    }
-    if (scope) {
-      scope.undefinedPrivateName.add(name);
-      if (scope.undefinedPrivateNameKinds.has(name)) {
-        const kinds = scope.undefinedPrivateNameKinds.get(name)!;
-        kinds.add(type);
-      } else {
-        scope.undefinedPrivateNameKinds.set(name, new Set([type]));
-      }
-    }
-  }
-  function isUndeinfedPrivateName() {
-    const scope = helperFindLastClassScope();
-    let parentScope: ClassLexicalScope | null = null,
-      flag = false;
-    for (let index = lexicalScopes.length - 1; index >= 0; --index) {
-      const scope = lexicalScopes[index];
-      if (scope.type === "ClassLexicalScope") {
-        if (flag) {
-          parentScope = scope;
-          break;
-        } else {
-          flag = true;
-        }
-      }
-    }
-    if (scope && scope.undefinedPrivateName.size > 0) {
-      if (parentScope) {
-        return null;
-      }
-      return scope.undefinedPrivateName;
-    }
-    return null;
-  }
-  function isDuplicatePrivateName() {
-    const scope = helperFindLastClassScope();
-    if (scope && scope.duplicatePrivateName.size > 0) {
-      return scope.duplicatePrivateName;
-    }
-    return null;
-  }
   function setExportContext(context: ExportContext) {
     const scope = lexicalScopes[0] as ProgramLexicalScope;
     scope.exportContext = context;
@@ -770,13 +669,6 @@ export function createLexicalScopeRecorder() {
     setCurrentFunctionLexicalScopeAsGenerator,
     setCurrentFunctionLexicalScopeAsStrictMode,
     setCurrentFunctionLexicalScopeParameterAsNonSimple,
-    /**
-     * Private useage for class scope
-     */
-    defPrivateName,
-    usePrivateName,
-    isDuplicatePrivateName,
-    isUndeinfedPrivateName,
     /**
      * CRUD for export context
      */

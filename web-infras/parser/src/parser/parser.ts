@@ -670,15 +670,17 @@ export function createParser(code: string, option?: ParserConfig) {
   function enterClassScope(isExtend: boolean = false) {
     lexicalScopeRecorder.enterClassLexicalScope(isExtend);
     asyncArrowExprScopeRecorder.enterAsyncArrowExpressionScope();
+    symbolScopeRecorder.enterClassSymbolScope();
   }
   function existClassScope() {
-    if (lexicalScopeRecorder.isDuplicatePrivateName()) {
+    if (symbolScopeRecorder.isDuplicatePrivateName()) {
       throw createMessageError(ErrorMessageMap.private_name_duplicate);
     }
-    if (lexicalScopeRecorder.isUndeinfedPrivateName()) {
+    if (symbolScopeRecorder.isUndeinfedPrivateName()) {
       throw createMessageError(ErrorMessageMap.private_name_undeinfed);
     }
     lexicalScopeRecorder.exitClassLexicalScope();
+    symbolScopeRecorder.exitClassSymbolScope();
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
   }
   function isInClassScope(): boolean {
@@ -688,10 +690,10 @@ export function createParser(code: string, option?: ParserConfig) {
     return lexicalScopeRecorder.isCurrentClassExtend();
   }
   function usePrivateName(name: string, type: PrivateNameDefKind = "other") {
-    return lexicalScopeRecorder.usePrivateName(name, type);
+    return symbolScopeRecorder.usePrivateName(name, type);
   }
   function defPrivateName(name: string, type: PrivateNameDefKind = "other") {
-    return lexicalScopeRecorder.defPrivateName(name, type);
+    return symbolScopeRecorder.defPrivateName(name, type);
   }
   function enterDelete() {
     lexicalScopeRecorder.enterDelete();
