@@ -251,6 +251,10 @@ export function createSymbolScopeRecorder() {
     const symbolScope = helperFindClosedDeclaratableSymbolScope();
     return helperTryInsertDeclaratableSymbolToScope(symbolScope, name, SymbolType.Function);
   }
+  function declarateSymbol(name: string) {
+    const symbolScope = helperFindClosedDeclaratableSymbolScope();
+    return helperTryInsertDeclaratableSymbolToScope(symbolScope, name, context.symbolType);
+  }
   /**
    * Declarate a param in function scope, it will not check the duplication or not.
    * since not all JavaScript context need to check the duplication.
@@ -356,6 +360,12 @@ export function createSymbolScopeRecorder() {
     }
     return null;
   }
+  function setSymbolType(symbolType: SymbolType) {
+    context.symbolType = symbolType;
+  }
+  function getSymbolType(): SymbolType {
+    return context.symbolType;
+  }
   return {
     // enter and exsit scope
     enterPreBlockScope,
@@ -372,8 +382,11 @@ export function createSymbolScopeRecorder() {
     declarateConstSymbol,
     declarateLetSymbol,
     declarateFuncrtionSymbol,
+    declarateSymbol,
     declarateParam,
     isFunctionParamDuplicate,
+    setSymbolType,
+    getSymbolType,
     // export declarate
     declarateExportSymbol,
     testAndSetDefaultExport,

@@ -43,11 +43,13 @@ export type DeclaratableScope = ProgramSymbolScope | FunctionSymbolScope | Block
 
 export type SymbolScopeRecorderContext = {
   lastTokenIndex: number;
+  symbolType: SymbolType;
 };
 
 export function createSymbolScopeRecorderContext(): SymbolScopeRecorderContext {
   return {
     lastTokenIndex: -1,
+    symbolType: SymbolType.Var,
   };
 }
 

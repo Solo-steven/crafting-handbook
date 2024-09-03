@@ -123,7 +123,7 @@ import {
 } from "web-infra-common";
 import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
-import { ParserConfig, getConfigFromUserInput } from "./config";
+import { ParserUserConfig, getConfigFromUserInput } from "./config";
 import { LookaheadToken } from "../lexer/type";
 import { createLexer } from "../lexer/index";
 import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } from "./scope/arrowExprScope";
@@ -139,8 +139,6 @@ interface Context {
   cache: {
     decorators: Decorator[] | null;
   };
-  symbolKind: SymbolType | undefined;
-  exportContext: "Not In Export" | "In Export" | "In Export Binding";
 }
 
 interface ASTArrayWithMetaData<T> {
@@ -161,8 +159,6 @@ function createContext(): Context {
     cache: {
       decorators: null,
     },
-    symbolKind: undefined,
-    exportContext: "Not In Export",
   };
 }
 
@@ -185,7 +181,7 @@ const KeywordSet = new Set([
  * @param {string} code
  * @returns
  */
-export function createParser(code: string, option?: ParserConfig) {
+export function createParser(code: string, option?: ParserUserConfig) {
   const lexer = createLexer(code);
   const context = createContext();
   const config = getConfigFromUserInput(option);
@@ -749,42 +745,19 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     return list;
   }
-  function declarateSymbol(name: string, type: SymbolType | undefined) {
-    if (isInParameter() || type === undefined) {
+  function declarateSymbol(name: string) {
+    if (isInParameter()) {
       symbolScopeRecorder.declarateParam(name);
       declarateExportSymbolIfInContext(name);
       return;
     }
-    switch (type) {
-      case SymbolType.Const: {
-        if (!symbolScopeRecorder.declarateConstSymbol(name)) {
-          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
-        }
-        if (!declarateExportSymbolIfInContext(name)) {
-          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
-        }
-        return;
-      }
-      case SymbolType.Let: {
-        if (!symbolScopeRecorder.declarateLetSymbol(name)) {
-          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
-        }
-        if (!declarateExportSymbolIfInContext(name)) {
-          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
-        }
-        return;
-      }
-      case SymbolType.Var: {
-        if (!symbolScopeRecorder.declarateVarSymbol(name)) {
-          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
-        }
-        if (!declarateExportSymbolIfInContext(name)) {
-          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
-        }
-        return;
-      }
+    switch (getSymbolType()) {
       case SymbolType.Function: {
-        if (!symbolScopeRecorder.declarateFuncrtionSymbol(name) && config.sourceType === "module") {
+        delcarateFcuntionSymbol(name);
+        return;
+      }
+      default: {
+        if (!symbolScopeRecorder.declarateSymbol(name)) {
           throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
         }
         if (!declarateExportSymbolIfInContext(name)) {
@@ -793,6 +766,28 @@ export function createParser(code: string, option?: ParserConfig) {
         return;
       }
     }
+  }
+  function delcarateFcuntionSymbol(name: string) {
+    if (!symbolScopeRecorder.declarateFuncrtionSymbol(name) && config.sourceType === "module") {
+      throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+    }
+    if (!declarateExportSymbolIfInContext(name)) {
+      throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+    }
+    return;
+  }
+  function declarateLetSymbol(name: string) {
+    if (!symbolScopeRecorder.declarateLetSymbol(name)) {
+      throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+    }
+    if (!declarateExportSymbolIfInContext(name)) {
+      throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+    }
+  }
+  function declarateParam(name: string) {
+    symbolScopeRecorder.declarateParam(name);
+    declarateExportSymbolIfInContext(name);
+    return;
   }
   function declarateExportSymbolIfInContext(name: string) {
     switch (getExportContext()) {
@@ -808,8 +803,13 @@ export function createParser(code: string, option?: ParserConfig) {
     }
   }
   function declarateExportSymbol(name: string) {
-    const a = symbolScopeRecorder.declarateExportSymbol(name);
-    return a;
+    return symbolScopeRecorder.declarateExportSymbol(name);
+  }
+  function getSymbolType() {
+    return symbolScopeRecorder.getSymbolType();
+  }
+  function setSymbolType(symbolType: SymbolType) {
+    symbolScopeRecorder.setSymbolType(symbolType);
   }
 
   /** ===========================================================
@@ -1298,7 +1298,7 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function declarateSymbolInBindingPatternAsParam(name: string, isBinding: boolean) {
     if (isBinding) {
-      declarateSymbol(name, undefined);
+      declarateParam(name);
     }
   }
   /**
@@ -1749,11 +1749,11 @@ export function createParser(code: string, option?: ParserConfig) {
       if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
         nextToken();
         enterPreBlockSymbolScope();
-        const lastSymbolKind = context.symbolKind;
-        context.symbolKind = SymbolType.Let;
+        const lastSymbolKind = getSymbolType();
+        setSymbolType(SymbolType.Let);
         // catch clause should not have init
         const param = parseBindingElement(false);
-        context.symbolKind = lastSymbolKind;
+        setSymbolType(lastSymbolKind);
         // should check param is duplicate or not.
         const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
         setIndexOfEndTokenOfPreBlockScope(end.index);
@@ -1844,9 +1844,10 @@ export function createParser(code: string, option?: ParserConfig) {
     let shouldStop = false,
       isStart = true;
     const declarations: Array<VariableDeclarator> = [];
-    const lastSymbolKind = context.symbolKind;
-    context.symbolKind =
-      variant === "var" ? SymbolType.Var : variant === "const" ? SymbolType.Const : SymbolType.Let;
+    const lastSymbolKind = getSymbolType();
+    setSymbolType(
+      variant === "var" ? SymbolType.Var : variant === "const" ? SymbolType.Const : SymbolType.Let,
+    );
     if (getExportContext() === ExportContext.InExport) {
       setExportContext(ExportContext.InExportBinding);
     }
@@ -1897,7 +1898,7 @@ export function createParser(code: string, option?: ParserConfig) {
         ),
       );
     }
-    context.symbolKind = lastSymbolKind;
+    setSymbolType(lastSymbolKind);
     setExportContext(ExportContext.NotInExport);
     if (!inForInit) {
       shouldInsertSemi();
@@ -1915,7 +1916,7 @@ export function createParser(code: string, option?: ParserConfig) {
     exitFunctionScope(false);
     // for function declaration, symbol should declar in parent scope.
     const name = func.name!;
-    declarateSymbol(name.name, SymbolType.Function);
+    delcarateFcuntionSymbol(name.name);
     return Factory.transFormFunctionToFunctionDeclaration(func);
   }
   /**
@@ -2210,7 +2211,7 @@ export function createParser(code: string, option?: ParserConfig) {
     let name: Identifier | null = null;
     if (match(BindingIdentifierSyntaxKindArray)) {
       name = parseIdentifierReference();
-      declarateSymbol(name.name, SymbolType.Let);
+      declarateLetSymbol(name.name);
     }
     let superClass: Expression | null = null;
     if (match(SyntaxKinds.ExtendsKeyword)) {
@@ -4865,7 +4866,7 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function parseBindingIdentifier() {
     const id = parseWithLHSLayer(parseIdentifierReference);
-    declarateSymbol(id.name, context.symbolKind);
+    declarateSymbol(id.name);
     return id;
   }
   /**
@@ -4946,7 +4947,7 @@ export function createParser(code: string, option?: ParserConfig) {
         if (!isPattern(propertyName)) {
           throw createMessageError("assignment pattern left value can only allow identifier or pattern");
         }
-        declarateSymbol((propertyName as Identifier).name, context.symbolKind);
+        declarateSymbol((propertyName as Identifier).name);
         properties.push(
           Factory.createAssignmentPattern(
             propertyName,
@@ -4964,7 +4965,7 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       // check property name is keyword or not
       checkPropertyShortedIsKeyword(propertyName);
-      declarateSymbol((propertyName as Identifier).name, context.symbolKind);
+      declarateSymbol((propertyName as Identifier).name);
       properties.push(
         Factory.createObjectPatternProperty(
           propertyName,
@@ -5155,7 +5156,7 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function parseImportDefaultSpecifier(): ImportDefaultSpecifier {
     const name = parseIdentifierReference();
-    declarateSymbol(name.name, SymbolType.Let);
+    declarateLetSymbol(name.name);
     return Factory.createImportDefaultSpecifier(
       name,
       cloneSourcePosition(name.start),
@@ -5176,7 +5177,7 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     nextToken();
     const id = parseIdentifierReference();
-    declarateSymbol(id.name, SymbolType.Let);
+    declarateLetSymbol(id.name);
     return Factory.createImportNamespaceSpecifier(id, start, cloneSourcePosition(id.end));
   }
   /**
@@ -5211,7 +5212,7 @@ export function createParser(code: string, option?: ParserConfig) {
         } else if (isStringLiteral(imported)) {
           throw createMessageError(ErrorMessageMap.string_literal_cannot_be_used_as_an_imported_binding);
         }
-        declarateSymbol(imported.name, SymbolType.Let);
+        declarateLetSymbol(imported.name);
         specifiers.push(
           Factory.createImportSpecifier(
             imported,
@@ -5224,7 +5225,7 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       nextToken();
       const local = parseIdentifierReference();
-      declarateSymbol(local.name, SymbolType.Let);
+      declarateLetSymbol(local.name);
       specifiers.push(
         Factory.createImportSpecifier(
           imported,
@@ -5357,7 +5358,7 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       const name = funcDeclar.name;
       if (name) {
-        declarateSymbol(name.name, SymbolType.Function);
+        delcarateFcuntionSymbol(name.name);
       }
       return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
     }
@@ -5373,7 +5374,7 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       const name = funcDeclar.name;
       if (name) {
-        declarateSymbol(name.name, SymbolType.Function);
+        delcarateFcuntionSymbol(name.name);
       }
       return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
     }

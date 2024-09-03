@@ -49,7 +49,7 @@ function printLexer(code: string) {
   );
 }
 function printParser(code: string) {
-  const ast = createParser(code, { sourceType: "script", plugins: ["jsx"] }).parse();
+  const ast = createParser(code, { sourceType: "module", plugins: ["jsx"] }).parse();
   transformSyntaxKindToLiteral(ast);
   console.log(JSON.stringify(ast, null, 4));
   return 0;
