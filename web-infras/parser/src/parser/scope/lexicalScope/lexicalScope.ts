@@ -1,4 +1,4 @@
-import type {
+import {
   LexicalScope,
   FunctionLexicalScope,
   ClassLexicalScope,
@@ -26,11 +26,15 @@ export function createLexicalScopeRecorder() {
    *
    * @returns
    */
-  function helperFindParentClassOrFunctionLexicalScope(): FunctionLexicalScope | ClassLexicalScope {
+  function helperFindParentClassOrFunctionLexicalScope():
+    | FunctionLexicalScope
+    | ClassLexicalScope
+    | ProgramLexicalScope {
     let flag = false;
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scope = lexicalScopes[index];
       switch (scope.type) {
+        case "ProgramLexicalScope":
         case "FunctionLexicalScope":
         case "ClassLexicalScope": {
           if (flag) {
@@ -53,6 +57,9 @@ export function createLexicalScopeRecorder() {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scopeContext = lexicalScopes[index];
       if (scopeContext.type === "FunctionLexicalScope") {
+        return scopeContext;
+      }
+      if (scopeContext.type === "ProgramLexicalScope") {
         return scopeContext;
       }
     }
@@ -106,13 +113,10 @@ export function createLexicalScopeRecorder() {
    */
   function enterProgramLexicalScope(isAsync: boolean, inStrict: boolean) {
     lexicalScopes.push({
-      type: "FunctionLexicalScope",
-      isArrow: false,
+      type: "ProgramLexicalScope",
       isAsync,
-      isGenerator: false,
-      inParameter: false,
       inStrict,
-      isSimpleParameter: true,
+      exportContext: ExportContext.NotInExport,
     });
   }
   function exitProgramLexicalScope() {
@@ -361,6 +365,7 @@ export function createLexicalScopeRecorder() {
           case "ClassLexicalScope":
             return false;
           case "FunctionLexicalScope":
+          case "ProgramLexicalScope":
             return parentScope.isAsync;
         }
       }
@@ -384,6 +389,7 @@ export function createLexicalScopeRecorder() {
         const parentScope = helperFindParentClassOrFunctionLexicalScope();
         switch (parentScope.type) {
           case "ClassLexicalScope":
+          case "ProgramLexicalScope":
             return false;
           case "FunctionLexicalScope":
             return parentScope.isGenerator;
@@ -430,7 +436,10 @@ export function createLexicalScopeRecorder() {
    */
   function isCurrentFunctionLexicalScopeParameterSimple(): boolean {
     const scope = helperFindLastFunctionLexicalScope();
-    return scope.type === "FunctionLexicalScope" && scope.isSimpleParameter;
+    return (
+      (scope.type === "FunctionLexicalScope" && scope.isSimpleParameter) ||
+      scope.type === "ProgramLexicalScope"
+    );
   }
   /**
    * Private API to know is current scope is top level, some syntax item
@@ -442,6 +451,9 @@ export function createLexicalScopeRecorder() {
       const scope = lexicalScopes[index];
       if (scope.type === "FunctionLexicalScope" && scope.isArrow === false) {
         return scope === lexicalScopes[0];
+      }
+      if (scope.type === "ProgramLexicalScope") {
+        return true;
       }
     }
     // TODO: better unreach error
@@ -459,6 +471,7 @@ export function createLexicalScopeRecorder() {
       switch (scope.type) {
         case "ClassLexicalScope":
           return true;
+        case "ProgramLexicalScope":
         case "FunctionLexicalScope":
           return scope.inStrict;
         default:
@@ -475,7 +488,8 @@ export function createLexicalScopeRecorder() {
    * @returns {boolean}
    */
   function isDirectToFunctionContext(): boolean {
-    return lexicalScopes[lexicalScopes.length - 1].type === "FunctionLexicalScope";
+    const last = lexicalScopes[lexicalScopes.length - 1];
+    return last.type === "ProgramLexicalScope" || last.type === "FunctionLexicalScope";
   }
   /**
    * Private API to know is parent function scope
@@ -487,6 +501,7 @@ export function createLexicalScopeRecorder() {
     if (!parentScope) return false;
     switch (parentScope.type) {
       case "FunctionLexicalScope":
+      case "ProgramLexicalScope":
         return parentScope.isAsync;
       case "ClassLexicalScope":
         return false;
@@ -504,6 +519,7 @@ export function createLexicalScopeRecorder() {
       case "FunctionLexicalScope":
         return parentScope.isGenerator;
       case "ClassLexicalScope":
+      case "ProgramLexicalScope":
         return false;
     }
   }

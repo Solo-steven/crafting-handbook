@@ -129,7 +129,7 @@ import { createLexer } from "../lexer/index";
 import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } from "./scope/arrowExprScope";
 import { createStrictModeScopeRecorder, StrictModeScope } from "./scope/strictModeScope";
 import { ExpressionScopeKind } from "./scope/type";
-import { createLexicalScopeRecorder, PrivateNameDefKind } from "./scope/lexicalScope";
+import { createLexicalScopeRecorder, ExportContext, PrivateNameDefKind } from "./scope/lexicalScope";
 import { createSymbolScopeRecorder, FunctionSymbolScope, SymbolType } from "./scope/symbolScope";
 interface Context {
   maybeArrowStart: number;
@@ -729,6 +729,12 @@ export function createParser(code: string, option?: ParserConfig) {
   function isInPropertyName(): boolean {
     return lexicalScopeRecorder.isInPropertyName();
   }
+  function setExportContext(context: ExportContext) {
+    lexicalScopeRecorder.setExportContext(context);
+  }
+  function getExportContext(): ExportContext {
+    return lexicalScopeRecorder.getExportContext();
+  }
   function takeCacheDecorator() {
     const list = context.cache.decorators;
     context.cache.decorators = null;
@@ -787,14 +793,14 @@ export function createParser(code: string, option?: ParserConfig) {
     }
   }
   function declarateExportSymbolIfInContext(name: string) {
-    switch (context.exportContext) {
-      case "Not In Export":
+    switch (getExportContext()) {
+      case ExportContext.NotInExport:
         return true;
-      case "In Export": {
-        context.exportContext = "Not In Export";
+      case ExportContext.InExport: {
+        setExportContext(ExportContext.NotInExport);
         return declarateExportSymbol(name);
       }
-      case "In Export Binding": {
+      case ExportContext.InExportBinding: {
         return declarateExportSymbol(name);
       }
     }
@@ -1839,8 +1845,8 @@ export function createParser(code: string, option?: ParserConfig) {
     const lastSymbolKind = context.symbolKind;
     context.symbolKind =
       variant === "var" ? SymbolType.Var : variant === "const" ? SymbolType.Const : SymbolType.Let;
-    if (context.exportContext === "In Export") {
-      context.exportContext = "In Export Binding";
+    if (getExportContext() === ExportContext.InExport) {
+      setExportContext(ExportContext.InExportBinding);
     }
     while (!shouldStop) {
       if (isStart) {
@@ -1890,7 +1896,7 @@ export function createParser(code: string, option?: ParserConfig) {
       );
     }
     context.symbolKind = lastSymbolKind;
-    context.exportContext = "Not In Export";
+    setExportContext(ExportContext.NotInExport);
     if (!inForInit) {
       shouldInsertSemi();
     }
@@ -5284,7 +5290,8 @@ export function createParser(code: string, option?: ParserConfig) {
    * @returns {ExportDeclaration}
    */
   function parseExportDeclaration(): ExportDeclaration {
-    context.exportContext = "In Export";
+    setExportContext(ExportContext.InExport);
+
     const { start } = expect(SyntaxKinds.ExportKeyword);
     if (config.sourceType === "script") {
       throw createMessageError(
@@ -5317,7 +5324,7 @@ export function createParser(code: string, option?: ParserConfig) {
         break;
       }
     }
-    context.exportContext = "Not In Export";
+    setExportContext(ExportContext.NotInExport);
     return exportDeclaration;
   }
   function parseExportDefaultDeclaration(start: SourcePosition): ExportDefaultDeclaration {
