@@ -1,4 +1,17 @@
 export type PrivateNameDefKind = "get" | "set" | "other" | "static-get" | "static-set";
+
+export enum ExportContext {
+  NotInExport,
+  InExport,
+  InExportBinding,
+}
+
+export type ProgramLexicalScope = {
+  readonly type: "ProgramLexicalScope";
+  isAsync: boolean;
+  inStrict: boolean;
+  exportContext: ExportContext;
+};
 export interface FunctionLexicalScope {
   readonly type: "FunctionLexicalScope";
   readonly isArrow: boolean;
@@ -35,7 +48,12 @@ export interface BlockLexicalScope {
   readonly type: "BlockLexicalScope";
 }
 
-export type LexicalScope = ClassLexicalScope | FunctionLexicalScope | BlockLexicalScope | VirtualLexicalScope;
+export type LexicalScope =
+  | ProgramLexicalScope
+  | ClassLexicalScope
+  | FunctionLexicalScope
+  | BlockLexicalScope
+  | VirtualLexicalScope;
 
 export function isPrivateNameExist(scope: ClassLexicalScope, name: string, type: PrivateNameDefKind) {
   if (scope.definiedPrivateName.has(name)) {

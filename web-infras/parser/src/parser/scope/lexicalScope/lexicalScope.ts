@@ -4,6 +4,8 @@ import type {
   ClassLexicalScope,
   BlockType,
   PrivateNameDefKind,
+  ProgramLexicalScope,
+  ExportContext,
 } from "./type";
 import { isPrivateNameExist } from "./type";
 
@@ -47,7 +49,7 @@ export function createLexicalScopeRecorder() {
    * function scope structure in scopeContext.
    * @returns {FunctionContext}
    */
-  function helperFindLastFunctionLexicalScope(): FunctionLexicalScope {
+  function helperFindLastFunctionLexicalScope(): FunctionLexicalScope | ProgramLexicalScope {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scopeContext = lexicalScopes[index];
       if (scopeContext.type === "FunctionLexicalScope") {
@@ -74,13 +76,20 @@ export function createLexicalScopeRecorder() {
    *
    * @returns
    */
-  function helperFindLastClassOrFunctionLexicalScope(): FunctionLexicalScope | ClassLexicalScope {
+  function helperFindLastClassOrFunctionLexicalScope():
+    | FunctionLexicalScope
+    | ClassLexicalScope
+    | ProgramLexicalScope {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scope = lexicalScopes[index];
+
       if (scope.type === "ClassLexicalScope") {
         return scope;
       }
       if (scope.type === "FunctionLexicalScope") {
+        return scope;
+      }
+      if (scope.type === "ProgramLexicalScope") {
         return scope;
       }
     }
@@ -163,7 +172,7 @@ export function createLexicalScopeRecorder() {
    */
   function enterFunctionLexicalScopeParamemter() {
     const scope = helperFindLastFunctionLexicalScope();
-    scope.inParameter = true;
+    if (scope.type === "FunctionLexicalScope") scope.inParameter = true;
   }
   /**
    * Private API called when finish parse function param, reason please
@@ -171,7 +180,7 @@ export function createLexicalScopeRecorder() {
    */
   function exitFunctionLexicalScopeParamemter() {
     const scope = helperFindLastFunctionLexicalScope();
-    scope.inParameter = false;
+    if (scope.type === "FunctionLexicalScope") scope.inParameter = false;
   }
   /**
    * Private API called when enter this block scope.
@@ -208,6 +217,7 @@ export function createLexicalScopeRecorder() {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scope = lexicalScopes[index];
       switch (scope.type) {
+        case "ProgramLexicalScope":
         case "FunctionLexicalScope":
         case "ClassLexicalScope":
           return false;
@@ -224,6 +234,7 @@ export function createLexicalScopeRecorder() {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scope = lexicalScopes[index];
       switch (scope.type) {
+        case "ProgramLexicalScope":
         case "FunctionLexicalScope":
         case "ClassLexicalScope":
           return false;
@@ -241,6 +252,7 @@ export function createLexicalScopeRecorder() {
     for (let index = lexicalScopes.length - 1; index >= 0; --index) {
       const scope = lexicalScopes[index];
       switch (scope.type) {
+        case "ProgramLexicalScope":
         case "FunctionLexicalScope":
         case "ClassLexicalScope":
           return false;
@@ -338,6 +350,7 @@ export function createLexicalScopeRecorder() {
     const scope = helperFindLastClassOrFunctionLexicalScope();
     switch (scope.type) {
       case "FunctionLexicalScope":
+      case "ProgramLexicalScope":
         return scope.isAsync;
       case "ClassLexicalScope": {
         if (!scope.isInPropertyName) {
@@ -360,6 +373,8 @@ export function createLexicalScopeRecorder() {
   function canYieldParseAsExpression(): boolean {
     const scope = helperFindLastClassOrFunctionLexicalScope();
     switch (scope.type) {
+      case "ProgramLexicalScope":
+        return false;
       case "FunctionLexicalScope":
         return scope.isGenerator;
       case "ClassLexicalScope": {
@@ -415,7 +430,7 @@ export function createLexicalScopeRecorder() {
    */
   function isCurrentFunctionLexicalScopeParameterSimple(): boolean {
     const scope = helperFindLastFunctionLexicalScope();
-    return scope.isSimpleParameter;
+    return scope.type === "FunctionLexicalScope" && scope.isSimpleParameter;
   }
   /**
    * Private API to know is current scope is top level, some syntax item
@@ -564,7 +579,7 @@ export function createLexicalScopeRecorder() {
    */
   function setCurrentFunctionLexicalScopeAsGenerator() {
     const scope = helperFindLastFunctionLexicalScope();
-    scope.isGenerator = true;
+    if (scope.type === "FunctionLexicalScope") scope.isGenerator = true;
   }
   /**
    * Private API called when parse `'use strict';` after parse function, since `function`
@@ -584,7 +599,7 @@ export function createLexicalScopeRecorder() {
    */
   function setCurrentFunctionLexicalScopeParameterAsNonSimple() {
     const scope = helperFindLastFunctionLexicalScope();
-    scope.isSimpleParameter = false;
+    if (scope.type === "FunctionLexicalScope") scope.isSimpleParameter = false;
   }
   /**=============================================
    * Class Scope private name
@@ -669,6 +684,14 @@ export function createLexicalScopeRecorder() {
     }
     return null;
   }
+  function setExportContext(context: ExportContext) {
+    const scope = lexicalScopes[0] as ProgramLexicalScope;
+    scope.exportContext = context;
+  }
+  function getExportContext() {
+    const scope = lexicalScopes[0] as ProgramLexicalScope;
+    return scope.exportContext;
+  }
   return {
     /**
      * Enter and Exit Scope or Scope attribute
@@ -738,5 +761,10 @@ export function createLexicalScopeRecorder() {
     usePrivateName,
     isDuplicatePrivateName,
     isUndeinfedPrivateName,
+    /**
+     * CRUD for export context
+     */
+    setExportContext,
+    getExportContext,
   };
 }

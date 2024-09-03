@@ -4602,8 +4602,8 @@ export function createParser(code: string, option?: ParserConfig) {
       if (match(SyntaxKinds.AssginOperator)) {
         lexer.setJSXStringContext(true);
         nextToken();
+        lexer.setJSXStringContext(false);
         if (match(SyntaxKinds.StringLiteral)) {
-          lexer.setJSXStringContext(false);
           const value = parseStringLiteral();
           attribute.push(
             Factory.createJSXAttribute(
@@ -5291,30 +5291,34 @@ export function createParser(code: string, option?: ParserConfig) {
         ErrorMessageMap.babel_error_import_and_export_may_appear_only_with_sourceType_module,
       );
     }
-    if (match(SyntaxKinds.DefaultKeyword)) {
-      const exportDeclar = parseExportDefaultDeclaration(start);
-      context.exportContext = "Not In Export";
-      return exportDeclar;
+    let exportDeclaration: ExportDeclaration;
+    switch (getToken()) {
+      case SyntaxKinds.DefaultKeyword: {
+        exportDeclaration = parseExportDefaultDeclaration(start);
+        break;
+      }
+      case SyntaxKinds.MultiplyOperator: {
+        exportDeclaration = parseExportAllDeclaration(start);
+        break;
+      }
+      case SyntaxKinds.BracesLeftPunctuator: {
+        exportDeclaration = parseExportNamedDeclaration(start);
+        break;
+      }
+      default: {
+        const declaration = match(SyntaxKinds.VarKeyword) ? parseVariableDeclaration() : parseDeclaration();
+        exportDeclaration = Factory.createExportNamedDeclaration(
+          [],
+          declaration,
+          null,
+          start,
+          cloneSourcePosition(declaration.end),
+        );
+        break;
+      }
     }
-    if (match(SyntaxKinds.MultiplyOperator)) {
-      const exportDeclar = parseExportAllDeclaration(start);
-      context.exportContext = "Not In Export";
-      return exportDeclar;
-    }
-    if (match(SyntaxKinds.BracesLeftPunctuator)) {
-      const exportDeclar = parseExportNamedDeclaration(start);
-      context.exportContext = "Not In Export";
-      return exportDeclar;
-    }
-    const declaration = match(SyntaxKinds.VarKeyword) ? parseVariableDeclaration() : parseDeclaration();
     context.exportContext = "Not In Export";
-    return Factory.createExportNamedDeclaration(
-      [],
-      declaration,
-      null,
-      start,
-      cloneSourcePosition(declaration.end),
-    );
+    return exportDeclaration;
   }
   function parseExportDefaultDeclaration(start: SourcePosition): ExportDefaultDeclaration {
     expect(SyntaxKinds.DefaultKeyword);
