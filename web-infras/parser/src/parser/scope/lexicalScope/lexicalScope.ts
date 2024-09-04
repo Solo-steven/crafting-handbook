@@ -188,8 +188,12 @@ export function createLexicalScopeRecorder() {
    * Private API called when enter this block scope.
    * this function only called when `parseBlockStatement`.
    */
-  function enterBlockLexicalScope() {
-    lexicalScopes.push({ type: "BlockLexicalScope" });
+  function enterBlockLexicalScope(isCatch: boolean) {
+    lexicalScopes.push({ type: "BlockLexicalScope", isCatch });
+  }
+  function isInCatch() {
+    const lastScope = lexicalScopes[lexicalScopes.length - 1];
+    return lastScope.type === "BlockLexicalScope" && lastScope.isCatch;
   }
   /**
    * Private APII called when enter this block scope.
@@ -650,6 +654,8 @@ export function createLexicalScopeRecorder() {
     isBreakValidate,
     isContinueValidate,
     canLabelReach,
+    // for block
+    isInCatch,
     // for class
     isInCtor,
     isInPropertyName,

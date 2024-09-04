@@ -119,7 +119,7 @@ import {
   UnaryExpression,
   ImportAttribute,
   Decorator,
-  isBlockStatement,
+  // isBlockStatement,
 } from "web-infra-common";
 import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
@@ -130,7 +130,12 @@ import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } fr
 import { createStrictModeScopeRecorder, StrictModeScope } from "./scope/strictModeScope";
 import { ExpressionScopeKind } from "./scope/type";
 import { createLexicalScopeRecorder, ExportContext, PrivateNameDefKind } from "./scope/lexicalScope";
-import { createSymbolScopeRecorder, FunctionSymbolScope, SymbolType } from "./scope/symbolScope";
+import {
+  createSymbolScopeRecorder,
+  FunctionSymbolScope,
+  NonFunctionalSymbolType,
+  SymbolType,
+} from "./scope/symbolScope";
 interface Context {
   maybeArrowStart: number;
   inOperatorStack: Array<boolean>;
@@ -519,21 +524,26 @@ export function createParser(code: string, option?: ParserUserConfig) {
     lexer.setStrictModeContext(config.sourceType === "module");
   }
   function exitProgram() {
+    if (symbolScopeRecorder.isProgramContainUndefSymbol()) {
+      throw createMessageError(ErrorMessageMap.babel_error_export_is_not_defined);
+    }
     symbolScopeRecorder.exitSymbolScope();
     lexicalScopeRecorder.exitProgramLexicalScope();
     lexer.setStrictModeContext(false);
   }
-  function setIndexOfEndTokenOfPreBlockScope(index: number) {
-    symbolScopeRecorder.setIndexOfEndTokenOfPreBlockScope(index);
-  }
-  function enterPreBlockSymbolScope() {
-    symbolScopeRecorder.enterPreBlockScope();
-  }
-  function enterBlockScope(lastTokenIndex: number) {
-    lexicalScopeRecorder.enterBlockLexicalScope();
-    symbolScopeRecorder.enterBlockSymbolScope(lastTokenIndex);
+  function enterBlockScope() {
+    lexicalScopeRecorder.enterBlockLexicalScope(false);
+    symbolScopeRecorder.enterBlockSymbolScope();
   }
   function exitBlockScope() {
+    lexicalScopeRecorder.exitBlockLexicalScope();
+    symbolScopeRecorder.exitSymbolScope();
+  }
+  function enterCatchBlockScope() {
+    lexicalScopeRecorder.enterBlockLexicalScope(true);
+    symbolScopeRecorder.enterFunctionSymbolScope();
+  }
+  function exitCatchBlockScope() {
     lexicalScopeRecorder.exitBlockLexicalScope();
     symbolScopeRecorder.exitSymbolScope();
   }
@@ -751,25 +761,24 @@ export function createParser(code: string, option?: ParserUserConfig) {
       declarateExportSymbolIfInContext(name);
       return;
     }
-    switch (getSymbolType()) {
-      case SymbolType.Function: {
-        delcarateFcuntionSymbol(name);
-        return;
-      }
-      default: {
-        if (!symbolScopeRecorder.declarateSymbol(name)) {
-          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
-        }
-        if (!declarateExportSymbolIfInContext(name)) {
-          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
-        }
-        return;
-      }
+    if (!symbolScopeRecorder.declarateSymbol(name)) {
+      throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
     }
+    if (!declarateExportSymbolIfInContext(name)) {
+      throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+    }
+    return;
   }
   function delcarateFcuntionSymbol(name: string) {
-    if (!symbolScopeRecorder.declarateFuncrtionSymbol(name) && config.sourceType === "module") {
-      throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+    const duplicateType = symbolScopeRecorder.declarateFuncrtionSymbol(name);
+    if (duplicateType) {
+      if (
+        (duplicateType === SymbolType.Function && config.sourceType === "module") ||
+        (duplicateType === SymbolType.Var && lexicalScopeRecorder.isInCatch()) ||
+        duplicateType === SymbolType.Let ||
+        duplicateType === SymbolType.Const
+      )
+        throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
     }
     if (!declarateExportSymbolIfInContext(name)) {
       throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
@@ -805,10 +814,13 @@ export function createParser(code: string, option?: ParserUserConfig) {
   function declarateExportSymbol(name: string) {
     return symbolScopeRecorder.declarateExportSymbol(name);
   }
-  function getSymbolType() {
-    return symbolScopeRecorder.getSymbolType();
+  function isVariableDeclarated(name: string) {
+    return symbolScopeRecorder.isVariableDeclarated(name);
   }
-  function setSymbolType(symbolType: SymbolType) {
+  function getSymbolType() {
+    return symbolScopeRecorder.getSymbolType() as NonFunctionalSymbolType;
+  }
+  function setSymbolType(symbolType: NonFunctionalSymbolType) {
     symbolScopeRecorder.setSymbolType(symbolType);
   }
 
@@ -1309,7 +1321,8 @@ export function createParser(code: string, option?: ParserUserConfig) {
    * @returns {ForStatement | ForInStatement | ForOfStatement}
    */
   function parseForStatement(): ForStatement | ForInStatement | ForOfStatement {
-    symbolScopeRecorder.enterBlockSymbolScope(-100);
+    // symbolScopeRecorder.enterPreBlockScope();
+    symbolScopeRecorder.enterBlockSymbolScope();
     const { start: keywordStart } = expect(SyntaxKinds.ForKeyword);
     // First, parse await modifier and lefthandside or init of for-related statement,
     // init might start with let, const, var keyword, but if is let keyword need to
@@ -1378,8 +1391,8 @@ export function createParser(code: string, option?: ParserUserConfig) {
       if (!match(SyntaxKinds.ParenthesesRightPunctuator)) {
         update = parseExpressionAllowIn();
       }
-      const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseForStatementBody(end.index);
+      expect(SyntaxKinds.ParenthesesRightPunctuator);
+      const body = parseForStatementBody();
       const forStatement = Factory.createForStatement(
         body,
         leftOrInit,
@@ -1418,8 +1431,8 @@ export function createParser(code: string, option?: ParserUserConfig) {
       }
       nextToken();
       const right = parseExpressionAllowIn();
-      const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseForStatementBody(end.index);
+      expect(SyntaxKinds.ParenthesesRightPunctuator);
+      const body = parseForStatementBody();
       const forInStatement = Factory.createForInStatement(
         leftOrInit,
         right,
@@ -1440,8 +1453,8 @@ export function createParser(code: string, option?: ParserUserConfig) {
       }
       nextToken();
       const right = parseAssignmentExpressionAllowIn();
-      const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseForStatementBody(end.index);
+      expect(SyntaxKinds.ParenthesesRightPunctuator);
+      const body = parseForStatementBody();
       const forOfStatement = Factory.createForOfStatement(
         isAwait,
         leftOrInit,
@@ -1455,12 +1468,11 @@ export function createParser(code: string, option?: ParserUserConfig) {
     }
     throw createUnexpectError(null);
   }
-  function parseForStatementBody(lastTokenIndex: number): Statement {
-    setIndexOfEndTokenOfPreBlockScope(lastTokenIndex);
+  function parseForStatementBody(): Statement {
     const stmt = parseAsLoop(parseStatement);
-    if (!isBlockStatement(stmt)) {
-      symbolScopeRecorder.exitSymbolScope();
-    }
+    //if (!isBlockStatement(stmt)) {
+    symbolScopeRecorder.exitSymbolScope();
+    //}
     return stmt;
   }
   function staticSematicEarlyErrorForFORStatement(statement: ForStatement | ForInStatement | ForOfStatement) {
@@ -1570,9 +1582,8 @@ export function createParser(code: string, option?: ParserUserConfig) {
     }
   }
   function parseBlockStatement() {
-    const lastTokenIndex = lexer.getLastTokenEndPositon().index;
     const { start: puncStart } = expect(SyntaxKinds.BracesLeftPunctuator);
-    enterBlockScope(lastTokenIndex);
+    enterBlockScope();
     const body: Array<StatementListItem> = [];
     while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
       body.push(parseStatementListItem());
@@ -1597,7 +1608,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
     return Factory.createSwitchStatement(discriminant, nodes, keywordStart, end);
   }
   function parseSwitchCases(): ASTArrayWithMetaData<SwitchCase> {
-    enterBlockScope(lexer.getLastTokenEndPositon().index);
+    enterBlockScope();
     const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
     const cases: Array<SwitchCase> = [];
     let haveDefault = false;
@@ -1746,23 +1757,25 @@ export function createParser(code: string, option?: ParserUserConfig) {
     if (match(SyntaxKinds.CatchKeyword)) {
       const catchKeywordStart = getStartPosition();
       nextToken();
+      //symbolScopeRecorder.enterFunctionSymbolScope();
+      enterCatchBlockScope();
       if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
         nextToken();
-        enterPreBlockSymbolScope();
-        const lastSymbolKind = getSymbolType();
-        setSymbolType(SymbolType.Let);
+        symbolScopeRecorder.enterCatchParam();
         // catch clause should not have init
         const param = parseBindingElement(false);
-        setSymbolType(lastSymbolKind);
+        if (!symbolScopeRecorder.setCatchParamTo(isIdentifer(param) ? SymbolType.Var : SymbolType.Let)) {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
         // should check param is duplicate or not.
-        const { end } = expect(SyntaxKinds.ParenthesesRightPunctuator);
-        setIndexOfEndTokenOfPreBlockScope(end.index);
-        const body = parseBlockStatement();
+        expect(SyntaxKinds.ParenthesesRightPunctuator);
+        const body = parseCatchBlock();
         handler = Factory.createCatchClause(param, body, catchKeywordStart, cloneSourcePosition(body.end));
       } else {
-        const body = parseBlockStatement();
+        const body = parseCatchBlock();
         handler = Factory.createCatchClause(null, body, catchKeywordStart, cloneSourcePosition(body.end));
       }
+      exitCatchBlockScope();
     }
     if (match(SyntaxKinds.FinallyKeyword)) {
       nextToken();
@@ -1778,6 +1791,18 @@ export function createParser(code: string, option?: ParserUserConfig) {
       tryKeywordStart,
       cloneSourcePosition(finalizer ? finalizer.end : handler ? handler.end : body.end),
     );
+  }
+  function parseCatchBlock() {
+    const { start: puncStart } = expect(SyntaxKinds.BracesLeftPunctuator);
+    const body: Array<StatementListItem> = [];
+    while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
+      body.push(parseStatementListItem());
+    }
+    const { end: puncEnd } = expect(
+      SyntaxKinds.BracesRightPunctuator,
+      "block statement must wrapped by bracket",
+    );
+    return Factory.createBlockStatement(body, puncStart, puncEnd);
   }
   function parseThrowStatement() {
     const { start } = expect(SyntaxKinds.ThrowKeyword);
@@ -1916,7 +1941,11 @@ export function createParser(code: string, option?: ParserUserConfig) {
     exitFunctionScope(false);
     // for function declaration, symbol should declar in parent scope.
     const name = func.name!;
-    delcarateFcuntionSymbol(name.name);
+    if (func.generator) {
+      declarateLetSymbol(name.name);
+    } else {
+      delcarateFcuntionSymbol(name.name);
+    }
     return Factory.transFormFunctionToFunctionDeclaration(func);
   }
   /**
@@ -2033,9 +2062,6 @@ export function createParser(code: string, option?: ParserUserConfig) {
           name = parseIdentifierName();
         }
       }
-      // if(!isExpression && name) {
-      //   declarateSymbol(name.name, SymbolType.Let);
-      // }
       return name;
     });
   }
@@ -5391,6 +5417,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
     const specifier: Array<ExportSpecifier> = [];
     let isStart = true;
     let isMatchKeyword = false;
+    const undefExportSymbols: Array<string> = [];
     while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
       if (isStart) {
         isStart = false;
@@ -5417,6 +5444,10 @@ export function createParser(code: string, option?: ParserUserConfig) {
         ) {
           throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
         }
+        if (!isVariableDeclarated(helperGetValueOfExportName(exported))) {
+          // throw createMessageError(ErrorMessageMap.babel_error_export_is_not_defined)
+          undefExportSymbols.push(helperGetValueOfExportName(exported));
+        }
         specifier.push(
           Factory.createExportSpecifier(
             exported,
@@ -5436,6 +5467,10 @@ export function createParser(code: string, option?: ParserUserConfig) {
       ) {
         throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
       }
+      if (!isVariableDeclarated(helperGetValueOfExportName(exported))) {
+        // throw createMessageError(ErrorMessageMap.babel_error_export_is_not_defined)
+        undefExportSymbols.push(helperGetValueOfExportName(exported));
+      }
       specifier.push(
         Factory.createExportSpecifier(
           exported,
@@ -5453,6 +5488,11 @@ export function createParser(code: string, option?: ParserUserConfig) {
     } else {
       if (isMatchKeyword) {
         throw new Error();
+      }
+      if (undefExportSymbols.length > 0) {
+        undefExportSymbols.forEach((sym) => {
+          symbolScopeRecorder.addToUndefExportSource(sym);
+        });
       }
       staticSematicEarlyErrorForExportName(specifier);
     }

@@ -40,6 +40,7 @@ export interface VirtualLexicalScope {
 
 export interface BlockLexicalScope {
   readonly type: "BlockLexicalScope";
+  isCatch: boolean;
 }
 
 export type LexicalScope =

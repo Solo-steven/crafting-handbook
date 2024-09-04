@@ -1,9 +1,12 @@
 export enum SymbolType {
-  Var,
-  Const,
-  Let,
-  Function,
+  Var = "Var",
+  Const = "Const",
+  Let = "Let",
+  Function = "Function",
 }
+
+export type NonFunctionalSymbolType = SymbolType.Var | SymbolType.Let | SymbolType.Const;
+
 export type PrivateNameDefKind = "get" | "set" | "other" | "static-get" | "static-set";
 export interface ClassSymbolScope {
   kind: "ClassSymbolScope";
@@ -23,8 +26,8 @@ interface BasicSymbolScope {
 export interface ProgramSymbolScope extends BasicSymbolScope {
   kind: "ProgramSumbolScope";
   exportSymbol: Set<string>;
+  undefExportSymbols: Set<string>;
   duplicateExportSymbols: Set<string>;
-  exportDefaultSymbol: string | boolean;
   haveDefaultExport: boolean;
 }
 
@@ -40,16 +43,19 @@ export interface BlockSymbolScope extends BasicSymbolScope {
 
 export type SymbolScope = ProgramSymbolScope | FunctionSymbolScope | BlockSymbolScope | ClassSymbolScope;
 export type DeclaratableScope = ProgramSymbolScope | FunctionSymbolScope | BlockSymbolScope;
+export type FunctionalSymbolScope = ProgramSymbolScope | FunctionSymbolScope;
 
 export type SymbolScopeRecorderContext = {
-  lastTokenIndex: number;
-  symbolType: SymbolType;
+  symbolType: NonFunctionalSymbolType;
+  isCatchParam: boolean;
+  cahcheNames: Array<string>;
 };
 
 export function createSymbolScopeRecorderContext(): SymbolScopeRecorderContext {
   return {
-    lastTokenIndex: -1,
     symbolType: SymbolType.Var,
+    isCatchParam: false,
+    cahcheNames: [],
   };
 }
 

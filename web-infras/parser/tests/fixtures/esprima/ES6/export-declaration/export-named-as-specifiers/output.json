@@ -86,6 +86,78 @@
                 "col": 28,
                 "index": 27
             }
+        },
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "foo",
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 34
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 8,
+                            "index": 37
+                        }
+                    },
+                    "init": null,
+                    "start": {
+                        "row": 2,
+                        "col": 5,
+                        "index": 34
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 8,
+                        "index": 37
+                    }
+                },
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "bar",
+                        "start": {
+                            "row": 2,
+                            "col": 10,
+                            "index": 39
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 13,
+                            "index": 42
+                        }
+                    },
+                    "init": null,
+                    "start": {
+                        "row": 2,
+                        "col": 10,
+                        "index": 39
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 13,
+                        "index": 42
+                    }
+                }
+            ],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 30
+            },
+            "end": {
+                "row": 2,
+                "col": 13,
+                "index": 42
+            }
         }
     ],
     "start": {
@@ -95,7 +167,7 @@
     },
     "end": {
         "row": 2,
-        "col": 1,
-        "index": 30
+        "col": 14,
+        "index": 43
     }
 }

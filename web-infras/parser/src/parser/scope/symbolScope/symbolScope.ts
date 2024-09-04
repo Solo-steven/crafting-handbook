@@ -2,6 +2,7 @@ import {
   ClassSymbolScope,
   DeclaratableScope,
   FunctionSymbolScope,
+  NonFunctionalSymbolType,
   PrivateNameDefKind,
   ProgramSymbolScope,
   SymbolScope,
@@ -18,26 +19,13 @@ export function createSymbolScopeRecorder() {
   const symbolScopes: Array<SymbolScope> = [];
   const context = createSymbolScopeRecorderContext();
   /**
-   * Enter Pre block, which mean the head of forStatement
-   * and the catch paran of catch statement.
-   */
-  function enterPreBlockScope() {
-    symbolScopes.push({
-      kind: "BlockSymbolScope",
-      symbol: new Map(),
-    });
-  }
-  function setIndexOfEndTokenOfPreBlockScope(index: number) {
-    context.lastTokenIndex = index;
-  }
-  /**
    * Enter program scope
    */
   function enterProgramSymbolScope() {
     symbolScopes.push({
       kind: "ProgramSumbolScope",
-      exportDefaultSymbol: false,
       exportSymbol: new Set(),
+      undefExportSymbols: new Set(),
       duplicateExportSymbols: new Set(),
       haveDefaultExport: false,
       symbol: new Map(),
@@ -58,10 +46,7 @@ export function createSymbolScopeRecorder() {
   /**
    * Enter block scope
    */
-  function enterBlockSymbolScope(lastTokenIndex: number) {
-    if (context.lastTokenIndex === lastTokenIndex) {
-      return;
-    }
+  function enterBlockSymbolScope() {
     symbolScopes.push({
       kind: "BlockSymbolScope",
       symbol: new Map(),
@@ -151,7 +136,7 @@ export function createSymbolScopeRecorder() {
     scope: DeclaratableScope,
     name: string,
     type: SymbolType,
-  ) {
+  ): boolean {
     const existedSymbols = scope.symbol.get(name);
     const isDeclarateInParam = scope.kind === "FunctionSymbolScope" && scope.params.has(name);
     switch (type) {
@@ -160,10 +145,12 @@ export function createSymbolScopeRecorder() {
         if (isDeclarateInParam) {
           return false;
         }
+
         if (existedSymbols) {
-          if (!helperIsOnlySymbolKind(existedSymbols, SymbolType.Function)) {
-            return false;
-          }
+          // if (!helperIsOnlySymbolKind(existedSymbols, SymbolType.Function)) {
+          //   return false;
+          // }
+          return false;
         }
         scope.symbol.set(name, [type]);
         return true;
@@ -175,14 +162,14 @@ export function createSymbolScopeRecorder() {
         }
         // for VariableDeclarationStatement, it is ok to duplicate a identifier, if the identifier is
         // also declarate under VariableDeclarationStatement or in param, otherwise, it should be a error
-        return helperIsOnlySymbolKind(existedSymbols, SymbolType.Var);
+        return (
+          helperIsOnlySymbolKind(existedSymbols, SymbolType.Var) ||
+          (helperIsOnlySymbolKind(existedSymbols, SymbolType.Function) &&
+            (scope.kind === "FunctionSymbolScope" || scope.kind === "ProgramSumbolScope"))
+        );
       }
-      case SymbolType.Function: {
-        if (!existedSymbols) {
-          scope.symbol.set(name, [type]);
-          return true;
-        }
-        return helperIsOnlySymbolKind(existedSymbols, SymbolType.Var);
+      default: {
+        throw new Error("Unreach");
       }
     }
   }
@@ -200,6 +187,39 @@ export function createSymbolScopeRecorder() {
       programScope.exportSymbol.add(name);
       return true;
     }
+  }
+  /**
+   * Public API for check is identifier is already def the
+   */
+  function isVariableDeclarated(name: string): boolean {
+    const scope = helperFindClosedDeclaratableSymbolScope();
+    return scope.symbol.has(name);
+  }
+  function addToUndefExportSource(name: string) {
+    const programScope = symbolScopes[0] as ProgramSymbolScope;
+    programScope.undefExportSymbols.add(name);
+  }
+  function isProgramContainUndefSymbol(): boolean {
+    const programScope = symbolScopes[0] as ProgramSymbolScope;
+    for (const symbol of programScope.undefExportSymbols) {
+      if (!programScope.symbol.has(symbol)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function enterCatchParam() {
+    context.isCatchParam = true;
+  }
+  function setCatchParamTo(type: SymbolType.Let | SymbolType.Var) {
+    let isSucess = true;
+    for (const name of context.cahcheNames) {
+      const scope = helperFindClosedDeclaratableSymbolScope();
+      isSucess = helperTryInsertDeclaratableSymbolToScope(scope, name, type) && isSucess;
+    }
+    context.cahcheNames = [];
+    context.isCatchParam = false;
+    return isSucess;
   }
   /**
    * Test is default export already exist, if yes return false
@@ -220,7 +240,33 @@ export function createSymbolScopeRecorder() {
    */
   function declarateVarSymbol(name: string): boolean {
     const functionalScope = helperFindClosedFunctionalScope();
-    return helperTryInsertDeclaratableSymbolToScope(functionalScope, name, SymbolType.Var);
+    const symbolScope = helperFindClosedDeclaratableSymbolScope();
+    if (functionalScope === symbolScope) {
+      return helperTryInsertDeclaratableSymbolToScope(functionalScope, name, SymbolType.Var);
+    }
+    const scopeNeedDeclarate: DeclaratableScope[] = [];
+    for (let index = symbolScopes.length - 1; index >= 0; --index) {
+      const scope = symbolScopes[index];
+      if (scope === functionalScope) {
+        scopeNeedDeclarate.push(scope);
+        break;
+      }
+      if (scope === symbolScope) {
+        scopeNeedDeclarate.push(scope);
+        continue;
+      }
+      if (scopeNeedDeclarate.length > 0) {
+        if (scope.kind !== "ClassSymbolScope") {
+          scopeNeedDeclarate.push(scope);
+        }
+      }
+    }
+    const boolRef = { value: true };
+    scopeNeedDeclarate.reduce((ref, scope) => {
+      ref.value = helperTryInsertDeclaratableSymbolToScope(scope, name, SymbolType.Var) && ref.value;
+      return ref;
+    }, boolRef);
+    return boolRef.value;
   }
   /**
    * Public API to declarate a identifier in `LexicalDeclaration` with let binding
@@ -229,6 +275,10 @@ export function createSymbolScopeRecorder() {
    * @returns {boolean}
    */
   function declarateLetSymbol(name: string): boolean {
+    if (context.isCatchParam) {
+      context.cahcheNames.push(name);
+      return true;
+    }
     const symbolScope = helperFindClosedDeclaratableSymbolScope();
     return helperTryInsertDeclaratableSymbolToScope(symbolScope, name, SymbolType.Let);
   }
@@ -239,21 +289,50 @@ export function createSymbolScopeRecorder() {
    * @returns {boolean}
    */
   function declarateConstSymbol(name: string): boolean {
+    if (context.isCatchParam) {
+      context.cahcheNames.push(name);
+      return true;
+    }
     const symbolScope = helperFindClosedDeclaratableSymbolScope();
     return helperTryInsertDeclaratableSymbolToScope(symbolScope, name, SymbolType.Const);
   }
   /**
    * Public API to declarate a identifier as function name.
    * @param {string} name
-   * @returns {boolean}
    */
-  function declarateFuncrtionSymbol(name: string): boolean {
-    const symbolScope = helperFindClosedDeclaratableSymbolScope();
-    return helperTryInsertDeclaratableSymbolToScope(symbolScope, name, SymbolType.Function);
+  function declarateFuncrtionSymbol(name: string) {
+    if (context.isCatchParam) {
+      context.cahcheNames.push(name);
+      return null;
+    }
+    const scope = helperFindClosedDeclaratableSymbolScope();
+    const existedSymbols = scope.symbol.get(name);
+    // const isDeclarateInParam = scope.kind === "FunctionSymbolScope" && scope.params.has(name);
+    if (!existedSymbols) {
+      scope.symbol.set(name, [SymbolType.Function]);
+      return null;
+    }
+    return existedSymbols[0];
   }
   function declarateSymbol(name: string) {
-    const symbolScope = helperFindClosedDeclaratableSymbolScope();
-    return helperTryInsertDeclaratableSymbolToScope(symbolScope, name, context.symbolType);
+    if (context.isCatchParam) {
+      context.cahcheNames.push(name);
+      return true;
+    }
+    switch (context.symbolType) {
+      case SymbolType.Let: {
+        return declarateLetSymbol(name);
+      }
+      case SymbolType.Const: {
+        return declarateConstSymbol(name);
+      }
+      case SymbolType.Var: {
+        return declarateVarSymbol(name);
+      }
+      // case SymbolType.Function: {
+      //   return declarateFuncrtionSymbol(name);
+      // }
+    }
   }
   /**
    * Declarate a param in function scope, it will not check the duplication or not.
@@ -360,7 +439,7 @@ export function createSymbolScopeRecorder() {
     }
     return null;
   }
-  function setSymbolType(symbolType: SymbolType) {
+  function setSymbolType(symbolType: NonFunctionalSymbolType) {
     context.symbolType = symbolType;
   }
   function getSymbolType(): SymbolType {
@@ -368,15 +447,15 @@ export function createSymbolScopeRecorder() {
   }
   return {
     // enter and exsit scope
-    enterPreBlockScope,
     enterProgramSymbolScope,
     enterFunctionSymbolScope,
     enterBlockSymbolScope,
     exitSymbolScope,
     enterClassSymbolScope,
     exitClassSymbolScope,
-    // set the pre scope context
-    setIndexOfEndTokenOfPreBlockScope,
+    // for catch scope
+    enterCatchParam,
+    setCatchParamTo,
     // declarate symbol.
     declarateVarSymbol,
     declarateConstSymbol,
@@ -385,6 +464,9 @@ export function createSymbolScopeRecorder() {
     declarateSymbol,
     declarateParam,
     isFunctionParamDuplicate,
+    isVariableDeclarated,
+    addToUndefExportSource,
+    isProgramContainUndefSymbol,
     setSymbolType,
     getSymbolType,
     // export declarate

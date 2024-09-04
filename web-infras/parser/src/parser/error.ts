@@ -186,4 +186,6 @@ export const ErrorMessageMap = {
   // try using decorator outside of class
   babel_error_leading_decorators_must_be_attached_to_a_class_declaration:
     "SyntaxError: Leading decorators must be attached to a class declaration.",
+  // try export a name export declaration with no declar variable
+  babel_error_export_is_not_defined: "Export variable is not defined",
 };
