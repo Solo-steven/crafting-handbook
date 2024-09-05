@@ -3,6 +3,7 @@ export enum SymbolType {
   Const = "Const",
   Let = "Let",
   Function = "Function",
+  GenFunction = "GenFunction",
 }
 
 export type NonFunctionalSymbolType = SymbolType.Var | SymbolType.Let | SymbolType.Const;
@@ -42,7 +43,7 @@ export interface BlockSymbolScope extends BasicSymbolScope {
 }
 
 export type SymbolScope = ProgramSymbolScope | FunctionSymbolScope | BlockSymbolScope | ClassSymbolScope;
-export type DeclaratableScope = ProgramSymbolScope | FunctionSymbolScope | BlockSymbolScope;
+export type DeclaratableSymbolScope = ProgramSymbolScope | FunctionSymbolScope | BlockSymbolScope;
 export type FunctionalSymbolScope = ProgramSymbolScope | FunctionSymbolScope;
 
 export type SymbolScopeRecorderContext = {

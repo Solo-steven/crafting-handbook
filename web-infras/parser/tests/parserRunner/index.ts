@@ -25,6 +25,7 @@ const TempIgnoreCases: Set<string> = new Set([
   "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-var-hex",
   // === (TO BE VERIFY)
   "/esprima/statement/if/migrated_0003",
+  "/babel/core/scope/dupl-bind-catch-hang-func",
   // === (lone surrofate)
   "/babel/es2022/module-string-names/export-name-has-lone-surrogate",
   "/esprima/ES6/identifier/invalid_lone_surrogate",

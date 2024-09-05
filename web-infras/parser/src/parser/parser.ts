@@ -524,7 +524,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
     lexer.setStrictModeContext(config.sourceType === "module");
   }
   function exitProgram() {
-    if (symbolScopeRecorder.isProgramContainUndefSymbol()) {
+    if (symbolScopeRecorder.isProgramContainUndefSymbol() && !config.allowUndeclaredExports) {
       throw createMessageError(ErrorMessageMap.babel_error_export_is_not_defined);
     }
     symbolScopeRecorder.exitSymbolScope();
@@ -755,13 +755,13 @@ export function createParser(code: string, option?: ParserUserConfig) {
     }
     return list;
   }
-  function declarateSymbol(name: string) {
+  function declarateNonFunctionalSymbol(name: string) {
     if (isInParameter()) {
       symbolScopeRecorder.declarateParam(name);
       declarateExportSymbolIfInContext(name);
       return;
     }
-    if (!symbolScopeRecorder.declarateSymbol(name)) {
+    if (!symbolScopeRecorder.declarateNonFunctionalSymbol(name)) {
       throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
     }
     if (!declarateExportSymbolIfInContext(name)) {
@@ -769,11 +769,16 @@ export function createParser(code: string, option?: ParserUserConfig) {
     }
     return;
   }
-  function delcarateFcuntionSymbol(name: string) {
-    const duplicateType = symbolScopeRecorder.declarateFuncrtionSymbol(name);
+  function delcarateFcuntionSymbol(name: string, generator: boolean) {
+    const duplicateType = symbolScopeRecorder.declarateFuncrtionSymbol(name, generator);
     if (duplicateType) {
       if (
-        (duplicateType === SymbolType.Function && config.sourceType === "module") ||
+        (!generator &&
+          ((duplicateType === SymbolType.Function && config.sourceType === "module") ||
+            duplicateType === SymbolType.GenFunction)) ||
+        (generator &&
+          ((duplicateType === SymbolType.GenFunction && config.sourceType === "module") ||
+            duplicateType === SymbolType.Function)) ||
         (duplicateType === SymbolType.Var && lexicalScopeRecorder.isInCatch()) ||
         duplicateType === SymbolType.Let ||
         duplicateType === SymbolType.Const
@@ -1941,11 +1946,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
     exitFunctionScope(false);
     // for function declaration, symbol should declar in parent scope.
     const name = func.name!;
-    if (func.generator) {
-      declarateLetSymbol(name.name);
-    } else {
-      delcarateFcuntionSymbol(name.name);
-    }
+    delcarateFcuntionSymbol(name.name, func.generator);
     return Factory.transFormFunctionToFunctionDeclaration(func);
   }
   /**
@@ -4892,7 +4893,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
   }
   function parseBindingIdentifier() {
     const id = parseWithLHSLayer(parseIdentifierReference);
-    declarateSymbol(id.name);
+    declarateNonFunctionalSymbol(id.name);
     return id;
   }
   /**
@@ -4973,7 +4974,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
         if (!isPattern(propertyName)) {
           throw createMessageError("assignment pattern left value can only allow identifier or pattern");
         }
-        declarateSymbol((propertyName as Identifier).name);
+        declarateNonFunctionalSymbol((propertyName as Identifier).name);
         properties.push(
           Factory.createAssignmentPattern(
             propertyName,
@@ -4991,7 +4992,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
       }
       // check property name is keyword or not
       checkPropertyShortedIsKeyword(propertyName);
-      declarateSymbol((propertyName as Identifier).name);
+      declarateNonFunctionalSymbol((propertyName as Identifier).name);
       properties.push(
         Factory.createObjectPatternProperty(
           propertyName,
@@ -5384,7 +5385,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
       }
       const name = funcDeclar.name;
       if (name) {
-        delcarateFcuntionSymbol(name.name);
+        delcarateFcuntionSymbol(name.name, func.generator);
       }
       return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
     }
@@ -5400,7 +5401,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
       }
       const name = funcDeclar.name;
       if (name) {
-        delcarateFcuntionSymbol(name.name);
+        delcarateFcuntionSymbol(name.name, func.generator);
       }
       return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
     }

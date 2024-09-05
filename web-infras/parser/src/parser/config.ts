@@ -6,6 +6,7 @@ export type ParserConfig = {
   allowReturnOutsideFunction: boolean;
   allowAwaitOutsideFunction: boolean;
   allowNewTargetOutsideFunction: boolean;
+  allowUndeclaredExports: boolean;
   plugins: Array<string>;
 };
 export type ParserUserConfig = Partial<ParserConfig>;
@@ -14,6 +15,7 @@ const defaultConfig: ParserConfig = {
   allowReturnOutsideFunction: false,
   allowAwaitOutsideFunction: false,
   allowNewTargetOutsideFunction: false,
+  allowUndeclaredExports: false,
   plugins: [],
 };
 export function getConfigFromUserInput(config?: ParserUserConfig): ParserConfig {
