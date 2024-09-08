@@ -11,7 +11,6 @@ JS/JSX parser written in Typescript.
     - `estree/typescript`: TS not in current scope.
     - `jsx/errors/_no-plugin-ts-*`: TS not in current scope.
     - `flow`: Flow is not support.
-    - `core/scope`: Sematic Scope Not in current scope.
     - `esprima`: Duplicate to esprima.
     - `tokens`: should move to token folder.
     - `es2022/top-level-await-unambiguous`: Will not support.

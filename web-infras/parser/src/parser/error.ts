@@ -15,8 +15,6 @@ export const ErrorMessageMap = {
   invalid_property_name: "invalid property name",
   no_changle_line_after_async: "",
   super_can_not_call_if_not_in_class: "super can not be called if not in class block",
-  super_must_be_followed_by_an_argument_list_or_member_access:
-    "'super' must be followed by an argument list or member access.",
   private_name_wrong_used:
     "Private names are only allowed in property accesses or or in left hand side of `in` expressions",
   private_name_duplicate: "Private name duplicate.",
@@ -101,8 +99,7 @@ export const ErrorMessageMap = {
   invalid_esc_char_in_keyword: "keyword can not contain any esc flag.",
   paran_expr_can_not_be_empty: "paran expression can not be empty",
   /**
-   * Format error from MDN, using v8 based as error message value, some error is come from babel and
-   * v8 engine
+   * Format error from MDN, using v8 based as error message value, some error is come from babel and v8 engine.
    */
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_return
   syntax_error_return_not_in_function: "SyntaxError: return not in function",
@@ -188,4 +185,13 @@ export const ErrorMessageMap = {
     "SyntaxError: Leading decorators must be attached to a class declaration.",
   // try export a name export declaration with no declar variable
   babel_error_export_is_not_defined: "Export variable is not defined",
+  // try to access private name from super first level member access
+  babel_error_private_fields_cant_be_accessed_on_super:
+    "SyntaxError: Private fields can't be accessed on super.",
+  // try to access private name but not function call or member expression access.
+  babel_invalid_usage_of_super_call:
+    "SyntaxError: 'super' can only be used with function calls (i.e. super()) or in property accesses (i.e. super.prop or super[prop].",
+  // try to call super in not constructor function.
+  babel_error_call_super_outside_of_ctor:
+    "SyntaxError: `super()` is only valid inside a class constructor of a subclass. Maybe a typo in the method name ('constructor') or not extending another class?",
 };

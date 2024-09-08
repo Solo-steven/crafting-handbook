@@ -8,6 +8,9 @@ export type ParserConfig = {
   allowNewTargetOutsideFunction: boolean;
   allowUndeclaredExports: boolean;
   plugins: Array<string>;
+  // errorRecovery: boolean;
+  // createImportExpressions: boolean;
+  // allowSuperOutsideMethod: boolean;
 };
 export type ParserUserConfig = Partial<ParserConfig>;
 const defaultConfig: ParserConfig = {

@@ -119,6 +119,9 @@ import {
   UnaryExpression,
   ImportAttribute,
   Decorator,
+  MetaProperty,
+  CallExpression,
+  ThisExpression,
   // isBlockStatement,
 } from "web-infra-common";
 import { ExpectToken } from "./type";
@@ -1803,31 +1806,35 @@ export function createParser(code: string, option?: ParserUserConfig) {
     while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
       body.push(parseStatementListItem());
     }
-    const { end: puncEnd } = expect(
-      SyntaxKinds.BracesRightPunctuator,
-      "block statement must wrapped by bracket",
-    );
+    const { end: puncEnd } = expect(SyntaxKinds.BracesRightPunctuator);
     return Factory.createBlockStatement(body, puncStart, puncEnd);
   }
   function parseThrowStatement() {
     const { start } = expect(SyntaxKinds.ThrowKeyword);
-    if (getLineTerminatorFlag()) {
-      throw createMessageError("TODO, line break not allow");
-    }
+    staticSmaticEarlyErrorForThrowStatement();
     const expr = parseExpressionAllowIn();
     shouldInsertSemi();
     return Factory.createThrowStatement(expr, start, cloneSourcePosition(expr.end));
   }
-  function parseWithStatement(): WithStatement {
-    if (isInStrictMode()) {
-      throw createMessageError(ErrorMessageMap.with_statement_can_not_use_in_strict_mode);
+  function staticSmaticEarlyErrorForThrowStatement() {
+    if (getLineTerminatorFlag()) {
+      throw createMessageError("TODO, line break not allow");
     }
+  }
+  function parseWithStatement(): WithStatement {
+    staticSmaticEarlyErrorForWithStatement();
     const { start } = expect(SyntaxKinds.WithKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const object = parseExpressionAllowIn();
     expect(SyntaxKinds.ParenthesesRightPunctuator);
     const body = parseStatement();
     return Factory.createWithStatement(object, body, start, cloneSourcePosition(body.end));
+  }
+  function staticSmaticEarlyErrorForWithStatement() {
+    if (isInStrictMode()) {
+      // recoverable error.
+      throw createMessageError(ErrorMessageMap.with_statement_can_not_use_in_strict_mode);
+    }
   }
   function parseDebuggerStatement(): DebuggerStatement {
     const { start, end } = expect(SyntaxKinds.DebuggerKeyword);
@@ -1972,7 +1979,6 @@ export function createParser(code: string, option?: ParserUserConfig) {
       return [name, params];
     });
     const body = parseFunctionBody();
-    checkStrictModeScopeError(scope);
     postStaticSematicEarlyErrorForStrictModeOfFunction(name, scope);
     return Factory.createFunction(
       name,
@@ -2131,10 +2137,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
       if (isEndWithRest && match(SyntaxKinds.CommaToken)) {
         throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
       }
-      throw createUnexpectError(
-        SyntaxKinds.ParenthesesRightPunctuator,
-        "params list must end up with ParenthesesRight",
-      );
+      throw createUnexpectError(SyntaxKinds.ParenthesesRightPunctuator);
     }
     nextToken();
     setContextIfParamsIsSimpleParameterList(params);
@@ -2340,7 +2343,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
         decorators,
       ) as ClassMethodDefinition;
     }
-    helperSematicCheckClassPropertyName(key, isComputedRef.isComputed, isStatic);
+    staticSematicForClassPropertyName(key, isComputedRef.isComputed, isStatic);
     let propertyValue = undefined,
       shorted = true;
     if (match([SyntaxKinds.AssginOperator])) {
@@ -2348,7 +2351,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
       shorted = false;
       const [value, scope] = parseWithCatpureLayer(parseAssignmentExpressionAllowIn);
       propertyValue = value;
-      checkStrictModeScopeError(scope);
+      staticSematicForClassPropertyValue(scope);
     }
     shouldInsertSemi();
     if (accessor) {
@@ -2399,7 +2402,29 @@ export function createParser(code: string, option?: ParserUserConfig) {
     }
     return false;
   }
-  function helperSematicCheckClassPropertyName(
+  /**
+   * For a class scope, it must be strict mode, so argument identifier can
+   * @param {StrictModeScope} scope
+   * @returns
+   */
+  function staticSematicForClassPropertyValue(scope: StrictModeScope) {
+    if (scope.kind !== "CatpureLayer") {
+      return;
+    }
+    if (scope.argumentsIdentifier.length > 0) {
+      throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+    }
+  }
+  /**
+   * Check sematic for class property name.
+   *  - `constructor` can not used as property name
+   *  - `prototype` can not be a static property
+   * @param {PropertyName | PrivateName} propertyName
+   * @param isComputed
+   * @param {boolean} isStatic
+   * @returns
+   */
+  function staticSematicForClassPropertyName(
     propertyName: PropertyName | PrivateName,
     isComputed: boolean,
     isStatic: boolean,
@@ -2778,7 +2803,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
       if (isBinaryOps(nextOp) && getBinaryPrecedence(nextOp) > getBinaryPrecedence(currentOp)) {
         right = parseBinaryOps(right, getBinaryPrecedence(nextOp));
       }
-      helperCheckBinaryExpr(currentOp, nextOp, left, right);
+      staticSematicForBinaryExpr(currentOp, nextOp, left, right);
       left = Factory.createBinaryExpression(
         left,
         right,
@@ -2789,7 +2814,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
     }
     return left;
   }
-  function helperCheckBinaryExpr(
+  function staticSematicForBinaryExpr(
     currentOps: SyntaxKinds,
     nextOps: SyntaxKinds,
     left: Expression,
@@ -3040,7 +3065,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
     };
   }
   /**
-   * Parse MemberExpression with base, this different between parseLeftHandSideExpression is
+   * Parse with base, this different between parseLeftHandSideExpression is
    * that parseMemberExpression would only eat a `atom` of chain of expression.
    * ```
    * MemberExpression := GivenBase(base ,optional) '.' IdentiferWithKeyword
@@ -3328,17 +3353,11 @@ export function createParser(code: string, option?: ParserUserConfig) {
     return Factory.createRegexLiteral(pattern, flag, start, getEndPosition());
   }
   /**
-   * this function is actually parse binding identifier. it accept more than just identifier
-   * include await yield and let, if identifier is let, await or yield, this function would
-   * auto check context for you. but if identifier is in VariableDeclaration, function name,
-   * property name, context check is not suit those place, so you maybe need to implement another
-   * context check logical with parseIdentifierWithKeyword function.
-   * ```
-   * BindingIdentifier := Identifier
-   *                   := 'await' (deps in context)
-   *                   := 'yield' (deps in context)
-   *                   ('let' (deps on context))
-   * ```
+   * IdentifierReference, IdentifierName and BindingIdentifier is not samething in the
+   * spec.
+   * - IdentifierReference is a id in Lval or Rval
+   * - IdentifierName is a property of member expression or object, class
+   * - BindingIdentifier is a lval.
    * @returns {Identifier}
    */
   function parseIdentifierReference(): Identifier {
@@ -3354,70 +3373,127 @@ export function createParser(code: string, option?: ParserUserConfig) {
       // for most of yield keyword, if it should treat as identifier,
       // it should not in generator function.
       case SyntaxKinds.YieldKeyword: {
-        if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
-          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-        }
         const { value, start, end } = expect(SyntaxKinds.YieldKeyword);
-        recordScope(ExpressionScopeKind.YieldIdentifier, start);
+        staticSematicForIdentifierAsYield(start);
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
       // for most of await keyword, if it should treat as identifier,
       // it should not in async function.
       case SyntaxKinds.AwaitKeyword: {
-        if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
-          throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
-        }
         const { value, start, end } = expect(SyntaxKinds.AwaitKeyword);
-        if (!(isDirectToClassScope() && !isInPropertyName())) {
-          recordScope(ExpressionScopeKind.AwaitIdentifier, start);
-        }
+        staticSematicForIdentifierAsAwait(start);
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
       // let maybe treat as identifier in not strict mode, and not lexical binding declaration.
       // so lexical binding declaration should implement it's own checker logical with parseIdentifierWithKeyword
       case SyntaxKinds.LetKeyword: {
-        if (isInStrictMode() || isInClassScope()) {
-          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
-        }
         const { value, start, end } = expect(SyntaxKinds.LetKeyword);
-        recordScope(ExpressionScopeKind.LetIdentifiier, start);
+        staticSematicForIdentifierAsLet(start);
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
       case SyntaxKinds.Identifier: {
         const { value, start, end } = expect(SyntaxKinds.Identifier);
-        const isPreserveWord = PreserveWordSet.has(value);
-        if (isPreserveWord) {
-          if (isInStrictMode() || isInClassScope()) {
-            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
-          }
-          recordScope(ExpressionScopeKind.PresveredWordIdentifier, start);
-        }
-        if (value === "arguments") {
-          if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
-            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
-          }
-          if (isInClassScope() && !isEncloseInFunction() && !isInPropertyName()) {
-            throw createMessageError(ErrorMessageMap.syntax_error_arguments_is_not_valid_in_fields);
-          }
-          recordScope(ExpressionScopeKind.ArgumentsIdentifier, start);
-        }
-        if (value === "eval") {
-          if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
-            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
-          }
-          recordScope(ExpressionScopeKind.EvalIdentifier, start);
-        }
+        staticSematicForIdentifierDefault(value, start);
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
       default: {
-        throw createUnreachError();
+        throw createUnexpectError(null);
       }
     }
     return identifer;
+  }
+  /**
+   * Yield only could be used as a identifier when
+   *
+   * - it is not in strict mode.
+   * - not in a generator context.
+   *
+   * record it's usage for defer check.
+   * @param {SourcePosition} start
+   */
+  function staticSematicForIdentifierAsYield(start: SourcePosition) {
+    if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
+      throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+    }
+    recordScope(ExpressionScopeKind.YieldIdentifier, start);
+  }
+  /**
+   * Await only could be used as identifirt when
+   *
+   * - it is not in module mode
+   * - not in async context
+   *
+   * record it's usgae for defer check.
+   * @param {SourcePosition} start
+   */
+  function staticSematicForIdentifierAsAwait(start: SourcePosition) {
+    if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
+      throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+    }
+    // skip if is using await in class property name in async context
+    if (isDirectToClassScope() && !isInPropertyName()) {
+      return;
+    }
+    recordScope(ExpressionScopeKind.AwaitIdentifier, start);
+  }
+  /**
+   * Let only could be used as identifirt when
+   *
+   * - it is not in strict mode
+   *
+   * record it's usgae for defer check.
+   * @param {SourcePosition} start
+   */
+  function staticSematicForIdentifierAsLet(start: SourcePosition) {
+    if (isInStrictMode()) {
+      throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+    }
+    recordScope(ExpressionScopeKind.LetIdentifiier, start);
+  }
+  /**
+   * Checking the usage for arguments and eval, presverveword
+   *
+   * - for presverveword, only could be used when not in strict mode
+   * - for argument, can not used when
+   *   1. in strict mode, and in the lhs
+   *   2. in strict mode, not in function.
+   * - for eval, can not used when
+   *   1. in strict mode, and in the lhs
+   *
+   * record it's usgae for defer check.
+   * @param {SourcePosition} start
+   */
+  function staticSematicForIdentifierDefault(value: string, start: SourcePosition) {
+    const isPreserveWord = PreserveWordSet.has(value);
+    if (isPreserveWord) {
+      if (isInStrictMode()) {
+        throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+      }
+      recordScope(ExpressionScopeKind.PresveredWordIdentifier, start);
+    }
+    if (value === "arguments") {
+      if (isInStrictMode()) {
+        if (!isEncloseInFunction() && !isInPropertyName()) {
+          // invalud usage
+          throw createMessageError(ErrorMessageMap.syntax_error_arguments_is_not_valid_in_fields);
+        }
+        if (strictModeScopeRecorder.isInLHS()) {
+          // invalid assignment
+          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+        }
+      }
+      recordScope(ExpressionScopeKind.ArgumentsIdentifier, start);
+    }
+    if (value === "eval") {
+      if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
+        throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+      }
+      recordScope(ExpressionScopeKind.EvalIdentifier, start);
+    }
   }
   /**
    * Relatedly loose function for parseIdentifier, it not only can parse identifier,
@@ -3428,7 +3504,13 @@ export function createParser(code: string, option?: ParserUserConfig) {
     const { value, start, end } = expect(IdentiferWithKeyworArray);
     return Factory.createIdentifier(value, start, end);
   }
-  function parsePrivateName() {
+  /**
+   * ECMA spec has every strict rule to private name, but in this parser, most of
+   * strict rule check is implemented by callee, there we only gonna check is in
+   * class scope or not.
+   * @returns {PrivateName}
+   */
+  function parsePrivateName(): PrivateName {
     const { value, start, end } = expect(SyntaxKinds.PrivateName);
     if (!isInClassScope()) {
       throw createMessageError(ErrorMessageMap.private_field_can_not_use_in_object); // semantics check for private
@@ -3570,11 +3652,35 @@ export function createParser(code: string, option?: ParserUserConfig) {
     nextToken();
     return Factory.createTemplateLiteral(quasis, expressions, templateLiteralStart, templateLiteralEnd);
   }
-  function parseImportMeta() {
+  /**
+   * Parse import meta property
+   * ```
+   * ImportMeta := import . meta
+   * ```
+   * @returns {MetaProperty}
+   */
+  function parseImportMeta(): MetaProperty {
     const { start, end } = expect(SyntaxKinds.ImportKeyword);
     expect(SyntaxKinds.DotOperator);
     const ecaFlag = getEscFlag();
     const property = parseIdentifierReference();
+    staticSematicForImportMeta(property, ecaFlag);
+    return Factory.createMetaProperty(
+      Factory.createIdentifier("import", start, end),
+      property,
+      start,
+      cloneSourcePosition(property.end),
+    );
+  }
+  /**
+   * Sematic check for import meta
+   * - import member expression's property only could be meta
+   * - meta should be a contextual keyword
+   * - import meta can't use in script mode
+   * @param property
+   * @param ecaFlag
+   */
+  function staticSematicForImportMeta(property: Identifier, ecaFlag: boolean) {
     if (property.name !== "meta") {
       throw createMessageError(
         ErrorMessageMap.babel_error_the_only_valid_meta_property_for_import_is_import_meta,
@@ -3588,14 +3694,15 @@ export function createParser(code: string, option?: ParserUserConfig) {
         ErrorMessageMap.babel_error_import_meta_may_appear_only_with_source_type_module,
       );
     }
-    return Factory.createMetaProperty(
-      Factory.createIdentifier("import", start, end),
-      property,
-      start,
-      cloneSourcePosition(property.end),
-    );
   }
-  function parseImportCall() {
+  /**
+   * Parse Import call
+   * ```
+   * ImportCall := import ( AssignmentExpression[+In], (optional support attribute) )
+   * ```
+   * @returns {CallExpression}
+   */
+  function parseImportCall(): CallExpression {
     const { start, end } = expect(SyntaxKinds.ImportKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const argument = parseAssignmentExpressionAllowIn();
@@ -3609,6 +3716,11 @@ export function createParser(code: string, option?: ParserUserConfig) {
       cloneSourcePosition(finalEnd),
     );
   }
+  /**
+   * Parse import attribute (stage 3 syntax)
+   * ref: https://github.com/tc39/proposal-import-attributes
+   * @returns
+   */
   function parseImportAttributeOptional(): Expression | null {
     if (!config.plugins.includes("importAttributes") && !config.plugins.includes("importAssertions")) {
       return null;
@@ -3626,18 +3738,17 @@ export function createParser(code: string, option?: ParserUserConfig) {
     }
     return option;
   }
-  function parseNewTarget() {
+  /**
+   * Parse new target
+   * ```
+   * NewTarget := new . target
+   * ```
+   * @returns {MetaProperty}
+   */
+  function parseNewTarget(): MetaProperty {
     const { start, end } = expect(SyntaxKinds.NewKeyword);
     expect(SyntaxKinds.DotOperator);
-    if (!isContextKeyword("target")) {
-      throw createUnexpectError(
-        SyntaxKinds.Identifier,
-        "new concat with dot should only be used in meta property",
-      );
-    }
-    if (!config.allowNewTargetOutsideFunction && isTopLevel() && !isInClassScope()) {
-      throw createMessageError(ErrorMessageMap.new_target_can_only_be_used_in_class_or_function_scope);
-    }
+    staticSematicForNewTarget();
     const targetStart = getStartPosition();
     const targetEnd = getEndPosition();
     nextToken();
@@ -3648,12 +3759,18 @@ export function createParser(code: string, option?: ParserUserConfig) {
       targetEnd,
     );
   }
+  function staticSematicForNewTarget() {
+    if (!isContextKeyword("target")) {
+      throw createUnexpectError(SyntaxKinds.Identifier);
+    }
+    if (!config.allowNewTargetOutsideFunction && isTopLevel() && !isInClassScope()) {
+      throw createMessageError(ErrorMessageMap.new_target_can_only_be_used_in_class_or_function_scope);
+    }
+  }
   /**
-   * Parse New Expression
-   * new expression is a trick one, because is not always right to left,
-   * for a new expression, last the rightest component must be a CallExpression,
-   * and before that CallExpression, it can be a series of MemberExpression,
-   * or event another NewExpression
+   * Parse New Expression, the callee part of new expression is a trick one,
+   * this is not a member expression, it can not contain qustion dot or call
+   * expression.
    * ```
    * NewExpression := 'new' NewExpression
    *               := 'new' MemberExpressionWithoutOptional Arugment?
@@ -3667,10 +3784,32 @@ export function createParser(code: string, option?: ParserUserConfig) {
       return parseNewExpression();
     }
     let base = parsePrimaryExpression();
-    if (isCallExpression(base) && !base.parentheses) {
+    staticSematicForBaseInNewExpression(base);
+    base = parseNewExpressionCallee(base);
+    if (!match(SyntaxKinds.ParenthesesLeftPunctuator)) {
+      // accpect New XXX -> No argument
+      return Factory.createNewExpression(base, [], start, cloneSourcePosition(base.end));
+    }
+    const { end, nodes } = parseArguments();
+    return Factory.createNewExpression(base, nodes, start, end);
+  }
+  /**
+   * The base of new expression can not be a import call expression, if must be a import
+   * call expression, it must be have a paran.
+   * @param {Expression} base
+   */
+  function staticSematicForBaseInNewExpression(base: Expression) {
+    if (!base.parentheses && isCallExpression(base) && base.callee.kind === SyntaxKinds.Import) {
       throw createMessageError(ErrorMessageMap.import_call_is_not_allow_as_new_expression_called);
     }
-    // TODO: refactor this loop to with function -> parseNewExpressionCallee ?
+  }
+  /**
+   * Parse the callee of new expression, base of new expression can not
+   * be a call expression or a qustion dot expression.
+   * @param {Expression} base
+   * @returns
+   */
+  function parseNewExpressionCallee(base: Expression): Expression {
     while (
       match(SyntaxKinds.DotOperator) ||
       match(SyntaxKinds.BracketLeftPunctuator) ||
@@ -3681,21 +3820,29 @@ export function createParser(code: string, option?: ParserUserConfig) {
       }
       base = parseMemberExpression(base, false);
     }
-    // accpect New XXX -> No argument
-    if (!match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-      return Factory.createNewExpression(base, [], start, cloneSourcePosition(base.end));
-    }
-    const { end, nodes } = parseArguments();
-    return Factory.createNewExpression(base, nodes, start, end);
+    return base;
   }
-  function parseSuper() {
+  /**
+   * Parse super expression, only parse the arguments and super or a first level
+   * of access of member expression. Contain sematic check:
+   * - Super call only valid in ctor.
+   * - super property can be used in any method of class.
+   * ```
+   * SuperCall      := super argument
+   * SuperProperty  := super[Expression]
+   *                := super.IdentifierName
+   * ```
+   * @returns {Expression}
+   */
+  function parseSuper(): Expression {
     if (!isCurrentClassExtend()) {
       throw createMessageError(ErrorMessageMap.super_can_not_call_if_not_in_class);
     }
     const { start: keywordStart, end: keywordEnd } = expect([SyntaxKinds.SuperKeyword]);
     if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
       if (!lexicalScopeRecorder.isInCtor()) {
-        throw createMessageError("");
+        // recoverable error
+        throw createMessageError(ErrorMessageMap.babel_error_call_super_outside_of_ctor);
       }
       const { nodes, end: argusEnd } = parseArguments();
       return Factory.createCallExpression(
@@ -3713,7 +3860,8 @@ export function createParser(code: string, option?: ParserUserConfig) {
       case SyntaxKinds.DotOperator: {
         nextToken();
         if (match(SyntaxKinds.PrivateName)) {
-          // TODO: error
+          // recoverable error
+          throw createMessageError(ErrorMessageMap.babel_error_private_fields_cant_be_accessed_on_super);
         }
         property = parseIdentifierName();
         end = cloneSourcePosition(property.end);
@@ -3727,9 +3875,10 @@ export function createParser(code: string, option?: ParserUserConfig) {
         break;
       }
       case SyntaxKinds.QustionDotOperator:
-        throw createMessageError("");
+        // recoverable error.
+        throw createMessageError(ErrorMessageMap.babel_invalid_usage_of_super_call);
       default:
-        throw createMessageError(ErrorMessageMap.super_must_be_followed_by_an_argument_list_or_member_access);
+        throw createUnexpectError(null);
     }
     return Factory.createMemberExpression(
       isComputed,
@@ -3740,7 +3889,11 @@ export function createParser(code: string, option?: ParserUserConfig) {
       end,
     );
   }
-  function parseThisExpression() {
+  /**
+   * Parse this expression, only eat `this` token
+   * @returns {ThisExpression}
+   */
+  function parseThisExpression(): ThisExpression {
     const { start, end } = expect([SyntaxKinds.ThisKeyword]);
     return Factory.createThisExpression(start, end);
   }
@@ -3780,14 +3933,27 @@ export function createParser(code: string, option?: ParserUserConfig) {
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
     return Factory.createObjectExpression(propertyDefinitionList, trailingComma, start, end);
   }
-  // part of 13.2.5.1
+  /**
+   * Adding `__proto__` property key to duplication set, if object expression transform to pattern
+   * duplication of `__proto__` is ok, but when is not pattern, it not a correct syntax.
+   * @param {Array<PropertyName>} protoPropertyNames
+   * reference: 13.2.5.1
+   */
   function staticSematicEarlyErrorForObjectExpression(protoPropertyNames: Array<PropertyName>) {
     if (protoPropertyNames.length > 1) {
       for (let index = 1; index < protoPropertyNames.length; ++index)
         context.propertiesProtoDuplicateSet.add(protoPropertyNames[index]);
     }
   }
-  function helperRecordPropertyNameForStaticSematicEarly(
+  /**
+   * Helper for property definition to record the object property which property is
+   * `__proto__`, since duplication of `__proto__` is a error.
+   * @param protoPropertyNames
+   * @param propertyName
+   * @param isComputed
+   * @returns
+   */
+  function staticSematicHelperRecordPropertyNameForEarlyError(
     protoPropertyNames: Array<PropertyName>,
     propertyName: PropertyName,
     isComputed: boolean,
@@ -3844,7 +4010,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
       return parseMethodDefintion(false, [propertyName, isComputedRef.isComputed]) as ObjectMethodDefinition;
     }
     if (isComputedRef.isComputed || match(SyntaxKinds.ColonPunctuator)) {
-      helperRecordPropertyNameForStaticSematicEarly(
+      staticSematicHelperRecordPropertyNameForEarlyError(
         protoPropertyNameLocations,
         propertyName,
         isComputedRef.isComputed,
@@ -3862,7 +4028,7 @@ export function createParser(code: string, option?: ParserUserConfig) {
     }
     recordIdentifierValue(propertyName);
     if (match(SyntaxKinds.AssginOperator)) {
-      helperRecordPropertyNameForStaticSematicEarly(
+      staticSematicHelperRecordPropertyNameForEarlyError(
         protoPropertyNameLocations,
         propertyName,
         isComputedRef.isComputed,
@@ -3880,13 +4046,8 @@ export function createParser(code: string, option?: ParserUserConfig) {
       context.propertiesInitSet.add(property);
       return property;
     }
-    if (isStringLiteral(propertyName) || isNumnerLiteral(propertyName)) {
-      throw createMessageError(
-        ErrorMessageMap.when_binding_pattern_property_name_is_string_literal_can_not_be_shorted,
-      );
-    }
-    // check if shorted property is keyword or not.
-    checkPropertyShortedIsKeyword(propertyName);
+    staticSematicForShortedPropertyNameInObjectLike(propertyName);
+    staticSematicForShortedPropertyNameInObjectExpression(propertyName as Identifier);
     return Factory.createObjectProperty(
       propertyName,
       undefined,
@@ -3921,12 +4082,9 @@ export function createParser(code: string, option?: ParserUserConfig) {
   /**
    * Parse PropertyName, using context ref which passed in to record this property is computed or not.
    *
-   * ### Problem of Keyword as PropertyName
-   * PropertyName can not only be a identifier but alse can be a keyword in some place, for example, as method
-   * of object or class, and it is ok to use it as left value of property name. the syntax error happend when
-   * using keyword as shorted property. So when `parsePropertyName` parse a identifier with keyword, it would
-   * check if next token is `(` or `:`, to make sure throw error when parse keyword as shorted property
-   *
+   * ### Extra action need for callee
+   * In this function, we accept keywrod as property name, but when the property name use as a shorted
+   * property name, it will be a syntax error, so father syntax check is needed handle by callee.
    * ```
    * PropertyName := Identifer (IdentifierName, not BindingIdentifier)
    *              := NumberLiteral
@@ -3944,53 +4102,70 @@ export function createParser(code: string, option?: ParserUserConfig) {
       ...IdentiferWithKeyworArray,
       ...NumericLiteralKinds,
     ]);
-    if (match(SyntaxKinds.StringLiteral)) {
-      return parseStringLiteral();
+    switch (getToken()) {
+      case SyntaxKinds.StringLiteral: {
+        return parseStringLiteral();
+      }
+      case SyntaxKinds.BracketLeftPunctuator: {
+        nextToken();
+        lexicalScopeRecorder.enterPropertyName();
+        const expr = parseAssignmentExpressionAllowIn();
+        lexicalScopeRecorder.exitPropertyName();
+        expect(SyntaxKinds.BracketRightPunctuator);
+        isComputedRef.isComputed = true;
+        return expr;
+      }
+      default: {
+        if (match(NumericLiteralKinds)) {
+          return parseNumericLiteral();
+        }
+        // propty name is a spical test of binding identifier.
+        // if `await` and `yield` is propty name with colon (means assign), it dose not affected by scope.
+        if (match(IdentiferWithKeyworArray)) {
+          const identifer = parseIdentifierName();
+          return identifer;
+        }
+        throw createMessageError("Unreach");
+      }
     }
-    if (match(NumericLiteralKinds)) {
-      return parseNumericLiteral();
-    }
-    // propty name is a spical test of binding identifier.
-    // if `await` and `yield` is propty name with colon (means assign), it dose not affected by scope.
-    if (match(IdentiferWithKeyworArray)) {
-      const identifer = parseIdentifierName();
-      return identifer;
-    }
-
-    nextToken();
-    lexicalScopeRecorder.enterPropertyName();
-    const expr = parseAssignmentExpressionAllowIn();
-    lexicalScopeRecorder.exitPropertyName();
-    expect(SyntaxKinds.BracketRightPunctuator);
-    isComputedRef.isComputed = true;
-    return expr;
   }
   /**
-   *  propty name is a spical test of binding identifier.
-   *  if `await` and `yield` is propty name with colon (means assign),
-   *  it dose not affected by scope.
-   * @param propertyName
+   * Sematic check when a property name is shorted property
+   * @param {PropertyName} propertyName
+   * @returns
    */
-  function checkPropertyShortedIsKeyword(propertyName: PropertyName) {
-    if (isIdentifer(propertyName)) {
-      if (propertyName.name === "await") {
-        if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
-          throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
-        }
-        return;
+  function staticSematicForShortedPropertyNameInObjectLike(propertyName: PropertyName) {
+    if (isStringLiteral(propertyName) || isNumnerLiteral(propertyName)) {
+      // recoverable error.
+      throw createMessageError(
+        ErrorMessageMap.when_binding_pattern_property_name_is_string_literal_can_not_be_shorted,
+      );
+    }
+  }
+  /**
+   * Like `staticCheckForPropertyNameAsSingleBinding` for object pattern, when shorted property in
+   * object expression, if will no longer just
+   * @param {PropertyName} propertyName
+   * @returns
+   */
+  function staticSematicForShortedPropertyNameInObjectExpression(propertyName: Identifier) {
+    if (propertyName.name === "await") {
+      if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
+        throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
       }
-      if (propertyName.name === "yield") {
-        if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
-          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-        }
-        return;
+      return;
+    }
+    if (propertyName.name === "yield") {
+      if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
+        throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
       }
-      if (KeywordSet.has(propertyName.name)) {
-        throw createMessageError(ErrorMessageMap.invalid_property_name);
-      }
-      if (PreserveWordSet.has(propertyName.name) && isInStrictMode()) {
-        throw createMessageError(ErrorMessageMap.invalid_property_name);
-      }
+      return;
+    }
+    if (KeywordSet.has(propertyName.name)) {
+      throw createMessageError(ErrorMessageMap.invalid_property_name);
+    }
+    if (PreserveWordSet.has(propertyName.name) && isInStrictMode()) {
+      throw createMessageError(ErrorMessageMap.invalid_property_name);
     }
   }
   /** Parse MethodDefintion, this method should allow using when in class or in object literal.
@@ -4389,7 +4564,6 @@ export function createParser(code: string, option?: ParserUserConfig) {
       isExpression = true;
     }
     postStaticSematicEarlyErrorForStrictModeOfFunction(null, strictModeScope);
-    // checkFunctionParamIsDuplicate(functionArguments);
     return Factory.createArrowExpression(
       isExpression,
       body,
@@ -4399,16 +4573,18 @@ export function createParser(code: string, option?: ParserUserConfig) {
       cloneSourcePosition(body.end),
     );
   }
-  // Transform argument list to function parameter list, there are some thing we need to check
-  // 1. multi spread element is ok to argument list, but parameter list can only have one spread list
-  // 2. if argument list last one is spread element, can have trailing comma, but paramemter last is restelement,
-  //   it can not have trailing comma.
-  // 3. argument list can have duplicate identifier name, but parameter list can not.
-  // 4. argument list can have await or yield expression as default value, but paramemter list can not.
-  // 5. there are some case dose not enter function scope when parse argument, so we need to check is there any await
-  //    and yield usage in parameter list
-  // First and second thing toAssignment would check for us. 3 can be done by call `checkFunctionParams`, 4 and 5
-  // one can be done by create custome helper function.
+  /**
+   * Transform function from expressions to patterns (arguments to params), checking syntax error
+   * by expression scope and post statci sematic check for pattern rule.
+   * - asycn arrow scope: check await expression, yield expression
+   * - strict mode scope: expression Rval to Lval has different rule in strict mode
+   * - multi spread vs multi rest: rest is unique, spread can be multi.
+   * @param functionArguments
+   * @param trailingComma
+   * @param strictModeScope
+   * @param arrowExprScope
+   * @returns
+   */
   function argumentToFunctionParams(
     functionArguments: Array<Expression>,
     trailingComma: boolean,
@@ -4422,14 +4598,14 @@ export function createParser(code: string, option?: ParserUserConfig) {
     if (isInStrictMode()) {
       checkStrictModeScopeError(strictModeScope);
     }
-    const isMultiSpread = checkArrowFunctionParamsSpreadElementRule(params);
+    const isMultiSpread = postStaticSematicForArrowParamAfterTransform(params);
     if (isMultiSpread && trailingComma)
       throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
     // check as function params
     setContextIfParamsIsSimpleParameterList(params);
     return params;
   }
-  function checkArrowFunctionParamsSpreadElementRule(params: Array<Pattern>) {
+  function postStaticSematicForArrowParamAfterTransform(params: Array<Pattern>) {
     let flag = false;
     params.forEach((param) => {
       if (flag && isRestElement(param)) {
@@ -4926,113 +5102,145 @@ export function createParser(code: string, option?: ParserUserConfig) {
    */
   function parseObjectPattern(): ObjectPattern {
     const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
-    let isStart = false;
-    const properties: Array<ObjectPatternProperty | RestElement | AssignmentPattern> = [];
-    while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
-      // eat comma.
-      if (!isStart) {
-        isStart = true;
-      } else {
-        expect(SyntaxKinds.CommaToken);
-      }
+    if (match(SyntaxKinds.BracesRightPunctuator)) {
+      const end = getEndPosition();
+      nextToken();
+      const objectPattern = Factory.createObjectPattern([], start, end);
+      return objectPattern;
+    }
+    const properties: Array<ObjectPatternProperty | RestElement | AssignmentPattern> = [
+      parseObjectPatternPossibelProperty(),
+    ];
+    while (!match([SyntaxKinds.BracesRightPunctuator, SyntaxKinds.EOFToken])) {
+      expect(SyntaxKinds.CommaToken);
       if (match(SyntaxKinds.BracesRightPunctuator) || match(SyntaxKinds.EOFToken)) {
         continue;
       }
-      // parse Rest property
-      if (match(SyntaxKinds.SpreadOperator)) {
-        properties.push(parseRestElement(false));
-        if (
-          !match(SyntaxKinds.BracesRightPunctuator) ||
-          (match(SyntaxKinds.CommaToken) && lookahead().kind === SyntaxKinds.BracesRightPunctuator)
-        ) {
-          throw createMessageError(ErrorMessageMap.rest_element_should_be_last_property);
-        }
-        continue;
-      }
-      // parse Object pattern property
-      const isComputedRef = { isComputed: false };
-      const propertyName = parsePropertyName(isComputedRef);
-      if (isComputedRef.isComputed || match(SyntaxKinds.ColonPunctuator)) {
-        nextToken();
-        const pattern = parseBindingElement();
-        properties.push(
-          Factory.createObjectPatternProperty(
-            propertyName,
-            pattern,
-            isComputedRef.isComputed,
-            false,
-            cloneSourcePosition(propertyName.start),
-            cloneSourcePosition(pattern.end),
-          ),
-        );
-        continue;
-      }
-      checkPropertyNameAsSigleNameBinding(propertyName);
-      if (match(SyntaxKinds.AssginOperator)) {
-        nextToken();
-        const expr = parseWithRHSLayer(parseAssignmentExpressionAllowIn);
-        if (!isPattern(propertyName)) {
-          throw createMessageError("assignment pattern left value can only allow identifier or pattern");
-        }
-        declarateNonFunctionalSymbol((propertyName as Identifier).name);
-        properties.push(
-          Factory.createAssignmentPattern(
-            propertyName,
-            expr,
-            cloneSourcePosition(propertyName.start),
-            cloneSourcePosition(expr.end),
-          ),
-        );
-        continue;
-      }
-      if (isStringLiteral(propertyName) || isNumnerLiteral(propertyName)) {
-        throw createMessageError(
-          ErrorMessageMap.when_binding_pattern_property_name_is_string_literal_can_not_be_shorted,
-        );
-      }
-      // check property name is keyword or not
-      checkPropertyShortedIsKeyword(propertyName);
-      declarateNonFunctionalSymbol((propertyName as Identifier).name);
-      properties.push(
-        Factory.createObjectPatternProperty(
-          propertyName,
-          undefined,
-          isComputedRef.isComputed,
-          true,
-          cloneSourcePosition(propertyName.start),
-          cloneSourcePosition(propertyName.end),
-        ),
-      );
+      properties.push(parseObjectPatternPossibelProperty());
     }
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
     const objectPattern = Factory.createObjectPattern(properties, start, end);
     return objectPattern;
   }
-  function checkPropertyNameAsSigleNameBinding(propertyName: PropertyName) {
+  function parseObjectPatternPossibelProperty(): ObjectPatternProperty | RestElement | AssignmentPattern {
+    // parse Rest property
+    if (match(SyntaxKinds.SpreadOperator)) {
+      const rest = parseRestElement(false);
+      staticSematicForRestElementInObjectPattern();
+      return rest;
+    }
+    // parse Object pattern property (rename)
+    const isComputedRef = { isComputed: false };
+    const propertyName = parsePropertyName(isComputedRef);
+    if (isComputedRef.isComputed || match(SyntaxKinds.ColonPunctuator)) {
+      nextToken();
+      const pattern = parseBindingElement();
+      return Factory.createObjectPatternProperty(
+        propertyName,
+        pattern,
+        isComputedRef.isComputed,
+        false,
+        cloneSourcePosition(propertyName.start),
+        cloneSourcePosition(pattern.end),
+      );
+    }
+    staticCheckForPropertyNameAsSingleBinding(propertyName);
+    // parse object pattern as Assignment pattern
+    if (match(SyntaxKinds.AssginOperator)) {
+      nextToken();
+      const expr = parseWithRHSLayer(parseAssignmentExpressionAllowIn);
+      staticSematicForAssignmentPatternInObjectPattern(propertyName);
+      declarateNonFunctionalSymbol((propertyName as Identifier).name);
+      return Factory.createAssignmentPattern(
+        propertyName as Pattern,
+        expr,
+        cloneSourcePosition(propertyName.start),
+        cloneSourcePosition(expr.end),
+      );
+    }
+    // parse object pattern as shorted property.
+    staticSematicForShortedPropertyNameInObjectLike(propertyName);
+    declarateNonFunctionalSymbol((propertyName as Identifier).name);
+    return Factory.createObjectPatternProperty(
+      propertyName,
+      undefined,
+      isComputedRef.isComputed,
+      true,
+      cloneSourcePosition(propertyName.start),
+      cloneSourcePosition(propertyName.end),
+    );
+  }
+  /**
+   * In Object Pattern, Rest Element should be last one, and can
+   * not have trailing comma.
+   */
+  function staticSematicForRestElementInObjectPattern() {
+    if (
+      !match(SyntaxKinds.BracesRightPunctuator) ||
+      (match(SyntaxKinds.CommaToken) && lookahead().kind === SyntaxKinds.BracesRightPunctuator)
+    ) {
+      // recoverable error
+      throw createMessageError(ErrorMessageMap.rest_element_should_be_last_property);
+    }
+  }
+  function staticSematicForAssignmentPatternInObjectPattern(propertyName: PropertyName) {
+    if (!isPattern(propertyName)) {
+      throw createMessageError("assignment pattern left value can only allow identifier or pattern");
+    }
+  }
+  /**
+   * As for shorted and assignment patern in object pattern, the property name should be
+   * a bidning identifier, so we need to check and record the property name.
+   * @param propertyName
+   * @returns
+   */
+  function staticCheckForPropertyNameAsSingleBinding(propertyName: PropertyName) {
     if (isIdentifer(propertyName)) {
-      if (propertyName.name === "yield") {
-        recordScope(ExpressionScopeKind.YieldIdentifier, propertyName.start);
-      }
-      if (propertyName.name === "await") {
-        recordScope(ExpressionScopeKind.AwaitIdentifier, propertyName.start);
-      }
-      if (propertyName.name === "arguments") {
-        if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
-          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+      switch (propertyName.name) {
+        case "await": {
+          if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
+            throw createMessageError(
+              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+            );
+          }
+          return;
         }
-        recordScope(ExpressionScopeKind.ArgumentsIdentifier, propertyName.start);
-      }
-      if (propertyName.name === "eval") {
-        if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
-          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+        case "yield": {
+          if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
+            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+          }
+          return;
         }
-        recordScope(ExpressionScopeKind.EvalIdentifier, propertyName.start);
-      }
-      if (propertyName.name === "let") {
-        if (isInStrictMode()) {
-          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+        case "arguments": {
+          if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
+            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+          }
+          recordScope(ExpressionScopeKind.ArgumentsIdentifier, propertyName.start);
+          return;
         }
-        recordScope(ExpressionScopeKind.LetIdentifiier, propertyName.start);
+        case "eval": {
+          if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
+            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+          }
+          recordScope(ExpressionScopeKind.EvalIdentifier, propertyName.start);
+          return;
+        }
+        case "let": {
+          if (isInStrictMode()) {
+            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+          }
+          recordScope(ExpressionScopeKind.LetIdentifiier, propertyName.start);
+          return;
+        }
+        default: {
+          if (KeywordSet.has(propertyName.name)) {
+            throw createMessageError(ErrorMessageMap.invalid_property_name);
+          }
+          if (PreserveWordSet.has(propertyName.name) && isInStrictMode()) {
+            throw createMessageError(ErrorMessageMap.invalid_property_name);
+          }
+          return;
+        }
       }
     }
   }
