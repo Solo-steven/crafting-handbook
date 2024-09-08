@@ -3,10 +3,16 @@ import { createLexer } from "@/src/lexer";
 import { Token } from "@/src/lexer/type";
 import { SyntaxKinds } from "web-infra-common";
 import { ParserUserConfig } from "./parser/config";
+import { createErrorHandler } from "./errorHandler";
 
 export function parse(code: string, config?: ParserUserConfig) {
-  const parser = createParser(code, config);
-  return parser.parse();
+  const errorHandler = createErrorHandler(code);
+  const parser = createParser(code, errorHandler, config);
+  const program = parser.parse();
+  if (errorHandler.haveError()) {
+    throw new Error(errorHandler.formatErrorString());
+  }
+  return program;
 }
 export function tokenize(code: string): Array<Token> {
   const lexer = createLexer(code);

@@ -1,4 +1,4 @@
-import { createParser } from "@/src/parser";
+import { parse } from "@/src/index";
 import { ParserConfig } from "@/src/parser/config";
 import chalk from "chalk";
 
@@ -60,8 +60,7 @@ export default async function run3partyTestCase() {
     let result = true;
     for (const testCode of thirdPartyTestCase) {
       try {
-        const parser = createParser(testCode.code, testCode.config as ParserConfig);
-        parser.parse();
+        parse(testCode.code, testCode.config as ParserConfig);
         testCode.pass = true;
         console.log(`|${testCode.title}|: ${chalk.green("parse PASS")}.`);
         result &&= true;

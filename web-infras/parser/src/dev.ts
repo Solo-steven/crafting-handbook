@@ -1,6 +1,6 @@
 import { createLexer } from "@/src/lexer";
 import { SyntaxKinds, SytaxKindsMapLexicalLiteral } from "web-infra-common";
-import { createParser } from "@/src/parser";
+import { parse } from "@/src/index";
 import { transformSyntaxKindToLiteral } from "../tests/parserRunner/helpers/transform";
 import fs from "fs";
 import path from "path";
@@ -49,7 +49,7 @@ function printLexer(code: string) {
   );
 }
 function printParser(code: string) {
-  const ast = createParser(code, { sourceType: "script", plugins: ["jsx"] }).parse();
+  const ast = parse(code, { sourceType: "script", plugins: ["jsx"] });
   transformSyntaxKindToLiteral(ast);
   console.log(JSON.stringify(ast, null, 4));
   return 0;
