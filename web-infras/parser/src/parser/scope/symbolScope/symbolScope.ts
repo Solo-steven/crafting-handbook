@@ -1,6 +1,8 @@
+import { SourcePosition } from "web-infra-common";
 import {
   ClassSymbolScope,
   DeclaratableSymbolScope,
+  DuplicateSymbolResult,
   FunctionSymbolScope,
   NonFunctionalSymbolType,
   PrivateNameDefKind,
@@ -25,7 +27,7 @@ export function createSymbolScopeRecorder() {
     symbolScopes.push({
       kind: "ProgramSumbolScope",
       exportSymbol: new Set(),
-      undefExportSymbols: new Set(),
+      undefExportSymbols: new Map(),
       duplicateExportSymbols: new Set(),
       haveDefaultExport: false,
       symbol: new Map(),
@@ -156,14 +158,14 @@ export function createSymbolScopeRecorder() {
    * also is  a local variable.
    * @param {string} name
    */
-  function declarateExportSymbol(name: string): boolean {
+  function declarateExportSymbol(name: string, position: SourcePosition): DuplicateSymbolResult {
     const programScope = symbolScopes[0] as ProgramSymbolScope;
     if (programScope.exportSymbol.has(name)) {
-      programScope.duplicateExportSymbols.add(name);
-      return false;
+      programScope.duplicateExportSymbols.add(position);
+      return position;
     } else {
       programScope.exportSymbol.add(name);
-      return true;
+      return null;
     }
   }
   /**
@@ -173,18 +175,19 @@ export function createSymbolScopeRecorder() {
     const scope = helperFindClosedDeclaratableSymbolScope();
     return scope.symbol.has(name);
   }
-  function addToUndefExportSource(name: string) {
+  function addToUndefExportSource(name: string, position: SourcePosition) {
     const programScope = symbolScopes[0] as ProgramSymbolScope;
-    programScope.undefExportSymbols.add(name);
+    programScope.undefExportSymbols.set(name, position);
   }
-  function isProgramContainUndefSymbol(): boolean {
+  function getProgramContainUndefSymbol(): Array<SourcePosition> {
     const programScope = symbolScopes[0] as ProgramSymbolScope;
-    for (const symbol of programScope.undefExportSymbols) {
+    const undefPositions: Array<SourcePosition> = [];
+    for (const [symbol, pos] of programScope.undefExportSymbols) {
       if (!programScope.symbol.has(symbol)) {
-        return true;
+        undefPositions.push(pos);
       }
     }
-    return false;
+    return undefPositions;
   }
   function setSymbolType(symbolType: NonFunctionalSymbolType) {
     context.symbolType = symbolType;
@@ -197,11 +200,15 @@ export function createSymbolScopeRecorder() {
    * otherwise set flag and return true
    * @returns {bool} isSuccess
    */
-  function testAndSetDefaultExport(): boolean {
+  function testAndSetDefaultExport(position: SourcePosition): DuplicateSymbolResult {
     const programScope = symbolScopes[0] as ProgramSymbolScope;
     const result = programScope.haveDefaultExport;
     programScope.haveDefaultExport = true;
-    return !result;
+    if (result) {
+      return position;
+    } else {
+      return null;
+    }
   }
   /**
    * Private helper api for declarate a id in the given scope
@@ -349,22 +356,15 @@ export function createSymbolScopeRecorder() {
    * since not all JavaScript context need to check the duplication.
    * @param {string} name
    */
-  function declarateParam(name: string) {
+  function declarateParam(name: string, position: SourcePosition) {
     const functionalScope = helperFindClosedFunctionalScope();
     if (functionalScope.kind === "FunctionSymbolScope") {
       if (functionalScope.params.has(name)) {
-        functionalScope.duplicateParams.add(name);
+        functionalScope.duplicateParams.add(position);
       } else {
         functionalScope.params.add(name);
       }
     }
-  }
-  /**
-   *
-   */
-  function isFunctionParamDuplicate() {
-    const functionalScope = helperFindClosedFunctionalScope();
-    return functionalScope.kind === "FunctionSymbolScope" && functionalScope.duplicateParams.size > 0;
   }
   /**=============================================
    * Class Scope private name
@@ -471,10 +471,9 @@ export function createSymbolScopeRecorder() {
     declarateFuncrtionSymbol,
     declarateNonFunctionalSymbol,
     declarateParam,
-    isFunctionParamDuplicate,
     isVariableDeclarated,
     addToUndefExportSource,
-    isProgramContainUndefSymbol,
+    getProgramContainUndefSymbol,
     setSymbolType,
     getSymbolType,
     // export declarate

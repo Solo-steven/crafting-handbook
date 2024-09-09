@@ -1,3 +1,7 @@
+import { SourcePosition } from "web-infra-common";
+
+export type DuplicateSymbolResult = SourcePosition | null;
+
 export enum SymbolType {
   Var = "Var",
   Const = "Const",
@@ -27,15 +31,15 @@ interface BasicSymbolScope {
 export interface ProgramSymbolScope extends BasicSymbolScope {
   kind: "ProgramSumbolScope";
   exportSymbol: Set<string>;
-  undefExportSymbols: Set<string>;
-  duplicateExportSymbols: Set<string>;
+  undefExportSymbols: Map<string, SourcePosition>;
+  duplicateExportSymbols: Set<SourcePosition>;
   haveDefaultExport: boolean;
 }
 
 export interface FunctionSymbolScope extends BasicSymbolScope {
   kind: "FunctionSymbolScope";
   params: Set<string>;
-  duplicateParams: Set<string>;
+  duplicateParams: Set<SourcePosition>;
 }
 
 export interface BlockSymbolScope extends BasicSymbolScope {

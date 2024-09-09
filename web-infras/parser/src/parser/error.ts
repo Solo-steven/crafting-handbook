@@ -1,46 +1,11 @@
 export const ErrorMessageMap = {
-  // general
-  missing_semicolon: "Missing semicolon or line terminator",
-  // spread, rest element
-  rest_element_should_be_last_property: "RestElement should be the lastest property",
-  rest_element_can_not_end_with_comma: "RestElement can not concat with comma",
-  rest_element_must_be_either_binding_identifier_or_binding_pattern:
-    "rest element must be either binding identifier to binding pattern.",
-  rest_operator_must_be_followed_by_an_assignable_reference_in_assignment_contexts:
-    "`...` must be followed by an assignable reference in assignment contexts",
   // binding pattern, assignment pattern
   invalid_left_value: "invalid left value",
   assignment_pattern_left_value_can_only_be_idenifier_or_pattern: "assignment pattern",
-  binding_pattern_can_not_have_member_expression: "binding pattern can not have member expression",
-  when_binding_pattern_property_name_is_string_literal_can_not_be_shorted:
-    "When binding pattern property name is string literal, it can not be shorted",
-  // for-related statement
-  await_can_just_in_for_of_loop: "await can only be in for of loop",
-  for_of_can_not_use_let_as_identifirt: "for-of loop can not use let as identifier",
-  // trailing comma
-  function_parameter_can_not_have_empty_trailing_comma:
-    "function parameter list can not have trailing comma when is empty",
-  function_argument_can_not_have_empty_trailing_comma:
-    "function argument list can not have trailing comma when is empty",
   // strict mode problem
   unexpect_keyword_in_stric_mode: "unexpect keyword in strict mode",
-  illegal_use_strict_in_non_simple_parameter_list: "illegal use strict in non simple parameter list",
-  with_statement_can_not_use_in_strict_mode: "with statement can not use in strict mode",
-  // invalid change line char
-  // nullish and expont operator
-  nullish_require_parans:
-    "Nullish coalescing operator(??) requires parens when mixing with logical operators",
-  expont_operator_need_parans:
-    "Illegal expression. Wrap left hand side or entire exponentiation in parentheses",
   // modules export, import
-  string_literal_cannot_be_used_as_an_exported_binding_without_from:
-    "A string literal cannot be used as an exported binding without `from`",
-  string_literal_cannot_be_used_as_an_imported_binding:
-    "A string literal cannot be used as an imported binding",
   // other
-  function_declaration_must_have_name: "Function delcaration must have function name",
-  keyword_can_not_use_in_imported_when_just_a_specifier:
-    "keyword can not use in imported_when just a specifier",
   duplicate_param: "duplicate params",
   await_can_not_call_if_not_in_async: "await expression can not be call if not in async block",
   when_in_async_context_await_keyword_will_treat_as_keyword:
@@ -51,10 +16,6 @@ export const ErrorMessageMap = {
     "yield deletegate must be followed by assignment expression",
   await_expression_can_not_used_in_parameter_list: "await expression can not used in parameter list",
   yield_expression_can_not_used_in_parameter_list: "yield expression can not used in parameter list",
-  lable_statement_can_not_have_function_declaration_is_generator:
-    "labled statement can not have function declaration is generator",
-  let_keyword_can_not_use_as_identifier_in_lexical_binding:
-    "let keyword can not used as identifier in lexical binding",
   invalid_esc_char_in_keyword: "keyword can not contain any esc flag.",
   /**
    * Format error from MDN, v8 runtime and babel transpiler, if there is a better error message then
@@ -64,6 +25,8 @@ export const ErrorMessageMap = {
    * - babel transpiler.
    * - added by my self.
    */
+  // general
+  missing_semicolon: "Missing semicolon or line terminator.",
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_return
   syntax_error_return_not_in_function: "return not in function",
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Arguments_not_allowed
@@ -124,6 +87,13 @@ export const ErrorMessageMap = {
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_super_prop
   syntax_error_use_of_super_property_member_accesses_only_valid_within_methods_or_eval_code_within_methods:
     "use of super property/member accesses only valid within methods or eval code within methods.",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Unnamed_function_statement
+  syntax_error_function_statement_requires_a_name: "function statement requires a name",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Strict_non_simple_params
+  syntax_error_use_strict_not_allowed_in_function_with_non_simple_parameters:
+    "Illegal 'use strict' directive in function with non-simple parameter list.",
+  // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Missing_initializer_in_const
+  syntax_error_missing_init_in_const_declaration: "Missing initializer in const declaration",
   // try: `const {...[x]} = {}` in babel playgroud`
   v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts:
     "SyntaxError: `...` must be followed by an identifier in declaration contexts",
@@ -160,6 +130,10 @@ export const ErrorMessageMap = {
   // try: using prototype as static property
   v8_error_class_may_not_have_static_property_named_prototype:
     "Classes may not have static property named prototype.",
+  v8_error_nullish_require_parans:
+    "Nullish coalescing operator(??) requires parens when mixing with logical operators",
+  v8_error_expont_operator_need_parans:
+    "Illegal expression. Wrap left hand side or entire exponentiation in parentheses",
   // try: using keyword as shorted property.
   babel_error_unexpected_keyword: "Unexpect keyword in property name.",
   // try: using presvered word as shorted property in strict mode
@@ -168,9 +142,9 @@ export const ErrorMessageMap = {
   babel_error_import_meta_may_appear_only_with_source_type_module: `SyntaxError: import.meta may appear only with 'sourceType: "module"`,
   // try `import.name` in babel playground
   babel_error_the_only_valid_meta_property_for_import_is_import_meta:
-    "SyntaxError: The only valid meta property for import is import.meta.",
+    "The only valid meta property for import is import.meta.",
   // try any import or export in module type is script
-  babel_error_import_and_export_may_appear_only_with_sourceType_module: `SyntaxError: 'import' and 'export' may appear only with 'sourceType: "module"'`,
+  babel_error_import_and_export_may_appear_only_with_sourceType_module: `'import' and 'export' may appear only with 'sourceType: "module"'`,
   // try jsx but not enable preset
   babel_error_need_enable_jsx: "This experimental syntax requires enabling jsx plugins.",
   // try using decorator in static block
@@ -215,6 +189,20 @@ export const ErrorMessageMap = {
   babel_error_private_name_undeinfed: "Private name undeinfed",
   // try `({ a: (d) }) => {};` in babel playground
   babel_error_invalid_parenthesized_pattern: "Invalid parenthesized assignment pattern.",
+  // try `function name(a,...b,){}`
+  babel_error_unexpected_trailing_comma_after_rest_element: "Unexpected trailing comma after rest element.",
+  // try `with(a) {}`
+  babel_error_with_statement_in_strict_mode: "Can not use with statement in strict mode",
+  // try `import { "ss" } from "./xsa"`
+  babel_error_string_literal_cannot_be_used_as_an_imported_binding:
+    "A string literal cannot be used as an imported binding.",
+  // try: `export { "aa" }`
+  babel_error_string_literal_cannot_be_used_as_an_exported_binding_without_from:
+    "A string literal cannot be used as an exported binding without `from`.",
+  // try: ` ({ a : c.d } = {}) => {}`
+  babel_error_binding_member_expression: "Binding member expression.",
+  // try: `import * from "source"`
+  babel_error_unexpected_token_expected_as: "Unexpected token, expected 'as'",
   // try to add async in front of getter
   extra_error_getter_can_not_be_async_or_generator: "getter can not be async or generator.",
   // try to add generator in front of setter
@@ -230,4 +218,16 @@ export const ErrorMessageMap = {
   extra_error_empty_parentheses_expression: "Parentheses expression can not be empty.",
   // try `() \n => {}`
   extra_error_no_line_break_is_allowed_before_arrow: "No line break is allowed before '=>'",
+  // try `for(let of []);`
+  extra_error_for_of_can_not_use_let_as_identifier: "'for-of' loop can not use let as identifier",
+  // try `{ "string-property-name-as-shorted" }`
+  extra_error_when_binding_pattern_property_name_is_literal_can_not_be_shorted:
+    "Numeric Literal and string literal can not use as shorted property.",
+  // try `for(const a in []);`
+  extra_error_for_await_not_of_loop: "when await in for loop, it can only be in for of loop",
+  // try `import { for } from "./some.js`
+  extra_error_unexpect_keyword_in_module_name:
+    "Unexpect keyword, module name can not just as specifier without `as` rename.",
+  // try: `function name(,){}` or `call(,)`
+  extra_error_unexpect_trailing_comma: "Unexpect trailing comma.",
 };
