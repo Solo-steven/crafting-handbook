@@ -63,20 +63,20 @@ export function createSymbolScopeRecorder() {
   function enterClassSymbolScope() {
     symbolScopes.push({
       kind: "ClassSymbolScope",
-      undefinedPrivateName: new Set(),
+      undefinedPrivateName: new Map(),
       undefinedPrivateNameKinds: new Map(),
       definiedPrivateName: new Set(),
       definedPrivateNameKinds: new Map(),
-      duplicatePrivateName: new Set(),
+      duplicatePrivateName: new Map(),
     });
   }
   function exitClassSymbolScope() {
     const currentScope = symbolScopes.pop() as ClassSymbolScope;
     const parentScope = helperFindLastClassScope();
     if (currentScope && parentScope) {
-      parentScope.undefinedPrivateName = new Set([
-        ...parentScope.undefinedPrivateName.values(),
-        ...currentScope.undefinedPrivateName.values(),
+      parentScope.undefinedPrivateName = new Map([
+        ...parentScope.undefinedPrivateName.entries(),
+        ...currentScope.undefinedPrivateName.entries(),
       ]);
       parentScope.undefinedPrivateNameKinds = new Map([
         ...parentScope.undefinedPrivateNameKinds.entries(),
@@ -370,12 +370,12 @@ export function createSymbolScopeRecorder() {
    * Class Scope private name
    * =============================================
    */
-  function defPrivateName(name: string, type: PrivateNameDefKind = "other") {
+  function defPrivateName(name: string, position: SourcePosition, type: PrivateNameDefKind = "other") {
     const scope = helperFindLastClassScope();
     let isDuplicate = false;
     if (scope) {
       if (isPrivateNameExist(scope, name, type)) {
-        scope.duplicatePrivateName.add(name);
+        scope.duplicatePrivateName.set(name, position);
         isDuplicate = true;
       }
       scope.definiedPrivateName.add(name);
@@ -399,7 +399,7 @@ export function createSymbolScopeRecorder() {
     }
     return isDuplicate;
   }
-  function usePrivateName(name: string, type: PrivateNameDefKind = "other") {
+  function usePrivateName(name: string, position: SourcePosition, type: PrivateNameDefKind = "other") {
     let scope: ClassSymbolScope | null = null;
     for (const s of symbolScopes) {
       if (s.kind === "ClassSymbolScope") {
@@ -410,7 +410,7 @@ export function createSymbolScopeRecorder() {
       }
     }
     if (scope) {
-      scope.undefinedPrivateName.add(name);
+      scope.undefinedPrivateName.set(name, position);
       if (scope.undefinedPrivateNameKinds.has(name)) {
         const kinds = scope.undefinedPrivateNameKinds.get(name)!;
         kinds.add(type);

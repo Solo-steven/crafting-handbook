@@ -16,11 +16,11 @@ export type PrivateNameDefKind = "get" | "set" | "other" | "static-get" | "stati
 export interface ClassSymbolScope {
   kind: "ClassSymbolScope";
   // for private name
-  undefinedPrivateName: Set<string>;
+  undefinedPrivateName: Map<string, SourcePosition>;
   undefinedPrivateNameKinds: Map<string, Set<PrivateNameDefKind>>;
   definiedPrivateName: Set<string>;
   definedPrivateNameKinds: Map<string, Set<PrivateNameDefKind>>;
-  duplicatePrivateName: Set<string>;
+  duplicatePrivateName: Map<string, SourcePosition>;
 }
 
 interface BasicSymbolScope {

@@ -430,7 +430,10 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
    * @returns {Error}
    */
   function createUnexpectError(): Error {
-    return new Error(`[Syntax Error]: Unexpect token ${SytaxKindsMapLexicalLiteral[getToken()]}.`);
+    const startPos = getStartPosition();
+    return new Error(
+      `[Syntax Error]: Unexpect token ${SytaxKindsMapLexicalLiteral[getToken()]}(${startPos.row}, ${startPos.col}).`,
+    );
   }
   /**
    * Given that this parser is recurive decent parser, some
@@ -597,19 +600,35 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   }
   function checkStrictModeScopeError(scope: StrictModeScope) {
     if (isInStrictMode() && strictModeScopeRecorder.isStrictModeScopeViolateStrictMode(scope)) {
-      throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+      if (scope.kind !== "RHSLayer") {
+        for (const pos of scope.argumentsIdentifier) {
+          raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, pos);
+        }
+        for (const pos of scope.evalIdentifier) {
+          raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, pos);
+        }
+        for (const pos of scope.letIdentifier) {
+          raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, pos);
+        }
+        for (const pos of scope.yieldIdentifier) {
+          raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, pos);
+        }
+        for (const pos of scope.preservedWordIdentifier) {
+          raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, pos);
+        }
+      }
     }
   }
   function checkAsyncArrowExprScopeError(scope: AsyncArrowExpressionScope) {
     if (asyncArrowExprScopeRecorder.isAsyncArrowExpressionScopeHaveError(scope)) {
-      if (scope.awaitExpressionInParameter.length > 0) {
-        throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
+      for (const pos of scope.awaitExpressionInParameter) {
+        raiseError(ErrorMessageMap.extra_error_await_expression_can_not_used_in_parameter_list, pos);
       }
-      if (scope.yieldExpressionInParameter.length > 0) {
-        throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
+      for (const pos of scope.yieldExpressionInParameter) {
+        raiseError(ErrorMessageMap.extra_error_yield_expression_can_not_used_in_parameter_list, pos);
       }
-      if (scope.awaitIdentifier.length > 0) {
-        throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+      for (const pos of scope.awaitIdentifier) {
+        raiseError(ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function, pos);
       }
     }
   }
@@ -666,13 +685,17 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     symbolScopeRecorder.enterClassSymbolScope();
   }
   function existClassScope() {
-    if (symbolScopeRecorder.isDuplicatePrivateName()) {
-      // TODO: make it recoverable error
-      throw createMessageError(ErrorMessageMap.babel_error_private_name_duplicate);
+    const duplicateSet = symbolScopeRecorder.isDuplicatePrivateName();
+    if (duplicateSet) {
+      for (const pos of duplicateSet.values()) {
+        raiseError(ErrorMessageMap.babel_error_private_name_duplicate, pos);
+      }
     }
-    if (symbolScopeRecorder.isUndeinfedPrivateName()) {
-      // TODO: make it recoverable error
-      throw createMessageError(ErrorMessageMap.babel_error_private_name_undeinfed);
+    const undefSet = symbolScopeRecorder.isUndeinfedPrivateName();
+    if (undefSet) {
+      for (const pos of undefSet.values()) {
+        raiseError(ErrorMessageMap.babel_error_private_name_undeinfed, pos);
+      }
     }
     lexicalScopeRecorder.exitClassLexicalScope();
     symbolScopeRecorder.exitClassSymbolScope();
@@ -684,11 +707,11 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   function isCurrentClassExtend(): boolean {
     return lexicalScopeRecorder.isCurrentClassExtend();
   }
-  function usePrivateName(name: string, type: PrivateNameDefKind = "other") {
-    return symbolScopeRecorder.usePrivateName(name, type);
+  function usePrivateName(name: string, position: SourcePosition, type: PrivateNameDefKind = "other") {
+    return symbolScopeRecorder.usePrivateName(name, position, type);
   }
-  function defPrivateName(name: string, type: PrivateNameDefKind = "other") {
-    return symbolScopeRecorder.defPrivateName(name, type);
+  function defPrivateName(name: string, position: SourcePosition, type: PrivateNameDefKind = "other") {
+    return symbolScopeRecorder.defPrivateName(name, position, type);
   }
   function enterDelete() {
     lexicalScopeRecorder.enterDelete();
@@ -744,6 +767,12 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     }
     return list;
   }
+  /**
+   *
+   * @param name
+   * @param position
+   * @returns
+   */
   function declarateNonFunctionalSymbol(name: string, position: SourcePosition) {
     if (isInParameter()) {
       symbolScopeRecorder.declarateParam(name, position);
@@ -758,6 +787,13 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     }
     return;
   }
+  /**
+   *
+   * @param name
+   * @param generator
+   * @param position
+   * @returns
+   */
   function delcarateFcuntionSymbol(name: string, generator: boolean, position: SourcePosition) {
     const duplicateType = symbolScopeRecorder.declarateFuncrtionSymbol(name, generator);
     if (duplicateType) {
@@ -968,12 +1004,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       case SyntaxKinds.ClassKeyword:
         return parseClassDeclaration(null);
       default:
-        throw createUnreachError([
-          SyntaxKinds.ClassKeyword,
-          SyntaxKinds.FunctionKeyword,
-          SyntaxKinds.LetKeyword,
-          SyntaxKinds.ConstKeyword,
-        ]);
+        throw createUnexpectError();
     }
   }
   /**
@@ -1090,7 +1121,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   function assignmentExpressionToAssignmentPattern(expr: AssigmentExpression, isBinding: boolean) {
     const left = isBinding ? helperCheckPatternWithBinding(expr.left) : expr.left;
     if (expr.operator !== SyntaxKinds.AssginOperator) {
-      throw createMessageError(ErrorMessageMap.syntax_error_invalid_assignment_left_hand_side);
+      raiseError(ErrorMessageMap.syntax_error_invalid_assignment_left_hand_side, expr.start);
     }
     return Factory.createAssignmentPattern(left as Pattern, expr.right, expr.start, expr.end);
   }
@@ -1180,7 +1211,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       (restElementIndexs.length === 1 &&
         (restElementIndexs[0] !== arrayPatternElements.length - 1 || expr.trailingComma))
     ) {
-      throw createMessageError(ErrorMessageMap.syntax_error_parameter_after_rest_parameter);
+      raiseError(ErrorMessageMap.syntax_error_parameter_after_rest_parameter, expr.end);
     }
     return Factory.createArrayPattern(arrayPatternElements, expr.start, expr.end);
   }
@@ -1359,19 +1390,19 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     // expression can not take `in` operator as operator in toplevel, so we need pass
     // false to disallow parseExpression to take in  as operator
     let isAwait: SourcePosition | null = null,
-      isParseLetAsExpr = false,
+      isParseLetAsExpr: SourcePosition | null = null,
       leftOrInit: VariableDeclaration | Expression | null = null;
     if (match(SyntaxKinds.AwaitKeyword)) {
       isAwait = getStartPosition();
       nextToken();
       if (!config.allowAwaitOutsideFunction && !isCurrentScopeParseAwaitAsExpression()) {
-        throw createMessageError(ErrorMessageMap.await_can_not_call_if_not_in_async);
+        raiseError(ErrorMessageMap.babel_error_invalid_await, isAwait);
       }
     }
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     if (match([SyntaxKinds.LetKeyword, SyntaxKinds.ConstKeyword, SyntaxKinds.VarKeyword])) {
       if (match(SyntaxKinds.LetKeyword) && isLetPossibleIdentifier()) {
-        isParseLetAsExpr = true;
+        isParseLetAsExpr = getStartPosition();
         leftOrInit = parseExpressionDisallowIn();
       } else {
         leftOrInit = disAllowInOperaotr(() => parseVariableDeclaration(true));
@@ -1478,7 +1509,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
         helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit, "ForOf");
       }
       if (isParseLetAsExpr) {
-        throw createMessageError(ErrorMessageMap.extra_error_for_of_can_not_use_let_as_identifier);
+        raiseError(ErrorMessageMap.extra_error_for_of_can_not_use_let_as_identifier, isParseLetAsExpr);
       }
       nextToken();
       const right = parseAssignmentExpressionAllowIn();
@@ -1789,14 +1820,12 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   function staticSematicEarlyErrorForLabelStatement(labeled: Statement | FunctionDeclaration) {
     if (isFunctionDeclaration(labeled)) {
       if (labeled.generator) {
-        // recoverable error
         raiseError(
           ErrorMessageMap.babel_error_generators_can_only_be_declared_at_the_top_level_or_inside_a_block,
           labeled.start,
         );
       }
       if (isInStrictMode()) {
-        // recoverable error
         raiseError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled, labeled.start);
       }
     }
@@ -1804,7 +1833,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   function parseReturnStatement(): ReturnStatement {
     const { start, end } = expect(SyntaxKinds.ReturnKeyword);
     if (!isReturnValidate()) {
-      throw createMessageError(ErrorMessageMap.syntax_error_return_not_in_function);
+      raiseError(ErrorMessageMap.syntax_error_return_not_in_function, start);
     }
     if (isSoftInsertSemi(true)) {
       return Factory.createReturnStatement(null, start, end);
@@ -1874,7 +1903,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   }
   function staticSmaticEarlyErrorForThrowStatement() {
     if (getLineTerminatorFlag()) {
-      throw createMessageError("TODO, line break not allow");
+      raiseError(ErrorMessageMap.babel_error_illegal_newline_after_throw, getStartPosition());
     }
   }
   function parseWithStatement(): WithStatement {
@@ -2071,7 +2100,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
           name.name === "let" ||
           PreserveWordSet.has(name.name)
         ) {
-          throw createMessageError("unexepct keyword in parameter list in strict mode");
+          raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, name.start);
         }
       }
     }
@@ -2096,34 +2125,37 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
         if (match(SyntaxKinds.AwaitKeyword)) {
           // for function expression, can await treat as function name is dep on current scope.
           if (isExpression && isCurrentScopeParseAwaitAsExpression()) {
-            throw createMessageError(
-              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+            raiseError(
+              ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function,
+              getStartPosition(),
             );
           }
           // for function declaration, can await treat as function name is dep on parent scope.
           if (!isExpression && isParentFunctionAsync()) {
-            throw createMessageError(
-              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+            raiseError(
+              ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function,
+              getStartPosition(),
             );
           }
           if (config.sourceType === "module") {
-            throw createMessageError(
-              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+            raiseError(
+              ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function,
+              getStartPosition(),
             );
           }
           name = parseIdentifierName();
         } else if (match(SyntaxKinds.YieldKeyword)) {
           // for function expression, can yield treat as function name is dep on current scope.
           if (isExpression && isCurrentScopeParseYieldAsExpression()) {
-            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+            raiseError(ErrorMessageMap.babel_error_invalid_yield, getStartPosition());
           }
           // for function declaration, can yield treat as function name is  dep on parent scope.
           if (!isExpression && isParentFunctionGenerator()) {
-            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+            raiseError(ErrorMessageMap.babel_error_invalid_yield, getStartPosition());
           }
           // if in strict mode, yield can not be function name.
           if (isInStrictMode()) {
-            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+            raiseError(ErrorMessageMap.babel_error_invalid_yield, getStartPosition());
           }
           name = parseIdentifierName();
         }
@@ -2197,7 +2229,11 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     if (!match(SyntaxKinds.ParenthesesRightPunctuator)) {
       if (isEndWithRest && match(SyntaxKinds.CommaToken)) {
         // recoverable error
-        throw createMessageError(ErrorMessageMap.babel_error_unexpected_trailing_comma_after_rest_element);
+        raiseError(
+          ErrorMessageMap.babel_error_unexpected_trailing_comma_after_rest_element,
+          getStartPosition(),
+        );
+        nextToken();
       }
       throw createUnexpectError();
     }
@@ -2237,9 +2273,11 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     ) {
       return decoratorList;
     }
-    throw createMessageError(
+    raiseError(
       ErrorMessageMap.babel_error_leading_decorators_must_be_attached_to_a_class_declaration,
+      decoratorList[0].start,
     );
+    return decoratorList;
   }
   function parseDecorator(): Decorator {
     const { start } = expect(SyntaxKinds.AtPunctuator);
@@ -2287,7 +2325,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     expectButNotEat(SyntaxKinds.ClassKeyword);
     const classDelcar = parseClass(decoratorList);
     if (classDelcar.id === null) {
-      throw createMessageError("class declaration must have class id");
+      raiseError(ErrorMessageMap.babel_error_a_class_name_is_required, classDelcar.start);
     }
     return Factory.transFormClassToClassDeclaration(classDelcar);
   }
@@ -2368,7 +2406,10 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     }
     if (match(SyntaxKinds.BracesLeftPunctuator) && isStatic) {
       if (decorators) {
-        throw createMessageError(ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_static_block);
+        raiseError(
+          ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_static_block,
+          decorators[0].start,
+        );
       }
       const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
       symbolScopeRecorder.enterFunctionSymbolScope();
@@ -2393,7 +2434,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     let key: PropertyName | PrivateName | undefined;
     if (match(SyntaxKinds.PrivateName)) {
       key = parsePrivateName();
-      defPrivateName(key.name);
+      defPrivateName(key.name, key.start);
     } else {
       key = parsePropertyName(isComputedRef);
     }
@@ -2473,8 +2514,8 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     if (scope.kind !== "CatpureLayer") {
       return;
     }
-    if (scope.argumentsIdentifier.length > 0) {
-      throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+    for (const pos of scope.argumentsIdentifier) {
+      raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, pos);
     }
   }
   /**
@@ -2547,8 +2588,9 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
         (!lineTerminatorFlag &&
           (kind === SyntaxKinds.BracesLeftPunctuator || kind === SyntaxKinds.Identifier))
       ) {
-        throw createMessageError(
+        raiseError(
           ErrorMessageMap.v8_error_lexical_declaration_cannot_appear_in_a_single_statement_context,
+          getStartPosition(),
         );
       }
     }
@@ -2559,7 +2601,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   function postStaticSematicEarlyErrorForExpressionStatement(expr: Expression) {
     if (!expr.parentheses) {
       if (isFunctionExpression(expr) || isClassExpression(expr)) {
-        throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+        raiseError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled, expr.start);
       }
     }
   }
@@ -2732,10 +2774,13 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       }
     }
     if (delegate && !argument) {
-      throw createMessageError(ErrorMessageMap.yield_deletgate_can_must_be_followed_by_assignment_expression);
+      raiseError(
+        ErrorMessageMap.extra_error_yield_deletgate_can_must_be_followed_by_assignment_expression,
+        getStartPosition(),
+      );
     }
     if (isInParameter()) {
-      throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
+      raiseError(ErrorMessageMap.extra_error_yield_expression_can_not_used_in_parameter_list, start);
     }
     recordScope(ExpressionScopeKind.YieldExpressionInParameter, start);
     return Factory.createYieldExpression(
@@ -2926,7 +2971,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   function parseUnaryOrPrivateName(): Expression {
     if (match(SyntaxKinds.PrivateName)) {
       const privateName = parsePrivateName();
-      usePrivateName(privateName.name);
+      usePrivateName(privateName.name, privateName.start);
       return privateName;
     }
     return parseUnaryExpression();
@@ -2962,14 +3007,18 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   // 13.5.1.1
   function staticSematicEarlyErrorForUnaryExpression(expr: UnaryExpression) {
     if (isInStrictMode() && expr.operator === SyntaxKinds.DeleteKeyword && isIdentifer(expr.argument)) {
-      throw createMessageError(
+      raiseError(
         ErrorMessageMap.syntax_error_applying_the_delete_operator_to_an_unqualified_name_is_deprecated,
+        expr.start,
       );
     }
   }
   function parseAwaitExpression() {
     if (isInParameter()) {
-      throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
+      raiseError(
+        ErrorMessageMap.extra_error_await_expression_can_not_used_in_parameter_list,
+        getStartPosition(),
+      );
     }
     const start = getStartPosition();
     nextToken();
@@ -3072,7 +3121,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     if (isIdentifer(expression) || isMemberExpression(expression)) {
       return;
     }
-    throw createMessageError(ErrorMessageMap.invalid_left_value);
+    raiseError(ErrorMessageMap.invalid_left_value, expression.start);
   }
   /**
    * Parse CallExpression
@@ -3210,10 +3259,11 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     let property: Expression | PrivateName;
     if (match(SyntaxKinds.PrivateName)) {
       property = parsePrivateName();
-      usePrivateName(property.name);
+      usePrivateName(property.name, property.start);
       if (isInDelete()) {
-        throw createMessageError(
+        raiseError(
           ErrorMessageMap.syntax_error_applying_the_delete_operator_to_an_unqualified_name_is_deprecated,
+          property.start,
         );
       }
     } else {
@@ -3366,7 +3416,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
                 );
               }
               if (containEsc) {
-                throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
+                raiseError(ErrorMessageMap.invalid_esc_char_in_keyword, id.start);
               }
               enterArrowFunctionBodyScope(true);
               const arrowFunExpr = parseArrowFunctionExpression(meta, strictModeScope, arrowExprScope);
@@ -3506,7 +3556,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
    */
   function staticSematicForIdentifierAsYield(start: SourcePosition) {
     if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
-      throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+      raiseError(ErrorMessageMap.babel_error_invalid_yield, start);
     }
     recordScope(ExpressionScopeKind.YieldIdentifier, start);
   }
@@ -3521,7 +3571,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
    */
   function staticSematicForIdentifierAsAwait(start: SourcePosition) {
     if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
-      throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+      raiseError(ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function, start);
     }
     // skip if is using await in class property name in async context
     if (isDirectToClassScope() && !isInPropertyName()) {
@@ -3539,7 +3589,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
    */
   function staticSematicForIdentifierAsLet(start: SourcePosition) {
     if (isInStrictMode()) {
-      throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+      raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, start);
     }
     recordScope(ExpressionScopeKind.LetIdentifiier, start);
   }
@@ -3560,7 +3610,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     const isPreserveWord = PreserveWordSet.has(value);
     if (isPreserveWord) {
       if (isInStrictMode()) {
-        throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+        raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, start);
       }
       recordScope(ExpressionScopeKind.PresveredWordIdentifier, start);
     }
@@ -3568,18 +3618,18 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       if (isInStrictMode()) {
         if (!isEncloseInFunction() && !isInPropertyName()) {
           // invalud usage
-          throw createMessageError(ErrorMessageMap.syntax_error_arguments_is_not_valid_in_fields);
+          raiseError(ErrorMessageMap.syntax_error_arguments_is_not_valid_in_fields, start);
         }
         if (strictModeScopeRecorder.isInLHS()) {
           // invalid assignment
-          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+          raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, start);
         }
       }
       recordScope(ExpressionScopeKind.ArgumentsIdentifier, start);
     }
     if (value === "eval") {
       if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
-        throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+        raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, start);
       }
       recordScope(ExpressionScopeKind.EvalIdentifier, start);
     }
@@ -3602,7 +3652,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   function parsePrivateName(): PrivateName {
     const { value, start, end } = expect(SyntaxKinds.PrivateName);
     if (!isInClassScope()) {
-      throw createMessageError(ErrorMessageMap.syntax_error_unexpected_hash_used_outside_of_class_body); // semantics check for private
+      raiseError(ErrorMessageMap.syntax_error_unexpected_hash_used_outside_of_class_body, start); // semantics check for private
     }
     return Factory.createPrivateName(value, start, end);
   }
@@ -3623,10 +3673,10 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     return Factory.createDecimalBigIntegerLiteral(value, start, end);
   }
   function parseNonOctalDecimalLiteral() {
-    if (isInStrictMode()) {
-      throw createMessageError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated);
-    }
     const { start, end, value } = expect(SyntaxKinds.NonOctalDecimalLiteral);
+    if (isInStrictMode()) {
+      raiseError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated, start);
+    }
     return Factory.createNonOctalDecimalLiteral(value, start, end);
   }
   function parseBinaryIntegerLiteral() {
@@ -3654,10 +3704,10 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     return Factory.createHexBigIntegerLiteral(value, start, end);
   }
   function parseLegacyOctalIntegerLiteral() {
-    if (isInStrictMode()) {
-      throw createMessageError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated);
-    }
     const { start, end, value } = expect(SyntaxKinds.LegacyOctalIntegerLiteral);
+    if (isInStrictMode()) {
+      raiseError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated, start);
+    }
     return Factory.createLegacyOctalIntegerLiteral(value, start, end);
   }
   function parseNumericLiteral(): NumberLiteral {
@@ -3683,7 +3733,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       case SyntaxKinds.LegacyOctalIntegerLiteral:
         return parseLegacyOctalIntegerLiteral();
       default:
-        throw createMessageError("");
+        throw createUnexpectError();
     }
   }
   function parseStringLiteral() {
@@ -3701,7 +3751,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     const templateLiteralStart = getStartPosition();
     if (match(SyntaxKinds.TemplateNoSubstitution)) {
       if (!tagged && lexer.getTemplateLiteralTag()) {
-        throw createMessageError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence);
+        raiseError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence, getStartPosition());
       }
       const value = getSourceValue();
       const templateLiteralEnd = getEndPosition();
@@ -3722,7 +3772,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       !match(SyntaxKinds.EOFToken)
     ) {
       if (!tagged && lexer.getTemplateLiteralTag()) {
-        throw createMessageError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence);
+        raiseError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence, getStartPosition());
       }
       quasis.push(
         Factory.createTemplateElement(getSourceValue(), false, getStartPosition(), getEndPosition()),
@@ -3734,7 +3784,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       throw createUnexpectError();
     }
     if (!tagged && lexer.getTemplateLiteralTag()) {
-      throw createMessageError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence);
+      raiseError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence, getStartPosition());
     }
     quasis.push(Factory.createTemplateElement(getSourceValue(), true, getStartPosition(), getEndPosition()));
     const templateLiteralEnd = getEndPosition();
@@ -3753,7 +3803,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     expect(SyntaxKinds.DotOperator);
     const ecaFlag = getEscFlag();
     const property = parseIdentifierReference();
-    staticSematicForImportMeta(property, ecaFlag);
+    staticSematicForImportMeta(property, ecaFlag, start);
     return Factory.createMetaProperty(
       Factory.createIdentifier("import", start, end),
       property,
@@ -3769,19 +3819,18 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
    * @param property
    * @param ecaFlag
    */
-  function staticSematicForImportMeta(property: Identifier, ecaFlag: boolean) {
+  function staticSematicForImportMeta(property: Identifier, ecaFlag: boolean, start: SourcePosition) {
     if (property.name !== "meta") {
-      throw createMessageError(
+      raiseError(
         ErrorMessageMap.babel_error_the_only_valid_meta_property_for_import_is_import_meta,
+        property.start,
       );
     }
     if (ecaFlag) {
-      throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
+      raiseError(ErrorMessageMap.invalid_esc_char_in_keyword, start);
     }
     if (config.sourceType === "script") {
-      throw createMessageError(
-        ErrorMessageMap.babel_error_import_meta_may_appear_only_with_source_type_module,
-      );
+      raiseError(ErrorMessageMap.babel_error_import_meta_may_appear_only_with_source_type_module, start);
     }
   }
   /**
@@ -3913,6 +3962,9 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
           ErrorMessageMap.babel_error_constructors_in_after_an_optional_chain_are_not_allowed,
           getStartPosition(),
         );
+        nextToken();
+        base = parseMemberExpression(base, true);
+        continue;
       }
       base = parseMemberExpression(base, false);
     }
@@ -3957,6 +4009,10 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     let isComputed = false;
     let end: SourcePosition;
     switch (getToken()) {
+      case SyntaxKinds.QustionDotOperator:
+        // recoverable error.
+        raiseError(ErrorMessageMap.babel_invalid_usage_of_super_call, getStartPosition());
+      // eslint-disable-next-line no-fallthrough
       case SyntaxKinds.DotOperator: {
         nextToken();
         if (match(SyntaxKinds.PrivateName)) {
@@ -3976,9 +4032,6 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
         ({ end } = expect(SyntaxKinds.BracketRightPunctuator));
         break;
       }
-      case SyntaxKinds.QustionDotOperator:
-        // recoverable error.
-        throw createMessageError(ErrorMessageMap.babel_invalid_usage_of_super_call);
       default:
         throw createUnexpectError();
     }
@@ -4255,13 +4308,16 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   function staticSematicForShortedPropertyNameInObjectExpression(propertyName: Identifier) {
     if (propertyName.name === "await") {
       if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
-        throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+        raiseError(
+          ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function,
+          propertyName.start,
+        );
       }
       return;
     }
     if (propertyName.name === "yield") {
       if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
-        throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+        raiseError(ErrorMessageMap.babel_error_invalid_yield, propertyName.start);
       }
       return;
     }
@@ -4349,7 +4405,11 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       }
       if (match(SyntaxKinds.PrivateName)) {
         propertyName = parsePrivateName();
-        defPrivateName(propertyName.name, type === "method" ? "other" : isStatic ? `static-${type}` : type);
+        defPrivateName(
+          propertyName.name,
+          propertyName.start,
+          type === "method" ? "other" : isStatic ? `static-${type}` : type,
+        );
       } else {
         const isComputedRef = { isComputed: false };
         propertyName = parsePropertyName(isComputedRef);
@@ -5347,35 +5407,36 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       switch (propertyName.name) {
         case "await": {
           if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
-            throw createMessageError(
-              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+            raiseError(
+              ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function,
+              propertyName.start,
             );
           }
           return;
         }
         case "yield": {
           if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
-            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+            raiseError(ErrorMessageMap.babel_error_invalid_yield, propertyName.start);
           }
           return;
         }
         case "arguments": {
           if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
-            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+            raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, propertyName.start);
           }
           recordScope(ExpressionScopeKind.ArgumentsIdentifier, propertyName.start);
           return;
         }
         case "eval": {
           if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
-            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+            raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, propertyName.start);
           }
           recordScope(ExpressionScopeKind.EvalIdentifier, propertyName.start);
           return;
         }
         case "let": {
           if (isInStrictMode()) {
-            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+            raiseError(ErrorMessageMap.babel_error_unexpected_keyword, propertyName.start);
           }
           recordScope(ExpressionScopeKind.LetIdentifiier, propertyName.start);
           return;
@@ -5439,7 +5500,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       throw createUnexpectError();
     }
     if (getEscFlag()) {
-      throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
+      raiseError(ErrorMessageMap.invalid_esc_char_in_keyword, getStartPosition());
     }
     nextToken();
   }
