@@ -1,0 +1,3 @@
+[SyntaxError]: Missing semicolon or line terminator. (2,16)
+2|  return await 1
+ |              ^

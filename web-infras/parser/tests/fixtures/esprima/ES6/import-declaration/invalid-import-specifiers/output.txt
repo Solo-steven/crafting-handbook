@@ -1,0 +1,1 @@
+[Syntax Error]: import default specifier can only concat with namespace of import named specifier (1, 13)

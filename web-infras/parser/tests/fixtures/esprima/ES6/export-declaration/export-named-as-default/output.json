@@ -58,6 +58,50 @@
                 "col": 23,
                 "index": 22
             }
+        },
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "foo",
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 29
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 8,
+                            "index": 32
+                        }
+                    },
+                    "init": null,
+                    "start": {
+                        "row": 2,
+                        "col": 5,
+                        "index": 29
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 8,
+                        "index": 32
+                    }
+                }
+            ],
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 25
+            },
+            "end": {
+                "row": 2,
+                "col": 8,
+                "index": 32
+            }
         }
     ],
     "start": {
@@ -67,7 +111,7 @@
     },
     "end": {
         "row": 2,
-        "col": 1,
-        "index": 25
+        "col": 9,
+        "index": 33
     }
 }

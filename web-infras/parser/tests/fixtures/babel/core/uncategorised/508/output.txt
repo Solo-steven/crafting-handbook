@@ -1,0 +1,3 @@
+[SyntaxError]: unexpect keyword in strict mode (1,38)
+1|function hello() { "use strict"; var protected; }
+ |                                    ^

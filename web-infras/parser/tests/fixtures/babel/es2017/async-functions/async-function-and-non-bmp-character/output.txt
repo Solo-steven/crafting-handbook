@@ -1,0 +1,9 @@
+[SyntaxError]: Missing semicolon or line terminator. (1,7)
+1|async function𝐬 f() {}
+ |     ^
+[SyntaxError]: Missing semicolon or line terminator. (1,18)
+1|async function𝐬 f() {}
+ |                ^
+[SyntaxError]: Missing semicolon or line terminator. (1,22)
+1|async function𝐬 f() {}
+ |                    ^

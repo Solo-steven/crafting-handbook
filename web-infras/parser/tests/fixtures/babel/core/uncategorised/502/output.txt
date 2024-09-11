@@ -1,0 +1,3 @@
+[SyntaxError]: Octal literals are not allowed in strict mode (1,37)
+1|function hello() { 'use strict'; ({ 021: 42 }); }
+ |                                   ^

@@ -1,0 +1,3 @@
+[SyntaxError]: Export variable is not defined. (4,10)
+4|export { encrypt }
+ |        ^

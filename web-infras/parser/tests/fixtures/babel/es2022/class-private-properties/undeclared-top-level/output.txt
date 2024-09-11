@@ -1,0 +1,3 @@
+[SyntaxError]: Unexpected '#' used outside of class body (1,16)
+1|var prop = foo.#priv;
+ |              ^

@@ -1,0 +1,3 @@
+[SyntaxError]: duplicate params (2,12)
+2|    bar(a, a) {}
+ |          ^

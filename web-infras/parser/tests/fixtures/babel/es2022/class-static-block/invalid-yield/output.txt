@@ -1,0 +1,6 @@
+[SyntaxError]: 'yield' is only allowed within generator functions. (5,7)
+5|      yield 42;
+ |     ^
+[SyntaxError]: Missing semicolon or line terminator. (5,13)
+5|      yield 42;
+ |           ^

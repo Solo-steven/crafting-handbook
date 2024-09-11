@@ -1,0 +1,3 @@
+[SyntaxError]: return not in function (1,1)
+1|return
+ |^

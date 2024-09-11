@@ -1,0 +1,3 @@
+[SyntaxError]: 'import' and 'export' may appear only with 'sourceType: "module"' (1,1)
+1|import foo from "foo";
+ |^

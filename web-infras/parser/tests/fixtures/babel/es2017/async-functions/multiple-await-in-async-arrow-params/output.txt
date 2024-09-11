@@ -1,0 +1,6 @@
+[SyntaxError]: Can not use 'await' as identifier inside an async function. (1,16)
+1|async ({ x = [ await ], y = { await } }) => {}
+ |              ^
+[SyntaxError]: Can not use 'await' as identifier inside an async function. (1,31)
+1|async ({ x = [ await ], y = { await } }) => {}
+ |                             ^

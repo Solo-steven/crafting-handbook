@@ -1,0 +1,3 @@
+[SyntaxError]: Unexpected reserved word. (2,9)
+2|const { public } = foo();
+ |       ^

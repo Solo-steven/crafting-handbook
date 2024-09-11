@@ -1,0 +1,3 @@
+[SyntaxError]: Identifier has already been declared. (2,22)
+2|export { foo, bar as "foo" }
+ |                    ^

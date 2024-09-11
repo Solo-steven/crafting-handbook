@@ -1,0 +1,3 @@
+[SyntaxError]: The only valid meta property for import is import.meta. (1,8)
+1|import.notMeta;
+ |      ^

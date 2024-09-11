@@ -1,0 +1,6 @@
+[SyntaxError]: yield expression can not used in parameter list (1,25)
+1|function* fn(x = yield* yield) {}
+ |                       ^
+[SyntaxError]: yield expression can not used in parameter list (1,18)
+1|function* fn(x = yield* yield) {}
+ |                ^

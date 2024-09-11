@@ -1,0 +1,3 @@
+[SyntaxError]: Async functions can only be declared at the top level or inside a block. (1,14)
+1|if (x) async function f() {}
+ |            ^

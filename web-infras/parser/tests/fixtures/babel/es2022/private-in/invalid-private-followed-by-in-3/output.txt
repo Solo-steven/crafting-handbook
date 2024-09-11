@@ -1,0 +1,6 @@
+[SyntaxError]: Private names are only allowed in property accesses (`obj.#private`) or in `in` expressions (`#private in obj`). (5,18)
+5|    for (var x = #a in y);
+ |                ^
+[SyntaxError]: 'for-in' loop variable declaration may not have an initializer. (5,14)
+5|    for (var x = #a in y);
+ |            ^

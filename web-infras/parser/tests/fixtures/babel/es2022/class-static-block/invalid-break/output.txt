@@ -1,0 +1,3 @@
+[SyntaxError]: unlabeled break must be inside loop or switch. (6,9)
+6|        break;
+ |       ^

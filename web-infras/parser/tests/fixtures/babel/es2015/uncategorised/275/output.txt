@@ -1,0 +1,6 @@
+[SyntaxError]: Numeric Literal and string literal can not use as shorted property. (1,4)
+1|({ "chance" }) = obj
+ |  ^
+[SyntaxError]: Invalid parenthesized assignment pattern. (1,2)
+1|({ "chance" }) = obj
+ |^

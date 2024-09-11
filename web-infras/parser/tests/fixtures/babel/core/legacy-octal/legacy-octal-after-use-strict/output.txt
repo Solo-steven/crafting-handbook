@@ -1,0 +1,6 @@
+[SyntaxError]: Octal literals are not allowed in strict mode (1,15)
+1|"use strict"; 04; 05;
+ |             ^
+[SyntaxError]: Octal literals are not allowed in strict mode (1,19)
+1|"use strict"; 04; 05;
+ |                 ^

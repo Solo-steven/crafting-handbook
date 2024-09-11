@@ -1,0 +1,3 @@
+[SyntaxError]: 'arguments'/'eval' can't be defined or assigned to in strict mode code (1,33)
+1|function hello() {'use strict'; eval++; }
+ |                               ^

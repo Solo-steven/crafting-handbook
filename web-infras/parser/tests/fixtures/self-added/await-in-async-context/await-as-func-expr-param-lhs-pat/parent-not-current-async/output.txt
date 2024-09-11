@@ -1,0 +1,6 @@
+[SyntaxError]: Can not use 'await' as identifier inside an async function. (2,40)
+2|    const child = async function name({await}) {
+ |                                      ^
+[SyntaxError]: Can not use 'await' as identifier inside an async function. (5,47)
+5|    const child2 = async function name({name: await}) {
+ |                                             ^

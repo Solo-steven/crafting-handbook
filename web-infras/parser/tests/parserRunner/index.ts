@@ -18,15 +18,11 @@ const TempIgnoreCases: Set<string> = new Set([
   /**
    * Hard to do it
    */
-  // === (feature) tokenze ?.3 vs ?.
-  "/babel/es2020/optional-chaining/conditional-decimal",
   // === (feature) use strict active timing.
   "/babel/core/regression/use-strict-with-pre-semi",
   // === (feature) regex content and flag check
   "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-4-hex",
   "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-var-hex",
-  // === (TO BE VERIFY)
-  "/esprima/statement/if/migrated_0003",
   // === (lone surrofate)
   "/babel/es2022/module-string-names/export-name-has-lone-surrogate",
   "/esprima/ES6/identifier/invalid_lone_surrogate",
@@ -49,42 +45,6 @@ const TempIgnoreCases: Set<string> = new Set([
    */
   // === (feature) ban async of
   "/babel/es2021/for-async-of/forbidden",
-  /**
-   * Scope Id and reference feature
-   */
-  // === (feature) duplicate among export declaration
-  "/babel/es2015/modules/duplicate-export-default",
-  "/babel/es2015/modules/duplicate-export-default-and-export-as-default",
-  "/babel/es2015/modules/duplicate-named-export",
-  "/babel/es2015/modules/duplicate-named-export-class-declaration",
-  "/babel/es2015/modules/duplicate-named-export-destructuring-assignment",
-  "/babel/es2015/modules/duplicate-named-export-destructuring",
-  "/babel/es2015/modules/duplicate-named-export-destructuring2",
-  "/babel/es2015/modules/duplicate-named-export-destructuring3",
-  "/babel/es2015/modules/duplicate-named-export-destructuring4",
-  "/babel/es2015/modules/duplicate-named-export-destructuring5",
-  "/babel/es2015/modules/duplicate-named-export-destructuring6",
-  "/babel/es2015/modules/duplicate-named-export-destructuring7",
-  "/babel/es2015/modules/duplicate-named-export-destructuring8",
-  "/babel/es2015/modules/duplicate-named-export-destructuring9",
-  "/babel/es2015/modules/duplicate-named-export-destructuring10",
-  "/babel/es2015/modules/duplicate-named-export-destructuring11",
-  "/babel/es2015/modules/duplicate-named-export-destructuring12",
-  "/babel/es2015/modules/duplicate-named-export-destructuring13",
-  "/babel/es2015/modules/duplicate-named-export-destructuring14",
-  "/babel/es2015/modules/duplicate-named-export-destructuring15",
-  "/babel/es2015/modules/duplicate-named-export-destructuring16",
-  "/babel/es2015/modules/duplicate-named-export-destructuring17",
-  "/babel/es2015/modules/duplicate-named-export-destructuring18",
-  "/babel/es2015/modules/duplicate-named-export-destructuring19",
-  "/babel/es2015/modules/duplicate-named-export-function-declaration",
-  "/babel/es2015/modules/duplicate-named-export-variable-declaration",
-  "/babel/es2022/module-string-names/duplicate-exported-binding-check",
-  // === (feature) checking duplicate variable in block scope
-  "/babel/es2018/object-rest-spread/11",
-  "/babel/es2018/object-rest-spread/12",
-  "/babel/es2018/object-rest-spread/13",
-  "/babel/es2018/object-rest-spread/15",
 ]);
 
 function getFailedKindCount(failedTestCases: Array<FailedTestCasesResult>) {

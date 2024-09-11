@@ -1,0 +1,3 @@
+[SyntaxError]: property name __proto__ appears more than once in object literal (1,43)
+1|({ set __proto__(x){}, "__proto__": null, __proto__: null, })
+ |                                         ^

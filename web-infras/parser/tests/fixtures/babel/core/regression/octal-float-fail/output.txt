@@ -1,0 +1,1 @@
+[Error]: Lexical Error, Legacy octal literals can not contain any float number or expon, start position is (1, 1)

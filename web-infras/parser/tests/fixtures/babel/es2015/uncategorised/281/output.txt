@@ -1,0 +1,3 @@
+[SyntaxError]: duplicate params (1,48)
+1|"use strict"; function x({ b: { a } }, [{ b: { a } }]){}
+ |                                              ^

@@ -1,0 +1,3 @@
+[SyntaxError]: `new.target` can only be used in functions or class properties. (1,9)
+1|var x = new.target;
+ |       ^

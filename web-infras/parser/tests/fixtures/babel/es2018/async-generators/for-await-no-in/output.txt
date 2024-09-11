@@ -1,0 +1,3 @@
+[SyntaxError]: when await in for loop, it can only be in for of loop (2,7)
+2|  for await (let x in y);
+ |     ^

@@ -1,0 +1,3 @@
+[SyntaxError]: property name __proto__ appears more than once in object literal (1,25)
+1|new {__proto__: Number, __proto__: Number}.__proto__;
+ |                       ^

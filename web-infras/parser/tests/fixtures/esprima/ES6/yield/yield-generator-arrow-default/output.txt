@@ -1,0 +1,3 @@
+[SyntaxError]: yield expression can not used in parameter list (1,22)
+1|function *g() { (x = yield) => {} }
+ |                    ^

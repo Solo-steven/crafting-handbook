@@ -1,0 +1,3 @@
+[SyntaxError]: keyword can not contain any esc flag. (1,2)
+1|(\u0061sync x => { await x })
+ |^

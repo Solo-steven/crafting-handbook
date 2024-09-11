@@ -1,0 +1,3 @@
+[SyntaxError]: Illegal continue statement: no surrounding iteration statement. (1,1)
+1|continue
+ |^

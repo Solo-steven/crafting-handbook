@@ -1,0 +1,3 @@
+[SyntaxError]: Setter must have exactly one formal parameter. (1,13)
+1|({ set prop(x, y) {} })
+ |           ^

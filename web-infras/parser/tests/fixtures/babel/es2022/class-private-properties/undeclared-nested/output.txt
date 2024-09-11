@@ -1,0 +1,3 @@
+[SyntaxError]: Private name undeinfed (4,20)
+4|    var prop = foo.#priv;
+ |                  ^

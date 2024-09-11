@@ -2,6 +2,50 @@
     "kind": "Program",
     "body": [
         {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "bar",
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        }
+                    },
+                    "init": null,
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 8,
+                        "index": 7
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 8,
+                "index": 7
+            }
+        },
+        {
             "kind": "ExportNamedDeclaration",
             "specifiers": [
                 {
@@ -10,26 +54,26 @@
                         "kind": "Identifer",
                         "name": "foo",
                         "start": {
-                            "row": 1,
+                            "row": 2,
                             "col": 9,
-                            "index": 8
+                            "index": 17
                         },
                         "end": {
-                            "row": 1,
+                            "row": 2,
                             "col": 12,
-                            "index": 11
+                            "index": 20
                         }
                     },
                     "local": null,
                     "start": {
-                        "row": 1,
+                        "row": 2,
                         "col": 9,
-                        "index": 8
+                        "index": 17
                     },
                     "end": {
-                        "row": 1,
+                        "row": 2,
                         "col": 12,
-                        "index": 11
+                        "index": 20
                     }
                 },
                 {
@@ -38,40 +82,84 @@
                         "kind": "Identifer",
                         "name": "bar",
                         "start": {
-                            "row": 1,
+                            "row": 2,
                             "col": 14,
-                            "index": 13
+                            "index": 22
                         },
                         "end": {
-                            "row": 1,
+                            "row": 2,
                             "col": 17,
-                            "index": 16
+                            "index": 25
                         }
                     },
                     "local": null,
                     "start": {
-                        "row": 1,
+                        "row": 2,
                         "col": 14,
-                        "index": 13
+                        "index": 22
                     },
                     "end": {
-                        "row": 1,
+                        "row": 2,
                         "col": 17,
-                        "index": 16
+                        "index": 25
                     }
                 }
             ],
             "declaration": null,
             "source": null,
             "start": {
-                "row": 1,
+                "row": 2,
                 "col": 1,
-                "index": 0
+                "index": 9
             },
             "end": {
-                "row": 1,
+                "row": 2,
                 "col": 17,
-                "index": 16
+                "index": 25
+            }
+        },
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "foo",
+                        "start": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 33
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 8,
+                            "index": 36
+                        }
+                    },
+                    "init": null,
+                    "start": {
+                        "row": 3,
+                        "col": 5,
+                        "index": 33
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 8,
+                        "index": 36
+                    }
+                }
+            ],
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 29
+            },
+            "end": {
+                "row": 3,
+                "col": 8,
+                "index": 36
             }
         }
     ],
@@ -81,8 +169,8 @@
         "index": 0
     },
     "end": {
-        "row": 2,
-        "col": 1,
-        "index": 20
+        "row": 3,
+        "col": 9,
+        "index": 37
     }
 }

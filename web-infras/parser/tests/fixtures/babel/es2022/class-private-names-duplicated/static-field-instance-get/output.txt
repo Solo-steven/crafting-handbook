@@ -1,0 +1,3 @@
+[SyntaxError]: Duplicate private name. (3,7)
+3|  get #x() {}
+ |     ^

@@ -1,0 +1,6 @@
+[SyntaxError]: unexpect keyword in strict mode (1,29)
+1|"use strict"; for (let [x = let];;) {}
+ |                           ^
+[SyntaxError]: Missing initializer in destructuring declaration. (1,24)
+1|"use strict"; for (let [x = let];;) {}
+ |                      ^

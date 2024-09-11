@@ -1,0 +1,6 @@
+[SyntaxError]: Missing semicolon or line terminator. (1,22)
+1|export default async functionX () {}
+ |                    ^
+[SyntaxError]: Missing semicolon or line terminator. (1,35)
+1|export default async functionX () {}
+ |                                 ^

@@ -1,0 +1,3 @@
+[SyntaxError]: unlabeled break must be inside loop or switch. (1,1)
+1|break
+ |^

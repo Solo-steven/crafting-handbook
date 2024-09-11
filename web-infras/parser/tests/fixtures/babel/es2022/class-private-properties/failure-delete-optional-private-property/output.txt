@@ -1,0 +1,3 @@
+[SyntaxError]: applying the 'delete' operator to an unqualified name is deprecated (4,18)
+4|    delete this?.#x;
+ |                ^

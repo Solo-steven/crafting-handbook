@@ -1,0 +1,3 @@
+[SyntaxError]: 'yield' is only allowed within generator functions. (2,12)
+2|  function yield() {}
+ |          ^

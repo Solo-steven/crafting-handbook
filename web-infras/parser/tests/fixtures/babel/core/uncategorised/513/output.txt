@@ -1,0 +1,9 @@
+[SyntaxError]: unexpect keyword in strict mode (1,24)
+1|"use strict"; function static() { }
+ |                      ^
+[SyntaxError]: unexpect keyword in strict mode (1,24)
+1|"use strict"; function static() { }
+ |                      ^
+[SyntaxError]: unexpect keyword in strict mode (1,24)
+1|"use strict"; function static() { }
+ |                      ^

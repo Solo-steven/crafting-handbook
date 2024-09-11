@@ -1,0 +1,6 @@
+[SyntaxError]: In strict mode code, functions can only be declared at top level or inside a block. (1,25)
+1|"use strict"; if (true) function f(){} else {}
+ |                       ^
+[SyntaxError]: Missing semicolon or line terminator. (1,40)
+1|"use strict"; if (true) function f(){} else {}
+ |                                      ^

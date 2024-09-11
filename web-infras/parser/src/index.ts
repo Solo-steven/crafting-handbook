@@ -2,11 +2,17 @@ import { createParser } from "@/src/parser";
 import { createLexer } from "@/src/lexer";
 import { Token } from "@/src/lexer/type";
 import { SyntaxKinds } from "web-infra-common";
-import { ParserConfig } from "./parser/config";
+import { ParserUserConfig } from "./parser/config";
+import { createErrorHandler } from "./errorHandler";
 
-export function parse(code: string, config?: ParserConfig) {
-  const parser = createParser(code, config);
-  return parser.parse();
+export function parse(code: string, config?: ParserUserConfig) {
+  const errorHandler = createErrorHandler(code);
+  const parser = createParser(code, errorHandler, config);
+  const program = parser.parse();
+  if (errorHandler.haveError()) {
+    throw new Error(errorHandler.formatErrorString());
+  }
+  return program;
 }
 export function tokenize(code: string): Array<Token> {
   const lexer = createLexer(code);

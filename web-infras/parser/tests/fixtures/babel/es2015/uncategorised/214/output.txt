@@ -1,0 +1,3 @@
+[SyntaxError]: Missing semicolon or line terminator. (1,4)
+1|0B18
+ |  ^

@@ -1,0 +1,3 @@
+[SyntaxError]: Invalid shorthand property initializer (1,4)
+1|f({x = 0})
+ |  ^

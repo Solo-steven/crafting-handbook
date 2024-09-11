@@ -1,0 +1,120 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "SomeClass",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 16,
+                    "index": 15
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": false,
+                        "shorted": false,
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "property",
+                            "start": {
+                                "row": 2,
+                                "col": 5,
+                                "index": 21
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 13,
+                                "index": 29
+                            }
+                        },
+                        "value": {
+                            "kind": "ArrowFunctionExpression",
+                            "expressionBody": true,
+                            "async": false,
+                            "arguments": [],
+                            "body": {
+                                "kind": "Identifer",
+                                "name": "eval",
+                                "start": {
+                                    "row": 2,
+                                    "col": 22,
+                                    "index": 38
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 26,
+                                    "index": 42
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 16,
+                                "index": 32
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 26,
+                                "index": 42
+                            }
+                        },
+                        "decorators": null,
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 21
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 13,
+                            "index": 29
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 16,
+                    "index": 15
+                },
+                "end": {
+                    "row": 3,
+                    "col": 2,
+                    "index": 45
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 3,
+                "col": 2,
+                "index": 45
+            },
+            "decorators": null
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 2,
+        "index": 45
+    }
+}

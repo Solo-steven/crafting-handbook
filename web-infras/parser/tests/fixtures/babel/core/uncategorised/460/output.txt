@@ -1,0 +1,3 @@
+[SyntaxError]: label not found. (1,25)
+1|while (true) { continue x; }
+ |                       ^

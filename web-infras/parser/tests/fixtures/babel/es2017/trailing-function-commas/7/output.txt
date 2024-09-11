@@ -1,0 +1,3 @@
+[SyntaxError]: sequence expression can not have trailing comma. (1,9)
+1|('foo',)
+ |       ^

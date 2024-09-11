@@ -1,0 +1,3 @@
+[SyntaxError]: Invalid shorthand property initializer (1,9)
+1|async({ foo33 = 1 });
+ |       ^

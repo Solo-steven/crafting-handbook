@@ -1,0 +1,9 @@
+[SyntaxError]: unexpect keyword in strict mode (2,20)
+2|const f = function let() {
+ |                  ^
+[SyntaxError]: unexpect keyword in strict mode (2,20)
+2|const f = function let() {
+ |                  ^
+[SyntaxError]: unexpect keyword in strict mode (2,20)
+2|const f = function let() {
+ |                  ^

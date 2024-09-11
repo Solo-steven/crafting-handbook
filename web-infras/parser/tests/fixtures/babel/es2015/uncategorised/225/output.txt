@@ -1,0 +1,3 @@
+[SyntaxError]: Missing semicolon or line terminator. (2,7)
+2| isnt y
+ |     ^

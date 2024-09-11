@@ -86,6 +86,12 @@ export function createLexer(code: string) {
     return state.token.endPosition;
   }
   /**
+   * Public API for get end position of last token
+   */
+  function getLastTokenEndPositon(): SourcePosition {
+    return state.token.lastTokenEndPosition;
+  }
+  /**
    * Public API for get current token kind.
    * @returns {SyntaxKinds}
    */
@@ -331,6 +337,7 @@ export function createLexer(code: string) {
     getSourceValueByIndex,
     getStartPosition,
     getEndPosition,
+    getLastTokenEndPositon,
     getLineTerminatorFlag,
     getEscFlag,
     getTemplateLiteralTag,
@@ -1072,9 +1079,14 @@ export function createLexer(code: string) {
   function readQuestionStart(): SyntaxKinds {
     eatChar();
     switch (getCharCodePoint()) {
-      case UnicodePoints.Dot:
+      case UnicodePoints.Dot: {
+        const next = getNextCharCodePoint();
+        if (next && next >= UnicodePoints.Digital0 && next <= UnicodePoints.Digital9) {
+          return finishToken(SyntaxKinds.QustionOperator);
+        }
         eatChar();
         return finishToken(SyntaxKinds.QustionDotOperator);
+      }
       case UnicodePoints.Question:
         eatChar();
         switch (getCharCodePoint()) {

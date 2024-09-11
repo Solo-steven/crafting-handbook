@@ -1,0 +1,6 @@
+[SyntaxError]: unexpect keyword in strict mode (1,11)
+1|(function package() {'use strict'; })()
+ |         ^
+[SyntaxError]: unexpect keyword in strict mode (1,11)
+1|(function package() {'use strict'; })()
+ |         ^

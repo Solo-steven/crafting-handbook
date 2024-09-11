@@ -1,0 +1,1 @@
+[Syntax Error]: Unexpect token super(1, 5).

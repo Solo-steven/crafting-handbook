@@ -1,0 +1,6 @@
+[SyntaxError]: unexpect keyword in strict mode (1,21)
+1|const a = function (let) {}
+ |                   ^
+[SyntaxError]: unexpect keyword in strict mode (1,21)
+1|const a = function (let) {}
+ |                   ^

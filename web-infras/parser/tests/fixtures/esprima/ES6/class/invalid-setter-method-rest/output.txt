@@ -1,0 +1,3 @@
+[SyntaxError]: Setter function argument must not be a rest parameter (1,17)
+1|class X { set f(...y) {} }
+ |               ^

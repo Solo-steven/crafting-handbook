@@ -8,15 +8,15 @@ import { ParserConfig } from "@/src/parser/config";
  * Try to parse a code string, return format string if no parse
  * error, return null if parse error.
  * @param code
- * @returns {string | null} return null if parse failed.
  */
-function tryParseCodeStringIntoASTString(code: string, config?: ParserConfig): string | null {
+function tryParseCodeStringIntoASTString(code: string, config?: ParserConfig): string | Error {
   try {
     const ast = parse(code, config);
     transformSyntaxKindToLiteral(ast);
     return JSON.stringify(ast, null, 4);
-  } catch {
-    return null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (e: any) {
+    return e;
   }
 }
 /**
@@ -38,12 +38,12 @@ export async function runExpectPassTestCase(testCase: ExpectPassTestCase) {
   ]);
   const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString(), testCase.config);
   const expectASTString = astBuffer.toString();
-  if (resultASTString === null || expectASTString !== resultASTString) {
+  if (typeof resultASTString === "object" || expectASTString !== resultASTString) {
     return {
       kind: "ExpectPassButFailed",
       filePath: testCase.jsFilePath,
       fileId: testCase.fileId,
-      reason: resultASTString === null ? "Parse Error" : "Diff Error",
+      reason: typeof resultASTString === "object" ? "Parse Error" : "Diff Error",
     };
   }
   return {
@@ -60,7 +60,7 @@ export async function runExpectPassTestCase(testCase: ExpectPassTestCase) {
 export async function runExpectFailedTestCase(testCase: ExpectFailedTestCase): Promise<TestCaseResult> {
   const codeBuffer = await readFile(testCase.jsFilePath);
   const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString(), testCase.config);
-  if (resultASTString !== null) {
+  if (typeof resultASTString !== "object") {
     return {
       kind: "ExpectFailedButPass",
       filePath: testCase.jsFilePath,
@@ -83,7 +83,7 @@ export async function runUpdateExpectPassTestCase(
 ): Promise<UpdateTestCaseResult> {
   const codeBuffer = await readFile(testCase.jsFilePath);
   const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString(), testCase.config);
-  if (resultASTString === null) {
+  if (typeof resultASTString === "object") {
     return {
       kind: "ExpectPassButFailed",
       filePath: testCase.jsFilePath,
@@ -92,6 +92,30 @@ export async function runUpdateExpectPassTestCase(
     };
   }
   await writeFile(testCase.jsonFilePath, resultASTString);
+  return {
+    kind: "ExpectPass",
+    fileId: testCase.fileId,
+    filePath: testCase.jsFilePath,
+  };
+}
+
+/**
+ *
+ */
+export async function runUpdateExpectFailedTestCase(
+  testCase: ExpectFailedTestCase,
+): Promise<UpdateTestCaseResult> {
+  const codeBuffer = await readFile(testCase.jsFilePath);
+  const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString(), testCase.config);
+  if (typeof resultASTString === "string") {
+    return {
+      kind: "ExpectFailedButPass",
+      fileId: testCase.fileId,
+      filePath: testCase.jsFilePath,
+      reason: "",
+    };
+  }
+  await writeFile(testCase.outputFilePath, resultASTString.message);
   return {
     kind: "ExpectPass",
     fileId: testCase.fileId,

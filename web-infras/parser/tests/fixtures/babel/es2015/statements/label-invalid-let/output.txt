@@ -1,0 +1,6 @@
+[SyntaxError]: Lexical declaration cannot appear in a single-statement context. (1,6)
+1|foo: let bar;
+ |    ^
+[SyntaxError]: Missing semicolon or line terminator. (1,10)
+1|foo: let bar;
+ |        ^

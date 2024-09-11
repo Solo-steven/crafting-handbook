@@ -1,0 +1,3 @@
+[SyntaxError]: Missing catch or finally after try. (1,1)
+1|try { }
+ |^

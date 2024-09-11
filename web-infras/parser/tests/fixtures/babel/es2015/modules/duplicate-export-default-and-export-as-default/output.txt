@@ -1,0 +1,6 @@
+[SyntaxError]: Identifier has already been declared. (2,17)
+2|export { foo as default };
+ |               ^
+[SyntaxError]: Export variable is not defined. (2,10)
+2|export { foo as default };
+ |        ^

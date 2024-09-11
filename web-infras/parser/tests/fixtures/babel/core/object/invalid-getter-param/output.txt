@@ -1,0 +1,3 @@
+[SyntaxError]: getter functions must have no arguments (1,8)
+1|({ get prop(x) {} })
+ |      ^

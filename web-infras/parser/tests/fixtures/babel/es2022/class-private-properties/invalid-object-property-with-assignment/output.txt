@@ -1,0 +1,1 @@
+[Syntax Error]: Private name can not use in object expression. (4, 5)

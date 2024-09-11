@@ -1,0 +1,6 @@
+[SyntaxError]: 'yield' is only allowed within generator functions. (1,26)
+1|"use strict"; function f(yield) {}
+ |                        ^
+[SyntaxError]: unexpect keyword in strict mode (1,26)
+1|"use strict"; function f(yield) {}
+ |                        ^

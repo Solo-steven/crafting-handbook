@@ -113,27 +113,38 @@ import {
   isPrivateName,
   isFunctionDeclaration,
   isClassExpression,
-  isExpressionStatement,
   NumericLiteralKinds,
   NumberLiteral,
   UnaryExpression,
   ImportAttribute,
   Decorator,
+  MetaProperty,
+  CallExpression,
+  ThisExpression,
 } from "web-infra-common";
 import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
-import { ParserConfig, getConfigFromUserInput } from "./config";
+import { ParserUserConfig, getConfigFromUserInput } from "./config";
 import { LookaheadToken } from "../lexer/type";
 import { createLexer } from "../lexer/index";
 import { createAsyncArrowExpressionScopeRecorder, AsyncArrowExpressionScope } from "./scope/arrowExprScope";
 import { createStrictModeScopeRecorder, StrictModeScope } from "./scope/strictModeScope";
 import { ExpressionScopeKind } from "./scope/type";
-import { createLexicalScopeRecorder, PrivateNameDefKind } from "./scope/lexicalScope";
+import { createLexicalScopeRecorder, ExportContext, PrivateNameDefKind } from "./scope/lexicalScope";
+import {
+  createSymbolScopeRecorder,
+  FunctionSymbolScope,
+  NonFunctionalSymbolType,
+  SymbolType,
+} from "./scope/symbolScope";
+import { SyntaxErrorHandler } from "@/src/errorHandler/type";
+
 interface Context {
   maybeArrowStart: number;
   inOperatorStack: Array<boolean>;
   propertiesInitSet: Set<ModuleItem>;
   propertiesProtoDuplicateSet: Set<PropertyName>;
+  lastTokenIndexOfIfStmt: number;
   cache: {
     decorators: Decorator[] | null;
   };
@@ -154,6 +165,7 @@ function createContext(): Context {
     inOperatorStack: [],
     propertiesInitSet: new Set(),
     propertiesProtoDuplicateSet: new Set(),
+    lastTokenIndexOfIfStmt: -1,
     cache: {
       decorators: null,
     },
@@ -179,11 +191,12 @@ const KeywordSet = new Set([
  * @param {string} code
  * @returns
  */
-export function createParser(code: string, option?: ParserConfig) {
+export function createParser(code: string, errorhandler: SyntaxErrorHandler, option?: ParserUserConfig) {
   const lexer = createLexer(code);
   const context = createContext();
   const config = getConfigFromUserInput(option);
   const lexicalScopeRecorder = createLexicalScopeRecorder();
+  const symbolScopeRecorder = createSymbolScopeRecorder();
   const strictModeScopeRecorder = createStrictModeScopeRecorder();
   const asyncArrowExprScopeRecorder = createAsyncArrowExpressionScopeRecorder();
   /** ===========================================================
@@ -316,7 +329,7 @@ export function createParser(code: string, option?: ParserConfig) {
    * @param message
    * @returns {ExpectToken}
    */
-  function expect(kind: SyntaxKinds | Array<SyntaxKinds>, message = ""): ExpectToken {
+  function expect(kind: SyntaxKinds | Array<SyntaxKinds>): ExpectToken {
     if (match(kind)) {
       const metaData = {
         value: getSourceValue(),
@@ -326,7 +339,7 @@ export function createParser(code: string, option?: ParserConfig) {
       nextToken();
       return metaData;
     }
-    throw createUnexpectError(kind, message);
+    throw createUnexpectError();
   }
   /**
    * Private API for parser, expect current token is one of given token(s),
@@ -336,11 +349,11 @@ export function createParser(code: string, option?: ParserConfig) {
    * @param message
    * @returns {void}
    */
-  function expectButNotEat(kind: SyntaxKinds | Array<SyntaxKinds>, message = ""): void {
+  function expectButNotEat(kind: SyntaxKinds | Array<SyntaxKinds>): void {
     if (match(kind)) {
       return;
     }
-    throw createUnexpectError(kind, message);
+    throw createUnexpectError();
   }
   /**
    * Private API for `shouldInsertSemi` and `isSoftInsertSemi`,
@@ -377,7 +390,8 @@ export function createParser(code: string, option?: ParserConfig) {
       case "SemiInsertAble":
         return;
       case "SemiNotExisted":
-        throw createMessageError(ErrorMessageMap.missing_semicolon);
+        // recoverable error
+        raiseError(ErrorMessageMap.missing_semicolon, getStartPosition());
     }
   }
   /**
@@ -409,34 +423,17 @@ export function createParser(code: string, option?: ParserConfig) {
   function createMessageError(messsage: string, position?: SourcePosition) {
     if (position === undefined) position = getStartPosition();
 
-    return new Error(
-      `[Syntax Error]: ${messsage} (${position.row}, ${position.col}), got token ${SytaxKindsMapLexicalLiteral[getToken()]}.\n ${code.slice(getStartPosition().index - 100, getStartPosition().index)} \n ${code.slice(getStartPosition().index, getEndPosition().index)}`,
-    );
+    return new Error(`[Syntax Error]: ${messsage} (${position.row}, ${position.col})`);
   }
   /**
    * Create a error object with message tell developer that get a
    * unexpect token.
-   * @param {SyntaxKinds} expectToken
-   * @param {string?} messsage
    * @returns {Error}
    */
-  function createUnexpectError(
-    expectToken: SyntaxKinds | Array<SyntaxKinds> | null,
-    messsage: string | null = "",
-  ): Error {
-    let message = "";
-    if (Array.isArray(expectToken)) {
-      message += ", expect token [";
-      for (const token of expectToken) {
-        message += `${token}, `;
-      }
-      message += `]`;
-    }
-    if (expectToken) {
-      message = `, expect token ${expectToken}`;
-    }
+  function createUnexpectError(): Error {
+    const startPos = getStartPosition();
     return new Error(
-      `[Syntax Error]: Unexpect token${message}, got ${getToken()}(${getSourceValue()}). ${getStartPosition().row},${getStartPosition().col}.${messsage}\n ${code.slice(getStartPosition().index - 100, getStartPosition().index)} \n ${code.slice(getStartPosition().index, getEndPosition().index)}`,
+      `[Syntax Error]: Unexpect token ${SytaxKindsMapLexicalLiteral[getToken()]}(${startPos.row}, ${startPos.col}).`,
     );
   }
   /**
@@ -488,16 +485,27 @@ export function createParser(code: string, option?: ParserConfig) {
   function enterFunctionScope(isAsync: boolean = false, isGenerator: boolean = false) {
     asyncArrowExprScopeRecorder.enterFunctionScope();
     strictModeScopeRecorder.enterRHSStrictModeScope();
+    symbolScopeRecorder.enterFunctionSymbolScope();
     lexicalScopeRecorder.enterFunctionLexicalScope(isAsync, isGenerator);
     lexer.setStrictModeContext(isInStrictMode());
   }
-  function exitFunctionScope() {
+  function exitFunctionScope(focusCheck: boolean) {
+    const isNonSimpleParam = !isCurrentFunctionParameterListSimple();
+    const isStrict = isInStrictMode();
+    const symbolScope = symbolScopeRecorder.exitSymbolScope()!;
+    if (isNonSimpleParam || isStrict || focusCheck) {
+      const functionSymbolScope = symbolScope as FunctionSymbolScope;
+      for (const symPos of functionSymbolScope.duplicateParams) {
+        raiseError(ErrorMessageMap.duplicate_param, symPos);
+      }
+    }
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
     strictModeScopeRecorder.exitStrictModeScope();
     lexicalScopeRecorder.exitFunctionLexicalScope();
     lexer.setStrictModeContext(isInStrictMode());
   }
   function enterProgram() {
+    symbolScopeRecorder.enterProgramSymbolScope();
     lexicalScopeRecorder.enterProgramLexicalScope(
       config.allowAwaitOutsideFunction || false,
       config.sourceType === "module",
@@ -505,14 +513,30 @@ export function createParser(code: string, option?: ParserConfig) {
     lexer.setStrictModeContext(config.sourceType === "module");
   }
   function exitProgram() {
+    if (!config.allowUndeclaredExports) {
+      for (const pos of symbolScopeRecorder.getProgramContainUndefSymbol()) {
+        raiseError(ErrorMessageMap.babel_error_export_is_not_defined, pos);
+      }
+    }
+    symbolScopeRecorder.exitSymbolScope();
     lexicalScopeRecorder.exitProgramLexicalScope();
     lexer.setStrictModeContext(false);
   }
   function enterBlockScope() {
-    lexicalScopeRecorder.enterBlockLexicalScope();
+    lexicalScopeRecorder.enterBlockLexicalScope(false);
+    symbolScopeRecorder.enterBlockSymbolScope();
   }
   function exitBlockScope() {
     lexicalScopeRecorder.exitBlockLexicalScope();
+    symbolScopeRecorder.exitSymbolScope();
+  }
+  function enterCatchBlockScope() {
+    lexicalScopeRecorder.enterBlockLexicalScope(true);
+    symbolScopeRecorder.enterFunctionSymbolScope();
+  }
+  function exitCatchBlockScope() {
+    lexicalScopeRecorder.exitBlockLexicalScope();
+    symbolScopeRecorder.exitSymbolScope();
   }
   function parseAsLoop<T>(callback: () => T): T {
     lexicalScopeRecorder.enterVirtualBlockScope("Loop");
@@ -532,8 +556,14 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function enterArrowFunctionBodyScope(isAsync: boolean = false) {
     lexicalScopeRecorder.enterArrowFunctionBodyScope(isAsync);
+    symbolScopeRecorder.enterFunctionSymbolScope();
   }
   function exitArrowFunctionBodyScope() {
+    const symbolScope = symbolScopeRecorder.exitSymbolScope()!;
+    const functionSymbolScope = symbolScope as FunctionSymbolScope;
+    for (const symPos of functionSymbolScope.duplicateParams) {
+      raiseError(ErrorMessageMap.duplicate_param, symPos);
+    }
     lexicalScopeRecorder.exitArrowFunctionBodyScope();
   }
   function parseWithArrowExpressionScope<T>(callback: () => T): [T, AsyncArrowExpressionScope] {
@@ -571,19 +601,35 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function checkStrictModeScopeError(scope: StrictModeScope) {
     if (isInStrictMode() && strictModeScopeRecorder.isStrictModeScopeViolateStrictMode(scope)) {
-      throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+      if (scope.kind !== "RHSLayer") {
+        for (const pos of scope.argumentsIdentifier) {
+          raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, pos);
+        }
+        for (const pos of scope.evalIdentifier) {
+          raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, pos);
+        }
+        for (const pos of scope.letIdentifier) {
+          raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, pos);
+        }
+        for (const pos of scope.yieldIdentifier) {
+          raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, pos);
+        }
+        for (const pos of scope.preservedWordIdentifier) {
+          raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, pos);
+        }
+      }
     }
   }
   function checkAsyncArrowExprScopeError(scope: AsyncArrowExpressionScope) {
     if (asyncArrowExprScopeRecorder.isAsyncArrowExpressionScopeHaveError(scope)) {
-      if (scope.awaitExpressionInParameter.length > 0) {
-        throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
+      for (const pos of scope.awaitExpressionInParameter) {
+        raiseError(ErrorMessageMap.extra_error_await_expression_can_not_used_in_parameter_list, pos);
       }
-      if (scope.yieldExpressionInParameter.length > 0) {
-        throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
+      for (const pos of scope.yieldExpressionInParameter) {
+        raiseError(ErrorMessageMap.extra_error_yield_expression_can_not_used_in_parameter_list, pos);
       }
-      if (scope.awaitIdentifier.length > 0) {
-        throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
+      for (const pos of scope.awaitIdentifier) {
+        raiseError(ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function, pos);
       }
     }
   }
@@ -637,15 +683,23 @@ export function createParser(code: string, option?: ParserConfig) {
   function enterClassScope(isExtend: boolean = false) {
     lexicalScopeRecorder.enterClassLexicalScope(isExtend);
     asyncArrowExprScopeRecorder.enterAsyncArrowExpressionScope();
+    symbolScopeRecorder.enterClassSymbolScope();
   }
   function existClassScope() {
-    if (lexicalScopeRecorder.isDuplicatePrivateName()) {
-      throw createMessageError(ErrorMessageMap.private_name_duplicate);
+    const duplicateSet = symbolScopeRecorder.isDuplicatePrivateName();
+    if (duplicateSet) {
+      for (const pos of duplicateSet.values()) {
+        raiseError(ErrorMessageMap.babel_error_private_name_duplicate, pos);
+      }
     }
-    if (lexicalScopeRecorder.isUndeinfedPrivateName()) {
-      throw createMessageError(ErrorMessageMap.private_name_undeinfed);
+    const undefSet = symbolScopeRecorder.isUndeinfedPrivateName();
+    if (undefSet) {
+      for (const pos of undefSet.values()) {
+        raiseError(ErrorMessageMap.babel_error_private_name_undeinfed, pos);
+      }
     }
     lexicalScopeRecorder.exitClassLexicalScope();
+    symbolScopeRecorder.exitClassSymbolScope();
     asyncArrowExprScopeRecorder.exitAsyncArrowExpressionScope();
   }
   function isInClassScope(): boolean {
@@ -654,11 +708,11 @@ export function createParser(code: string, option?: ParserConfig) {
   function isCurrentClassExtend(): boolean {
     return lexicalScopeRecorder.isCurrentClassExtend();
   }
-  function usePrivateName(name: string, type: PrivateNameDefKind = "other") {
-    return lexicalScopeRecorder.usePrivateName(name, type);
+  function usePrivateName(name: string, position: SourcePosition, type: PrivateNameDefKind = "other") {
+    return symbolScopeRecorder.usePrivateName(name, position, type);
   }
-  function defPrivateName(name: string, type: PrivateNameDefKind = "other") {
-    return lexicalScopeRecorder.defPrivateName(name, type);
+  function defPrivateName(name: string, position: SourcePosition, type: PrivateNameDefKind = "other") {
+    return symbolScopeRecorder.defPrivateName(name, position, type);
   }
   function enterDelete() {
     lexicalScopeRecorder.enterDelete();
@@ -696,6 +750,12 @@ export function createParser(code: string, option?: ParserConfig) {
   function isInPropertyName(): boolean {
     return lexicalScopeRecorder.isInPropertyName();
   }
+  function setExportContext(context: ExportContext) {
+    lexicalScopeRecorder.setExportContext(context);
+  }
+  function getExportContext(): ExportContext {
+    return lexicalScopeRecorder.getExportContext();
+  }
   function takeCacheDecorator() {
     const list = context.cache.decorators;
     context.cache.decorators = null;
@@ -708,7 +768,106 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     return list;
   }
-
+  /**
+   *
+   * @param name
+   * @param position
+   * @returns
+   */
+  function declarateNonFunctionalSymbol(name: string, position: SourcePosition) {
+    if (isInParameter()) {
+      symbolScopeRecorder.declarateParam(name, position);
+      return;
+    }
+    if (!symbolScopeRecorder.declarateNonFunctionalSymbol(name)) {
+      raiseError(ErrorMessageMap.v8_error_duplicate_identifier, position);
+    }
+    const isExportAlreadyExist = declarateExportSymbolIfInContext(name, position);
+    if (isExportAlreadyExist) {
+      raiseError(ErrorMessageMap.v8_error_duplicate_identifier, isExportAlreadyExist);
+    }
+    return;
+  }
+  /**
+   *
+   * @param name
+   * @param generator
+   * @param position
+   * @returns
+   */
+  function delcarateFcuntionSymbol(name: string, generator: boolean, position: SourcePosition) {
+    const duplicateType = symbolScopeRecorder.declarateFuncrtionSymbol(name, generator);
+    if (duplicateType) {
+      if (
+        (!generator &&
+          ((duplicateType === SymbolType.Function && config.sourceType === "module") ||
+            duplicateType === SymbolType.GenFunction)) ||
+        (generator &&
+          ((duplicateType === SymbolType.GenFunction && config.sourceType === "module") ||
+            duplicateType === SymbolType.Function)) ||
+        (duplicateType === SymbolType.Var && lexicalScopeRecorder.isInCatch()) ||
+        duplicateType === SymbolType.Let ||
+        duplicateType === SymbolType.Const
+      )
+        raiseError(ErrorMessageMap.v8_error_duplicate_identifier, position);
+    }
+    const isExportAlreadyExist = declarateExportSymbolIfInContext(name, position);
+    if (isExportAlreadyExist) {
+      raiseError(ErrorMessageMap.v8_error_duplicate_identifier, isExportAlreadyExist);
+    }
+    return;
+  }
+  function declarateLetSymbol(name: string, position: SourcePosition) {
+    if (!symbolScopeRecorder.declarateLetSymbol(name)) {
+      raiseError(ErrorMessageMap.v8_error_duplicate_identifier, position);
+    }
+    const isExportAlreadyExist = declarateExportSymbolIfInContext(name, position);
+    if (isExportAlreadyExist) {
+      raiseError(ErrorMessageMap.v8_error_duplicate_identifier, isExportAlreadyExist);
+    }
+  }
+  function declarateParam(name: string, position: SourcePosition) {
+    symbolScopeRecorder.declarateParam(name, position);
+    declarateExportSymbolIfInContext(name, position);
+    return;
+  }
+  function declarateExportSymbolIfInContext(name: string, position: SourcePosition) {
+    switch (getExportContext()) {
+      case ExportContext.NotInExport:
+        return null;
+      case ExportContext.InExport: {
+        setExportContext(ExportContext.NotInExport);
+        return declarateExportSymbol(name, position);
+      }
+      case ExportContext.InExportBinding: {
+        return declarateExportSymbol(name, position);
+      }
+    }
+  }
+  function declarateExportSymbol(name: string, position: SourcePosition) {
+    return symbolScopeRecorder.declarateExportSymbol(name, position);
+  }
+  function isVariableDeclarated(name: string) {
+    return symbolScopeRecorder.isVariableDeclarated(name);
+  }
+  function getSymbolType() {
+    return symbolScopeRecorder.getSymbolType() as NonFunctionalSymbolType;
+  }
+  function setSymbolType(symbolType: NonFunctionalSymbolType) {
+    symbolScopeRecorder.setSymbolType(symbolType);
+  }
+  /**
+   * Raise a error, if config recoverable set to false, it will throw a error and
+   * cause stack unwidning.
+   * @param message
+   * @param position
+   */
+  function raiseError(message: string, position: SourcePosition) {
+    errorhandler.pushSyntaxErrors({
+      message,
+      position,
+    });
+  }
   /** ===========================================================
    *            Parser internal Parse API
    *  ===========================================================
@@ -723,12 +882,13 @@ export function createParser(code: string, option?: ParserConfig) {
     while (!match(SyntaxKinds.EOFToken)) {
       body.push(parseModuleItem());
     }
-    if (context.propertiesInitSet.size > 0) {
-      throw createMessageError(ErrorMessageMap.Syntax_error_Invalid_shorthand_property_initializer);
+    for (const propertyHasInit of context.propertiesInitSet) {
+      raiseError(ErrorMessageMap.Syntax_error_Invalid_shorthand_property_initializer, propertyHasInit.start);
     }
-    if (context.propertiesProtoDuplicateSet.size > 0) {
-      throw createMessageError(
+    for (const duplicateProto of context.propertiesProtoDuplicateSet) {
+      raiseError(
         ErrorMessageMap.syntax_error_property_name__proto__appears_more_than_once_in_object_literal,
+        duplicateProto.start,
       );
     }
     exitProgram();
@@ -828,7 +988,7 @@ export function createParser(code: string, option?: ParserConfig) {
         if (isContextKeyword("async")) {
           nextToken();
           if (getLineTerminatorFlag()) {
-            throw createMessageError(ErrorMessageMap.missing_semicolon);
+            raiseError(ErrorMessageMap.missing_semicolon, getStartPosition());
           }
           return parseFunctionDeclaration(true);
         } else {
@@ -845,12 +1005,7 @@ export function createParser(code: string, option?: ParserConfig) {
       case SyntaxKinds.ClassKeyword:
         return parseClassDeclaration(null);
       default:
-        throw createUnreachError([
-          SyntaxKinds.ClassKeyword,
-          SyntaxKinds.FunctionKeyword,
-          SyntaxKinds.LetKeyword,
-          SyntaxKinds.ConstKeyword,
-        ]);
+        throw createUnexpectError();
     }
   }
   /**
@@ -929,7 +1084,8 @@ export function createParser(code: string, option?: ParserConfig) {
      */
     if (node.parentheses) {
       if (isBinding || (!isBinding && !isMemberExpression(node) && !isIdentifer(node)))
-        throw createMessageError(ErrorMessageMap.v8_error_invalid_parenthesized_assignment_pattern);
+        // recoverable error
+        raiseError(ErrorMessageMap.babel_error_invalid_parenthesized_pattern, node.start);
     }
     switch (node.kind) {
       case SyntaxKinds.AssigmentExpression: {
@@ -945,6 +1101,7 @@ export function createParser(code: string, option?: ParserConfig) {
         return objectExpressionToObjectPattern(node, isBinding);
       }
       case SyntaxKinds.Identifier:
+        declarateSymbolInBindingPatternAsParam(node.name, isBinding, node.start);
         return node as Identifier;
       case SyntaxKinds.MemberExpression:
         if (!isBinding) {
@@ -965,14 +1122,13 @@ export function createParser(code: string, option?: ParserConfig) {
   function assignmentExpressionToAssignmentPattern(expr: AssigmentExpression, isBinding: boolean) {
     const left = isBinding ? helperCheckPatternWithBinding(expr.left) : expr.left;
     if (expr.operator !== SyntaxKinds.AssginOperator) {
-      throw createMessageError(ErrorMessageMap.syntax_error_invalid_assignment_left_hand_side);
+      raiseError(ErrorMessageMap.syntax_error_invalid_assignment_left_hand_side, expr.start);
     }
     return Factory.createAssignmentPattern(left as Pattern, expr.right, expr.start, expr.end);
   }
   /**
-   *
+   * Transform a assignment pattern to a binding assignment pattern
    * @param leftValue
-   * @param isBinding
    * @returns
    */
   function helperCheckPatternWithBinding(leftValue: Pattern): Pattern {
@@ -980,14 +1136,15 @@ export function createParser(code: string, option?: ParserConfig) {
       for (const property of leftValue.properties) {
         if (isObjectPatternProperty(property)) {
           if (property.value && isMemberExpression(property.value)) {
-            throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
+            raiseError(ErrorMessageMap.babel_error_binding_member_expression, property.start);
           }
           if (
             property.value &&
             (isMemberExpression(property.value) || isIdentifer(property.value)) &&
             property.value.parentheses
           ) {
-            throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
+            // recoverable error
+            raiseError(ErrorMessageMap.babel_error_invalid_parenthesized_pattern, leftValue.start);
           }
         }
       }
@@ -1010,7 +1167,8 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     if (isMemberExpression(leftValue) || isIdentifer(leftValue)) {
       if (leftValue.parentheses) {
-        throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
+        // recoverable error
+        raiseError(ErrorMessageMap.babel_error_invalid_parenthesized_pattern, leftValue.start);
       }
     }
     return leftValue;
@@ -1053,7 +1211,7 @@ export function createParser(code: string, option?: ParserConfig) {
       (restElementIndexs.length === 1 &&
         (restElementIndexs[0] !== arrayPatternElements.length - 1 || expr.trailingComma))
     ) {
-      throw createMessageError(ErrorMessageMap.syntax_error_parameter_after_rest_parameter);
+      raiseError(ErrorMessageMap.syntax_error_parameter_after_rest_parameter, expr.end);
     }
     return Factory.createArrayPattern(arrayPatternElements, expr.start, expr.end);
   }
@@ -1077,8 +1235,10 @@ export function createParser(code: string, option?: ParserConfig) {
   function spreadElementToArrayRestElement(spreadElement: SpreadElement, isBinding: boolean): RestElement {
     const argument = exprToPattern(spreadElement.argument, isBinding);
     if (isAssignmentPattern(argument)) {
-      throw createMessageError(
-        ErrorMessageMap.rest_operator_must_be_followed_by_an_assignable_reference_in_assignment_contexts,
+      // recoverable error
+      raiseError(
+        ErrorMessageMap.v8_error_rest_assignment_property_must_be_followed_by_an_identifier_in_declaration_contexts,
+        argument.start,
       );
     }
     return Factory.createRestElement(argument, spreadElement.start, argument.end);
@@ -1111,7 +1271,7 @@ export function createParser(code: string, option?: ParserConfig) {
       (restElementIndexs.length === 1 &&
         (restElementIndexs[0] !== objectPatternProperties.length - 1 || expr.trailingComma))
     ) {
-      throw createMessageError(ErrorMessageMap.syntax_error_parameter_after_rest_parameter);
+      raiseError(ErrorMessageMap.syntax_error_parameter_after_rest_parameter, expr.end);
     }
     return Factory.createObjectPattern(objectPatternProperties, expr.start, expr.end);
   }
@@ -1133,14 +1293,18 @@ export function createParser(code: string, option?: ParserConfig) {
     const argument = exprToPattern(spreadElement.argument, isBinding);
     if (isBinding) {
       if (!isIdentifer(argument)) {
-        throw createMessageError(
+        // recoverable error
+        raiseError(
           ErrorMessageMap.v8_error_rest_binding_property_must_be_followed_by_an_identifier_in_declaration_contexts,
+          argument.start,
         );
       }
     } else {
       if (!isIdentifer(argument) && !isMemberExpression(argument)) {
-        throw createMessageError(
+        // recoverable error
+        raiseError(
           ErrorMessageMap.v8_error_rest_assignment_property_must_be_followed_by_an_identifier_in_declaration_contexts,
+          argument.start,
         );
       }
     }
@@ -1152,7 +1316,8 @@ export function createParser(code: string, option?: ParserConfig) {
   ): ObjectPatternProperty | AssignmentPattern {
     // object property's value can not has parentheses.
     if (objectPropertyNode.value && objectPropertyNode.value.parentheses && isBinding) {
-      throw createMessageError(ErrorMessageMap.pattern_should_not_has_paran);
+      // recoverable error
+      raiseError(ErrorMessageMap.babel_error_invalid_parenthesized_pattern, objectPropertyNode.start);
     }
     if (context.propertiesProtoDuplicateSet.has(objectPropertyNode.key)) {
       context.propertiesProtoDuplicateSet.delete(objectPropertyNode.key);
@@ -1166,6 +1331,11 @@ export function createParser(code: string, option?: ParserConfig) {
           ErrorMessageMap.assignment_pattern_left_value_can_only_be_idenifier_or_pattern,
         );
       }
+      declarateSymbolInBindingPatternAsParam(
+        objectPropertyNode.key.name,
+        isBinding,
+        objectPropertyNode.start,
+      );
       return Factory.createAssignmentPattern(
         objectPropertyNode.key,
         objectPropertyNode.value as Expression,
@@ -1180,7 +1350,7 @@ export function createParser(code: string, option?: ParserConfig) {
     //  - for assignment pattern: value production rule is `DestructuringAssignmentTarget`, which just a LeftHandSideExpression
     //  - for binding pattern: value production rule is `BindingElement`, which only can be object-pattern, array-pattern, id.
     if (isBinding && patternValue && isMemberExpression(patternValue)) {
-      throw new Error(ErrorMessageMap.binding_pattern_can_not_have_member_expression);
+      raiseError(ErrorMessageMap.babel_error_binding_member_expression, patternValue.start);
     }
     return Factory.createObjectPatternProperty(
       objectPropertyNode.key,
@@ -1191,6 +1361,15 @@ export function createParser(code: string, option?: ParserConfig) {
       objectPropertyNode.end,
     );
   }
+  function declarateSymbolInBindingPatternAsParam(
+    name: string,
+    isBinding: boolean,
+    position: SourcePosition,
+  ) {
+    if (isBinding) {
+      declarateParam(name, position);
+    }
+  }
   /**
    * Parse For-related Statement, include ForStatement, ForInStatement, ForOfStatement.
    *
@@ -1199,6 +1378,8 @@ export function createParser(code: string, option?: ParserConfig) {
    * @returns {ForStatement | ForInStatement | ForOfStatement}
    */
   function parseForStatement(): ForStatement | ForInStatement | ForOfStatement {
+    // symbolScopeRecorder.enterPreBlockScope();
+    symbolScopeRecorder.enterBlockSymbolScope();
     const { start: keywordStart } = expect(SyntaxKinds.ForKeyword);
     // First, parse await modifier and lefthandside or init of for-related statement,
     // init might start with let, const, var keyword, but if is let keyword need to
@@ -1208,20 +1389,20 @@ export function createParser(code: string, option?: ParserConfig) {
     // If not start with let, var or const keyword, it should be expression, but this
     // expression can not take `in` operator as operator in toplevel, so we need pass
     // false to disallow parseExpression to take in  as operator
-    let isAwait = false,
-      isParseLetAsExpr = false,
+    let isAwait: SourcePosition | null = null,
+      isParseLetAsExpr: SourcePosition | null = null,
       leftOrInit: VariableDeclaration | Expression | null = null;
     if (match(SyntaxKinds.AwaitKeyword)) {
+      isAwait = getStartPosition();
       nextToken();
       if (!config.allowAwaitOutsideFunction && !isCurrentScopeParseAwaitAsExpression()) {
-        throw createMessageError(ErrorMessageMap.await_can_not_call_if_not_in_async);
+        raiseError(ErrorMessageMap.babel_error_invalid_await, isAwait);
       }
-      isAwait = true;
     }
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     if (match([SyntaxKinds.LetKeyword, SyntaxKinds.ConstKeyword, SyntaxKinds.VarKeyword])) {
       if (match(SyntaxKinds.LetKeyword) && isLetPossibleIdentifier()) {
-        isParseLetAsExpr = true;
+        isParseLetAsExpr = getStartPosition();
         leftOrInit = parseExpressionDisallowIn();
       } else {
         leftOrInit = disAllowInOperaotr(() => parseVariableDeclaration(true));
@@ -1248,12 +1429,14 @@ export function createParser(code: string, option?: ParserConfig) {
     // case happend.
     if (match(SyntaxKinds.SemiPunctuator)) {
       if (isAwait) {
-        throw createMessageError(ErrorMessageMap.await_can_just_in_for_of_loop);
+        // recoverable error
+        raiseError(ErrorMessageMap.extra_error_for_await_not_of_loop, isAwait);
       }
       if (leftOrInit && isVarDeclaration(leftOrInit)) {
         for (const delcar of leftOrInit.declarations) {
           if ((isArrayPattern(delcar.id) || isObjectPattern(delcar.id)) && !delcar.init) {
-            throw createMessageError(ErrorMessageMap.destructing_pattern_must_need_initializer);
+            // recoverable error
+            raiseError(ErrorMessageMap.babel_error_destructing_pattern_must_need_initializer, delcar.start);
           }
         }
       }
@@ -1268,7 +1451,7 @@ export function createParser(code: string, option?: ParserConfig) {
         update = parseExpressionAllowIn();
       }
       expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseAsLoop(parseStatement);
+      const body = parseForStatementBody();
       const forStatement = Factory.createForStatement(
         body,
         leftOrInit,
@@ -1300,7 +1483,8 @@ export function createParser(code: string, option?: ParserConfig) {
     // branch case for `for-in` statement
     if (match(SyntaxKinds.InKeyword)) {
       if (isAwait) {
-        throw createMessageError(ErrorMessageMap.await_can_just_in_for_of_loop);
+        // recoverable error
+        raiseError(ErrorMessageMap.extra_error_for_await_not_of_loop, isAwait);
       }
       if (isVarDeclaration(leftOrInit)) {
         helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit, "ForIn");
@@ -1308,7 +1492,7 @@ export function createParser(code: string, option?: ParserConfig) {
       nextToken();
       const right = parseExpressionAllowIn();
       expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseAsLoop(parseStatement);
+      const body = parseForStatementBody();
       const forInStatement = Factory.createForInStatement(
         leftOrInit,
         right,
@@ -1325,14 +1509,14 @@ export function createParser(code: string, option?: ParserConfig) {
         helperCheckDeclarationmaybeForInOrForOfStatement(leftOrInit, "ForOf");
       }
       if (isParseLetAsExpr) {
-        throw createMessageError(ErrorMessageMap.for_of_can_not_use_let_as_identifirt);
+        raiseError(ErrorMessageMap.extra_error_for_of_can_not_use_let_as_identifier, isParseLetAsExpr);
       }
       nextToken();
       const right = parseAssignmentExpressionAllowIn();
       expect(SyntaxKinds.ParenthesesRightPunctuator);
-      const body = parseAsLoop(parseStatement);
+      const body = parseForStatementBody();
       const forOfStatement = Factory.createForOfStatement(
-        isAwait,
+        !!isAwait,
         leftOrInit,
         right,
         body,
@@ -1342,14 +1526,23 @@ export function createParser(code: string, option?: ParserConfig) {
       staticSematicEarlyErrorForFORStatement(forOfStatement);
       return forOfStatement;
     }
-    throw createUnexpectError(null);
+    throw createUnexpectError();
+  }
+  function parseForStatementBody(): Statement {
+    const stmt = parseAsLoop(parseStatement);
+    symbolScopeRecorder.exitSymbolScope();
+    return stmt;
   }
   function staticSematicEarlyErrorForFORStatement(statement: ForStatement | ForInStatement | ForOfStatement) {
     if (checkIsLabelledFunction(statement.body)) {
-      throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+      raiseError(
+        isInStrictMode()
+          ? ErrorMessageMap.syntax_error_functions_declare_strict_mode
+          : ErrorMessageMap.syntax_error_functions_declare_non_strict_mode,
+        statement.body.start,
+      );
     }
   }
-
   /**
    * Helper function for check sematic error of VariableDeclaration of ForInStatement and ForOfStatement,
    * please reference to comment in parseForStatement.
@@ -1360,7 +1553,11 @@ export function createParser(code: string, option?: ParserConfig) {
     kind: "ForIn" | "ForOf",
   ) {
     if (declaration.declarations.length > 1) {
-      throw createMessageError(ErrorMessageMap.for_in_of_loop_can_not_have_one_more_binding);
+      // recoverable error
+      raiseError(
+        ErrorMessageMap.v8_error_Invalid_left_hand_side_in_for_in_loop_must_have_a_single_binding,
+        declaration.start,
+      );
     }
     const delcarationVariant = declaration.variant;
     const onlyDeclaration = declaration.declarations[0];
@@ -1369,11 +1566,19 @@ export function createParser(code: string, option?: ParserConfig) {
         if (delcarationVariant === "var" && !isInStrictMode() && isIdentifer(onlyDeclaration.id)) {
           return;
         }
-        throw createMessageError(ErrorMessageMap.for_in_of_loop_may_not_using_initializer);
+        // recoverable error
+        raiseError(
+          ErrorMessageMap.syntax_error_for_in_loop_head_declarations_may_not_have_initializer,
+          onlyDeclaration.start,
+        );
       }
     } else {
       if (onlyDeclaration.init !== null) {
-        throw createMessageError(ErrorMessageMap.for_in_of_loop_may_not_using_initializer);
+        // recoverable error
+        raiseError(
+          ErrorMessageMap.syntax_error_for_of_loop_variable_declaration_may_not_have_an_initializer,
+          onlyDeclaration.init.start,
+        );
       }
     }
   }
@@ -1381,7 +1586,8 @@ export function createParser(code: string, option?: ParserConfig) {
     const { start: keywordStart } = expect(SyntaxKinds.IfKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const test = parseExpressionAllowIn();
-    expect(SyntaxKinds.ParenthesesRightPunctuator);
+    const { end: headerEnd } = expect(SyntaxKinds.ParenthesesRightPunctuator);
+    context.lastTokenIndexOfIfStmt = headerEnd.index;
     const consequnce = parseStatement();
     if (match(SyntaxKinds.ElseKeyword)) {
       nextToken();
@@ -1400,10 +1606,20 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function staticSematicEarlyErrorForIfStatement(statement: IfStatement) {
     if (checkIsLabelledFunction(statement.conseqence)) {
-      throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+      raiseError(
+        isInStrictMode()
+          ? ErrorMessageMap.syntax_error_functions_declare_strict_mode
+          : ErrorMessageMap.syntax_error_functions_declare_non_strict_mode,
+        statement.conseqence.start,
+      );
     }
     if (statement.alternative && checkIsLabelledFunction(statement.alternative)) {
-      throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+      raiseError(
+        isInStrictMode()
+          ? ErrorMessageMap.syntax_error_functions_declare_strict_mode
+          : ErrorMessageMap.syntax_error_functions_declare_non_strict_mode,
+        statement.alternative.start,
+      );
     }
   }
   function parseWhileStatement(): WhileStatement {
@@ -1431,13 +1647,19 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function staticSematicEarlyErrorForWhileStatement(statement: WhileStatement) {
     if (checkIsLabelledFunction(statement.body)) {
-      throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+      // recoverable error
+      raiseError(
+        isInStrictMode()
+          ? ErrorMessageMap.syntax_error_functions_declare_strict_mode
+          : ErrorMessageMap.syntax_error_functions_declare_non_strict_mode,
+        statement.body.start,
+      );
     }
   }
   function parseDoWhileStatement(): DoWhileStatement {
     const { start: keywordStart } = expect(SyntaxKinds.DoKeyword);
     const body = parseAsLoop(parseStatement);
-    expect(SyntaxKinds.WhileKeyword, "do while statement should has while condition");
+    expect(SyntaxKinds.WhileKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const test = parseExpressionAllowIn();
     const { end: punctEnd } = expect(SyntaxKinds.ParenthesesRightPunctuator);
@@ -1448,7 +1670,13 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function staticSematicEarlyErrorForDoWhileStatement(statement: DoWhileStatement) {
     if (checkIsLabelledFunction(statement.body)) {
-      throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+      // recoverable error
+      raiseError(
+        isInStrictMode()
+          ? ErrorMessageMap.syntax_error_functions_declare_strict_mode
+          : ErrorMessageMap.syntax_error_functions_declare_non_strict_mode,
+        statement.body.start,
+      );
     }
   }
   function parseBlockStatement() {
@@ -1459,10 +1687,7 @@ export function createParser(code: string, option?: ParserConfig) {
       body.push(parseStatementListItem());
     }
     exitBlockScope();
-    const { end: puncEnd } = expect(
-      SyntaxKinds.BracesRightPunctuator,
-      "block statement must wrapped by bracket",
-    );
+    const { end: puncEnd } = expect(SyntaxKinds.BracesRightPunctuator);
     return Factory.createBlockStatement(body, puncStart, puncEnd);
   }
   function parseSwitchStatement() {
@@ -1470,14 +1695,11 @@ export function createParser(code: string, option?: ParserConfig) {
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const discriminant = parseExpressionAllowIn();
     expect(SyntaxKinds.ParenthesesRightPunctuator);
-    //TODO: should remove, duplicate check
-    if (!match(SyntaxKinds.BracesLeftPunctuator)) {
-      throw createUnexpectError(SyntaxKinds.BracesLeftPunctuator, "switch statement should has cases body");
-    }
     const { nodes, end } = parseAsSwitch(parseSwitchCases);
     return Factory.createSwitchStatement(discriminant, nodes, keywordStart, end);
   }
   function parseSwitchCases(): ASTArrayWithMetaData<SwitchCase> {
+    enterBlockScope();
     const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
     const cases: Array<SwitchCase> = [];
     let haveDefault = false;
@@ -1488,14 +1710,16 @@ export function createParser(code: string, option?: ParserConfig) {
         nextToken();
         test = parseExpressionAllowIn();
       } else if (match(SyntaxKinds.DefaultKeyword)) {
+        const start = getStartPosition();
         nextToken();
         if (haveDefault) {
-          throw createMessageError(ErrorMessageMap.v8_error_more_than_one_default_clause_in_switch_statement);
+          // recoverable error
+          raiseError(ErrorMessageMap.v8_error_more_than_one_default_clause_in_switch_statement, start);
         } else {
           haveDefault = true;
         }
       }
-      expect(SyntaxKinds.ColonPunctuator, "switch case should has colon");
+      expect(SyntaxKinds.ColonPunctuator);
       const consequence: Array<StatementListItem> = [];
       while (
         !match([
@@ -1507,16 +1731,11 @@ export function createParser(code: string, option?: ParserConfig) {
       ) {
         consequence.push(parseStatementListItem());
       }
-      if (match(SyntaxKinds.EOFToken)) {
-        throw createMessageError("switch case should wrapped by braces");
-      }
       const end = getStartPosition();
       cases.push(Factory.createSwitchCase(test, consequence, start, end));
     }
-    if (match(SyntaxKinds.EOFToken)) {
-      throw createMessageError("switch statement should wrapped by braces");
-    }
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
+    exitBlockScope();
     return {
       nodes: cases,
       start,
@@ -1525,55 +1744,88 @@ export function createParser(code: string, option?: ParserConfig) {
   }
   function parseContinueStatement(): ContinueStatement {
     const { start: keywordStart, end: keywordEnd } = expect(SyntaxKinds.ContinueKeyword);
-    staticSematicEarlyErrorForContinueStatement();
+    staticSematicEarlyErrorForContinueStatement(keywordStart);
     if (match(SyntaxKinds.Identifier) && !getLineTerminatorFlag()) {
       const id = parseIdentifierReference();
       shouldInsertSemi();
-      staticSematicEarlyErrorForLabelInContinueStatement(id.name);
+      staticSematicEarlyErrorForLabelInContinueStatement(id);
       return Factory.createContinueStatement(id, keywordStart, cloneSourcePosition(id.end));
     }
     shouldInsertSemi();
     return Factory.createContinueStatement(null, keywordStart, keywordEnd);
   }
-  function staticSematicEarlyErrorForContinueStatement() {
+  function staticSematicEarlyErrorForContinueStatement(start: SourcePosition) {
     if (!isContinueValidate()) {
-      throw createMessageError(ErrorMessageMap.syntax_error_continue_must_be_inside_loop);
+      // recoverable error
+      raiseError(ErrorMessageMap.syntax_error_continue_must_be_inside_loop, start);
     }
   }
-  function staticSematicEarlyErrorForLabelInContinueStatement(name: string) {
-    if (!canLabelReach(name)) {
-      throw createMessageError(ErrorMessageMap.syntax_error_label_not_found);
+  function staticSematicEarlyErrorForLabelInContinueStatement(label: Identifier) {
+    if (!canLabelReach(label.name)) {
+      // recoverable error
+      raiseError(ErrorMessageMap.syntax_error_label_not_found, label.start);
     }
   }
+  /**
+   * Parse Break Statement.
+   * ```
+   * BreakStatement := break;
+   *                := break [no lineTerminator] LabeledIdentifier;
+   * ```
+   * @returns {BreakStatement}
+   */
   function parseBreakStatement(): BreakStatement {
     const { start, end } = expect(SyntaxKinds.BreakKeyword);
     if (match(SyntaxKinds.Identifier) && !getLineTerminatorFlag()) {
       const label = parseIdentifierReference();
       shouldInsertSemi();
-      staticSematicEarlyErrorForLabelInBreakStatement(label.name);
+      staticSematicEarlyErrorForLabelInBreakStatement(label);
       return Factory.createBreakStatement(label, start, end);
     }
     shouldInsertSemi();
-    staticSematicEarlyErrorForBreakStatement();
-    return Factory.createBreakStatement(null, start, end);
+    const breakStmt = Factory.createBreakStatement(null, start, end);
+    staticSematicEarlyErrorForBreakStatement(breakStmt);
+    return breakStmt;
   }
-  function staticSematicEarlyErrorForBreakStatement() {
+  /**
+   * Spec def early error checking for break statement.
+   * @param {BreakStatement} breakStmt
+   * reference: https://tc39.es/ecma262/#sec-break-statement-static-semantics-early-errors
+   */
+  function staticSematicEarlyErrorForBreakStatement(breakStmt: BreakStatement) {
     if (!isBreakValidate()) {
-      throw createMessageError(ErrorMessageMap.syntax_error_unlabeled_break_must_be_inside_loop_or_switch);
+      // recoverable error
+      raiseError(ErrorMessageMap.syntax_error_unlabeled_break_must_be_inside_loop_or_switch, breakStmt.start);
     }
   }
-  function staticSematicEarlyErrorForLabelInBreakStatement(name: string) {
-    if (!canLabelReach(name)) {
-      throw createMessageError(ErrorMessageMap.syntax_error_label_not_found);
+  /**
+   * Spec def early error checking for break statement with break label
+   * @param {Identifier} label
+   * reference: https://tc39.es/ecma262/#sec-break-statement-static-semantics-early-errors
+   */
+  function staticSematicEarlyErrorForLabelInBreakStatement(label: Identifier) {
+    if (!canLabelReach(label.name)) {
+      // recoverable error
+      raiseError(ErrorMessageMap.syntax_error_label_not_found, label.start);
     }
   }
+  /**
+   * Parse labeled statement
+   * ```
+   * LabelledStatement := LabelIdentifier: LabelledItem
+   * LabelledItem := Statement
+   *              := FunctionDeclaration
+   * ```
+   * @returns {LabeledStatement}
+   */
   function parseLabeledStatement(): LabeledStatement {
-    if (!match(SyntaxKinds.Identifier) || lookahead().kind !== SyntaxKinds.ColonPunctuator) {
-      // TODO: unreach
-    }
+    // TODO: using dev mode unreach checking
+    // if (!match(SyntaxKinds.Identifier) || lookahead().kind !== SyntaxKinds.ColonPunctuator) {
+    // }
     const label = parseIdentifierReference();
     if (lexicalScopeRecorder.enterVirtualBlockScope("Label", label.name)) {
-      throw createMessageError(ErrorMessageMap.v8_error_label_has_already_been_declared);
+      // recoverable error
+      raiseError(ErrorMessageMap.v8_error_label_has_already_been_declared, label.start);
     }
     expect(SyntaxKinds.ColonPunctuator);
     const labeled = match(SyntaxKinds.FunctionKeyword) ? parseFunctionDeclaration(false) : parseStatement();
@@ -1586,29 +1838,25 @@ export function createParser(code: string, option?: ParserConfig) {
       cloneSourcePosition(labeled.end),
     );
   }
+  /**
+   * Spec def early error. using alter production rule.
+   * @param labeled
+   * reference: https://tc39.es/ecma262/#sec-labelled-statements-static-semantics-early-errors
+   */
   function staticSematicEarlyErrorForLabelStatement(labeled: Statement | FunctionDeclaration) {
     if (isFunctionDeclaration(labeled)) {
       if (labeled.generator) {
-        throw createMessageError(
-          ErrorMessageMap.lable_statement_can_not_have_function_declaration_is_generator,
-        );
+        raiseError(ErrorMessageMap.syntax_error_generator_function_declare, labeled.start);
       }
       if (isInStrictMode()) {
-        throw createMessageError("");
-      }
-    } else {
-      if (
-        isExpressionStatement(labeled) &&
-        (isClassExpression(labeled.expr) || isFunctionExpression(labeled.expr))
-      ) {
-        throw createMessageError("");
+        raiseError(ErrorMessageMap.syntax_error_functions_declare_strict_mode, labeled.start);
       }
     }
   }
   function parseReturnStatement(): ReturnStatement {
     const { start, end } = expect(SyntaxKinds.ReturnKeyword);
     if (!isReturnValidate()) {
-      throw createMessageError(ErrorMessageMap.syntax_error_return_not_in_function);
+      raiseError(ErrorMessageMap.syntax_error_return_not_in_function, start);
     }
     if (isSoftInsertSemi(true)) {
       return Factory.createReturnStatement(null, start, end);
@@ -1625,26 +1873,32 @@ export function createParser(code: string, option?: ParserConfig) {
     if (match(SyntaxKinds.CatchKeyword)) {
       const catchKeywordStart = getStartPosition();
       nextToken();
+      //symbolScopeRecorder.enterFunctionSymbolScope();
+      enterCatchBlockScope();
       if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
         nextToken();
+        symbolScopeRecorder.enterCatchParam();
         // catch clause should not have init
         const param = parseBindingElement(false);
+        if (!symbolScopeRecorder.setCatchParamTo(isIdentifer(param) ? SymbolType.Var : SymbolType.Let)) {
+          throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
+        }
         // should check param is duplicate or not.
-        checkFunctionParamIsDuplicate([param]);
         expect(SyntaxKinds.ParenthesesRightPunctuator);
-        const body = parseBlockStatement();
+        const body = parseCatchBlock();
         handler = Factory.createCatchClause(param, body, catchKeywordStart, cloneSourcePosition(body.end));
       } else {
-        const body = parseBlockStatement();
+        const body = parseCatchBlock();
         handler = Factory.createCatchClause(null, body, catchKeywordStart, cloneSourcePosition(body.end));
       }
+      exitCatchBlockScope();
     }
     if (match(SyntaxKinds.FinallyKeyword)) {
       nextToken();
       finalizer = parseBlockStatement();
     }
     if (!handler && !finalizer) {
-      throw createMessageError(ErrorMessageMap.v8_error_missing_catch_or_finally_after_try);
+      raiseError(ErrorMessageMap.v8_error_missing_catch_or_finally_after_try, tryKeywordStart);
     }
     return Factory.createTryStatement(
       body,
@@ -1654,25 +1908,42 @@ export function createParser(code: string, option?: ParserConfig) {
       cloneSourcePosition(finalizer ? finalizer.end : handler ? handler.end : body.end),
     );
   }
+  function parseCatchBlock() {
+    const { start: puncStart } = expect(SyntaxKinds.BracesLeftPunctuator);
+    const body: Array<StatementListItem> = [];
+    while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
+      body.push(parseStatementListItem());
+    }
+    const { end: puncEnd } = expect(SyntaxKinds.BracesRightPunctuator);
+    return Factory.createBlockStatement(body, puncStart, puncEnd);
+  }
   function parseThrowStatement() {
     const { start } = expect(SyntaxKinds.ThrowKeyword);
-    if (getLineTerminatorFlag()) {
-      throw createMessageError("TODO, line break not allow");
-    }
+    staticSmaticEarlyErrorForThrowStatement();
     const expr = parseExpressionAllowIn();
     shouldInsertSemi();
     return Factory.createThrowStatement(expr, start, cloneSourcePosition(expr.end));
   }
-  function parseWithStatement(): WithStatement {
-    if (isInStrictMode()) {
-      throw createMessageError(ErrorMessageMap.with_statement_can_not_use_in_strict_mode);
+  function staticSmaticEarlyErrorForThrowStatement() {
+    if (getLineTerminatorFlag()) {
+      raiseError(ErrorMessageMap.babel_error_illegal_newline_after_throw, getStartPosition());
     }
+  }
+  function parseWithStatement(): WithStatement {
     const { start } = expect(SyntaxKinds.WithKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const object = parseExpressionAllowIn();
     expect(SyntaxKinds.ParenthesesRightPunctuator);
     const body = parseStatement();
-    return Factory.createWithStatement(object, body, start, cloneSourcePosition(body.end));
+    const withStmt = Factory.createWithStatement(object, body, start, cloneSourcePosition(body.end));
+    staticSmaticEarlyErrorForWithStatement(withStmt);
+    return withStmt;
+  }
+  function staticSmaticEarlyErrorForWithStatement(withStatement: WithStatement) {
+    if (isInStrictMode()) {
+      // recoverable error.
+      raiseError(ErrorMessageMap.babel_error_with_statement_in_strict_mode, withStatement.start);
+    }
   }
   function parseDebuggerStatement(): DebuggerStatement {
     const { start, end } = expect(SyntaxKinds.DebuggerKeyword);
@@ -1719,6 +1990,13 @@ export function createParser(code: string, option?: ParserConfig) {
     let shouldStop = false,
       isStart = true;
     const declarations: Array<VariableDeclarator> = [];
+    const lastSymbolKind = getSymbolType();
+    setSymbolType(
+      variant === "var" ? SymbolType.Var : variant === "const" ? SymbolType.Const : SymbolType.Let,
+    );
+    if (getExportContext() === ExportContext.InExport) {
+      setExportContext(ExportContext.InExportBinding);
+    }
     while (!shouldStop) {
       if (isStart) {
         isStart = false;
@@ -1742,7 +2020,8 @@ export function createParser(code: string, option?: ParserConfig) {
         // variable declaration in for statement can existed with `of`, `in` operator
         !inForInit
       ) {
-        throw createMessageError("lexical binding must have init");
+        // recoverable error
+        raiseError(ErrorMessageMap.syntax_error_missing_init_in_const_declaration, id.start);
       }
       if (match(SyntaxKinds.AssginOperator)) {
         nextToken();
@@ -1766,6 +2045,8 @@ export function createParser(code: string, option?: ParserConfig) {
         ),
       );
     }
+    setSymbolType(lastSymbolKind);
+    setExportContext(ExportContext.NotInExport);
     if (!inForInit) {
       shouldInsertSemi();
     }
@@ -1779,7 +2060,10 @@ export function createParser(code: string, option?: ParserConfig) {
   function parseFunctionDeclaration(isAsync: boolean) {
     enterFunctionScope(isAsync);
     const func = parseFunction(false);
-    exitFunctionScope();
+    exitFunctionScope(false);
+    // for function declaration, symbol should declar in parent scope.
+    const name = func.name!;
+    delcarateFcuntionSymbol(name.name, func.generator, func.start);
     return Factory.transFormFunctionToFunctionDeclaration(func);
   }
   /**
@@ -1799,14 +2083,14 @@ export function createParser(code: string, option?: ParserConfig) {
     const [[name, params], scope] = parseWithCatpureLayer(() => {
       const name = parseFunctionName(isExpression);
       if (!name && !isExpression) {
-        throw createMessageError(ErrorMessageMap.function_declaration_must_have_name);
+        // recoverable error
+        raiseError(ErrorMessageMap.syntax_error_function_statement_requires_a_name, getStartPosition());
       }
       const params = parseFunctionParam();
       return [name, params];
     });
     const body = parseFunctionBody();
-    checkStrictModeScopeError(scope);
-    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(name, params, false, scope);
+    postStaticSematicEarlyErrorForStrictModeOfFunction(name, scope);
     return Factory.createFunction(
       name,
       body,
@@ -1825,13 +2109,12 @@ export function createParser(code: string, option?: ParserConfig) {
    * @param name
    * @param params
    */
-  function checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(
+  function postStaticSematicEarlyErrorForStrictModeOfFunction(
     name: Identifier | null,
-    params: Array<Pattern>,
-    focusCheck: boolean,
     scope: StrictModeScope,
   ) {
     if (isInStrictMode()) {
+      checkStrictModeScopeError(scope);
       if (name) {
         if (
           name.name === "arugments" ||
@@ -1840,13 +2123,9 @@ export function createParser(code: string, option?: ParserConfig) {
           name.name === "let" ||
           PreserveWordSet.has(name.name)
         ) {
-          throw createMessageError("unexepct keyword in parameter list in strict mode");
+          raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, name.start);
         }
       }
-      checkFunctionParamIsDuplicate(params);
-      checkStrictModeScopeError(scope);
-    } else if (!isCurrentFunctionParameterListSimple() || focusCheck) {
-      checkFunctionParamIsDuplicate(params);
     }
   }
   /**
@@ -1869,34 +2148,37 @@ export function createParser(code: string, option?: ParserConfig) {
         if (match(SyntaxKinds.AwaitKeyword)) {
           // for function expression, can await treat as function name is dep on current scope.
           if (isExpression && isCurrentScopeParseAwaitAsExpression()) {
-            throw createMessageError(
-              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+            raiseError(
+              ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function,
+              getStartPosition(),
             );
           }
           // for function declaration, can await treat as function name is dep on parent scope.
           if (!isExpression && isParentFunctionAsync()) {
-            throw createMessageError(
-              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+            raiseError(
+              ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function,
+              getStartPosition(),
             );
           }
           if (config.sourceType === "module") {
-            throw createMessageError(
-              ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword,
+            raiseError(
+              ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function,
+              getStartPosition(),
             );
           }
           name = parseIdentifierName();
         } else if (match(SyntaxKinds.YieldKeyword)) {
           // for function expression, can yield treat as function name is dep on current scope.
           if (isExpression && isCurrentScopeParseYieldAsExpression()) {
-            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+            raiseError(ErrorMessageMap.babel_error_invalid_yield, getStartPosition());
           }
           // for function declaration, can yield treat as function name is  dep on parent scope.
           if (!isExpression && isParentFunctionGenerator()) {
-            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+            raiseError(ErrorMessageMap.babel_error_invalid_yield, getStartPosition());
           }
           // if in strict mode, yield can not be function name.
           if (isInStrictMode()) {
-            throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
+            raiseError(ErrorMessageMap.babel_error_invalid_yield, getStartPosition());
           }
           name = parseIdentifierName();
         }
@@ -1948,7 +2230,9 @@ export function createParser(code: string, option?: ParserConfig) {
     while (!match(SyntaxKinds.ParenthesesRightPunctuator)) {
       if (isStart) {
         if (match(SyntaxKinds.CommaToken)) {
-          throw createMessageError(ErrorMessageMap.function_parameter_can_not_have_empty_trailing_comma);
+          // recoverable error
+          raiseError(ErrorMessageMap.extra_error_unexpect_trailing_comma, getStartPosition());
+          nextToken();
         }
         isStart = false;
       } else {
@@ -1967,12 +2251,14 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     if (!match(SyntaxKinds.ParenthesesRightPunctuator)) {
       if (isEndWithRest && match(SyntaxKinds.CommaToken)) {
-        throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
+        // recoverable error
+        raiseError(
+          ErrorMessageMap.babel_error_unexpected_trailing_comma_after_rest_element,
+          getStartPosition(),
+        );
+        nextToken();
       }
-      throw createUnexpectError(
-        SyntaxKinds.ParenthesesRightPunctuator,
-        "params list must end up with ParenthesesRight",
-      );
+      throw createUnexpectError();
     }
     nextToken();
     setContextIfParamsIsSimpleParameterList(params);
@@ -1994,65 +2280,12 @@ export function createParser(code: string, option?: ParserConfig) {
       }
     }
   }
-  /**
-   * this helper function is used for check duplicate param
-   * in function paramemter declaration list.
-   * @param {Array<Pattern>} params
-   */
-  function checkFunctionParamIsDuplicate(params: Array<Pattern>) {
-    const paramSet = new Set<string>();
-    for (const param of params) {
-      const workList = [param];
-      while (workList.length > 0) {
-        const currentParam = workList.pop()!;
-        switch (currentParam.kind) {
-          case SyntaxKinds.Identifier: {
-            if (paramSet.has(currentParam.name)) {
-              throw createMessageError(ErrorMessageMap.duplicate_param);
-            }
-            paramSet.add(currentParam.name);
-            break;
-          }
-          case SyntaxKinds.ArrayPattern: {
-            currentParam.elements.forEach((element) => {
-              if (element) workList.push(element);
-            });
-            break;
-          }
-          case SyntaxKinds.ObjectPattern: {
-            for (const property of currentParam.properties) {
-              if (isRestElement(property) || isAssignmentPattern(property)) {
-                workList.push(property);
-              }
-              // ({a}, a)
-              else if (property.shorted) {
-                workList.push(property.key as Pattern);
-              }
-              // ({a: a}, a)
-              else if (property.value) {
-                workList.push(property.value as Pattern);
-              }
-            }
-            break;
-          }
-          case SyntaxKinds.AssignmentPattern: {
-            workList.push(currentParam.left);
-            break;
-          }
-          case SyntaxKinds.RestElement: {
-            workList.push(currentParam.argument);
-            break;
-          }
-        }
-      }
-    }
-  }
   function parseDecoratorListToCache() {
     const decoratorList = parseDecoratorList();
     context.cache.decorators = decoratorList;
   }
-  function parseDecoratorList(): Array<Decorator> {
-    const decoratorList: Array<Decorator> = [parseDecorator()];
+  function parseDecoratorList(): [Decorator] {
+    const decoratorList: [Decorator] = [parseDecorator()];
     while (match(SyntaxKinds.AtPunctuator)) {
       decoratorList.push(parseDecorator());
     }
@@ -2063,9 +2296,11 @@ export function createParser(code: string, option?: ParserConfig) {
     ) {
       return decoratorList;
     }
-    throw createMessageError(
+    raiseError(
       ErrorMessageMap.babel_error_leading_decorators_must_be_attached_to_a_class_declaration,
+      decoratorList[0].start,
     );
+    return decoratorList;
   }
   function parseDecorator(): Decorator {
     const { start } = expect(SyntaxKinds.AtPunctuator);
@@ -2113,7 +2348,7 @@ export function createParser(code: string, option?: ParserConfig) {
     expectButNotEat(SyntaxKinds.ClassKeyword);
     const classDelcar = parseClass(decoratorList);
     if (classDelcar.id === null) {
-      throw createMessageError("class declaration must have class id");
+      raiseError(ErrorMessageMap.babel_error_a_class_name_is_required, classDelcar.start);
     }
     return Factory.transFormClassToClassDeclaration(classDelcar);
   }
@@ -2129,6 +2364,7 @@ export function createParser(code: string, option?: ParserConfig) {
     let name: Identifier | null = null;
     if (match(BindingIdentifierSyntaxKindArray)) {
       name = parseIdentifierReference();
+      declarateLetSymbol(name.name, name.start);
     }
     let superClass: Expression | null = null;
     if (match(SyntaxKinds.ExtendsKeyword)) {
@@ -2182,7 +2418,7 @@ export function createParser(code: string, option?: ParserConfig) {
    * @returns {ClassElement}
    */
   function parseClassElement(): ClassElement {
-    let decorators: Decorator[] | null = null;
+    let decorators: [Decorator] | null = null;
     if (match(SyntaxKinds.AtPunctuator)) {
       decorators = parseDecoratorList();
     }
@@ -2193,13 +2429,18 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     if (match(SyntaxKinds.BracesLeftPunctuator) && isStatic) {
       if (decorators) {
-        throw createMessageError(ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_static_block);
+        raiseError(
+          ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_static_block,
+          decorators[0].start,
+        );
       }
       const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
+      symbolScopeRecorder.enterFunctionSymbolScope();
       const body: Array<StatementListItem> = [];
       while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
         body.push(parseStatementListItem());
       }
+      symbolScopeRecorder.exitSymbolScope();
       const { end } = expect(SyntaxKinds.BracesRightPunctuator);
       return Factory.createClassStaticBlock(body, start, end);
     }
@@ -2216,7 +2457,7 @@ export function createParser(code: string, option?: ParserConfig) {
     let key: PropertyName | PrivateName | undefined;
     if (match(SyntaxKinds.PrivateName)) {
       key = parsePrivateName();
-      defPrivateName(key.name);
+      defPrivateName(key.name, key.start);
     } else {
       key = parsePropertyName(isComputedRef);
     }
@@ -2228,7 +2469,7 @@ export function createParser(code: string, option?: ParserConfig) {
         decorators,
       ) as ClassMethodDefinition;
     }
-    helperSematicCheckClassPropertyName(key, isComputedRef.isComputed, isStatic);
+    staticSematicForClassPropertyName(key, isComputedRef.isComputed, isStatic);
     let propertyValue = undefined,
       shorted = true;
     if (match([SyntaxKinds.AssginOperator])) {
@@ -2236,7 +2477,7 @@ export function createParser(code: string, option?: ParserConfig) {
       shorted = false;
       const [value, scope] = parseWithCatpureLayer(parseAssignmentExpressionAllowIn);
       propertyValue = value;
-      checkStrictModeScopeError(scope);
+      staticSematicForClassPropertyValue(scope);
     }
     shouldInsertSemi();
     if (accessor) {
@@ -2287,7 +2528,29 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     return false;
   }
-  function helperSematicCheckClassPropertyName(
+  /**
+   * For a class scope, it must be strict mode, so argument identifier can
+   * @param {StrictModeScope} scope
+   * @returns
+   */
+  function staticSematicForClassPropertyValue(scope: StrictModeScope) {
+    if (scope.kind !== "CatpureLayer") {
+      return;
+    }
+    for (const pos of scope.argumentsIdentifier) {
+      raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, pos);
+    }
+  }
+  /**
+   * Check sematic for class property name.
+   *  - `constructor` can not used as property name
+   *  - `prototype` can not be a static property
+   * @param {PropertyName | PrivateName} propertyName
+   * @param isComputed
+   * @param {boolean} isStatic
+   * @returns
+   */
+  function staticSematicForClassPropertyName(
     propertyName: PropertyName | PrivateName,
     isComputed: boolean,
     isStatic: boolean,
@@ -2301,10 +2564,17 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     if (value) {
       if (value === "constructor") {
-        throw createMessageError(ErrorMessageMap.constructor_can_not_be_class_property_name);
+        // recoverable error
+        raiseError(
+          ErrorMessageMap.babel_error_classe_may_not_have_a_field_named_constructor,
+          propertyName.start,
+        );
       }
       if (value === "prototype" && isStatic) {
-        throw createMessageError(ErrorMessageMap.prototype_can_not_be_static);
+        raiseError(
+          ErrorMessageMap.v8_error_class_may_not_have_static_property_named_prototype,
+          propertyName.start,
+        );
       }
     }
   }
@@ -2320,9 +2590,10 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function parseExpressionStatement(): ExpressionStatement {
     preStaticSematicEarlyErrorForExpressionStatement();
+    const lastTokenIndex = lexer.getLastTokenEndPositon().index;
     const expr = parseExpressionAllowIn();
     checkStrictMode(expr);
-    postStaticSematicEarlyErrorForExpressionStatement(expr);
+    postStaticSematicEarlyErrorForExpressionStatement(expr, lastTokenIndex);
     shouldInsertSemi();
     return Factory.createExpressionStatement(
       expr,
@@ -2341,8 +2612,9 @@ export function createParser(code: string, option?: ParserConfig) {
         (!lineTerminatorFlag &&
           (kind === SyntaxKinds.BracesLeftPunctuator || kind === SyntaxKinds.Identifier))
       ) {
-        throw createMessageError(
+        raiseError(
           ErrorMessageMap.v8_error_lexical_declaration_cannot_appear_in_a_single_statement_context,
+          getStartPosition(),
         );
       }
     }
@@ -2350,10 +2622,26 @@ export function createParser(code: string, option?: ParserConfig) {
   /**
    * Implement part of NOTE section in 14.5
    */
-  function postStaticSematicEarlyErrorForExpressionStatement(expr: Expression) {
+  function postStaticSematicEarlyErrorForExpressionStatement(expr: Expression, lastTokenIndex: number) {
     if (!expr.parentheses) {
-      if (isFunctionExpression(expr) || isClassExpression(expr)) {
-        throw createMessageError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled);
+      if (isClassExpression(expr)) {
+        raiseError(ErrorMessageMap.syntax_error_functions_declare_non_strict_mode, expr.start);
+        return;
+      }
+      if (isFunctionExpression(expr)) {
+        if (expr.async) {
+          raiseError(ErrorMessageMap.syntax_error_async_function_declare, expr.start);
+        }
+        if (expr.generator) {
+          raiseError(ErrorMessageMap.syntax_error_generator_function_declare, expr.start);
+        }
+        if (isInStrictMode()) {
+          raiseError(ErrorMessageMap.syntax_error_functions_declare_strict_mode, expr.start);
+        } else {
+          if (lastTokenIndex !== context.lastTokenIndexOfIfStmt) {
+            raiseError(ErrorMessageMap.syntax_error_functions_declare_non_strict_mode, expr.start);
+          }
+        }
       }
     }
   }
@@ -2373,7 +2661,11 @@ export function createParser(code: string, option?: ParserConfig) {
       if (expr.value === "use strict" && !expr.parentheses) {
         if (isDirectToFunctionContext()) {
           if (!isCurrentFunctionParameterListSimple()) {
-            throw createMessageError(ErrorMessageMap.illegal_use_strict_in_non_simple_parameter_list);
+            // recoverable error
+            raiseError(
+              ErrorMessageMap.syntax_error_use_strict_not_allowed_in_function_with_non_simple_parameters,
+              expr.start,
+            );
           }
           setCurrentFunctionContextAsStrictMode();
         }
@@ -2522,10 +2814,13 @@ export function createParser(code: string, option?: ParserConfig) {
       }
     }
     if (delegate && !argument) {
-      throw createMessageError(ErrorMessageMap.yield_deletgate_can_must_be_followed_by_assignment_expression);
+      raiseError(
+        ErrorMessageMap.extra_error_yield_deletgate_can_must_be_followed_by_assignment_expression,
+        getStartPosition(),
+      );
     }
     if (isInParameter()) {
-      throw createMessageError(ErrorMessageMap.yield_expression_can_not_used_in_parameter_list);
+      raiseError(ErrorMessageMap.extra_error_yield_expression_can_not_used_in_parameter_list, start);
     }
     recordScope(ExpressionScopeKind.YieldExpressionInParameter, start);
     return Factory.createYieldExpression(
@@ -2588,7 +2883,7 @@ export function createParser(code: string, option?: ParserConfig) {
       atom = parseBinaryOps(atom);
     }
     if (isPrivateName(atom)) {
-      throw createMessageError(ErrorMessageMap.private_name_wrong_used);
+      raiseError(ErrorMessageMap.babel_error_private_name_wrong_used, atom.start);
     }
     return atom;
   }
@@ -2666,7 +2961,7 @@ export function createParser(code: string, option?: ParserConfig) {
       if (isBinaryOps(nextOp) && getBinaryPrecedence(nextOp) > getBinaryPrecedence(currentOp)) {
         right = parseBinaryOps(right, getBinaryPrecedence(nextOp));
       }
-      helperCheckBinaryExpr(currentOp, nextOp, left, right);
+      staticSematicForBinaryExpr(currentOp, nextOp, left, right);
       left = Factory.createBinaryExpression(
         left,
         right,
@@ -2677,21 +2972,23 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     return left;
   }
-  function helperCheckBinaryExpr(
+  function staticSematicForBinaryExpr(
     currentOps: SyntaxKinds,
     nextOps: SyntaxKinds,
     left: Expression,
     right: Expression,
   ) {
     if (isPrivateName(right) || (isPrivateName(left) && currentOps !== SyntaxKinds.InKeyword)) {
-      throw createMessageError(ErrorMessageMap.private_name_wrong_used);
+      // recoverable error
+      raiseError(ErrorMessageMap.babel_error_private_name_wrong_used, left.start);
     }
     if (left.parentheses) {
       return;
     }
     if (currentOps === SyntaxKinds.ExponOperator) {
       if (isUnaryExpression(left) || isAwaitExpression(left)) {
-        throw createMessageError(ErrorMessageMap.expont_operator_need_parans);
+        // recoverable error
+        raiseError(ErrorMessageMap.v8_error_expont_operator_need_parans, left.start);
       }
     }
     // if currentOp is nullish, next is logical or not
@@ -2700,19 +2997,21 @@ export function createParser(code: string, option?: ParserConfig) {
       currentOps === SyntaxKinds.NullishOperator &&
       (nextOps === SyntaxKinds.LogicalANDOperator || nextOps === SyntaxKinds.LogicalOROperator)
     ) {
-      throw createMessageError(ErrorMessageMap.nullish_require_parans);
+      // recoverable error
+      raiseError(ErrorMessageMap.v8_error_nullish_require_parans, left.end);
     }
     if (
       nextOps === SyntaxKinds.NullishOperator &&
       (currentOps === SyntaxKinds.LogicalANDOperator || currentOps === SyntaxKinds.LogicalOROperator)
     ) {
-      throw createMessageError(ErrorMessageMap.nullish_require_parans);
+      // recoverable error
+      raiseError(ErrorMessageMap.v8_error_nullish_require_parans, left.end);
     }
   }
   function parseUnaryOrPrivateName(): Expression {
     if (match(SyntaxKinds.PrivateName)) {
       const privateName = parsePrivateName();
-      usePrivateName(privateName.name);
+      usePrivateName(privateName.name, privateName.start);
       return privateName;
     }
     return parseUnaryExpression();
@@ -2748,14 +3047,18 @@ export function createParser(code: string, option?: ParserConfig) {
   // 13.5.1.1
   function staticSematicEarlyErrorForUnaryExpression(expr: UnaryExpression) {
     if (isInStrictMode() && expr.operator === SyntaxKinds.DeleteKeyword && isIdentifer(expr.argument)) {
-      throw createMessageError(
+      raiseError(
         ErrorMessageMap.syntax_error_applying_the_delete_operator_to_an_unqualified_name_is_deprecated,
+        expr.start,
       );
     }
   }
   function parseAwaitExpression() {
     if (isInParameter()) {
-      throw createMessageError(ErrorMessageMap.await_expression_can_not_used_in_parameter_list);
+      raiseError(
+        ErrorMessageMap.extra_error_await_expression_can_not_used_in_parameter_list,
+        getStartPosition(),
+      );
     }
     const start = getStartPosition();
     nextToken();
@@ -2829,7 +3132,11 @@ export function createParser(code: string, option?: ParserConfig) {
       } else if (match(SyntaxKinds.TemplateHead) || match(SyntaxKinds.TemplateNoSubstitution)) {
         // tag template expressuin
         if (hasOptional) {
-          throw createMessageError(ErrorMessageMap.tag_template_expression_can_not_use_option_chain);
+          // recoverable error
+          raiseError(
+            ErrorMessageMap.syntax_error_tag_template_expression_can_not_use_option_chain,
+            getStartPosition(),
+          );
         }
         base = parseTagTemplateExpression(base);
       } else {
@@ -2854,7 +3161,7 @@ export function createParser(code: string, option?: ParserConfig) {
     if (isIdentifer(expression) || isMemberExpression(expression)) {
       return;
     }
-    throw createMessageError(ErrorMessageMap.invalid_left_value);
+    raiseError(ErrorMessageMap.invalid_left_value, expression.start);
   }
   /**
    * Parse CallExpression
@@ -2895,11 +3202,13 @@ export function createParser(code: string, option?: ParserConfig) {
       if (isStart) {
         isStart = false;
         if (match(SyntaxKinds.CommaToken)) {
-          throw createMessageError(ErrorMessageMap.function_argument_can_not_have_empty_trailing_comma);
+          // trailing comma
+          raiseError(ErrorMessageMap.extra_error_unexpect_trailing_comma, getStartPosition());
+          nextToken();
         }
       } else {
         trailingComma = true;
-        expect(SyntaxKinds.CommaToken, "Argument should seprated by comma.");
+        expect(SyntaxKinds.CommaToken);
       }
       // case 1: ',' following by ')'
       if (match(SyntaxKinds.ParenthesesRightPunctuator)) {
@@ -2928,7 +3237,7 @@ export function createParser(code: string, option?: ParserConfig) {
     };
   }
   /**
-   * Parse MemberExpression with base, this different between parseLeftHandSideExpression is
+   * Parse with base, this different between parseLeftHandSideExpression is
    * that parseMemberExpression would only eat a `atom` of chain of expression.
    * ```
    * MemberExpression := GivenBase(base ,optional) '.' IdentiferWithKeyword
@@ -2990,9 +3299,12 @@ export function createParser(code: string, option?: ParserConfig) {
     let property: Expression | PrivateName;
     if (match(SyntaxKinds.PrivateName)) {
       property = parsePrivateName();
-      usePrivateName(property.name);
+      usePrivateName(property.name, property.start);
       if (isInDelete()) {
-        throw createMessageError(ErrorMessageMap.delete_private_name);
+        raiseError(
+          ErrorMessageMap.syntax_error_applying_the_delete_operator_to_an_unqualified_name_is_deprecated,
+          property.start,
+        );
       }
     } else {
       property = parseIdentifierName();
@@ -3053,7 +3365,7 @@ export function createParser(code: string, option?: ParserConfig) {
         if (kind === SyntaxKinds.ParenthesesLeftPunctuator) {
           return parseImportCall();
         }
-        throw createUnexpectError(null);
+        throw createUnexpectError();
       }
       case SyntaxKinds.NewKeyword: {
         const { kind } = lookahead();
@@ -3081,7 +3393,9 @@ export function createParser(code: string, option?: ParserConfig) {
         return parseCoverExpressionORArrowFunction();
       // TODO: consider wrap as function or default case ?
       case SyntaxKinds.PrivateName:
-        throw createMessageError(ErrorMessageMap.private_name_wrong_used);
+        // recoverable error
+        raiseError(ErrorMessageMap.babel_error_private_name_wrong_used, getStartPosition());
+        return parsePrivateName();
       // return parsePrivateName();
       case SyntaxKinds.Identifier:
       case SyntaxKinds.LetKeyword:
@@ -3094,7 +3408,7 @@ export function createParser(code: string, option?: ParserConfig) {
             parseWithLHSLayerReturnScope(() => [parseIdentifierReference()]),
           );
           if (getLineTerminatorFlag()) {
-            throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_arrow);
+            raiseError(ErrorMessageMap.extra_error_no_line_break_is_allowed_before_arrow, getStartPosition());
           }
           enterArrowFunctionBodyScope();
           const arrowExpr = parseArrowFunctionExpression(
@@ -3142,7 +3456,7 @@ export function createParser(code: string, option?: ParserConfig) {
                 );
               }
               if (containEsc) {
-                throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
+                raiseError(ErrorMessageMap.invalid_esc_char_in_keyword, id.start);
               }
               enterArrowFunctionBodyScope(true);
               const arrowFunExpr = parseArrowFunctionExpression(meta, strictModeScope, arrowExprScope);
@@ -3172,15 +3486,17 @@ export function createParser(code: string, option?: ParserConfig) {
                 return Factory.createIdentifier("async", start, end);
               }
               if (isAsyncContainUnicode) {
-                throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
+                raiseError(ErrorMessageMap.invalid_esc_char_in_keyword, start);
               }
               const [[argus, strictModeScope], arrowExprScope] = parseWithArrowExpressionScope(() =>
                 parseWithCatpureLayer(() => [parseIdentifierReference()]),
               );
               if (getLineTerminatorFlag()) {
-                throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_async);
+                raiseError(
+                  ErrorMessageMap.extra_error_no_line_break_is_allowed_before_arrow,
+                  getStartPosition(),
+                );
               }
-              // TODO: check arrow operator
               enterArrowFunctionBodyScope(true);
               const arrowExpr = parseArrowFunctionExpression(
                 {
@@ -3200,7 +3516,7 @@ export function createParser(code: string, option?: ParserConfig) {
         return parseIdentifierReference();
       }
       default:
-        throw createUnexpectError(null);
+        throw createUnexpectError();
     }
   }
   function parseRegexLiteral(): RegexLiteral {
@@ -3216,17 +3532,11 @@ export function createParser(code: string, option?: ParserConfig) {
     return Factory.createRegexLiteral(pattern, flag, start, getEndPosition());
   }
   /**
-   * this function is actually parse binding identifier. it accept more than just identifier
-   * include await yield and let, if identifier is let, await or yield, this function would
-   * auto check context for you. but if identifier is in VariableDeclaration, function name,
-   * property name, context check is not suit those place, so you maybe need to implement another
-   * context check logical with parseIdentifierWithKeyword function.
-   * ```
-   * BindingIdentifier := Identifier
-   *                   := 'await' (deps in context)
-   *                   := 'yield' (deps in context)
-   *                   ('let' (deps on context))
-   * ```
+   * IdentifierReference, IdentifierName and BindingIdentifier is not samething in the
+   * spec.
+   * - IdentifierReference is a id in Lval or Rval
+   * - IdentifierName is a property of member expression or object, class
+   * - BindingIdentifier is a lval.
    * @returns {Identifier}
    */
   function parseIdentifierReference(): Identifier {
@@ -3242,70 +3552,127 @@ export function createParser(code: string, option?: ParserConfig) {
       // for most of yield keyword, if it should treat as identifier,
       // it should not in generator function.
       case SyntaxKinds.YieldKeyword: {
-        if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
-          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-        }
         const { value, start, end } = expect(SyntaxKinds.YieldKeyword);
-        recordScope(ExpressionScopeKind.YieldIdentifier, start);
+        staticSematicForIdentifierAsYield(start);
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
       // for most of await keyword, if it should treat as identifier,
       // it should not in async function.
       case SyntaxKinds.AwaitKeyword: {
-        if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
-          throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
-        }
         const { value, start, end } = expect(SyntaxKinds.AwaitKeyword);
-        if (!(isDirectToClassScope() && !isInPropertyName())) {
-          recordScope(ExpressionScopeKind.AwaitIdentifier, start);
-        }
+        staticSematicForIdentifierAsAwait(start);
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
       // let maybe treat as identifier in not strict mode, and not lexical binding declaration.
       // so lexical binding declaration should implement it's own checker logical with parseIdentifierWithKeyword
       case SyntaxKinds.LetKeyword: {
-        if (isInStrictMode() || isInClassScope()) {
-          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
-        }
         const { value, start, end } = expect(SyntaxKinds.LetKeyword);
-        recordScope(ExpressionScopeKind.LetIdentifiier, start);
+        staticSematicForIdentifierAsLet(start);
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
       case SyntaxKinds.Identifier: {
         const { value, start, end } = expect(SyntaxKinds.Identifier);
-        const isPreserveWord = PreserveWordSet.has(value);
-        if (isPreserveWord) {
-          if (isInStrictMode() || isInClassScope()) {
-            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
-          }
-          recordScope(ExpressionScopeKind.PresveredWordIdentifier, start);
-        }
-        if (value === "arguments") {
-          if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
-            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
-          }
-          if (isInClassScope() && !isEncloseInFunction() && !isInPropertyName()) {
-            throw createMessageError(ErrorMessageMap.syntax_error_arguments_is_not_valid_in_fields);
-          }
-          recordScope(ExpressionScopeKind.ArgumentsIdentifier, start);
-        }
-        if (value === "eval") {
-          if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
-            throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
-          }
-          recordScope(ExpressionScopeKind.EvalIdentifier, start);
-        }
+        staticSematicForIdentifierDefault(value, start);
         identifer = Factory.createIdentifier(value, start, end);
         break;
       }
       default: {
-        throw createUnreachError();
+        throw createUnexpectError();
       }
     }
     return identifer;
+  }
+  /**
+   * Yield only could be used as a identifier when
+   *
+   * - it is not in strict mode.
+   * - not in a generator context.
+   *
+   * record it's usage for defer check.
+   * @param {SourcePosition} start
+   */
+  function staticSematicForIdentifierAsYield(start: SourcePosition) {
+    if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
+      raiseError(ErrorMessageMap.babel_error_invalid_yield, start);
+    }
+    recordScope(ExpressionScopeKind.YieldIdentifier, start);
+  }
+  /**
+   * Await only could be used as identifirt when
+   *
+   * - it is not in module mode
+   * - not in async context
+   *
+   * record it's usgae for defer check.
+   * @param {SourcePosition} start
+   */
+  function staticSematicForIdentifierAsAwait(start: SourcePosition) {
+    if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
+      raiseError(ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function, start);
+    }
+    // skip if is using await in class property name in async context
+    if (isDirectToClassScope() && !isInPropertyName()) {
+      return;
+    }
+    recordScope(ExpressionScopeKind.AwaitIdentifier, start);
+  }
+  /**
+   * Let only could be used as identifirt when
+   *
+   * - it is not in strict mode
+   *
+   * record it's usgae for defer check.
+   * @param {SourcePosition} start
+   */
+  function staticSematicForIdentifierAsLet(start: SourcePosition) {
+    if (isInStrictMode()) {
+      raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, start);
+    }
+    recordScope(ExpressionScopeKind.LetIdentifiier, start);
+  }
+  /**
+   * Checking the usage for arguments and eval, presverveword
+   *
+   * - for presverveword, only could be used when not in strict mode
+   * - for argument, can not used when
+   *   1. in strict mode, and in the lhs
+   *   2. in strict mode, not in function.
+   * - for eval, can not used when
+   *   1. in strict mode, and in the lhs
+   *
+   * record it's usgae for defer check.
+   * @param {SourcePosition} start
+   */
+  function staticSematicForIdentifierDefault(value: string, start: SourcePosition) {
+    const isPreserveWord = PreserveWordSet.has(value);
+    if (isPreserveWord) {
+      if (isInStrictMode()) {
+        raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, start);
+      }
+      recordScope(ExpressionScopeKind.PresveredWordIdentifier, start);
+    }
+    if (value === "arguments") {
+      if (isInStrictMode()) {
+        if (!isEncloseInFunction() && !isInPropertyName()) {
+          // invalud usage
+          raiseError(ErrorMessageMap.syntax_error_arguments_is_not_valid_in_fields, start);
+        }
+        if (strictModeScopeRecorder.isInLHS()) {
+          // invalid assignment
+          raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, start);
+        }
+      }
+      recordScope(ExpressionScopeKind.ArgumentsIdentifier, start);
+    }
+    if (value === "eval") {
+      if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
+        raiseError(ErrorMessageMap.unexpect_keyword_in_stric_mode, start);
+      }
+      recordScope(ExpressionScopeKind.EvalIdentifier, start);
+    }
   }
   /**
    * Relatedly loose function for parseIdentifier, it not only can parse identifier,
@@ -3316,10 +3683,16 @@ export function createParser(code: string, option?: ParserConfig) {
     const { value, start, end } = expect(IdentiferWithKeyworArray);
     return Factory.createIdentifier(value, start, end);
   }
-  function parsePrivateName() {
+  /**
+   * ECMA spec has every strict rule to private name, but in this parser, most of
+   * strict rule check is implemented by callee, there we only gonna check is in
+   * class scope or not.
+   * @returns {PrivateName}
+   */
+  function parsePrivateName(): PrivateName {
     const { value, start, end } = expect(SyntaxKinds.PrivateName);
     if (!isInClassScope()) {
-      throw createMessageError(ErrorMessageMap.private_field_can_not_use_in_object); // semantics check for private
+      raiseError(ErrorMessageMap.syntax_error_unexpected_hash_used_outside_of_class_body, start); // semantics check for private
     }
     return Factory.createPrivateName(value, start, end);
   }
@@ -3340,10 +3713,10 @@ export function createParser(code: string, option?: ParserConfig) {
     return Factory.createDecimalBigIntegerLiteral(value, start, end);
   }
   function parseNonOctalDecimalLiteral() {
-    if (isInStrictMode()) {
-      throw createMessageError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated);
-    }
     const { start, end, value } = expect(SyntaxKinds.NonOctalDecimalLiteral);
+    if (isInStrictMode()) {
+      raiseError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated, start);
+    }
     return Factory.createNonOctalDecimalLiteral(value, start, end);
   }
   function parseBinaryIntegerLiteral() {
@@ -3371,10 +3744,10 @@ export function createParser(code: string, option?: ParserConfig) {
     return Factory.createHexBigIntegerLiteral(value, start, end);
   }
   function parseLegacyOctalIntegerLiteral() {
-    if (isInStrictMode()) {
-      throw createMessageError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated);
-    }
     const { start, end, value } = expect(SyntaxKinds.LegacyOctalIntegerLiteral);
+    if (isInStrictMode()) {
+      raiseError(ErrorMessageMap.Syntax_error_0_prefixed_octal_literals_are_deprecated, start);
+    }
     return Factory.createLegacyOctalIntegerLiteral(value, start, end);
   }
   function parseNumericLiteral(): NumberLiteral {
@@ -3400,7 +3773,7 @@ export function createParser(code: string, option?: ParserConfig) {
       case SyntaxKinds.LegacyOctalIntegerLiteral:
         return parseLegacyOctalIntegerLiteral();
       default:
-        throw createMessageError("");
+        throw createUnexpectError();
     }
   }
   function parseStringLiteral() {
@@ -3418,7 +3791,7 @@ export function createParser(code: string, option?: ParserConfig) {
     const templateLiteralStart = getStartPosition();
     if (match(SyntaxKinds.TemplateNoSubstitution)) {
       if (!tagged && lexer.getTemplateLiteralTag()) {
-        throw createMessageError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence);
+        raiseError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence, getStartPosition());
       }
       const value = getSourceValue();
       const templateLiteralEnd = getEndPosition();
@@ -3439,7 +3812,7 @@ export function createParser(code: string, option?: ParserConfig) {
       !match(SyntaxKinds.EOFToken)
     ) {
       if (!tagged && lexer.getTemplateLiteralTag()) {
-        throw createMessageError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence);
+        raiseError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence, getStartPosition());
       }
       quasis.push(
         Factory.createTemplateElement(getSourceValue(), false, getStartPosition(), getEndPosition()),
@@ -3448,34 +3821,29 @@ export function createParser(code: string, option?: ParserConfig) {
       expressions.push(parseExpressionAllowIn());
     }
     if (match(SyntaxKinds.EOFToken)) {
-      throw createUnexpectError(SyntaxKinds.BracesLeftPunctuator);
+      throw createUnexpectError();
     }
     if (!tagged && lexer.getTemplateLiteralTag()) {
-      throw createMessageError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence);
+      raiseError(ErrorMessageMap.v8_error_invalid_hexadecimal_escape_sequence, getStartPosition());
     }
     quasis.push(Factory.createTemplateElement(getSourceValue(), true, getStartPosition(), getEndPosition()));
     const templateLiteralEnd = getEndPosition();
     nextToken();
     return Factory.createTemplateLiteral(quasis, expressions, templateLiteralStart, templateLiteralEnd);
   }
-  function parseImportMeta() {
+  /**
+   * Parse import meta property
+   * ```
+   * ImportMeta := import . meta
+   * ```
+   * @returns {MetaProperty}
+   */
+  function parseImportMeta(): MetaProperty {
     const { start, end } = expect(SyntaxKinds.ImportKeyword);
     expect(SyntaxKinds.DotOperator);
     const ecaFlag = getEscFlag();
     const property = parseIdentifierReference();
-    if (property.name !== "meta") {
-      throw createMessageError(
-        ErrorMessageMap.babel_error_the_only_valid_meta_property_for_import_is_import_meta,
-      );
-    }
-    if (ecaFlag) {
-      throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
-    }
-    if (config.sourceType === "script") {
-      throw createMessageError(
-        ErrorMessageMap.babel_error_import_meta_may_appear_only_with_source_type_module,
-      );
-    }
+    staticSematicForImportMeta(property, ecaFlag, start);
     return Factory.createMetaProperty(
       Factory.createIdentifier("import", start, end),
       property,
@@ -3483,7 +3851,36 @@ export function createParser(code: string, option?: ParserConfig) {
       cloneSourcePosition(property.end),
     );
   }
-  function parseImportCall() {
+  /**
+   * Sematic check for import meta
+   * - import member expression's property only could be meta
+   * - meta should be a contextual keyword
+   * - import meta can't use in script mode
+   * @param property
+   * @param ecaFlag
+   */
+  function staticSematicForImportMeta(property: Identifier, ecaFlag: boolean, start: SourcePosition) {
+    if (property.name !== "meta") {
+      raiseError(
+        ErrorMessageMap.babel_error_the_only_valid_meta_property_for_import_is_import_meta,
+        property.start,
+      );
+    }
+    if (ecaFlag) {
+      raiseError(ErrorMessageMap.invalid_esc_char_in_keyword, start);
+    }
+    if (config.sourceType === "script") {
+      raiseError(ErrorMessageMap.babel_error_import_meta_may_appear_only_with_source_type_module, start);
+    }
+  }
+  /**
+   * Parse Import call
+   * ```
+   * ImportCall := import ( AssignmentExpression[+In], (optional support attribute) )
+   * ```
+   * @returns {CallExpression}
+   */
+  function parseImportCall(): CallExpression {
     const { start, end } = expect(SyntaxKinds.ImportKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const argument = parseAssignmentExpressionAllowIn();
@@ -3497,6 +3894,11 @@ export function createParser(code: string, option?: ParserConfig) {
       cloneSourcePosition(finalEnd),
     );
   }
+  /**
+   * Parse import attribute (stage 3 syntax)
+   * ref: https://github.com/tc39/proposal-import-attributes
+   * @returns
+   */
   function parseImportAttributeOptional(): Expression | null {
     if (!config.plugins.includes("importAttributes") && !config.plugins.includes("importAssertions")) {
       return null;
@@ -3514,18 +3916,17 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     return option;
   }
-  function parseNewTarget() {
+  /**
+   * Parse new target
+   * ```
+   * NewTarget := new . target
+   * ```
+   * @returns {MetaProperty}
+   */
+  function parseNewTarget(): MetaProperty {
     const { start, end } = expect(SyntaxKinds.NewKeyword);
     expect(SyntaxKinds.DotOperator);
-    if (!isContextKeyword("target")) {
-      throw createUnexpectError(
-        SyntaxKinds.Identifier,
-        "new concat with dot should only be used in meta property",
-      );
-    }
-    if (!config.allowNewTargetOutsideFunction && isTopLevel() && !isInClassScope()) {
-      throw createMessageError(ErrorMessageMap.new_target_can_only_be_used_in_class_or_function_scope);
-    }
+    staticSematicForNewTarget(start);
     const targetStart = getStartPosition();
     const targetEnd = getEndPosition();
     nextToken();
@@ -3536,12 +3937,20 @@ export function createParser(code: string, option?: ParserConfig) {
       targetEnd,
     );
   }
+  function staticSematicForNewTarget(start: SourcePosition) {
+    if (!isContextKeyword("target")) {
+      // recoverable error
+      throw createUnexpectError();
+    }
+    if (!config.allowNewTargetOutsideFunction && isTopLevel() && !isInClassScope()) {
+      // recoverable error
+      raiseError(ErrorMessageMap.babel_error_new_target_can_only_be_used_in_class_or_function_scope, start);
+    }
+  }
   /**
-   * Parse New Expression
-   * new expression is a trick one, because is not always right to left,
-   * for a new expression, last the rightest component must be a CallExpression,
-   * and before that CallExpression, it can be a series of MemberExpression,
-   * or event another NewExpression
+   * Parse New Expression, the callee part of new expression is a trick one,
+   * this is not a member expression, it can not contain qustion dot or call
+   * expression.
    * ```
    * NewExpression := 'new' NewExpression
    *               := 'new' MemberExpressionWithoutOptional Arugment?
@@ -3555,35 +3964,77 @@ export function createParser(code: string, option?: ParserConfig) {
       return parseNewExpression();
     }
     let base = parsePrimaryExpression();
-    if (isCallExpression(base) && !base.parentheses) {
-      throw createMessageError(ErrorMessageMap.import_call_is_not_allow_as_new_expression_called);
+    staticSematicForBaseInNewExpression(base);
+    base = parseNewExpressionCallee(base);
+    if (!match(SyntaxKinds.ParenthesesLeftPunctuator)) {
+      // accpect New XXX -> No argument
+      return Factory.createNewExpression(base, [], start, cloneSourcePosition(base.end));
     }
-    // TODO: refactor this loop to with function -> parseNewExpressionCallee ?
+    const { end, nodes } = parseArguments();
+    return Factory.createNewExpression(base, nodes, start, end);
+  }
+  /**
+   * The base of new expression can not be a import call expression, if must be a import
+   * call expression, it must be have a paran.
+   * @param {Expression} base
+   */
+  function staticSematicForBaseInNewExpression(base: Expression) {
+    if (!base.parentheses && isCallExpression(base) && base.callee.kind === SyntaxKinds.Import) {
+      // recoverable error
+      raiseError(ErrorMessageMap.babel_error_cannot_use_new_with_import, base.start);
+    }
+  }
+  /**
+   * Parse the callee of new expression, base of new expression can not
+   * be a call expression or a qustion dot expression.
+   * @param {Expression} base
+   * @returns
+   */
+  function parseNewExpressionCallee(base: Expression): Expression {
     while (
       match(SyntaxKinds.DotOperator) ||
       match(SyntaxKinds.BracketLeftPunctuator) ||
       match(SyntaxKinds.QustionDotOperator)
     ) {
       if (match(SyntaxKinds.QustionDotOperator)) {
-        throw createMessageError(ErrorMessageMap.new_expression_cant_using_optional_chain);
+        // recoverable error
+        raiseError(
+          ErrorMessageMap.babel_error_constructors_in_after_an_optional_chain_are_not_allowed,
+          getStartPosition(),
+        );
+        nextToken();
+        base = parseMemberExpression(base, true);
+        continue;
       }
       base = parseMemberExpression(base, false);
     }
-    // accpect New XXX -> No argument
-    if (!match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-      return Factory.createNewExpression(base, [], start, cloneSourcePosition(base.end));
-    }
-    const { end, nodes } = parseArguments();
-    return Factory.createNewExpression(base, nodes, start, end);
+    return base;
   }
-  function parseSuper() {
+  /**
+   * Parse super expression, only parse the arguments and super or a first level
+   * of access of member expression. Contain sematic check:
+   * - Super call only valid in ctor.
+   * - super property can be used in any method of class.
+   * ```
+   * SuperCall      := super argument
+   * SuperProperty  := super[Expression]
+   *                := super.IdentifierName
+   * ```
+   * @returns {Expression}
+   */
+  function parseSuper(): Expression {
     if (!isCurrentClassExtend()) {
-      throw createMessageError(ErrorMessageMap.super_can_not_call_if_not_in_class);
+      // recoverable error
+      raiseError(
+        ErrorMessageMap.syntax_error_super_is_only_valid_in_derived_class_constructors,
+        getStartPosition(),
+      );
     }
     const { start: keywordStart, end: keywordEnd } = expect([SyntaxKinds.SuperKeyword]);
     if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
       if (!lexicalScopeRecorder.isInCtor()) {
-        throw createMessageError("");
+        // recoverable error
+        raiseError(ErrorMessageMap.babel_error_call_super_outside_of_ctor, keywordStart);
       }
       const { nodes, end: argusEnd } = parseArguments();
       return Factory.createCallExpression(
@@ -3598,12 +4049,19 @@ export function createParser(code: string, option?: ParserConfig) {
     let isComputed = false;
     let end: SourcePosition;
     switch (getToken()) {
+      case SyntaxKinds.QustionDotOperator:
+        // recoverable error.
+        raiseError(ErrorMessageMap.babel_invalid_usage_of_super_call, getStartPosition());
+      // eslint-disable-next-line no-fallthrough
       case SyntaxKinds.DotOperator: {
         nextToken();
         if (match(SyntaxKinds.PrivateName)) {
-          // TODO: error
+          property = parsePrivateName();
+          // recoverable error
+          raiseError(ErrorMessageMap.babel_error_private_fields_cant_be_accessed_on_super, property.start);
+        } else {
+          property = parseIdentifierName();
         }
-        property = parseIdentifierName();
         end = cloneSourcePosition(property.end);
         break;
       }
@@ -3614,10 +4072,8 @@ export function createParser(code: string, option?: ParserConfig) {
         ({ end } = expect(SyntaxKinds.BracketRightPunctuator));
         break;
       }
-      case SyntaxKinds.QustionDotOperator:
-        throw createMessageError("");
       default:
-        throw createMessageError(ErrorMessageMap.super_must_be_followed_by_an_argument_list_or_member_access);
+        throw createUnexpectError();
     }
     return Factory.createMemberExpression(
       isComputed,
@@ -3628,7 +4084,11 @@ export function createParser(code: string, option?: ParserConfig) {
       end,
     );
   }
-  function parseThisExpression() {
+  /**
+   * Parse this expression, only eat `this` token
+   * @returns {ThisExpression}
+   */
+  function parseThisExpression(): ThisExpression {
     const { start, end } = expect([SyntaxKinds.ThisKeyword]);
     return Factory.createThisExpression(start, end);
   }
@@ -3668,14 +4128,27 @@ export function createParser(code: string, option?: ParserConfig) {
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
     return Factory.createObjectExpression(propertyDefinitionList, trailingComma, start, end);
   }
-  // part of 13.2.5.1
+  /**
+   * Adding `__proto__` property key to duplication set, if object expression transform to pattern
+   * duplication of `__proto__` is ok, but when is not pattern, it not a correct syntax.
+   * @param {Array<PropertyName>} protoPropertyNames
+   * reference: 13.2.5.1
+   */
   function staticSematicEarlyErrorForObjectExpression(protoPropertyNames: Array<PropertyName>) {
     if (protoPropertyNames.length > 1) {
       for (let index = 1; index < protoPropertyNames.length; ++index)
         context.propertiesProtoDuplicateSet.add(protoPropertyNames[index]);
     }
   }
-  function helperRecordPropertyNameForStaticSematicEarly(
+  /**
+   * Helper for property definition to record the object property which property is
+   * `__proto__`, since duplication of `__proto__` is a error.
+   * @param protoPropertyNames
+   * @param propertyName
+   * @param isComputed
+   * @returns
+   */
+  function staticSematicHelperRecordPropertyNameForEarlyError(
     protoPropertyNames: Array<PropertyName>,
     propertyName: PropertyName,
     isComputed: boolean,
@@ -3712,7 +4185,8 @@ export function createParser(code: string, option?: ParserConfig) {
   function parsePropertyDefinition(protoPropertyNameLocations: Array<PropertyName>): PropertyDefinition {
     // semantics check for private
     if (match(SyntaxKinds.PrivateName)) {
-      throw createMessageError(ErrorMessageMap.private_field_can_not_use_in_object);
+      // TODO: make it recoverable
+      throw createMessageError(ErrorMessageMap.extra_error_private_field_in_object_expression);
     }
     // spreadElement
     if (match(SyntaxKinds.SpreadOperator)) {
@@ -3732,7 +4206,7 @@ export function createParser(code: string, option?: ParserConfig) {
       return parseMethodDefintion(false, [propertyName, isComputedRef.isComputed]) as ObjectMethodDefinition;
     }
     if (isComputedRef.isComputed || match(SyntaxKinds.ColonPunctuator)) {
-      helperRecordPropertyNameForStaticSematicEarly(
+      staticSematicHelperRecordPropertyNameForEarlyError(
         protoPropertyNameLocations,
         propertyName,
         isComputedRef.isComputed,
@@ -3750,7 +4224,7 @@ export function createParser(code: string, option?: ParserConfig) {
     }
     recordIdentifierValue(propertyName);
     if (match(SyntaxKinds.AssginOperator)) {
-      helperRecordPropertyNameForStaticSematicEarly(
+      staticSematicHelperRecordPropertyNameForEarlyError(
         protoPropertyNameLocations,
         propertyName,
         isComputedRef.isComputed,
@@ -3768,13 +4242,8 @@ export function createParser(code: string, option?: ParserConfig) {
       context.propertiesInitSet.add(property);
       return property;
     }
-    if (isStringLiteral(propertyName) || isNumnerLiteral(propertyName)) {
-      throw createMessageError(
-        ErrorMessageMap.when_binding_pattern_property_name_is_string_literal_can_not_be_shorted,
-      );
-    }
-    // check if shorted property is keyword or not.
-    checkPropertyShortedIsKeyword(propertyName);
+    staticSematicForShortedPropertyNameInObjectLike(propertyName);
+    staticSematicForShortedPropertyNameInObjectExpression(propertyName as Identifier);
     return Factory.createObjectProperty(
       propertyName,
       undefined,
@@ -3809,12 +4278,9 @@ export function createParser(code: string, option?: ParserConfig) {
   /**
    * Parse PropertyName, using context ref which passed in to record this property is computed or not.
    *
-   * ### Problem of Keyword as PropertyName
-   * PropertyName can not only be a identifier but alse can be a keyword in some place, for example, as method
-   * of object or class, and it is ok to use it as left value of property name. the syntax error happend when
-   * using keyword as shorted property. So when `parsePropertyName` parse a identifier with keyword, it would
-   * check if next token is `(` or `:`, to make sure throw error when parse keyword as shorted property
-   *
+   * ### Extra action need for callee
+   * In this function, we accept keywrod as property name, but when the property name use as a shorted
+   * property name, it will be a syntax error, so father syntax check is needed handle by callee.
    * ```
    * PropertyName := Identifer (IdentifierName, not BindingIdentifier)
    *              := NumberLiteral
@@ -3832,53 +4298,76 @@ export function createParser(code: string, option?: ParserConfig) {
       ...IdentiferWithKeyworArray,
       ...NumericLiteralKinds,
     ]);
-    if (match(SyntaxKinds.StringLiteral)) {
-      return parseStringLiteral();
+    switch (getToken()) {
+      case SyntaxKinds.StringLiteral: {
+        return parseStringLiteral();
+      }
+      case SyntaxKinds.BracketLeftPunctuator: {
+        nextToken();
+        lexicalScopeRecorder.enterPropertyName();
+        const expr = parseAssignmentExpressionAllowIn();
+        lexicalScopeRecorder.exitPropertyName();
+        expect(SyntaxKinds.BracketRightPunctuator);
+        isComputedRef.isComputed = true;
+        return expr;
+      }
+      default: {
+        if (match(NumericLiteralKinds)) {
+          return parseNumericLiteral();
+        }
+        // propty name is a spical test of binding identifier.
+        // if `await` and `yield` is propty name with colon (means assign), it dose not affected by scope.
+        if (match(IdentiferWithKeyworArray)) {
+          const identifer = parseIdentifierName();
+          return identifer;
+        }
+        throw createUnexpectError();
+      }
     }
-    if (match(NumericLiteralKinds)) {
-      return parseNumericLiteral();
-    }
-    // propty name is a spical test of binding identifier.
-    // if `await` and `yield` is propty name with colon (means assign), it dose not affected by scope.
-    if (match(IdentiferWithKeyworArray)) {
-      const identifer = parseIdentifierName();
-      return identifer;
-    }
-
-    nextToken();
-    lexicalScopeRecorder.enterPropertyName();
-    const expr = parseAssignmentExpressionAllowIn();
-    lexicalScopeRecorder.exitPropertyName();
-    expect(SyntaxKinds.BracketRightPunctuator);
-    isComputedRef.isComputed = true;
-    return expr;
   }
   /**
-   *  propty name is a spical test of binding identifier.
-   *  if `await` and `yield` is propty name with colon (means assign),
-   *  it dose not affected by scope.
-   * @param propertyName
+   * Sematic check when a property name is shorted property
+   * @param {PropertyName} propertyName
+   * @returns
    */
-  function checkPropertyShortedIsKeyword(propertyName: PropertyName) {
-    if (isIdentifer(propertyName)) {
-      if (propertyName.name === "await") {
-        if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
-          throw createMessageError(ErrorMessageMap.when_in_async_context_await_keyword_will_treat_as_keyword);
-        }
-        return;
+  function staticSematicForShortedPropertyNameInObjectLike(propertyName: PropertyName) {
+    if (isStringLiteral(propertyName) || isNumnerLiteral(propertyName)) {
+      // recoverable error.
+      raiseError(
+        ErrorMessageMap.extra_error_when_binding_pattern_property_name_is_literal_can_not_be_shorted,
+        propertyName.start,
+      );
+    }
+  }
+  /**
+   * Like `staticCheckForPropertyNameAsSingleBinding` for object pattern, when shorted property in
+   * object expression, if will no longer just
+   * @param {PropertyName} propertyName
+   * @returns
+   */
+  function staticSematicForShortedPropertyNameInObjectExpression(propertyName: Identifier) {
+    if (propertyName.name === "await") {
+      if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
+        raiseError(
+          ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function,
+          propertyName.start,
+        );
       }
-      if (propertyName.name === "yield") {
-        if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
-          throw createMessageError(ErrorMessageMap.when_in_yield_context_yield_will_be_treated_as_keyword);
-        }
-        return;
+      return;
+    }
+    if (propertyName.name === "yield") {
+      if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
+        raiseError(ErrorMessageMap.babel_error_invalid_yield, propertyName.start);
       }
-      if (KeywordSet.has(propertyName.name)) {
-        throw createMessageError(ErrorMessageMap.invalid_property_name);
-      }
-      if (PreserveWordSet.has(propertyName.name) && isInStrictMode()) {
-        throw createMessageError(ErrorMessageMap.invalid_property_name);
-      }
+      return;
+    }
+    if (KeywordSet.has(propertyName.name)) {
+      // recoverable error
+      raiseError(ErrorMessageMap.babel_error_unexpected_keyword, propertyName.start);
+    }
+    if (PreserveWordSet.has(propertyName.name) && isInStrictMode()) {
+      // recoverable error
+      raiseError(ErrorMessageMap.babel_error_unexpected_reserved_word, propertyName.start);
     }
   }
   /** Parse MethodDefintion, this method should allow using when in class or in object literal.
@@ -3911,7 +4400,7 @@ export function createParser(code: string, option?: ParserConfig) {
     inClass: boolean = false,
     withPropertyName: [PropertyName | PrivateName, boolean] | undefined = undefined,
     isStatic: boolean = false,
-    decorators: Decorator[] | null = null,
+    decorators: [Decorator] | null = null,
   ): ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor | ClassConstructor {
     if (!checkIsMethodStartWithModifier() && !withPropertyName) {
       throw createUnreachError([SyntaxKinds.MultiplyAssignOperator, SyntaxKinds.Identifier]);
@@ -3956,7 +4445,11 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       if (match(SyntaxKinds.PrivateName)) {
         propertyName = parsePrivateName();
-        defPrivateName(propertyName.name, type === "method" ? "other" : isStatic ? `static-${type}` : type);
+        defPrivateName(
+          propertyName.name,
+          propertyName.start,
+          type === "method" ? "other" : isStatic ? `static-${type}` : type,
+        );
       } else {
         const isComputedRef = { isComputed: false };
         propertyName = parsePropertyName(isComputedRef);
@@ -3971,14 +4464,14 @@ export function createParser(code: string, option?: ParserConfig) {
     if (isCtor) {
       lexicalScopeRecorder.enterCtor();
       if (lexicalScopeRecorder.testAndSetCtor()) {
-        throw createMessageError(ErrorMessageMap.v8_error_a_class_may_only_have_one_constructor);
+        raiseError(ErrorMessageMap.v8_error_a_class_may_only_have_one_constructor, propertyName.start);
       }
     }
     enterFunctionScope(isAsync, generator);
     const [parmas, scope] = parseWithCatpureLayer(parseFunctionParam);
     const body = parseFunctionBody();
-    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(null, parmas, true, scope);
-    exitFunctionScope();
+    postStaticSematicEarlyErrorForStrictModeOfFunction(null, scope);
+    exitFunctionScope(true);
     if (isCtor) lexicalScopeRecorder.exitCtor();
     /**
      * Step 2: semantic and more concise syntax check instead just throw a unexpect
@@ -3999,7 +4492,10 @@ export function createParser(code: string, option?: ParserConfig) {
     if (inClass) {
       if (isCtor) {
         if (decorators) {
-          throw createMessageError(ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_constructor);
+          raiseError(
+            ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_constructor,
+            decorators[0].start,
+          );
         }
         return Factory.createClassConstructor(
           propertyName as ClassConstructor["key"],
@@ -4101,7 +4597,17 @@ export function createParser(code: string, option?: ParserConfig) {
       }
     }
   }
-  // part of 15.7.1
+  /**
+   * Spec def of class method, only implement some of spec.
+   * @param propertyName
+   * @param isClass
+   * @param isStatic
+   * @param isAsync
+   * @param isGenerator
+   * @param params
+   * @param type
+   * reference: https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
+   */
   function staticSematicEarlyErrorForClassMethodDefinition(
     propertyName: PropertyName,
     isClass: boolean,
@@ -4113,31 +4619,32 @@ export function createParser(code: string, option?: ParserConfig) {
   ) {
     // general check
     if (type === "get" && params.length > 0) {
-      throw createMessageError(ErrorMessageMap.getter_should_never_has_params);
+      raiseError(ErrorMessageMap.syntax_error_getter_functions_must_have_no_arguments, propertyName.start);
     }
     if (type === "set") {
       if (params.length !== 1) {
-        throw createMessageError(ErrorMessageMap.syntax_error_setter_functions_must_have_one_argument);
+        raiseError(ErrorMessageMap.syntax_error_setter_functions_must_have_one_argument, params[0].start);
       }
       for (const param of params) {
         if (isRestElement(param)) {
-          throw createMessageError(
+          raiseError(
             ErrorMessageMap.syntax_error_setter_functions_must_have_one_argument_not_rest,
+            param.start,
           );
         }
       }
     }
     if (type === "get" && (isAsync || isGenerator)) {
-      throw createMessageError(ErrorMessageMap.getter_can_not_be_async_or_generator);
+      raiseError(ErrorMessageMap.extra_error_getter_can_not_be_async_or_generator, propertyName.start);
     }
     if (type === "set" && (isAsync || isGenerator)) {
-      throw createMessageError(ErrorMessageMap.setter_can_not_be_async_or_generator);
+      raiseError(ErrorMessageMap.extra_error_setter_can_not_be_async_or_generator, propertyName.start);
     }
     // class check
     if (isClass) {
       let valueOfName: string | undefined,
         isPrivate = false,
-        fromLiteral = false;
+        fromLiteral = false; //
       if (isStringLiteral(propertyName)) {
         valueOfName = propertyName.value;
         fromLiteral = true;
@@ -4148,17 +4655,30 @@ export function createParser(code: string, option?: ParserConfig) {
         isPrivate = true;
       }
       if (valueOfName === "constructor" && !fromLiteral) {
-        if (isAsync || isGenerator || type !== "method") {
-          throw createMessageError(
-            ErrorMessageMap.constructor_can_not_be_async_or_generator_or_method_incorrect,
+        if (isAsync) {
+          raiseError(
+            ErrorMessageMap.v8_error_class_constructor_may_not_be_an_async_method,
+            propertyName.start,
           );
         }
+        if (isGenerator) {
+          raiseError(ErrorMessageMap.v8_error_class_constructor_may_not_be_a_generator, propertyName.start);
+        }
+        if (type === "get" || type === "set") {
+          raiseError(ErrorMessageMap.v8_error_class_constructor_may_not_be_an_accessor, propertyName.start);
+        }
         if (isPrivate) {
-          throw createMessageError(ErrorMessageMap.constructor_name_as_private_name);
+          raiseError(
+            ErrorMessageMap.v8_error_class_may_not_have_a_private_field_named_constructor,
+            propertyName.start,
+          );
         }
       }
       if (valueOfName === "prototype" && !isPrivate && type === "method" && isStatic) {
-        throw createMessageError(ErrorMessageMap.prototype_can_not_be_static);
+        raiseError(
+          ErrorMessageMap.v8_error_class_may_not_have_static_property_named_prototype,
+          propertyName.start,
+        );
       }
     }
   }
@@ -4171,7 +4691,7 @@ export function createParser(code: string, option?: ParserConfig) {
       if (isStart) {
         isStart = false;
       } else {
-        expect(SyntaxKinds.CommaToken, "array expression or pattern need comma for separating elements");
+        expect(SyntaxKinds.CommaToken);
       }
       if (match([SyntaxKinds.BracketRightPunctuator, SyntaxKinds.EOFToken])) {
         tralingComma = true;
@@ -4197,7 +4717,7 @@ export function createParser(code: string, option?: ParserConfig) {
   function parseFunctionExpression(isAsync: boolean) {
     enterFunctionScope(isAsync);
     const funcExpr = parseFunction(true);
-    exitFunctionScope();
+    exitFunctionScope(false);
     return Factory.transFormFunctionToFunctionExpression(funcExpr);
   }
   function parseClassExpression(decoratorList: Decorator[] | null) {
@@ -4212,18 +4732,21 @@ export function createParser(code: string, option?: ParserConfig) {
       // transfor to sequence or signal expression
       for (const element of nodes) {
         if (isSpreadElement(element)) {
-          throw createMessageError(ErrorMessageMap.rest_element_can_not_use_in_cover);
+          // recoverable error
+          raiseError(ErrorMessageMap.extra_error_rest_element_invalid, element.start);
         }
       }
       if (trailingComma) {
-        throw createMessageError(ErrorMessageMap.sequence_expression_can_not_have_trailing_comma);
+        // recoverable error
+        raiseError(ErrorMessageMap.extra_error_sequence_expression_can_not_have_trailing_comma, end);
       }
       if (nodes.length === 1) {
         nodes[0].parentheses = true;
         return nodes[0];
       }
       if (nodes.length === 0) {
-        throw createMessageError(ErrorMessageMap.paran_expr_can_not_be_empty);
+        // recoverable error
+        raiseError(ErrorMessageMap.extra_error_empty_parentheses_expression, start);
       }
       const seq = Factory.createSequenceExpression(nodes, start, end);
       seq.parentheses = true;
@@ -4255,13 +4778,11 @@ export function createParser(code: string, option?: ParserConfig) {
     strictModeScope: StrictModeScope,
     arrowExprScope: AsyncArrowExpressionScope,
   ): ArrorFunctionExpression {
-    if (!match(SyntaxKinds.ArrowOperator)) {
-      throw createUnexpectError(SyntaxKinds.ArrowOperator);
-    }
     if (getLineTerminatorFlag()) {
-      throw createMessageError(ErrorMessageMap.no_line_break_is_allowed_before_arrow);
+      // recoverable error
+      raiseError(ErrorMessageMap.extra_error_no_line_break_is_allowed_before_arrow, getStartPosition());
     }
-    nextToken();
+    expect(SyntaxKinds.ArrowOperator);
     const functionArguments = argumentToFunctionParams(
       metaData.nodes,
       metaData.trailingComma,
@@ -4276,12 +4797,7 @@ export function createParser(code: string, option?: ParserConfig) {
       body = parseAssignmentExpressionInheritIn();
       isExpression = true;
     }
-    checkFunctionNameAndParamsInCurrentFunctionStrictModeAndSimpleListContext(
-      null,
-      functionArguments,
-      true,
-      strictModeScope,
-    );
+    postStaticSematicEarlyErrorForStrictModeOfFunction(null, strictModeScope);
     return Factory.createArrowExpression(
       isExpression,
       body,
@@ -4291,16 +4807,18 @@ export function createParser(code: string, option?: ParserConfig) {
       cloneSourcePosition(body.end),
     );
   }
-  // Transform argument list to function parameter list, there are some thing we need to check
-  // 1. multi spread element is ok to argument list, but parameter list can only have one spread list
-  // 2. if argument list last one is spread element, can have trailing comma, but paramemter last is restelement,
-  //   it can not have trailing comma.
-  // 3. argument list can have duplicate identifier name, but parameter list can not.
-  // 4. argument list can have await or yield expression as default value, but paramemter list can not.
-  // 5. there are some case dose not enter function scope when parse argument, so we need to check is there any await
-  //    and yield usage in parameter list
-  // First and second thing toAssignment would check for us. 3 can be done by call `checkFunctionParams`, 4 and 5
-  // one can be done by create custome helper function.
+  /**
+   * Transform function from expressions to patterns (arguments to params), checking syntax error
+   * by expression scope and post statci sematic check for pattern rule.
+   * - asycn arrow scope: check await expression, yield expression
+   * - strict mode scope: expression Rval to Lval has different rule in strict mode
+   * - multi spread vs multi rest: rest is unique, spread can be multi.
+   * @param functionArguments
+   * @param trailingComma
+   * @param strictModeScope
+   * @param arrowExprScope
+   * @returns
+   */
   function argumentToFunctionParams(
     functionArguments: Array<Expression>,
     trailingComma: boolean,
@@ -4314,21 +4832,29 @@ export function createParser(code: string, option?: ParserConfig) {
     if (isInStrictMode()) {
       checkStrictModeScopeError(strictModeScope);
     }
-    const isMultiSpread = checkArrowFunctionParamsSpreadElementRule(params);
+    const isMultiSpread = postStaticSematicForArrowParamAfterTransform(params);
     if (isMultiSpread && trailingComma)
-      throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
+      // recoverable error
+      raiseError(
+        ErrorMessageMap.babel_error_unexpected_trailing_comma_after_rest_element,
+        lexer.getLastTokenEndPositon(),
+      );
     // check as function params
     setContextIfParamsIsSimpleParameterList(params);
     return params;
   }
-  function checkArrowFunctionParamsSpreadElementRule(params: Array<Pattern>) {
+  function postStaticSematicForArrowParamAfterTransform(params: Array<Pattern>) {
     let flag = false;
     params.forEach((param) => {
       if (flag && isRestElement(param)) {
-        throw createMessageError(ErrorMessageMap.rest_element_should_be_last_property);
+        // recoverable error
+        raiseError(ErrorMessageMap.babel_error_unexpected_trailing_comma_after_rest_element, param.start);
+        return;
       }
       if (flag) {
-        throw createMessageError(ErrorMessageMap.rest_element_should_be_last_property);
+        // recoverable error
+        raiseError(ErrorMessageMap.babel_error_unexpected_trailing_comma_after_rest_element, param.start);
+        return;
       }
       if (!flag && isRestElement(param)) {
         flag = true;
@@ -4350,7 +4876,7 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function parseJSXElementOrJSXFragment(inJSXChildren: boolean): JSXElement | JSXFragment {
     if (!config.plugins.includes("jsx")) {
-      throw createMessageError(ErrorMessageMap.babel_error_need_enable_jsx);
+      raiseError(ErrorMessageMap.babel_error_need_enable_jsx, getStartPosition());
     }
     const lookaheadToken = lookahead();
     if (lookaheadToken.kind !== SyntaxKinds.GtOperator) {
@@ -4437,7 +4963,7 @@ export function createParser(code: string, option?: ParserConfig) {
       nextTokenInJSXChildren(inJSXChildren);
       return Factory.createJSXOpeningElement(name, attributes, true, start, end);
     }
-    throw createUnexpectError(null);
+    throw createUnexpectError();
   }
   /**
    * Parse name of jsx element or jsx fragment
@@ -4530,8 +5056,8 @@ export function createParser(code: string, option?: ParserConfig) {
       if (match(SyntaxKinds.AssginOperator)) {
         lexer.setJSXStringContext(true);
         nextToken();
+        lexer.setJSXStringContext(false);
         if (match(SyntaxKinds.StringLiteral)) {
-          lexer.setJSXStringContext(false);
           const value = parseStringLiteral();
           attribute.push(
             Factory.createJSXAttribute(
@@ -4716,7 +5242,7 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       return metaData;
     }
-    throw createUnexpectError(kind, "");
+    throw createUnexpectError();
   }
   function nextTokenInJSXChildren(inJSXChildren: boolean) {
     if (inJSXChildren) {
@@ -4773,18 +5299,19 @@ export function createParser(code: string, option?: ParserConfig) {
         id = parseBindingPattern();
       }
       if (!allowPattern) {
-        throw createUnexpectError(SyntaxKinds.Identifier);
+        // recoverable error ?
+        throw createUnexpectError();
       }
     }
     if (!id) {
-      throw createMessageError(
-        ErrorMessageMap.rest_element_must_be_either_binding_identifier_or_binding_pattern,
-      );
+      throw createUnexpectError();
     }
     return Factory.createRestElement(id, start, cloneSourcePosition(id.end));
   }
   function parseBindingIdentifier() {
-    return parseWithLHSLayer(parseIdentifierReference);
+    const id = parseWithLHSLayer(parseIdentifierReference);
+    declarateNonFunctionalSymbol(id.name, id.start);
+    return id;
   }
   /**
    * Parse BindingPattern
@@ -4816,111 +5343,155 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function parseObjectPattern(): ObjectPattern {
     const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
-    let isStart = false;
-    const properties: Array<ObjectPatternProperty | RestElement | AssignmentPattern> = [];
-    while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
-      // eat comma.
-      if (!isStart) {
-        isStart = true;
-      } else {
-        expect(SyntaxKinds.CommaToken);
-      }
+    if (match(SyntaxKinds.BracesRightPunctuator)) {
+      const end = getEndPosition();
+      nextToken();
+      const objectPattern = Factory.createObjectPattern([], start, end);
+      return objectPattern;
+    }
+    const properties: Array<ObjectPatternProperty | RestElement | AssignmentPattern> = [
+      parseObjectPatternPossibelProperty(),
+    ];
+    while (!match([SyntaxKinds.BracesRightPunctuator, SyntaxKinds.EOFToken])) {
+      expect(SyntaxKinds.CommaToken);
       if (match(SyntaxKinds.BracesRightPunctuator) || match(SyntaxKinds.EOFToken)) {
         continue;
       }
-      // parse Rest property
-      if (match(SyntaxKinds.SpreadOperator)) {
-        properties.push(parseRestElement(false));
-        if (
-          !match(SyntaxKinds.BracesRightPunctuator) ||
-          (match(SyntaxKinds.CommaToken) && lookahead().kind === SyntaxKinds.BracesRightPunctuator)
-        ) {
-          throw createMessageError(ErrorMessageMap.rest_element_should_be_last_property);
-        }
-        continue;
-      }
-      // parse Object pattern property
-      const isComputedRef = { isComputed: false };
-      const propertyName = parsePropertyName(isComputedRef);
-      if (isComputedRef.isComputed || match(SyntaxKinds.ColonPunctuator)) {
-        nextToken();
-        const pattern = parseBindingElement();
-        properties.push(
-          Factory.createObjectPatternProperty(
-            propertyName,
-            pattern,
-            isComputedRef.isComputed,
-            false,
-            cloneSourcePosition(propertyName.start),
-            cloneSourcePosition(pattern.end),
-          ),
-        );
-        continue;
-      }
-      checkPropertyNameAsSigleNameBinding(propertyName);
-      if (match(SyntaxKinds.AssginOperator)) {
-        nextToken();
-        const expr = parseWithRHSLayer(parseAssignmentExpressionAllowIn);
-        if (!isPattern(propertyName)) {
-          throw createMessageError("assignment pattern left value can only allow identifier or pattern");
-        }
-        properties.push(
-          Factory.createAssignmentPattern(
-            propertyName,
-            expr,
-            cloneSourcePosition(propertyName.start),
-            cloneSourcePosition(expr.end),
-          ),
-        );
-        continue;
-      }
-      if (isStringLiteral(propertyName) || isNumnerLiteral(propertyName)) {
-        throw createMessageError(
-          ErrorMessageMap.when_binding_pattern_property_name_is_string_literal_can_not_be_shorted,
-        );
-      }
-      // check property name is keyword or not
-      checkPropertyShortedIsKeyword(propertyName);
-      properties.push(
-        Factory.createObjectPatternProperty(
-          propertyName,
-          undefined,
-          isComputedRef.isComputed,
-          true,
-          cloneSourcePosition(propertyName.start),
-          cloneSourcePosition(propertyName.end),
-        ),
-      );
+      properties.push(parseObjectPatternPossibelProperty());
     }
     const { end } = expect(SyntaxKinds.BracesRightPunctuator);
     const objectPattern = Factory.createObjectPattern(properties, start, end);
     return objectPattern;
   }
-  function checkPropertyNameAsSigleNameBinding(propertyName: PropertyName) {
+  function parseObjectPatternPossibelProperty(): ObjectPatternProperty | RestElement | AssignmentPattern {
+    // parse Rest property
+    if (match(SyntaxKinds.SpreadOperator)) {
+      const rest = parseRestElement(false);
+      staticSematicForRestElementInObjectPattern();
+      return rest;
+    }
+    // parse Object pattern property (rename)
+    const isComputedRef = { isComputed: false };
+    const propertyName = parsePropertyName(isComputedRef);
+    if (isComputedRef.isComputed || match(SyntaxKinds.ColonPunctuator)) {
+      nextToken();
+      const pattern = parseBindingElement();
+      return Factory.createObjectPatternProperty(
+        propertyName,
+        pattern,
+        isComputedRef.isComputed,
+        false,
+        cloneSourcePosition(propertyName.start),
+        cloneSourcePosition(pattern.end),
+      );
+    }
+    staticCheckForPropertyNameAsSingleBinding(propertyName);
+    // parse object pattern as Assignment pattern
+    if (match(SyntaxKinds.AssginOperator)) {
+      nextToken();
+      const expr = parseWithRHSLayer(parseAssignmentExpressionAllowIn);
+      staticSematicForAssignmentPatternInObjectPattern(propertyName);
+      declarateNonFunctionalSymbol((propertyName as Identifier).name, propertyName.start);
+      return Factory.createAssignmentPattern(
+        propertyName as Pattern,
+        expr,
+        cloneSourcePosition(propertyName.start),
+        cloneSourcePosition(expr.end),
+      );
+    }
+    // parse object pattern as shorted property.
+    staticSematicForShortedPropertyNameInObjectLike(propertyName);
+    declarateNonFunctionalSymbol((propertyName as Identifier).name, propertyName.start);
+    return Factory.createObjectPatternProperty(
+      propertyName,
+      undefined,
+      isComputedRef.isComputed,
+      true,
+      cloneSourcePosition(propertyName.start),
+      cloneSourcePosition(propertyName.end),
+    );
+  }
+  /**
+   * In Object Pattern, Rest Element should be last one, and can
+   * not have trailing comma.
+   */
+  function staticSematicForRestElementInObjectPattern() {
+    if (
+      !match(SyntaxKinds.BracesRightPunctuator) ||
+      (match(SyntaxKinds.CommaToken) && lookahead().kind === SyntaxKinds.BracesRightPunctuator)
+    ) {
+      // recoverable error
+      raiseError(
+        ErrorMessageMap.babel_error_unexpected_trailing_comma_after_rest_element,
+        getStartPosition(),
+      );
+    }
+  }
+  /**
+   * Ban some usage like `{ "string-key" = "name" }` in onject pattern
+   * @param propertyName
+   */
+  function staticSematicForAssignmentPatternInObjectPattern(propertyName: PropertyName) {
+    if (!isPattern(propertyName)) {
+      throw createMessageError("assignment pattern left value can only allow identifier or pattern");
+    }
+  }
+  /**
+   * As for shorted and assignment patern in object pattern, the property name should be
+   * a bidning identifier, so we need to check and record the property name.
+   * @param propertyName
+   * @returns
+   */
+  function staticCheckForPropertyNameAsSingleBinding(propertyName: PropertyName) {
     if (isIdentifer(propertyName)) {
-      if (propertyName.name === "yield") {
-        recordScope(ExpressionScopeKind.YieldIdentifier, propertyName.start);
-      }
-      if (propertyName.name === "await") {
-        recordScope(ExpressionScopeKind.AwaitIdentifier, propertyName.start);
-      }
-      if (propertyName.name === "arguments") {
-        if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
-          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+      switch (propertyName.name) {
+        case "await": {
+          if (isCurrentScopeParseAwaitAsExpression() || config.sourceType === "module") {
+            raiseError(
+              ErrorMessageMap.babel_error_can_not_use_await_as_identifier_inside_an_async_function,
+              propertyName.start,
+            );
+          }
+          return;
         }
-        recordScope(ExpressionScopeKind.ArgumentsIdentifier, propertyName.start);
-      }
-      if (propertyName.name === "eval") {
-        if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
-          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+        case "yield": {
+          if (isCurrentScopeParseYieldAsExpression() || isInStrictMode()) {
+            raiseError(ErrorMessageMap.babel_error_invalid_yield, propertyName.start);
+          }
+          return;
         }
-        recordScope(ExpressionScopeKind.EvalIdentifier, propertyName.start);
-      }
-      if (propertyName.name === "let") {
-        if (isInStrictMode()) {
-          throw createMessageError(ErrorMessageMap.unexpect_keyword_in_stric_mode);
+        case "arguments": {
+          if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
+            raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, propertyName.start);
+          }
+          recordScope(ExpressionScopeKind.ArgumentsIdentifier, propertyName.start);
+          return;
         }
-        recordScope(ExpressionScopeKind.LetIdentifiier, propertyName.start);
+        case "eval": {
+          if (isInStrictMode() && strictModeScopeRecorder.isInLHS()) {
+            raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, propertyName.start);
+          }
+          recordScope(ExpressionScopeKind.EvalIdentifier, propertyName.start);
+          return;
+        }
+        case "let": {
+          if (isInStrictMode()) {
+            raiseError(ErrorMessageMap.babel_error_unexpected_keyword, propertyName.start);
+          }
+          recordScope(ExpressionScopeKind.LetIdentifiier, propertyName.start);
+          return;
+        }
+        default: {
+          if (KeywordSet.has(propertyName.name)) {
+            // recoverable error
+            raiseError(ErrorMessageMap.babel_error_unexpected_keyword, propertyName.start);
+          }
+          if (PreserveWordSet.has(propertyName.name) && isInStrictMode()) {
+            // recoverable error
+            raiseError(ErrorMessageMap.babel_error_unexpected_reserved_word, propertyName.start);
+          }
+          return;
+        }
       }
     }
   }
@@ -4944,7 +5515,11 @@ export function createParser(code: string, option?: ParserConfig) {
       if (match(SyntaxKinds.SpreadOperator)) {
         elements.push(parseRestElement(true));
         if (!match(SyntaxKinds.BracketRightPunctuator)) {
-          throw createMessageError(ErrorMessageMap.rest_element_can_not_end_with_comma);
+          // recoverable error
+          raiseError(
+            ErrorMessageMap.babel_error_unexpected_trailing_comma_after_rest_element,
+            getStartPosition(),
+          );
         }
         break;
       }
@@ -4962,10 +5537,10 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function expectFormKeyword() {
     if (getSourceValue() !== "from") {
-      throw createUnexpectError(SyntaxKinds.Identifier, "expect from keyword");
+      throw createUnexpectError();
     }
     if (getEscFlag()) {
-      throw createMessageError(ErrorMessageMap.invalid_esc_char_in_keyword);
+      raiseError(ErrorMessageMap.invalid_esc_char_in_keyword, getStartPosition());
     }
     nextToken();
   }
@@ -4992,9 +5567,7 @@ export function createParser(code: string, option?: ParserConfig) {
   function parseImportDeclaration(): ImportDeclaration {
     const { start } = expect(SyntaxKinds.ImportKeyword);
     if (config.sourceType === "script") {
-      throw createMessageError(
-        ErrorMessageMap.babel_error_import_and_export_may_appear_only_with_sourceType_module,
-      );
+      raiseError(ErrorMessageMap.babel_error_import_and_export_may_appear_only_with_sourceType_module, start);
     }
     const specifiers: Array<ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier> = [];
     if (match(SyntaxKinds.StringLiteral)) {
@@ -5071,6 +5644,7 @@ export function createParser(code: string, option?: ParserConfig) {
    */
   function parseImportDefaultSpecifier(): ImportDefaultSpecifier {
     const name = parseIdentifierReference();
+    declarateLetSymbol(name.name, name.start);
     return Factory.createImportDefaultSpecifier(
       name,
       cloneSourcePosition(name.start),
@@ -5087,10 +5661,11 @@ export function createParser(code: string, option?: ParserConfig) {
   function parseImportNamespaceSpecifier(): ImportNamespaceSpecifier {
     const { start } = expect(SyntaxKinds.MultiplyOperator);
     if (!isContextKeyword("as")) {
-      throw createMessageError("import namespace specifier must has 'as'");
+      raiseError(ErrorMessageMap.babel_error_unexpected_token_expected_as, getStartPosition());
     }
     nextToken();
     const id = parseIdentifierReference();
+    declarateLetSymbol(id.name, id.start);
     return Factory.createImportNamespaceSpecifier(id, start, cloneSourcePosition(id.end));
   }
   /**
@@ -5121,10 +5696,16 @@ export function createParser(code: string, option?: ParserConfig) {
       const imported = parseModuleExportName();
       if (!isContextKeyword("as")) {
         if (isIdentifer(imported) && KeywordSet.has(imported.name)) {
-          throw createMessageError(ErrorMessageMap.keyword_can_not_use_in_imported_when_just_a_specifier);
+          // recoverable error
+          raiseError(ErrorMessageMap.extra_error_unexpect_keyword_in_module_name, imported.start);
         } else if (isStringLiteral(imported)) {
-          throw createMessageError(ErrorMessageMap.string_literal_cannot_be_used_as_an_imported_binding);
+          // recoverable error
+          raiseError(
+            ErrorMessageMap.babel_error_string_literal_cannot_be_used_as_an_imported_binding,
+            imported.start,
+          );
         }
+        if (isIdentifer(imported)) declarateLetSymbol(imported.name, imported.start);
         specifiers.push(
           Factory.createImportSpecifier(
             imported,
@@ -5137,6 +5718,7 @@ export function createParser(code: string, option?: ParserConfig) {
       }
       nextToken();
       const local = parseIdentifierReference();
+      declarateLetSymbol(local.name, local.start);
       specifiers.push(
         Factory.createImportSpecifier(
           imported,
@@ -5204,71 +5786,119 @@ export function createParser(code: string, option?: ParserConfig) {
    * @returns {ExportDeclaration}
    */
   function parseExportDeclaration(): ExportDeclaration {
+    setExportContext(ExportContext.InExport);
+
     const { start } = expect(SyntaxKinds.ExportKeyword);
     if (config.sourceType === "script") {
-      throw createMessageError(
-        ErrorMessageMap.babel_error_import_and_export_may_appear_only_with_sourceType_module,
-      );
+      raiseError(ErrorMessageMap.babel_error_import_and_export_may_appear_only_with_sourceType_module, start);
     }
-    if (match(SyntaxKinds.DefaultKeyword)) {
-      return parseExportDefaultDeclaration(start);
+    let exportDeclaration: ExportDeclaration;
+    switch (getToken()) {
+      case SyntaxKinds.DefaultKeyword: {
+        exportDeclaration = parseExportDefaultDeclaration(start);
+        break;
+      }
+      case SyntaxKinds.MultiplyOperator: {
+        exportDeclaration = parseExportAllDeclaration(start);
+        break;
+      }
+      case SyntaxKinds.BracesLeftPunctuator: {
+        exportDeclaration = parseExportNamedDeclaration(start);
+        break;
+      }
+      default: {
+        const declaration = match(SyntaxKinds.VarKeyword) ? parseVariableDeclaration() : parseDeclaration();
+        exportDeclaration = Factory.createExportNamedDeclaration(
+          [],
+          declaration,
+          null,
+          start,
+          cloneSourcePosition(declaration.end),
+        );
+        break;
+      }
     }
-    if (match(SyntaxKinds.MultiplyOperator)) {
-      return parseExportAllDeclaration(start);
-    }
-    if (match(SyntaxKinds.BracesLeftPunctuator)) {
-      return parseExportNamedDeclaration(start);
-    }
-    const declaration = match(SyntaxKinds.VarKeyword) ? parseVariableDeclaration() : parseDeclaration();
-    return Factory.createExportNamedDeclaration(
-      [],
-      declaration,
-      null,
-      start,
-      cloneSourcePosition(declaration.end),
-    );
+    setExportContext(ExportContext.NotInExport);
+    return exportDeclaration;
   }
+  /**
+   * Parse default export declaration
+   * ```
+   * ```
+   * @param {SourcePosition} start
+   * @returns {ExportDefaultDeclaration}
+   */
   function parseExportDefaultDeclaration(start: SourcePosition): ExportDefaultDeclaration {
     expect(SyntaxKinds.DefaultKeyword);
-    if (match([SyntaxKinds.ClassKeyword, SyntaxKinds.AtPunctuator])) {
-      let decoratorList = takeCacheDecorator();
-      if (match(SyntaxKinds.AtPunctuator)) {
-        decoratorList = mergeDecoratorList(decoratorList, parseDecoratorList());
+    switch (getToken()) {
+      case SyntaxKinds.ClassKeyword:
+      case SyntaxKinds.AtPunctuator: {
+        let decoratorList = takeCacheDecorator();
+        if (match(SyntaxKinds.AtPunctuator)) {
+          decoratorList = mergeDecoratorList(decoratorList, parseDecoratorList());
+        }
+        const classDeclar = Factory.transFormClassToClassDeclaration(parseClass(decoratorList));
+        staticSematicForDuplicateDefaultExport(classDeclar);
+        return Factory.createExportDefaultDeclaration(
+          classDeclar as ClassDeclaration | ClassExpression,
+          start,
+          cloneSourcePosition(classDeclar.end),
+        );
       }
-      let classDeclar = parseClass(decoratorList);
-      classDeclar = Factory.transFormClassToClassDeclaration(classDeclar);
-      return Factory.createExportDefaultDeclaration(
-        classDeclar as ClassDeclaration | ClassExpression,
-        start,
-        cloneSourcePosition(classDeclar.end),
-      );
+      case SyntaxKinds.FunctionKeyword: {
+        enterFunctionScope();
+        const func = parseFunction(true);
+        exitFunctionScope(false);
+        const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
+        staticSematicForDuplicateDefaultExport(funcDeclar);
+        const name = funcDeclar.name;
+        if (name) {
+          delcarateFcuntionSymbol(name.name, func.generator, func.start);
+        }
+        return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
+      }
+      default: {
+        if (isContextKeyword("async") && lookahead().kind === SyntaxKinds.FunctionKeyword) {
+          nextToken();
+          enterFunctionScope(true);
+          const func = parseFunction(true);
+          exitFunctionScope(false);
+          const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
+          funcDeclar.async = true;
+          staticSematicForDuplicateDefaultExport(funcDeclar);
+          if (funcDeclar.name) {
+            delcarateFcuntionSymbol(funcDeclar.name.name, func.generator, func.start);
+          }
+          return Factory.createExportDefaultDeclaration(
+            funcDeclar,
+            start,
+            cloneSourcePosition(funcDeclar.end),
+          );
+        }
+        // TODO: parse export default from ""; (experimental feature)
+        const expr = parseAssignmentExpressionAllowIn();
+        shouldInsertSemi();
+        staticSematicForDuplicateDefaultExport(expr);
+        return Factory.createExportDefaultDeclaration(expr, start, cloneSourcePosition(expr.end));
+      }
     }
-    if (match(SyntaxKinds.FunctionKeyword)) {
-      enterFunctionScope();
-      const func = parseFunction(true);
-      exitFunctionScope();
-      const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
-      return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
+  }
+  /**
+   * Using symbol scope recorder for record the default export.
+   * @param node
+   */
+  function staticSematicForDuplicateDefaultExport(node: ModuleItem) {
+    const isDefaultAlreadyBeDeclarated = symbolScopeRecorder.testAndSetDefaultExport(node.start);
+    if (isDefaultAlreadyBeDeclarated) {
+      raiseError(ErrorMessageMap.v8_error_duplicate_identifier, isDefaultAlreadyBeDeclarated);
     }
-    if (isContextKeyword("async") && lookahead().kind === SyntaxKinds.FunctionKeyword) {
-      nextToken();
-      enterFunctionScope(true);
-      const func = parseFunction(true);
-      exitFunctionScope();
-      const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
-      funcDeclar.async = true;
-      return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
-    }
-    // TODO: parse export default from ""; (experimental feature)
-    const expr = parseAssignmentExpressionAllowIn();
-    shouldInsertSemi();
-    return Factory.createExportDefaultDeclaration(expr, start, cloneSourcePosition(expr.end));
   }
   function parseExportNamedDeclaration(start: SourcePosition): ExportNamedDeclarations {
     expect(SyntaxKinds.BracesLeftPunctuator);
     const specifier: Array<ExportSpecifier> = [];
     let isStart = true;
     let isMatchKeyword = false;
+    const undefExportSymbols: Array<[string, SourcePosition]> = [];
     while (!match(SyntaxKinds.BracesRightPunctuator) && !match(SyntaxKinds.EOFToken)) {
       if (isStart) {
         isStart = false;
@@ -5278,14 +5908,17 @@ export function createParser(code: string, option?: ParserConfig) {
       if (match(SyntaxKinds.BracesRightPunctuator) || match(SyntaxKinds.EOFToken)) {
         break;
       }
-      // TODO: reafacor into parseModuleName ?
       if (match(Keywords)) {
         isMatchKeyword = true;
       }
       const exported = parseModuleExportName();
+      if (!isVariableDeclarated(helperGetValueOfExportName(exported))) {
+        undefExportSymbols.push([helperGetValueOfExportName(exported), exported.start]);
+      }
       if (isContextKeyword("as")) {
         nextToken();
         const local = parseModuleExportName();
+        staticSematicForDuplicateExportName(local);
         specifier.push(
           Factory.createExportSpecifier(
             exported,
@@ -5296,6 +5929,7 @@ export function createParser(code: string, option?: ParserConfig) {
         );
         continue;
       }
+      staticSematicForDuplicateExportName(exported);
       specifier.push(
         Factory.createExportSpecifier(
           exported,
@@ -5313,6 +5947,11 @@ export function createParser(code: string, option?: ParserConfig) {
     } else {
       if (isMatchKeyword) {
         throw new Error();
+      }
+      if (undefExportSymbols.length > 0) {
+        undefExportSymbols.forEach(([sym, pos]) => {
+          symbolScopeRecorder.addToUndefExportSource(sym, pos);
+        });
       }
       staticSematicEarlyErrorForExportName(specifier);
     }
@@ -5332,10 +5971,26 @@ export function createParser(code: string, option?: ParserConfig) {
   function staticSematicEarlyErrorForExportName(specifiers: Array<ExportSpecifier>) {
     for (const specifier of specifiers) {
       if (isStringLiteral(specifier.exported)) {
-        throw createMessageError(
-          ErrorMessageMap.string_literal_cannot_be_used_as_an_exported_binding_without_from,
+        raiseError(
+          ErrorMessageMap.babel_error_string_literal_cannot_be_used_as_an_exported_binding_without_from,
+          specifier.exported.start,
         );
       }
+    }
+  }
+  /**
+   * Using symbol scope recorder for record export name identifier
+   * @param exportName
+   */
+  function staticSematicForDuplicateExportName(exportName: StringLiteral | Identifier) {
+    const name = helperGetValueOfExportName(exportName);
+    const isExportNameAlreadyBeDeclar = declarateExportSymbol(name, exportName.start);
+    if (isExportNameAlreadyBeDeclar) {
+      raiseError(ErrorMessageMap.v8_error_duplicate_identifier, isExportNameAlreadyBeDeclar);
+    }
+    const isDefaultAlreadyBeDeclarated = symbolScopeRecorder.testAndSetDefaultExport(exportName.start);
+    if (name === "default" && isDefaultAlreadyBeDeclarated) {
+      raiseError(ErrorMessageMap.v8_error_duplicate_identifier, isDefaultAlreadyBeDeclarated);
     }
   }
   function parseExportAllDeclaration(start: SourcePosition): ExportAllDeclaration {
@@ -5357,5 +6012,11 @@ export function createParser(code: string, option?: ParserConfig) {
       return parseStringLiteral();
     }
     return parseIdentifierName();
+  }
+  function helperGetValueOfExportName(exportName: StringLiteral | Identifier) {
+    if (isIdentifer(exportName)) {
+      return exportName.name;
+    }
+    return exportName.value;
   }
 }

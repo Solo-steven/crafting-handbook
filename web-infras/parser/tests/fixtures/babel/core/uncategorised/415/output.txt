@@ -1,0 +1,3 @@
+[SyntaxError]: Invalid left-hand side in for-in loop: Must have a single binding. (1,6)
+1|for (var i, i2 in {});
+ |    ^

@@ -1,0 +1,3 @@
+[SyntaxError]: Illegal 'use strict' directive in function with non-simple parameter list. (1,21)
+1|function *g(a = 1){ "use strict"; }
+ |                   ^
