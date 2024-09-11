@@ -1,0 +1,3 @@
+[SyntaxError]: await expression can not used in parameter list (1,23)
+1|async function fn(x = await 2) {}
+ |                     ^

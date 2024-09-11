@@ -1,0 +1,3 @@
+[SyntaxError]: `new.target` can only be used in functions or class properties. (1,17)
+1|const y = () => new.target;
+ |               ^

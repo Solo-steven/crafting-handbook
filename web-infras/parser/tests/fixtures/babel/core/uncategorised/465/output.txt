@@ -1,0 +1,3 @@
+[SyntaxError]: Label has already been declared. (1,19)
+1|x: while (true) { x: while (true) { } }
+ |                 ^

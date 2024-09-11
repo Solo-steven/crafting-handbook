@@ -1,0 +1,3 @@
+[SyntaxError]: `...` must be followed by an assignable reference in assignment contexts (1,6)
+1|({...x = 1} = {})
+ |    ^

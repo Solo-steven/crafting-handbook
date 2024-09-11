@@ -1,0 +1,6 @@
+[SyntaxError]: super() is only valid in derived class constructors (3,16)
+3|        return super?.b;
+ |              ^
+[SyntaxError]: 'super' can only be used with function calls (i.e. super()) or in property accesses (i.e. super.prop or super[prop]. (3,21)
+3|        return super?.b;
+ |                   ^

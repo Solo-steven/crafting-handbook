@@ -1,0 +1,3 @@
+[SyntaxError]: property name __proto__ appears more than once in object literal (1,40)
+1|({ get __proto(){}, "__proto__": null, __proto__: null, })
+ |                                      ^

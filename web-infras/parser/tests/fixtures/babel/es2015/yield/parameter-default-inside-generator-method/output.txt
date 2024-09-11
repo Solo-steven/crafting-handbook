@@ -1,0 +1,3 @@
+[SyntaxError]: yield expression can not used in parameter list (1,16)
+1|({ *method(x = yield) {} })
+ |              ^

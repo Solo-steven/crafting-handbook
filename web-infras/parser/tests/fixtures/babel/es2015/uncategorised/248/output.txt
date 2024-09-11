@@ -1,0 +1,3 @@
+[SyntaxError]: duplicate params (1,19)
+1|"use strict"; (a, a) => 42
+ |                 ^

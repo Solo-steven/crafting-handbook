@@ -1,0 +1,9 @@
+[SyntaxError]: Missing semicolon or line terminator. (1,27)
+1|export default \u0061sync function y() { await x }
+ |                         ^
+[SyntaxError]: Can not use 'await' as identifier inside an async function. (1,42)
+1|export default \u0061sync function y() { await x }
+ |                                        ^
+[SyntaxError]: Missing semicolon or line terminator. (1,48)
+1|export default \u0061sync function y() { await x }
+ |                                              ^

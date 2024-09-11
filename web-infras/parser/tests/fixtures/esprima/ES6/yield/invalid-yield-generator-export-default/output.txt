@@ -1,0 +1,6 @@
+[SyntaxError]: 'import' and 'export' may appear only with 'sourceType: "module"' (1,1)
+1|export default function *yield() {}
+ |^
+[SyntaxError]: 'yield' is only allowed within generator functions. (1,26)
+1|export default function *yield() {}
+ |                        ^

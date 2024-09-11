@@ -1,0 +1,6 @@
+[SyntaxError]: The only valid meta property for import is import.meta. (1,8)
+1|import.then(doLoad);
+ |      ^
+[SyntaxError]: import.meta may appear only with 'sourceType: "module" (1,1)
+1|import.then(doLoad);
+ |^

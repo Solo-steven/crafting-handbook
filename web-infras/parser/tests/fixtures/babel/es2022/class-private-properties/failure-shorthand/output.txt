@@ -1,0 +1,3 @@
+[SyntaxError]: Private names are only allowed in property accesses (`obj.#private`) or in `in` expressions (`#private in obj`). (4,12)
+4|    delete #x;
+ |          ^

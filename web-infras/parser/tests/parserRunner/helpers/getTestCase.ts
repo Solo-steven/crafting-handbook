@@ -46,10 +46,12 @@ async function recursivelyFindTestCase(
     fileNameRenameToOutputArray.pop();
     const fileNameRenameToOutput = fileNameRenameToOutputArray.join("/");
     const jsonFilePath = path.join(jsDirPath, `${fileNameRenameToOutput}/output.json`);
+    const outputFilePath = path.join(jsDirPath, `${fileNameRenameToOutput}/output.txt`);
     if (expectObj.expect === "Failed") {
       expectFailedTestCases.push({
         kind: "ExpectFailedTestCase",
         jsFilePath,
+        outputFilePath,
         fileId: getFileIdCallback(jsDirPath),
         config: expectObj.config,
       });

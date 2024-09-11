@@ -1,0 +1,6 @@
+[SyntaxError]: 'yield' is only allowed within generator functions. (1,47)
+1|"use strict"; function *g(){ var y = function yield(){}; }
+ |                                             ^
+[SyntaxError]: unexpect keyword in strict mode (1,47)
+1|"use strict"; function *g(){ var y = function yield(){}; }
+ |                                             ^

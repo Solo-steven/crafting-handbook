@@ -1,0 +1,6 @@
+[SyntaxError]: Missing semicolon or line terminator. (1,9)
+1|() => {}()
+ |       ^
+[SyntaxError]: Parentheses expression can not be empty. (1,9)
+1|() => {}()
+ |       ^

@@ -1,0 +1,3 @@
+[SyntaxError]: duplicate params (1,38)
+1|function a() { "use strict"; ({ b(t, t) { } }); }
+ |                                    ^

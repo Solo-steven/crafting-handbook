@@ -1,0 +1,6 @@
+[SyntaxError]: In strict mode code, functions can only be declared at top level or inside a block. (2,11)
+2|if (true) function encrypt() {}
+ |         ^
+[SyntaxError]: Export variable is not defined. (1,10)
+1|export { encrypt };
+ |        ^

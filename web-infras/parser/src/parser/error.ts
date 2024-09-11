@@ -44,8 +44,14 @@ export const ErrorMessageMap = {
   syntax_error_Octal_escape_sequences_are_not_allowed_in_strict_mode:
     "Octal escape sequences are not allowed in strict mode.",
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Function_label
-  syntax_error_functions_cannot_be_labelled:
+  syntax_error_functions_declare_non_strict_mode:
     "In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement.",
+  syntax_error_functions_declare_strict_mode:
+    "In strict mode code, functions can only be declared at top level or inside a block.",
+  syntax_error_async_function_declare:
+    "Async functions can only be declared at the top level or inside a block.",
+  syntax_error_generator_function_declare:
+    "Generator functions can only be declared at the top level or inside a block.",
   // reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Bad_break
   syntax_error_unlabeled_break_must_be_inside_loop_or_switch:
     "unlabeled break must be inside loop or switch.",
@@ -160,9 +166,6 @@ export const ErrorMessageMap = {
   // try `new.target` in top level
   babel_error_new_target_can_only_be_used_in_class_or_function_scope:
     "`new.target` can only be used in functions or class properties.",
-  // try declarate a function out of block (like label)
-  babel_error_generators_can_only_be_declared_at_the_top_level_or_inside_a_block:
-    "Generators can only be declared at the top level or inside a block.",
   // try declarate a constructor as property name
   babel_error_classe_may_not_have_a_field_named_constructor:
     "Classes may not have a field named 'constructor'.",

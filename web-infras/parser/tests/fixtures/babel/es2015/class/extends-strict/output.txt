@@ -1,0 +1,3 @@
+[SyntaxError]: Can not use with statement in strict mode (2,3)
+2|  with ({});
+ | ^

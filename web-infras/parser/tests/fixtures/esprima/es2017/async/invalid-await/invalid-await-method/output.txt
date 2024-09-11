@@ -1,0 +1,6 @@
+[SyntaxError]: Missing semicolon or line terminator. (1,7)
+1|async f() { class X { async await(){} } }
+ |     ^
+[SyntaxError]: Missing semicolon or line terminator. (1,11)
+1|async f() { class X { async await(){} } }
+ |         ^

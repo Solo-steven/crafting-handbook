@@ -1,0 +1,3 @@
+[SyntaxError]: Invalid shorthand property initializer (1,8)
+1|obj = {x = 0}
+ |      ^

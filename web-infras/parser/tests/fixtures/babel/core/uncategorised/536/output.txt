@@ -1,0 +1,3 @@
+[SyntaxError]: Missing initializer in const declaration (1,7)
+1|const a;
+ |     ^

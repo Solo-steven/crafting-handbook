@@ -1,0 +1,3 @@
+[SyntaxError]: Octal literals are not allowed in strict mode (2,11)
+2|const a = 07;
+ |         ^

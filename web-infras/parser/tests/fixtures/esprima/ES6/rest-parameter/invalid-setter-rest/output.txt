@@ -1,0 +1,3 @@
+[SyntaxError]: Setter function argument must not be a rest parameter (1,13)
+1|x = { set f(...y) {} }
+ |           ^

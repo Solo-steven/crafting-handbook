@@ -1,0 +1,3 @@
+[SyntaxError]: 'super' can only be used with function calls (i.e. super()) or in property accesses (i.e. super.prop or super[prop]. (5,10)
+5|    super?.a;
+ |        ^

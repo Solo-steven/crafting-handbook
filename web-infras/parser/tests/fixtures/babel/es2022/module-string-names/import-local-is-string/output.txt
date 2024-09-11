@@ -1,0 +1,3 @@
+[SyntaxError]: A string literal cannot be used as an imported binding. (1,10)
+1|import { "foo" } from "foo";
+ |        ^

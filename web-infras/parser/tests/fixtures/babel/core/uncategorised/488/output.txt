@@ -1,0 +1,6 @@
+[SyntaxError]: 'arguments'/'eval' can't be defined or assigned to in strict mode code (1,11)
+1|(function eval() {'use strict'; })()
+ |         ^
+[SyntaxError]: unexpect keyword in strict mode (1,11)
+1|(function eval() {'use strict'; })()
+ |         ^

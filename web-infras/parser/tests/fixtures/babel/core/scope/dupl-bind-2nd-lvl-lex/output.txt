@@ -1,0 +1,3 @@
+[SyntaxError]: Identifier has already been declared. (3,5)
+3|let foo = 1;
+ |   ^

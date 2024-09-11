@@ -1,0 +1,9 @@
+[SyntaxError]: Unexpected reserved word. (2,12)
+2|var x = ({ implements, interface, package });
+ |          ^
+[SyntaxError]: Unexpected reserved word. (2,24)
+2|var x = ({ implements, interface, package });
+ |                      ^
+[SyntaxError]: Unexpected reserved word. (2,35)
+2|var x = ({ implements, interface, package });
+ |                                 ^

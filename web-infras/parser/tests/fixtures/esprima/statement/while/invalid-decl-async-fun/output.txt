@@ -1,0 +1,6 @@
+[SyntaxError]: Async functions can only be declared at the top level or inside a block. (1,21)
+1|while (false) async function f() {}
+ |                   ^
+[SyntaxError]: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement. (1,21)
+1|while (false) async function f() {}
+ |                   ^

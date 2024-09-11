@@ -1,0 +1,3 @@
+[SyntaxError]: getter functions must have no arguments (2,7)
+2|  get prop (arg) {}
+ |     ^

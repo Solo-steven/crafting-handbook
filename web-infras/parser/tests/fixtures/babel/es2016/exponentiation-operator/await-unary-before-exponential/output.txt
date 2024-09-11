@@ -1,0 +1,3 @@
+[SyntaxError]: Illegal expression. Wrap left hand side or entire exponentiation in parentheses (1,13)
+1|async () => await -5 ** 6;
+ |           ^

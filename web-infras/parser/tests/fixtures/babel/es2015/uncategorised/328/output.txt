@@ -1,0 +1,6 @@
+[SyntaxError]: Lexical declaration cannot appear in a single-statement context. (1,8)
+1|if (1) let x = 10;
+ |      ^
+[SyntaxError]: Missing semicolon or line terminator. (1,12)
+1|if (1) let x = 10;
+ |          ^

@@ -1,0 +1,3 @@
+[SyntaxError]: Invalid hexadecimal escape sequence. (1,1)
+1|`\00`;
+ |^

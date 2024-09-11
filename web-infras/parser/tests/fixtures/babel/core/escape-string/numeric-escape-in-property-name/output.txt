@@ -1,0 +1,1 @@
+[Error]: Lexical Error, SyntaxError: Octal escape sequences are not allowed in strict mode., start position is (1, 37)

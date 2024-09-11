@@ -1,0 +1,3 @@
+[SyntaxError]: Invalid tagged template on optional chain (1,5)
+1|a?.b`foo`
+ |   ^

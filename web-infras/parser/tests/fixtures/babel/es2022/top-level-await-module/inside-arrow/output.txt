@@ -1,0 +1,6 @@
+[SyntaxError]: Can not use 'await' as identifier inside an async function. (1,7)
+1|() => await 0;
+ |     ^
+[SyntaxError]: Missing semicolon or line terminator. (1,13)
+1|() => await 0;
+ |           ^

@@ -1,0 +1,6 @@
+[SyntaxError]: keyword can not contain any esc flag. (1,1)
+1|import.m\u0065ta;
+ |^
+[SyntaxError]: import.meta may appear only with 'sourceType: "module" (1,1)
+1|import.m\u0065ta;
+ |^

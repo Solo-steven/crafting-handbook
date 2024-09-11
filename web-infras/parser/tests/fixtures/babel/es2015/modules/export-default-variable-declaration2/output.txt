@@ -1,0 +1,6 @@
+[SyntaxError]: unexpect keyword in strict mode (1,16)
+1|export default let Foo = () => {
+ |              ^
+[SyntaxError]: Missing semicolon or line terminator. (1,20)
+1|export default let Foo = () => {
+ |                  ^

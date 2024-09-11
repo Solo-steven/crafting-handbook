@@ -1,0 +1,3 @@
+[SyntaxError]: Missing semicolon or line terminator. (5,13)
+5|      await 42;
+ |           ^

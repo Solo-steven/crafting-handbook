@@ -1,0 +1,3 @@
+[SyntaxError]: duplicate params (1,28)
+1|f = async function (x = 1, x) {}
+ |                          ^

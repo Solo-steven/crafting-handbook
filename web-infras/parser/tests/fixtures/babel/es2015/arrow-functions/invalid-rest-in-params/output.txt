@@ -1,0 +1,3 @@
+[SyntaxError]: Unexpected trailing comma after rest element. (4,5)
+4|    third
+ |   ^

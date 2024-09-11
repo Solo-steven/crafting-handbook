@@ -1,0 +1,6 @@
+[SyntaxError]: Invalid parenthesized assignment pattern. (1,2)
+1|(a -= 1) = t
+ |^
+[SyntaxError]: invalid assignment left-hand side (1,2)
+1|(a -= 1) = t
+ |^

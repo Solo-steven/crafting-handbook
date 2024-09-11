@@ -1,0 +1,3 @@
+[SyntaxError]: Unexpect keyword in property name. (1,7)
+1|var { this } = {};
+ |     ^

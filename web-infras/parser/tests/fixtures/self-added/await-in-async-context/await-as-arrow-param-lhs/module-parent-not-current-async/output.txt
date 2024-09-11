@@ -1,0 +1,6 @@
+[SyntaxError]: Can not use 'await' as identifier inside an async function. (2,12)
+2|    async (await) => {
+ |          ^
+[SyntaxError]: Can not use 'await' as identifier inside an async function. (2,12)
+2|    async (await) => {
+ |          ^

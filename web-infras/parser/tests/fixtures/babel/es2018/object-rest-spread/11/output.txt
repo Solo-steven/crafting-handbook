@@ -1,0 +1,6 @@
+[SyntaxError]: Identifier has already been declared. (2,24)
+2|export const { bar, ...foo } = baz;
+ |                      ^
+[SyntaxError]: Identifier has already been declared. (2,24)
+2|export const { bar, ...foo } = baz;
+ |                      ^

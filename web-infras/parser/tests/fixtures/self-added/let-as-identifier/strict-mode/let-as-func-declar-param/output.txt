@@ -1,0 +1,6 @@
+[SyntaxError]: unexpect keyword in strict mode (2,12)
+2|function f(let) {
+ |          ^
+[SyntaxError]: unexpect keyword in strict mode (2,12)
+2|function f(let) {
+ |          ^

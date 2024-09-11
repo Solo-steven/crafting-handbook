@@ -52,9 +52,6 @@ async function createChildPorcessController(
       childProcess.kill();
       break;
     }
-    if (testCase.kind === "ExpectFailedTestCase") {
-      continue;
-    }
     const result = await waitForTestCaseResult(testCase);
     childProcess.removeAllListeners();
     switch (result.kind) {

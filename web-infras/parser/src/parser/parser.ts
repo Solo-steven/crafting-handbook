@@ -121,7 +121,6 @@ import {
   MetaProperty,
   CallExpression,
   ThisExpression,
-  // isBlockStatement,
 } from "web-infra-common";
 import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
@@ -145,6 +144,7 @@ interface Context {
   inOperatorStack: Array<boolean>;
   propertiesInitSet: Set<ModuleItem>;
   propertiesProtoDuplicateSet: Set<PropertyName>;
+  lastTokenIndexOfIfStmt: number;
   cache: {
     decorators: Decorator[] | null;
   };
@@ -165,6 +165,7 @@ function createContext(): Context {
     inOperatorStack: [],
     propertiesInitSet: new Set(),
     propertiesProtoDuplicateSet: new Set(),
+    lastTokenIndexOfIfStmt: -1,
     cache: {
       decorators: null,
     },
@@ -1126,9 +1127,8 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     return Factory.createAssignmentPattern(left as Pattern, expr.right, expr.start, expr.end);
   }
   /**
-   *
+   * Transform a assignment pattern to a binding assignment pattern
    * @param leftValue
-   * @param isBinding
    * @returns
    */
   function helperCheckPatternWithBinding(leftValue: Pattern): Pattern {
@@ -1535,7 +1535,12 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   }
   function staticSematicEarlyErrorForFORStatement(statement: ForStatement | ForInStatement | ForOfStatement) {
     if (checkIsLabelledFunction(statement.body)) {
-      raiseError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled, statement.body.start);
+      raiseError(
+        isInStrictMode()
+          ? ErrorMessageMap.syntax_error_functions_declare_strict_mode
+          : ErrorMessageMap.syntax_error_functions_declare_non_strict_mode,
+        statement.body.start,
+      );
     }
   }
   /**
@@ -1581,7 +1586,8 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     const { start: keywordStart } = expect(SyntaxKinds.IfKeyword);
     expect(SyntaxKinds.ParenthesesLeftPunctuator);
     const test = parseExpressionAllowIn();
-    expect(SyntaxKinds.ParenthesesRightPunctuator);
+    const { end: headerEnd } = expect(SyntaxKinds.ParenthesesRightPunctuator);
+    context.lastTokenIndexOfIfStmt = headerEnd.index;
     const consequnce = parseStatement();
     if (match(SyntaxKinds.ElseKeyword)) {
       nextToken();
@@ -1600,10 +1606,20 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   }
   function staticSematicEarlyErrorForIfStatement(statement: IfStatement) {
     if (checkIsLabelledFunction(statement.conseqence)) {
-      raiseError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled, statement.conseqence.start);
+      raiseError(
+        isInStrictMode()
+          ? ErrorMessageMap.syntax_error_functions_declare_strict_mode
+          : ErrorMessageMap.syntax_error_functions_declare_non_strict_mode,
+        statement.conseqence.start,
+      );
     }
     if (statement.alternative && checkIsLabelledFunction(statement.alternative)) {
-      raiseError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled, statement.alternative.start);
+      raiseError(
+        isInStrictMode()
+          ? ErrorMessageMap.syntax_error_functions_declare_strict_mode
+          : ErrorMessageMap.syntax_error_functions_declare_non_strict_mode,
+        statement.alternative.start,
+      );
     }
   }
   function parseWhileStatement(): WhileStatement {
@@ -1632,7 +1648,12 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   function staticSematicEarlyErrorForWhileStatement(statement: WhileStatement) {
     if (checkIsLabelledFunction(statement.body)) {
       // recoverable error
-      raiseError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled, statement.body.start);
+      raiseError(
+        isInStrictMode()
+          ? ErrorMessageMap.syntax_error_functions_declare_strict_mode
+          : ErrorMessageMap.syntax_error_functions_declare_non_strict_mode,
+        statement.body.start,
+      );
     }
   }
   function parseDoWhileStatement(): DoWhileStatement {
@@ -1650,7 +1671,12 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   function staticSematicEarlyErrorForDoWhileStatement(statement: DoWhileStatement) {
     if (checkIsLabelledFunction(statement.body)) {
       // recoverable error
-      raiseError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled, statement.body.start);
+      raiseError(
+        isInStrictMode()
+          ? ErrorMessageMap.syntax_error_functions_declare_strict_mode
+          : ErrorMessageMap.syntax_error_functions_declare_non_strict_mode,
+        statement.body.start,
+      );
     }
   }
   function parseBlockStatement() {
@@ -1820,13 +1846,10 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   function staticSematicEarlyErrorForLabelStatement(labeled: Statement | FunctionDeclaration) {
     if (isFunctionDeclaration(labeled)) {
       if (labeled.generator) {
-        raiseError(
-          ErrorMessageMap.babel_error_generators_can_only_be_declared_at_the_top_level_or_inside_a_block,
-          labeled.start,
-        );
+        raiseError(ErrorMessageMap.syntax_error_generator_function_declare, labeled.start);
       }
       if (isInStrictMode()) {
-        raiseError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled, labeled.start);
+        raiseError(ErrorMessageMap.syntax_error_functions_declare_strict_mode, labeled.start);
       }
     }
   }
@@ -2567,9 +2590,10 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
    */
   function parseExpressionStatement(): ExpressionStatement {
     preStaticSematicEarlyErrorForExpressionStatement();
+    const lastTokenIndex = lexer.getLastTokenEndPositon().index;
     const expr = parseExpressionAllowIn();
     checkStrictMode(expr);
-    postStaticSematicEarlyErrorForExpressionStatement(expr);
+    postStaticSematicEarlyErrorForExpressionStatement(expr, lastTokenIndex);
     shouldInsertSemi();
     return Factory.createExpressionStatement(
       expr,
@@ -2598,10 +2622,26 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
   /**
    * Implement part of NOTE section in 14.5
    */
-  function postStaticSematicEarlyErrorForExpressionStatement(expr: Expression) {
+  function postStaticSematicEarlyErrorForExpressionStatement(expr: Expression, lastTokenIndex: number) {
     if (!expr.parentheses) {
-      if (isFunctionExpression(expr) || isClassExpression(expr)) {
-        raiseError(ErrorMessageMap.syntax_error_functions_cannot_be_labelled, expr.start);
+      if (isClassExpression(expr)) {
+        raiseError(ErrorMessageMap.syntax_error_functions_declare_non_strict_mode, expr.start);
+        return;
+      }
+      if (isFunctionExpression(expr)) {
+        if (expr.async) {
+          raiseError(ErrorMessageMap.syntax_error_async_function_declare, expr.start);
+        }
+        if (expr.generator) {
+          raiseError(ErrorMessageMap.syntax_error_generator_function_declare, expr.start);
+        }
+        if (isInStrictMode()) {
+          raiseError(ErrorMessageMap.syntax_error_functions_declare_strict_mode, expr.start);
+        } else {
+          if (lastTokenIndex !== context.lastTokenIndexOfIfStmt) {
+            raiseError(ErrorMessageMap.syntax_error_functions_declare_non_strict_mode, expr.start);
+          }
+        }
       }
     }
   }
@@ -5781,51 +5821,67 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     setExportContext(ExportContext.NotInExport);
     return exportDeclaration;
   }
+  /**
+   * Parse default export declaration
+   * ```
+   * ```
+   * @param {SourcePosition} start
+   * @returns {ExportDefaultDeclaration}
+   */
   function parseExportDefaultDeclaration(start: SourcePosition): ExportDefaultDeclaration {
     expect(SyntaxKinds.DefaultKeyword);
-    if (match([SyntaxKinds.ClassKeyword, SyntaxKinds.AtPunctuator])) {
-      let decoratorList = takeCacheDecorator();
-      if (match(SyntaxKinds.AtPunctuator)) {
-        decoratorList = mergeDecoratorList(decoratorList, parseDecoratorList());
+    switch (getToken()) {
+      case SyntaxKinds.ClassKeyword:
+      case SyntaxKinds.AtPunctuator: {
+        let decoratorList = takeCacheDecorator();
+        if (match(SyntaxKinds.AtPunctuator)) {
+          decoratorList = mergeDecoratorList(decoratorList, parseDecoratorList());
+        }
+        const classDeclar = Factory.transFormClassToClassDeclaration(parseClass(decoratorList));
+        staticSematicForDuplicateDefaultExport(classDeclar);
+        return Factory.createExportDefaultDeclaration(
+          classDeclar as ClassDeclaration | ClassExpression,
+          start,
+          cloneSourcePosition(classDeclar.end),
+        );
       }
-      const classDeclar = Factory.transFormClassToClassDeclaration(parseClass(decoratorList));
-      staticSematicForDuplicateDefaultExport(classDeclar);
-      return Factory.createExportDefaultDeclaration(
-        classDeclar as ClassDeclaration | ClassExpression,
-        start,
-        cloneSourcePosition(classDeclar.end),
-      );
-    }
-    if (match(SyntaxKinds.FunctionKeyword)) {
-      enterFunctionScope();
-      const func = parseFunction(true);
-      exitFunctionScope(false);
-      const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
-      staticSematicForDuplicateDefaultExport(funcDeclar);
-      const name = funcDeclar.name;
-      if (name) {
-        delcarateFcuntionSymbol(name.name, func.generator, func.start);
+      case SyntaxKinds.FunctionKeyword: {
+        enterFunctionScope();
+        const func = parseFunction(true);
+        exitFunctionScope(false);
+        const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
+        staticSematicForDuplicateDefaultExport(funcDeclar);
+        const name = funcDeclar.name;
+        if (name) {
+          delcarateFcuntionSymbol(name.name, func.generator, func.start);
+        }
+        return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
       }
-      return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
-    }
-    if (isContextKeyword("async") && lookahead().kind === SyntaxKinds.FunctionKeyword) {
-      nextToken();
-      enterFunctionScope(true);
-      const func = parseFunction(true);
-      exitFunctionScope(false);
-      const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
-      funcDeclar.async = true;
-      staticSematicForDuplicateDefaultExport(funcDeclar);
-      if (funcDeclar.name) {
-        delcarateFcuntionSymbol(funcDeclar.name.name, func.generator, func.start);
+      default: {
+        if (isContextKeyword("async") && lookahead().kind === SyntaxKinds.FunctionKeyword) {
+          nextToken();
+          enterFunctionScope(true);
+          const func = parseFunction(true);
+          exitFunctionScope(false);
+          const funcDeclar = Factory.transFormFunctionToFunctionDeclaration(func);
+          funcDeclar.async = true;
+          staticSematicForDuplicateDefaultExport(funcDeclar);
+          if (funcDeclar.name) {
+            delcarateFcuntionSymbol(funcDeclar.name.name, func.generator, func.start);
+          }
+          return Factory.createExportDefaultDeclaration(
+            funcDeclar,
+            start,
+            cloneSourcePosition(funcDeclar.end),
+          );
+        }
+        // TODO: parse export default from ""; (experimental feature)
+        const expr = parseAssignmentExpressionAllowIn();
+        shouldInsertSemi();
+        staticSematicForDuplicateDefaultExport(expr);
+        return Factory.createExportDefaultDeclaration(expr, start, cloneSourcePosition(expr.end));
       }
-      return Factory.createExportDefaultDeclaration(funcDeclar, start, cloneSourcePosition(funcDeclar.end));
     }
-    // TODO: parse export default from ""; (experimental feature)
-    const expr = parseAssignmentExpressionAllowIn();
-    shouldInsertSemi();
-    staticSematicForDuplicateDefaultExport(expr);
-    return Factory.createExportDefaultDeclaration(expr, start, cloneSourcePosition(expr.end));
   }
   /**
    * Using symbol scope recorder for record the default export.

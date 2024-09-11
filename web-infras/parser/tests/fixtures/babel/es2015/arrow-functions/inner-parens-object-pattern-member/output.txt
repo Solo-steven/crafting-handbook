@@ -1,0 +1,6 @@
+[SyntaxError]: Binding member expression. (1,4)
+1|({ a: (foo.qux) } = {}) => {}
+ |  ^
+[SyntaxError]: Invalid parenthesized assignment pattern. (1,2)
+1|({ a: (foo.qux) } = {}) => {}
+ |^

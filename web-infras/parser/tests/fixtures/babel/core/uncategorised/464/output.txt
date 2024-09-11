@@ -1,0 +1,3 @@
+[SyntaxError]: Illegal continue statement: no surrounding iteration statement. (1,34)
+1|x: while (true) { (function () { continue; }); }
+ |                                ^

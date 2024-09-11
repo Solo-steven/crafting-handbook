@@ -1,0 +1,9 @@
+[SyntaxError]: Unexpect keyword in property name. (1,12)
+1|var x = ({ const, if, this });
+ |          ^
+[SyntaxError]: Unexpect keyword in property name. (1,19)
+1|var x = ({ const, if, this });
+ |                 ^
+[SyntaxError]: Unexpect keyword in property name. (1,23)
+1|var x = ({ const, if, this });
+ |                     ^

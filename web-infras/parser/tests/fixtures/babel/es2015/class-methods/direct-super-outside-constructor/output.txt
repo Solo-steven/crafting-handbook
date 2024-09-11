@@ -1,0 +1,6 @@
+[SyntaxError]: super() is only valid in derived class constructors (2,9)
+2|  x () {super()}
+ |       ^
+[SyntaxError]: `super()` is only valid inside a class constructor of a subclass. Maybe a typo in the method name ('constructor') or not extending another class? (2,9)
+2|  x () {super()}
+ |       ^

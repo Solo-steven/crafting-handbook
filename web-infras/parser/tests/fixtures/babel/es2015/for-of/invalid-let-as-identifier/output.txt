@@ -1,0 +1,9 @@
+[SyntaxError]: 'for-of' loop can not use let as identifier (1,6)
+1|for (let.foo of []);
+ |    ^
+[SyntaxError]: 'for-of' loop can not use let as identifier (2,6)
+2|for (let().bar of []);
+ |    ^
+[SyntaxError]: 'for-of' loop can not use let as identifier (3,6)
+3|for (let``.bar of []);
+ |    ^

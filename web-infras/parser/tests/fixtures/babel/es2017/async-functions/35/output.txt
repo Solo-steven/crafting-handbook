@@ -1,0 +1,3 @@
+[SyntaxError]: Invalid shorthand property initializer (1,15)
+1|const foo = { async = true };
+ |             ^

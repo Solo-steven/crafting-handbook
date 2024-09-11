@@ -1,0 +1,12 @@
+[SyntaxError]: 'import' and 'export' may appear only with 'sourceType: "module"' (1,1)
+1|export const foo = 1;
+ |^
+[SyntaxError]: 'import' and 'export' may appear only with 'sourceType: "module"' (2,1)
+2|export const [bar, [baz, ...foo]] = qux;
+ |^
+[SyntaxError]: Identifier has already been declared. (2,29)
+2|export const [bar, [baz, ...foo]] = qux;
+ |                           ^
+[SyntaxError]: Identifier has already been declared. (2,29)
+2|export const [bar, [baz, ...foo]] = qux;
+ |                           ^

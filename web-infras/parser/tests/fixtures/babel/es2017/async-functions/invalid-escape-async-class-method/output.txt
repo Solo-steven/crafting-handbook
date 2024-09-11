@@ -1,0 +1,6 @@
+[SyntaxError]: Missing semicolon or line terminator. (1,22)
+1|class X { \u0061sync x() { await x } }
+ |                    ^
+[SyntaxError]: Missing semicolon or line terminator. (1,34)
+1|class X { \u0061sync x() { await x } }
+ |                                ^

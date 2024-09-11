@@ -21,6 +21,7 @@ export interface ExpectPassTestCase {
 export interface ExpectFailedTestCase {
   kind: "ExpectFailedTestCase";
   jsFilePath: string;
+  outputFilePath: string;
   fileId: string;
   config?: ParserConfig;
 }
@@ -100,7 +101,7 @@ export type UpdatePassTestCaseResult = PassTestCaseResult;
 export type UpdateTimeoutTestCaseResult = TimeoutTestCaseResult;
 
 export type UpdateFailedTestCaseResult = {
-  kind: "ExpectPassButFailed";
+  kind: "ExpectPassButFailed" | "ExpectFailedButPass";
   reason: string | Error;
   fileId: string;
   filePath: string;

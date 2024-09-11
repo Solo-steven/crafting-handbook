@@ -1,0 +1,3 @@
+[SyntaxError]: Unexpected trailing comma after rest element. (1,11)
+1|let { ...x, y, z } = obj;
+ |         ^

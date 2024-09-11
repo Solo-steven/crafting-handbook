@@ -1,5 +1,4 @@
 import { SourcePosition } from "web-infra-common";
-
 export interface SyntaxError {
   message: string;
   position: SourcePosition;

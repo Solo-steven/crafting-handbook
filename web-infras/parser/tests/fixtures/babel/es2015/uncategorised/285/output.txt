@@ -1,0 +1,3 @@
+[SyntaxError]: Numeric Literal and string literal can not use as shorted property. (1,4)
+1|({ 5 }) => {}
+ |  ^

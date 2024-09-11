@@ -1,0 +1,3 @@
+[SyntaxError]: Missing initializer in const declaration (1,5)
+1|var []
+ |   ^

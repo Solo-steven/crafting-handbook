@@ -1,0 +1,6 @@
+[SyntaxError]: Constructors in/after an Optional Chain are not allowed. (3,6)
+3|new a?.b.c
+ |    ^
+[SyntaxError]: Constructors in/after an Optional Chain are not allowed. (4,8)
+4|new a.b?.c
+ |      ^

@@ -1,0 +1,3 @@
+[SyntaxError]: import.meta may appear only with 'sourceType: "module" (1,11)
+1|const x = import.meta;
+ |         ^

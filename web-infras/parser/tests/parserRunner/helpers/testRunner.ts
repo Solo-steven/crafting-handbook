@@ -9,16 +9,14 @@ import { ParserConfig } from "@/src/parser/config";
  * error, return null if parse error.
  * @param code
  */
-function tryParseCodeStringIntoASTString(code: string, config?: ParserConfig) {
+function tryParseCodeStringIntoASTString(code: string, config?: ParserConfig): string | Error {
   try {
     const ast = parse(code, config);
     transformSyntaxKindToLiteral(ast);
     return JSON.stringify(ast, null, 4);
-  } catch (e) {
-    return {
-      kind: "Error",
-      error: e,
-    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (e: any) {
+    return e;
   }
 }
 /**
@@ -94,6 +92,30 @@ export async function runUpdateExpectPassTestCase(
     };
   }
   await writeFile(testCase.jsonFilePath, resultASTString);
+  return {
+    kind: "ExpectPass",
+    fileId: testCase.fileId,
+    filePath: testCase.jsFilePath,
+  };
+}
+
+/**
+ *
+ */
+export async function runUpdateExpectFailedTestCase(
+  testCase: ExpectFailedTestCase,
+): Promise<UpdateTestCaseResult> {
+  const codeBuffer = await readFile(testCase.jsFilePath);
+  const resultASTString = tryParseCodeStringIntoASTString(codeBuffer.toString(), testCase.config);
+  if (typeof resultASTString === "string") {
+    return {
+      kind: "ExpectFailedButPass",
+      fileId: testCase.fileId,
+      filePath: testCase.jsFilePath,
+      reason: "",
+    };
+  }
+  await writeFile(testCase.outputFilePath, resultASTString.message);
   return {
     kind: "ExpectPass",
     fileId: testCase.fileId,

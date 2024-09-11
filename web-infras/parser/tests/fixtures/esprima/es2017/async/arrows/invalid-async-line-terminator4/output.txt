@@ -1,0 +1,3 @@
+[SyntaxError]: No line break is allowed before '=>' (2,1)
+2|=> 0
+ |^

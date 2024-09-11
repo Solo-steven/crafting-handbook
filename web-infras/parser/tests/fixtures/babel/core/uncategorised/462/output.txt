@@ -1,0 +1,6 @@
+[SyntaxError]: Illegal continue statement: no surrounding iteration statement. (1,34)
+1|x: while (true) { (function () { continue x; }); }
+ |                                ^
+[SyntaxError]: label not found. (1,43)
+1|x: while (true) { (function () { continue x; }); }
+ |                                         ^

@@ -1,0 +1,6 @@
+[SyntaxError]: 'yield' is only allowed within generator functions. (2,10)
+2|function yield() {}
+ |        ^
+[SyntaxError]: unexpect keyword in strict mode (2,10)
+2|function yield() {}
+ |        ^

@@ -1,0 +1,3 @@
+[SyntaxError]: 'yield' is only allowed within generator functions. (1,12)
+1|({ *method(yield) {} });
+ |          ^

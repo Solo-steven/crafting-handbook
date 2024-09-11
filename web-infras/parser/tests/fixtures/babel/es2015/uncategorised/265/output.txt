@@ -1,0 +1,1 @@
+[Syntax Error]: Unexpect token TemplateNoSubstitution(1, 8).

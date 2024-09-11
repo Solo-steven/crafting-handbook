@@ -1,0 +1,3 @@
+[SyntaxError]: applying the 'delete' operator to an unqualified name is deprecated (2,1)
+2|delete x;
+ |^

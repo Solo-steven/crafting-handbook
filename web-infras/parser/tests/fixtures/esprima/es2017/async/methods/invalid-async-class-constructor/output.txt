@@ -1,0 +1,3 @@
+[SyntaxError]: Class constructor may not be an async method. (1,17)
+1|class X { async constructor(){} }
+ |               ^

@@ -1,0 +1,3 @@
+[SyntaxError]: Lexical declaration cannot appear in a single-statement context. (1,4)
+1|do let
+ |  ^

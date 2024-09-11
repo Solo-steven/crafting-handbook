@@ -22,7 +22,8 @@ export function createErrorHandler(code: string): SyntaxErrorHandler {
   }
   function printError(error: SyntaxError) {
     const [lineStart, lineEnd] = getLineStartAndEnd(error.position);
-    return `\n[SyntaxError]: ${error.message} (${error.position.row},${error.position.col})\n${error.position.row}|${code.slice(lineStart, lineEnd)}\n |${printSpace(error.position.index - lineStart - 1)}^\n`;
+    const arrayLen = error.position.index - lineStart - 1 >= 0 ? error.position.index - lineStart - 1 : 0;
+    return `[SyntaxError]: ${error.message} (${error.position.row},${error.position.col})\n${error.position.row}|${code.slice(lineStart, lineEnd)}\n |${printSpace(arrayLen)}^\n`;
   }
   function getLineStartAndEnd(position: SourcePosition) {
     let lineStart = 0;

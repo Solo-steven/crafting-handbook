@@ -1,0 +1,3 @@
+[SyntaxError]: `new.target` can only be used in functions or class properties. (2,3)
+2|  new.target;
+ | ^

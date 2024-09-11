@@ -1,0 +1,3 @@
+[SyntaxError]: Class constructor may not be a generator. (1,12)
+1|class A { *constructor() {} }
+ |          ^

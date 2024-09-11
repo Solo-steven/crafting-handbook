@@ -1,0 +1,6 @@
+[SyntaxError]: getter can not be async or generator. (2,10)
+2|    get *iterator() { },
+ |        ^
+[SyntaxError]: setter can not be async or generator. (3,10)
+3|    set *iterator(iter) { }
+ |        ^

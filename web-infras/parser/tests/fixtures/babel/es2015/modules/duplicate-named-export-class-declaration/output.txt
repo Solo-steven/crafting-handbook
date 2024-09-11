@@ -1,0 +1,3 @@
+[SyntaxError]: Identifier has already been declared. (2,14)
+2|export class Foo {};
+ |            ^

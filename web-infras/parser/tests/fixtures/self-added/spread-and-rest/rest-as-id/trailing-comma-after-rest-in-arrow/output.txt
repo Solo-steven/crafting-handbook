@@ -1,0 +1,3 @@
+[SyntaxError]: Unexpected trailing comma after rest element. (1,14)
+1|(b, ...a,) => {
+ |            ^

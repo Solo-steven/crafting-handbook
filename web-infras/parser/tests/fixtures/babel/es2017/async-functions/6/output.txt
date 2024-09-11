@@ -1,0 +1,6 @@
+[SyntaxError]: Missing semicolon or line terminator. (1,15)
+1|async () => {}()
+ |             ^
+[SyntaxError]: Parentheses expression can not be empty. (1,15)
+1|async () => {}()
+ |             ^
