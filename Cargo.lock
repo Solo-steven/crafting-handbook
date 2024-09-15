@@ -1013,6 +1013,8 @@ name = "rustyc-optimizer"
 version = "0.1.0"
 dependencies = [
  "rustyc-frontend",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

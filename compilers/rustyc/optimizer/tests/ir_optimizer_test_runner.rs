@@ -1,0 +1,83 @@
+mod build_ir_graph;
+
+use build_ir_graph::*;
+use rustyc_optimizer::ir::function::Function;
+use rustyc_optimizer::ir_optimizer::anaylsis::domtree::DomAnaylsier;
+use rustyc_optimizer::ir_optimizer::anaylsis::{DebuggerAnaylsis, OptimizerAnaylsis};
+use rustyc_optimizer::ir_optimizer::pass::lcm::LCMPass;
+use rustyc_optimizer::ir_optimizer::pass::{DebuggerPass, OptimizerPass};
+use std::{env, fs::read_to_string, path::PathBuf};
+
+fn get_root_path() -> PathBuf {
+    env::current_dir()
+        .unwrap()
+        .join("./tests/fixtures/ir_optimizer")
+}
+
+fn run_ir_pass_test_case(
+    suffix_path: &'static str,
+    mut function: Function,
+    mut pass: impl OptimizerPass + DebuggerPass,
+) {
+    let table_path = get_root_path().join(suffix_path).join("output.txt");
+    let expect_table =
+        read_to_string(table_path).expect("[Internal Error]: Pass Table is not exist.");
+    pass.process(&mut function);
+    let result_string = pass.debugger(&function);
+    assert_eq!(expect_table, result_string);
+}
+
+fn run_ir_anaylsis_test_case<T>(
+    suffix_path: &'static str,
+    mut function: Function,
+    mut anaylsis: impl OptimizerAnaylsis<T> + DebuggerAnaylsis<T>,
+) {
+    let table_path = get_root_path().join(suffix_path).join("output.txt");
+    let expect_table =
+        read_to_string(table_path).expect("[Internal Error]: Pass Table is not exist.");
+    let table = anaylsis.anaylsis(&mut function);
+    let result_string = anaylsis.debugger(&function, &table);
+    assert_eq!(expect_table, result_string);
+}
+macro_rules! generate_pass_cases {
+    (
+        $(
+            ($func_name: ident, $suffix_path: expr, $function: expr, $pass: expr)
+        ),*
+    ) => {
+        $(
+            #[test]
+            fn $func_name() {
+                run_ir_pass_test_case($suffix_path, $function, $pass )
+            }
+        )*
+    };
+}
+macro_rules! generate_anaylsis_cases {
+    (
+        $(
+            ($func_name: ident, $suffix_path: expr, $function: expr, $pass: expr)
+        ),*
+    ) => {
+        $(
+            #[test]
+            fn $func_name() {
+                run_ir_anaylsis_test_case($suffix_path, $function, $pass )
+            }
+        )*
+    };
+}
+
+generate_pass_cases!((
+    test_lcm_pass_cmu_example,
+    "./lcm/cmu_example",
+    create_lcm_test_graph(),
+    LCMPass::new()
+));
+
+generate_anaylsis_cases!((
+    test_conrnell,
+    "./dom/gvn_conrnell",
+    create_gvn_graph_from_conrnell(),
+    DomAnaylsier::new()
+));

@@ -18,7 +18,15 @@ fn print_out_idom(output: &mut String, table: &DomTable, max_len: usize) {
     for (block_id, entry) in table {
         idom_map.insert(block_id.clone(), entry.idom);
     }
-    for (block, idom) in idom_map {
+    let sorted_dom = sort_block_ids(
+        idom_map
+            .keys()
+            .into_iter()
+            .map(|id| id.clone())
+            .collect::<Vec<_>>(),
+    );
+    for block in sorted_dom {
+        let idom = idom_map.get(&block).unwrap();
         output.push_str(format!("|  Block id: {}  |  BB{}  |\n", block.0, idom.0).as_str());
         output.push_str(print_divider(max_len).as_str());
     }
@@ -80,7 +88,7 @@ generate_print_out_dom_set!(print_out_df, dom_frontier, "DF");
 generate_print_out_dom_set!(print_out_dom_children, dom_tree_children, "Dom-Children");
 
 impl DebuggerAnaylsis<DomTable> for DomAnaylsier {
-    fn debugger(function: &Function, table: &DomTable) -> String {
+    fn debugger(&mut self, function: &Function, table: &DomTable) -> String {
         let max_id_len = get_max_block_id_len(function);
         let row_header_len = "  Block id:   ".len() + max_id_len;
         let row_body_len = "  BB  ".len() + max_id_len;

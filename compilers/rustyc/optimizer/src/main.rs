@@ -47,7 +47,7 @@ fn main() {
     let mut func = create_gvn_graph_from_conrnell();
     let mut dom_anaylsis = DomAnaylsier::new();
     let table = dom_anaylsis.anaylsis(&func);
-    let out = DomAnaylsier::debugger(&func, &table);
+    let out = dom_anaylsis.debugger(&func, &table);
     // let mut lcm_pass = LCMPass::new();
     // lcm_pass.process(&mut func);
     // let mut file = File::create("./test1.txt").unwrap();

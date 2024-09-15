@@ -115,7 +115,6 @@ impl<'a> Parser<'a> {
                 }
             }
             _ => {
-                println!("{:?}, {:?}", value_type, self.get_token());
                 expect_token!(TokenKind::Semi, self);
                 ParserResult::Ok(Declaration::ValueType(value_type))
             }
@@ -449,7 +448,6 @@ impl<'a> Parser<'a> {
     fn parse_strute_declarator(&mut self) -> ParserResult<StructDeclarator<'a>> {
         let mut value_type = self.parse_value_type(None)?;
         value_type = self.parse_type_with_pointer_type(value_type);
-        println!("{:?}", value_type);
         let id = match &value_type {
             ValueType::FunctionPointer { id, .. } => id.clone(),
             _ => self.parse_identifier()?,

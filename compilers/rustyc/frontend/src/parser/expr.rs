@@ -311,14 +311,10 @@ impl<'a> Parser<'a> {
                         value_type: self.cache_type_name.take(),
                         designators: self.parse_designator_list()?,
                     }));
-                    println!("s:{:?}, next_token {:?}", s, self.get_token());
                     s
                 }
             }
-            _ => {
-                println!("{:?}", self.get_token());
-                ParserResult::Err(String::from("there"))
-            }
+            _ => ParserResult::Err(String::from("there")),
         }
     }
     pub(super) fn parse_designator_list(&mut self) -> ParserResult<Vec<Designator<'a>>> {
