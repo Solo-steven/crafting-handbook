@@ -33,10 +33,7 @@ const TempIgnoreCases: Set<string> = new Set([
    * Experimental Feature
    */
   // (featture) ts or flow
-  "/babel/estree/class-method/flow",
   "/babel/estree/class-method/typescript",
-  "/babel/estree/class-private-property/flow",
-  "/babel/core/sourcetype-unambiguous/flow",
   "/babel/estree/class-private-property/typescript",
   // (feature?) async do plugin
   "/babel/comments/basic/async-do-expression",
