@@ -5,11 +5,14 @@ use crate::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
 use crate::ir_optimizer::anaylsis::domtree::DomTable;
 use std::collections::HashMap;
 
+/// ## Scope Inst Cache Table
+/// cache table is used to store the expr-key map to the value that has already
+/// computed the inst right hand side.
+/// - scope means that we could enter and exit by dom-tree relationship
 pub struct ScopeInstCacheTable {
     current_index: usize,
     table: Vec<HashMap<RightHandSideInst, Value>>,
 }
-
 impl ScopeInstCacheTable {
     pub fn new() -> Self {
         Self {
@@ -38,7 +41,16 @@ impl ScopeInstCacheTable {
         self.table.pop();
     }
 }
-
+/// ## Scope Replace Value Cache Table
+/// replace table is used to store the value that is can be replaced by other value,
+/// for exapmple:
+/// ```ir
+/// a = b * c
+/// d = b * c
+/// e = d + d
+/// ```
+/// when d is rewrited by cache table to `d = a`, that for following inst `e = d + d`,
+/// d should be replace by a to remove the duplicate check for equal value  d = a.
 pub struct ScopeReplaceValueCacheTable {
     current_index: usize,
     table: Vec<HashMap<Value, Value>>,
