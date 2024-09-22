@@ -2,6 +2,7 @@ use super::expr_key::get_dst_value;
 use super::LCMPass;
 use crate::ir::function::Function;
 use crate::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
+use crate::ir_optimizer::anaylsis::OptimizerAnaylsis;
 use std::collections::HashSet;
 
 impl LCMPass {
@@ -41,7 +42,7 @@ impl LCMPass {
     }
     fn build_dfs_ordering(&mut self, function: &Function) {
         let mut dfs = DFSOrdering::new();
-        self.dfs_order = dfs.get_order(function.entry_block[0].clone(), &function.blocks);
+        self.dfs_order = dfs.anaylsis(function);
         let mut reverse_dfs_order = self.dfs_order.clone();
         reverse_dfs_order.reverse();
         self.reverse_dfs_order = reverse_dfs_order;

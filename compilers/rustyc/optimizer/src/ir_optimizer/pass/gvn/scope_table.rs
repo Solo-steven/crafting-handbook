@@ -3,6 +3,7 @@ use crate::ir::function::{BasicBlock, Function};
 use crate::ir::value::Value;
 use crate::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
 use crate::ir_optimizer::anaylsis::domtree::DomTable;
+use crate::ir_optimizer::anaylsis::OptimizerAnaylsis;
 use std::collections::HashMap;
 
 /// ## Scope Inst Cache Table
@@ -93,8 +94,7 @@ pub fn sorted_dom_children_in_dfs_ordering<'a>(
     let mut dfs_order_anaylsis = DFSOrdering::new();
     let mut id_map_order = HashMap::new();
     let mut index = 0 as usize;
-    for block_id in dfs_order_anaylsis.get_order(function.entry_block[0].clone(), &function.blocks)
-    {
+    for block_id in dfs_order_anaylsis.anaylsis(&function) {
         id_map_order.insert(block_id, index);
         index += 1;
     }

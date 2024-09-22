@@ -20,7 +20,6 @@ pub fn create_lcm_test_graph() -> Function {
     let b10 = function.create_block();
     let exit = function.create_block();
     function.mark_as_exit(exit);
-
     // connect
     function.connect_block(entry, b1);
     function.connect_block(b1, b2);
@@ -52,9 +51,6 @@ pub fn create_lcm_test_graph() -> Function {
 
     function
 }
-/// ## Generate Test Function For LCM 2
-/// This function is reference from dragon book lazy code motion section.
-pub fn create_lcm_test_graph_2() {}
 
 /// ## Generate Test Function For GVN
 /// This function is reference from conrnell course example
@@ -89,7 +85,7 @@ pub fn create_gvn_graph_from_conrnell() -> Function {
     function.switch_to_block(b1);
     let u0 = function.build_add_inst(a0, b0);
     let v0 = function.build_add_inst(c0, d0);
-    let w0: ir::value::Value = function.build_add_inst(e0, f0);
+    let _w0: ir::value::Value = function.build_add_inst(e0, f0);
     let cond = function.build_icmp_inst(u0, v0, ir::instructions::CmpFlag::Eq);
     function.build_brif_inst(cond, b2, b3);
 
@@ -106,11 +102,81 @@ pub fn create_gvn_graph_from_conrnell() -> Function {
 
     function.switch_to_block(b4);
     let u2 = function.build_phi_inst(vec![(b2, u0), (b3, u1)]);
-    let x2 = function.build_phi_inst(vec![(b2, x0), (b3, x1)]);
+    let _x2 = function.build_phi_inst(vec![(b2, x0), (b3, x1)]);
     let y2 = function.build_phi_inst(vec![(b2, y0), (b3, y1)]);
     function.build_add_inst(u2, y2);
     function.build_add_inst(a0, b0);
     function.build_ret_inst(None);
 
     function
+}
+
+/// ## Generate Test function for DOM
+/// This function is reference from the book `Engineering a Compiler 2/e` p499
+pub fn create_dom_graph_example() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    let b0 = function.create_block();
+    let b1 = function.create_block();
+    let b2 = function.create_block();
+    let b3 = function.create_block();
+    let b4 = function.create_block();
+    let b5 = function.create_block();
+    let b6 = function.create_block();
+    let b7 = function.create_block();
+    let b8 = function.create_block();
+
+    function.connect_block(b0, b1);
+    function.connect_block(b1, b2);
+    function.connect_block(b2, b3);
+    function.connect_block(b3, b4);
+    function.connect_block(b3, b1);
+
+    function.connect_block(b1, b5);
+    function.connect_block(b5, b6);
+    function.connect_block(b5, b8);
+    function.connect_block(b6, b7);
+    function.connect_block(b8, b7);
+    function.connect_block(b7, b3);
+
+    function.mark_as_entry(b0);
+    function.mark_as_exit(b4);
+
+    function
+}
+
+/// ## Create simple graph to test use-def information:
+/// ```markdown
+/// t0 = 10;
+/// t1 = 1000;
+/// --------
+/// t2 = t1 + t0;
+/// t3 = t1 + t2;
+/// ----------
+/// t4 = t1 + t3;
+/// ```
+pub fn create_use_def_graph() -> Function {
+    let mut func = Function::new(String::from("test_fun"));
+    // block 0
+    let b0 = func.create_block();
+    func.switch_to_block(b0);
+    let const10 = func.create_u32_const(10);
+    let t0 = func.build_mov_inst(const10);
+    let const1000 = func.create_u32_const(10000);
+    let t1 = func.build_mov_inst(const1000);
+    // block1
+    let b1 = func.create_block();
+    func.switch_to_block(b1);
+    let t2 = func.build_add_inst(t0, t1);
+    let t3 = func.build_add_inst(t1, t2);
+    // block 2
+    let b2 = func.create_block();
+    func.switch_to_block(b2);
+    let _t4 = func.build_add_inst(t1, t3);
+    // mark entry exit
+    func.mark_as_exit(b2);
+    func.mark_as_entry(b0);
+    // connect
+    func.connect_block(b0, b1);
+    func.connect_block(b1, b2);
+    func
 }

@@ -2,7 +2,9 @@ mod build_ir_graph;
 
 use build_ir_graph::*;
 use rustyc_optimizer::ir::function::Function;
+use rustyc_optimizer::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
 use rustyc_optimizer::ir_optimizer::anaylsis::domtree::DomAnaylsier;
+use rustyc_optimizer::ir_optimizer::anaylsis::use_def_chain::UseDefAnaylsier;
 use rustyc_optimizer::ir_optimizer::anaylsis::{DebuggerAnaylsis, OptimizerAnaylsis};
 use rustyc_optimizer::ir_optimizer::pass::lcm::LCMPass;
 use rustyc_optimizer::ir_optimizer::pass::{DebuggerPass, OptimizerPass};
@@ -76,8 +78,43 @@ generate_pass_cases!((
 ));
 
 generate_anaylsis_cases!((
-    test_conrnell,
+    test_dom_pass_conrnell_example,
     "./dom/gvn_conrnell",
     create_gvn_graph_from_conrnell(),
     DomAnaylsier::new()
+));
+
+generate_anaylsis_cases!((
+    test_dom_pass_dom_example,
+    "./dom/dom_example",
+    create_dom_graph_example(),
+    DomAnaylsier::new()
+));
+
+generate_anaylsis_cases!((
+    test_use_def_anaylsis_simple_example,
+    "./use_def/simple_example",
+    create_use_def_graph(),
+    UseDefAnaylsier::new()
+));
+
+generate_anaylsis_cases!((
+    test_dfs_ordering_conrnell_example,
+    "./dfs_ordering/conrnell_example",
+    create_gvn_graph_from_conrnell(),
+    DFSOrdering::new()
+));
+
+generate_anaylsis_cases!((
+    test_dfs_ordering_dom_example,
+    "./dfs_ordering/dom_example",
+    create_dom_graph_example(),
+    DFSOrdering::new()
+));
+
+generate_anaylsis_cases!((
+    test_dfs_ordering_simple_example,
+    "./dfs_ordering/simple_example",
+    create_use_def_graph(),
+    DFSOrdering::new()
 ));
