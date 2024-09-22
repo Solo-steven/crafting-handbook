@@ -42,10 +42,14 @@ fn main() {
     // println!("{:#?}", program);
     // let mut converter = Converter::new();
     // let module = converter.convert(&program);
-    let func = create_gvn_graph_from_conrnell();
-    let mut use_def_anaylsier = DFSOrdering::new();
-    let table = use_def_anaylsier.anaylsis(&func);
-    let out = use_def_anaylsier.debugger(&func, &table);
+    let mut func = create_gvn_graph_from_conrnell();
+    let dom_table = {
+        let mut anaylsis = DomAnaylsier::new();
+        anaylsis.anaylsis(&func)
+    };
+    let mut use_def_anaylsier = GVNPass::new(&dom_table);
+    use_def_anaylsier.process(&mut func);
+    let out = use_def_anaylsier.debugger(&func);
     // let mut lcm_pass = LCMPass::new();
     // lcm_pass.process(&mut func);
     // let mut file = File::create("./test1.txt").unwrap();

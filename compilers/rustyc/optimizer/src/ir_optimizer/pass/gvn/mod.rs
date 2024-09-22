@@ -25,6 +25,8 @@ pub struct GVNPass<'a> {
     cache_inst_table: ScopeInstCacheTable,
     /// Post process cache to reomve inst.
     need_remove_insts: Vec<(BasicBlock, Instruction)>,
+    /// Cache for debugger
+    cache_inst_strings: HashMap<Instruction, String>,
 }
 
 impl<'a> OptimizerPass for GVNPass<'a> {
@@ -41,6 +43,7 @@ impl<'a> GVNPass<'a> {
             replaceable_value_table: ScopeReplaceValueCacheTable::new(),
             cache_inst_table: ScopeInstCacheTable::new(),
             need_remove_insts: Default::default(),
+            cache_inst_strings: Default::default(),
         }
     }
     /// ## Main Algorithm of GVN
@@ -87,7 +90,11 @@ impl<'a> GVNPass<'a> {
     /// remove inst after gvn traversal.
     fn remove_redundant_insts(&mut self, function: &mut Function) {
         for (block_id, inst) in &self.need_remove_insts {
+            let mut string = String::new();
+            function.print_inst(&mut string, function.instructions.get(inst).unwrap());
+            string = string.trim().to_string();
             function.remove_inst_from_block(&block_id, &inst);
+            self.cache_inst_strings.insert(inst.clone(), string);
         }
     }
     /// ## Rewrite phi is meanless or redundant,

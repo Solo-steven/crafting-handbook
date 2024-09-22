@@ -1,0 +1,12 @@
+|--------------------------------------|
+|              GVN Table               |
+|--------------------------------------|
+|       block 2: t11 = add t3 t4       |
+|       block 2: t12 = add t3 t4       |
+|       block 3: t13 = add t1 t2       |
+|       block 3: t14 = add t5 t6       |
+|       block 3: t15 = add t5 t6       |
+|block 4: phi t16, block2 t7, block3 t7|
+|block 4: phi t18, block2 t8, block3 t9|
+|       block 4: t20 = add t1 t2       |
+|--------------------------------------|
