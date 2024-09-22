@@ -5,12 +5,12 @@ use std::fs::read_to_string;
 fn run_single_ir_converter_test_case(test_case: TestCase) -> IrTestCaseResult {
     let c_code_string = match read_to_string(test_case.c_file_path.clone()) {
         Result::Ok(code) => code,
-        Result::Err(_) => return Result::Err(IrFailResult::FileSystemError),
+        Result::Err(_) => return Result::Err(IrFailResult::FileSystemError(test_case.c_file_path)),
     };
     let mut parser = Parser::new(c_code_string.as_str());
     let ast = match parser.parse() {
         Result::Ok(prog) => prog,
-        Result::Err(_) => return Result::Err(IrFailResult::ParserError),
+        Result::Err(_) => return Result::Err(IrFailResult::ParserError(test_case.c_file_path)),
     };
     let mut convert = Converter::new();
     let module = convert.convert(&ast);
@@ -18,14 +18,14 @@ fn run_single_ir_converter_test_case(test_case: TestCase) -> IrTestCaseResult {
 
     let expect_result_string = match read_to_string(test_case.output_file_path) {
         Result::Ok(code) => code,
-        Result::Err(_) => return Result::Err(IrFailResult::FileSystemError),
+        Result::Err(_) => return Result::Err(IrFailResult::FileSystemError(test_case.c_file_path)),
     };
 
     if result_string == expect_result_string {
         Result::Ok(())
     } else {
         println!("{:?}", test_case.c_file_path);
-        Result::Err(IrFailResult::IrCompareError)
+        Result::Err(IrFailResult::IrCompareError(test_case.c_file_path))
     }
 }
 
