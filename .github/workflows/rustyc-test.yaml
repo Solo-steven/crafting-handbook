@@ -5,9 +5,11 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     steps:
-      - run: cargo fmt
+      - uses: actions/checkout@v4
+      - run: cargo fmt --check --verbose
   test:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - run: cargo test
         working-directory: "compilers/rustyc/optimizer"
