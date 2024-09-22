@@ -68,7 +68,7 @@ impl DomAnaylsier {
         // iterative algorithm for dom data flow analysis
         let mut is_change = true;
         let mut dfs_ordering_anaylsiser = DFSOrdering::new();
-        let ordering = dfs_ordering_anaylsiser.get_order(function.entry_block[0], &function.blocks);
+        let ordering = dfs_ordering_anaylsiser.anaylsis(function);
         while is_change {
             is_change = false;
             for block_id in &ordering {

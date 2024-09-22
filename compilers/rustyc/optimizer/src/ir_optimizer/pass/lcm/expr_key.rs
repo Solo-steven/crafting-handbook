@@ -142,17 +142,24 @@ pub fn get_dst_value(instruction: &InstructionData) -> Option<Value> {
         _ => None,
     }
 }
-
+/// ## ExprKeyManager: Manage ExprKey for us.
+///
 pub(super) struct ExprKeyManager {
-    // values number set.
+    // cache set of all expr key
     all_expr_value_number: ExprValueNumberSet,
-    // 1 to 1 mapping
+    // 1-to-1 mapping of value number and exprkey
     value_number_map_expr_key: HashMap<ExprValueNumber, ExpreKey>,
+    // revserse mapping of expr key to value number.
     expr_key_map_value_number: HashMap<ExpreKey, ExprValueNumber>,
-
+    /// Mapping relation of ExprKey and Inst, ExprKey is constructed by right
+    /// hand side of inst, so multi inst might have same key, but for inst it
+    /// -self, it would only have a value number.
     inst_map_value_number: HashMap<Instruction, ExprValueNumber>,
+    /// Mapping of relation of ExprKey to it's inst, since ExprKey only take
+    /// right hand side to construct key, a key could map to multi inst.
     value_number_map_inst: HashMap<ExprValueNumber, HashSet<Instruction>>,
-
+    /// Mapping a dst value to the ExprKey it kill, used for build kill set
+    /// of LCM.
     ir_value_map_kill_exprs: HashMap<Value, ExprValueNumberSet>,
 }
 
@@ -207,21 +214,29 @@ impl ExprKeyManager {
             }
         }
     }
-    pub fn inst_get_expr_value_number(
+    /// ## Get expr value number from inst id
+    /// This function is used to build `expr_use` set of LCM.
+    pub fn get_expr_value_number_from_inst(
         &self,
         instruction: &Instruction,
     ) -> Option<&ExprValueNumber> {
         self.inst_map_value_number.get(instruction)
     }
-    pub fn dst_value_get_kill_expr_value_numbers(
+    /// ## Get expr value numbers from value (dst)
+    /// This function is used to build `expr_kil` set of LCM.
+    pub fn get_kill_expr_value_numbers_from_dst_value(
         &self,
         value: &Value,
     ) -> Option<&HashSet<ExprValueNumber>> {
         self.ir_value_map_kill_exprs.get(value)
     }
+    /// ## Get entire value number set
+    /// This function is used by every fixed point algorithm
+    /// to get the init set.
     pub fn get_value_number_set(&self) -> ExprValueNumberSet {
         self.all_expr_value_number.clone()
     }
+    /// ##
     pub fn get_expr_key_from_value_number(
         &self,
         value_number: &ExprValueNumber,

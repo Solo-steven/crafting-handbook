@@ -10,5 +10,5 @@ pub trait OptimizerAnaylsis<T> {
 }
 
 pub trait DebuggerAnaylsis<T> {
-    fn debugger(function: &Function, table: &T) -> String;
+    fn debugger(&mut self, function: &Function, table: &T) -> String;
 }

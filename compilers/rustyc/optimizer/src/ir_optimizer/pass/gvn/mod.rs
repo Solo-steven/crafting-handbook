@@ -16,9 +16,17 @@ use std::collections::HashMap;
 
 pub struct GVNPass<'a> {
     dom_table: &'a DomTable,
+    /// Replace table is used to replace right hand side operand.
+    /// - if key is exist in table, mean value have same value as key
     replaceable_value_table: ScopeReplaceValueCacheTable,
+    /// Cache table is used to replace entire right hand side as a value.
+    /// - if expr key is exist in table, mean entire inst could be rewrite
+    ///   as a assignment expr.
     cache_inst_table: ScopeInstCacheTable,
+    /// Post process cache to reomve inst.
     need_remove_insts: Vec<(BasicBlock, Instruction)>,
+    /// Cache for debugger
+    cache_inst_strings: HashMap<Instruction, String>,
 }
 
 impl<'a> OptimizerPass for GVNPass<'a> {
@@ -35,8 +43,14 @@ impl<'a> GVNPass<'a> {
             replaceable_value_table: ScopeReplaceValueCacheTable::new(),
             cache_inst_table: ScopeInstCacheTable::new(),
             need_remove_insts: Default::default(),
+            cache_inst_strings: Default::default(),
         }
     }
+    /// ## Main Algorithm of GVN
+    /// - for phi : remove it if meanless and redundant
+    /// - for other inst: remove it if redundant.
+    /// 1. A inst is redundant if and only if it's ExprKey is already computed.
+    /// 2. A meanless phi mean all the src value is same, like `a = phi b b1, b b2, b b3`.
     fn visit_block(
         &mut self,
         function: &mut Function,
@@ -71,11 +85,21 @@ impl<'a> GVNPass<'a> {
         self.replaceable_value_table.exit_scope();
         self.cache_inst_table.exit_scope();
     }
+    /// ## Post-process to remove inst
+    /// Because ownership problem, we can not remove inst while borrow it, we need
+    /// remove inst after gvn traversal.
     fn remove_redundant_insts(&mut self, function: &mut Function) {
         for (block_id, inst) in &self.need_remove_insts {
+            let mut string = String::new();
+            function.print_inst(&mut string, function.instructions.get(inst).unwrap());
+            string = string.trim().to_string();
             function.remove_inst_from_block(&block_id, &inst);
+            self.cache_inst_strings.insert(inst.clone(), string);
         }
     }
+    /// ## Rewrite phi is meanless or redundant,
+    /// - return true when meanless and redundant.
+    /// - otherwise return false.
     fn rewrite_phi_by_cache_table(&mut self, dst: &Value, from: &Vec<(BasicBlock, Value)>) -> bool {
         // check is meanless
         let last_value = &from[0].1;
@@ -112,15 +136,15 @@ impl<'a> GVNPass<'a> {
         for inst in &successor_block_data.instructions {
             let inst_data = function.instructions.get_mut(inst).unwrap();
             if let InstructionData::Phi { from, .. } = inst_data {
-                self.rewrite_phi_operand_by_replaceable_table(from);
+                for (_, value) in from {
+                    self.rewrite_value_by_replaceable_table(value)
+                }
             }
         }
     }
-    fn rewrite_phi_operand_by_replaceable_table(&mut self, from: &mut Vec<(BasicBlock, Value)>) {
-        for (_, value) in from {
-            self.rewrite_value_by_replaceable_table(value)
-        }
-    }
+    /// ## Rewrite Inst by Cache Table
+    /// - return true if given inst need to remove
+    /// - otherwise, return false.
     fn rewrite_inst_by_cache_table(&mut self, inst_data: &InstructionData) -> bool {
         match get_right_hand_side_inst_key(inst_data) {
             Some((key, dst_value)) => {
@@ -136,6 +160,7 @@ impl<'a> GVNPass<'a> {
             _ => return false,
         }
     }
+    /// Wrapper of `rewrite_value_by_replaceable_table`, just unwind the inst values and dist.
     fn rewrite_inst_operand_by_replaceable_table(&mut self, inst_data: &mut InstructionData) {
         match inst_data {
             InstructionData::Add { src1, src2, .. }
@@ -177,6 +202,8 @@ impl<'a> GVNPass<'a> {
             _ => {}
         }
     }
+    /// ## Try to over write a value by replace table
+    /// if the given value exist in replaceable table, overwrite that value by table value.
     fn rewrite_value_by_replaceable_table(&mut self, value: &mut Value) {
         if let Some(replace_able_value) = self.replaceable_value_table.get(value) {
             *value = replace_able_value.clone();

@@ -19,8 +19,7 @@ impl<'a> OptimizerPass for Mem2RegPass<'a> {
         let alloc_pointers_and_bb_ids = self.find_all_alloc_inst_from_entry_block(function);
         // insert phi is df of store inst of alloc use.
         for (alloc_pointer, inst_id, bb_id) in &alloc_pointers_and_bb_ids {
-            let use_def_entry = self.use_def_table.get(bb_id).unwrap();
-            let use_table = &use_def_entry.use_table;
+            let use_table = &self.use_def_table.0;
             let use_set = use_table.get(alloc_pointer).unwrap();
             // if have pointer access, skip
             let mut is_pointer_access = false;
