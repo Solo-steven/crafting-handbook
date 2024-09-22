@@ -1,0 +1,13 @@
+name: "Basic Test For RustyC crates"
+on: ["pull_request"]
+
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - run: cargo fmt
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: cargo test
+        working-directory: "compilers/rustyc/optimizer"
