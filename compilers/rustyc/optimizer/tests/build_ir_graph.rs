@@ -143,7 +143,6 @@ pub fn create_dom_graph_example() -> Function {
 
     function
 }
-
 /// ## Create simple graph to test use-def information:
 /// ```markdown
 /// t0 = 10;
@@ -179,4 +178,102 @@ pub fn create_use_def_graph() -> Function {
     func.connect_block(b0, b1);
     func.connect_block(b1, b2);
     func
+}
+
+pub fn create_licm_graph_example_from_cmu() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    // create blocks
+    let b0 = function.create_block(); // entry
+    function.mark_as_entry(b0);
+    let b1 = function.create_block(); // header
+    let b2 = function.create_block();
+    let b3 = function.create_block();
+    let b4 = function.create_block(); // tail
+    let b5 = function.create_block(); // exit of loop
+    let b6 = function.create_block(); // exit
+    function.mark_as_exit(b6);
+    // connect
+    function.connect_block(b0, b1);
+    function.connect_block(b1, b2);
+    function.connect_block(b2, b4);
+    function.connect_block(b4, b1);
+    function.connect_block(b1, b3);
+    function.connect_block(b3, b5);
+    function.connect_block(b3, b4);
+    function.connect_block(b5, b6);
+    // instructions
+    // entry
+    function.switch_to_block(b0);
+    let i16_10 = function.create_i16_const(10);
+    let a = function.build_mov_inst(i16_10);
+    let b = function.build_mov_inst(i16_10);
+    let c = function.build_mov_inst(i16_10);
+    function.build_jump_inst(b1);
+    // header
+    function.switch_to_block(b1);
+    function.build_brif_inst(i16_10, b2, b3);
+    function.switch_to_block(b2);
+    let a_1 = function.build_add_inst(b, c);
+    let i16_2 = function.create_i16_const(2);
+    let _f = function.build_add_inst(a_1, i16_2);
+    function.build_jump_inst(b4);
+    function.switch_to_block(b3);
+    let e = function.build_mov_inst(i16_10);
+    function.build_brif_inst(e, b4, b5);
+    function.switch_to_block(b4);
+    let a_in_b4 = function.build_phi_inst(vec![(b2, a_1), (b0, a)]);
+    let i16_1 = function.create_i16_const(1);
+    let _d = function.build_add_inst(a_in_b4, i16_1);
+    function.build_jump_inst(b1);
+    function.switch_to_block(b5);
+    function.build_jump_inst(b6);
+    function.switch_to_block(b6);
+    function.build_ret_inst(None);
+
+    function
+}
+
+pub fn create_simple_loop() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    let b1 = function.create_block();
+    function.mark_as_entry(b1);
+    let b2 = function.create_block();
+    function.mark_as_exit(b2);
+    function.connect_block(b1, b2);
+    function.connect_block(b2, b1);
+
+    function
+}
+
+pub fn create_backward_edge_example() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    // create blocks
+    let b1 = function.create_block();
+    function.mark_as_entry(b1);
+    let b2 = function.create_block();
+    let b3 = function.create_block();
+    let b4 = function.create_block();
+    let b5 = function.create_block();
+    let b6 = function.create_block();
+    let b7 = function.create_block();
+    let b8 = function.create_block();
+    function.mark_as_exit(b6);
+    // connect
+    function.connect_block(b1, b2);
+    function.connect_block(b2, b3);
+    function.connect_block(b3, b4);
+    function.connect_block(b4, b5);
+    function.connect_block(b5, b6);
+
+    function.connect_block(b2, b7);
+    function.connect_block(b7, b8);
+    function.connect_block(b8, b5);
+    function.connect_block(b8, b6);
+
+    function.connect_block(b4, b1);
+    function.connect_block(b5, b2);
+    function.connect_block(b8, b7);
+    function.connect_block(b6, b5);
+
+    function
 }

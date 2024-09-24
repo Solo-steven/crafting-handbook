@@ -1,0 +1,44 @@
+function test_fun (t1 i16, t2 i16, t3 i16, t4 i16, t5 i16, t6 i16) -> void {
+block1:
+	t7 = add t1 t2
+	t8 = add t3 t4
+	t9 = add t5 t6
+	t10 = icmp t7 t8 Eq
+	brif t10, block2, block3
+block2:
+	t11 = add t3 t4
+	t12 = add t3 t4
+	jump 4
+block3:
+	t13 = add t1 t2
+	t14 = add t5 t6
+	t15 = add t5 t6
+	jump 4
+block4:
+	phi t16, block2 t7, block3 t13
+	phi t17, block2 t11, block3 t14
+	phi t18, block2 t12, block3 t15
+	t19 = add t16 t18
+	t20 = add t1 t2
+	ret void
+}
+;;  t1 -> i16
+;;  t2 -> i16
+;;  t3 -> i16
+;;  t4 -> i16
+;;  t5 -> i16
+;;  t6 -> i16
+;;  t7 -> i16
+;;  t8 -> i16
+;;  t9 -> i16
+;;  t10 -> i16
+;;  t11 -> i16
+;;  t12 -> i16
+;;  t13 -> i16
+;;  t14 -> i16
+;;  t15 -> i16
+;;  t16 -> i16
+;;  t17 -> i16
+;;  t18 -> i16
+;;  t19 -> i16
+;;  t20 -> i16

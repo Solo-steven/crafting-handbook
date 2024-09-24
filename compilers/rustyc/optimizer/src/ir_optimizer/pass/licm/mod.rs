@@ -1,3 +1,4 @@
+mod debugger;
 mod util;
 use std::collections::HashSet;
 use util::get_def_values;
@@ -19,6 +20,7 @@ struct NaturalLoop {
 
 /// ## Loop-Invariant-Code-Motion Pass
 /// perform LICM. require dom table and use-def-table.
+/// reference: https://www.cs.cmu.edu/afs/cs/academic/class/15745-s19/www/lectures/L9-LICM.pdf
 pub struct LICMPass<'a> {
     use_def_table: &'a UseDefTable,
     dom_table: &'a DomTable,
@@ -67,6 +69,7 @@ impl<'a> LICMPass<'a> {
     }
     /// ## Fins Backward Edges
     /// Using simple dfs traversal to find the edge that revisit the visited block.
+    /// please note that backward edge is construct as (tail, head).
     fn find_backward_edges(&self, function: &Function) -> HashSet<Edge> {
         let mut table: HashSet<Edge> = HashSet::new();
         self.dfs_visit_to_find_backward_edges(
