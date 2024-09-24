@@ -131,7 +131,22 @@ generate_pass_cases!(
         let table = pass.debugger(&fun);
         let after = fun.print_to_string();
         (before, table, after)
-    })
+    }),
+    (
+        test_licm_pass_cmu_example_2, "./licm/cmu_example_2", || {
+            let mut fun = create_licm_graph_simple_example_from_cmu();
+            let before = fun.print_to_string();
+            let mut dom = DomAnaylsier::new();
+            let dom_table = dom.anaylsis(&fun);
+            let mut use_def = UseDefAnaylsier::new();
+            let use_def_table = use_def.anaylsis(&fun);
+            let mut pass = LICMPass::new(&use_def_table, &dom_table);
+            pass.process(&mut fun);
+            let table = pass.debugger(&fun);
+            let after = fun.print_to_string();
+            (before, table, after)
+        }
+    )
 );
 
 #[test]

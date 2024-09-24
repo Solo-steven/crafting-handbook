@@ -233,6 +233,45 @@ pub fn create_licm_graph_example_from_cmu() -> Function {
     function
 }
 
+pub fn create_licm_graph_simple_example_from_cmu() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    // create blocks
+    let b0 = function.create_block(); // entry
+    function.mark_as_entry(b0);
+    let b1 = function.create_block(); // header
+    let b2 = function.create_block();
+    let b3 = function.create_block();
+    function.mark_as_exit(b3);
+    // connect blocks
+    function.connect_block(b0, b1);
+    function.connect_block(b1, b2);
+    function.connect_block(b2, b3);
+    function.connect_block(b2, b2);
+    // instruction
+    function.switch_to_block(b0);
+    // entry
+    let i16_10 = function.create_i16_const(10);
+    let a = function.build_mov_inst(i16_10);
+    let b = function.build_mov_inst(i16_10);
+    let c = function.build_mov_inst(i16_10);
+    function.build_jump_inst(b1);
+    // header
+    function.switch_to_block(b1);
+    function.build_jump_inst(b2);
+    function.switch_to_block(b2);
+    let a_inner = function.build_add_inst(b, c);
+    let e = function.add_register(IrValueType::I16);
+    function.insert_inst_to_block_front(
+        &b2, 
+        ir::instructions::InstructionData::Phi { opcode: ir::instructions::OpCode::Phi, dst: e , from: vec![(b2, a_inner), (b1, a)] }
+    );
+    // exit
+    function.switch_to_block(b3);
+    function.build_ret_inst(None);
+
+    function
+}
+
 pub fn create_simple_loop() -> Function {
     let mut function = Function::new(String::from("test_fun"));
     let b1 = function.create_block();

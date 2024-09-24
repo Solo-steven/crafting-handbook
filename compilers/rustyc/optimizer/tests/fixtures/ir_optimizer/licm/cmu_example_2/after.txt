@@ -1,0 +1,21 @@
+function test_fun () -> void {
+block1:
+	t1 = 10
+	t2 = 10
+	t3 = 10
+	jump 2
+block2:
+	jump 5
+block3:
+	phi t5, block3 t4, block2 t1
+block4:
+	ret void
+block5:
+	t4 = add t2 t3
+	jump 3
+}
+;;  t1 -> i16
+;;  t2 -> i16
+;;  t3 -> i16
+;;  t4 -> i16
+;;  t5 -> i16
