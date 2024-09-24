@@ -165,7 +165,6 @@ fn main() {
     // anaylsiser_example();
 }
 
-
 pub fn create_licm_graph_simple_example_from_cmu() -> Function {
     let mut function = Function::new(String::from("test_fun"));
     // create blocks
@@ -195,8 +194,12 @@ pub fn create_licm_graph_simple_example_from_cmu() -> Function {
     let a_inner = function.build_add_inst(b, c);
     let e = function.add_register(IrValueType::I16);
     function.insert_inst_to_block_front(
-        &b2, 
-        ir::instructions::InstructionData::Phi { opcode: ir::instructions::OpCode::Phi, dst: e , from: vec![(b2, a_inner), (b1, a)] }
+        &b2,
+        ir::instructions::InstructionData::Phi {
+            opcode: ir::instructions::OpCode::Phi,
+            dst: e,
+            from: vec![(b2, a_inner), (b1, a)],
+        },
     );
     // exit
     function.switch_to_block(b3);
