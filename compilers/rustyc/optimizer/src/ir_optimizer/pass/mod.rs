@@ -1,6 +1,7 @@
 pub mod copy_propagation;
 pub mod gvn;
 pub mod lcm;
+pub mod licm;
 pub mod mem2reg;
 pub mod value_numbering;
 

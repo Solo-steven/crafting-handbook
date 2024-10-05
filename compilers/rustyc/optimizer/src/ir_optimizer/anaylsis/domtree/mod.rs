@@ -10,7 +10,7 @@ pub type DomTable = HashMap<BasicBlock, DomTableEntry>;
 #[derive(Debug, Clone, PartialEq)]
 pub struct DomTableEntry {
     pub dom: HashSet<BasicBlock>,
-    pub idom: BasicBlock,
+    pub idom: Option<BasicBlock>,
     pub dom_frontier: HashSet<BasicBlock>,
     pub dom_tree_children: HashSet<BasicBlock>,
 }
@@ -38,16 +38,15 @@ impl DomAnaylsier {
     /// Iterative DOM data flow anaylsis, algorithm is from the book `Engineering a Compiler`.
     fn dom_anaylsis(&mut self, function: &Function) {
         // init dom property for every block.
-        let mut index = 0;
         let all_block_set: HashSet<BasicBlock> =
             function.blocks.keys().map(|key| key.clone()).collect();
         for (block_id, _) in &function.blocks {
-            if index == 0 {
+            if block_id.0 == function.entry_block[0].0 {
                 self.dom_table.insert(
                     block_id.clone(),
                     DomTableEntry {
                         dom: HashSet::from([block_id.clone()]),
-                        idom: BasicBlock(0),
+                        idom: None,
                         dom_frontier: HashSet::new(),
                         dom_tree_children: HashSet::new(),
                     },
@@ -57,13 +56,12 @@ impl DomAnaylsier {
                     block_id.clone(),
                     DomTableEntry {
                         dom: all_block_set.clone(),
-                        idom: BasicBlock(0),
+                        idom: None,
                         dom_frontier: HashSet::new(),
                         dom_tree_children: HashSet::new(),
                     },
                 );
             }
-            index += 1;
         }
         // iterative algorithm for dom data flow analysis
         let mut is_change = true;
@@ -74,9 +72,13 @@ impl DomAnaylsier {
             for block_id in &ordering {
                 let bb = function.blocks.get(block_id).unwrap();
                 let mut next_set = HashSet::new();
+                if block_id.0 == function.entry_block[0].0 {
+                    continue;
+                }
                 for pre in &bb.predecessor {
                     let pre_dom_entry = self.dom_table.get(pre).unwrap();
                     let pre_dom = &pre_dom_entry.dom;
+                    //println!("[{:?}]: {:?}, {:?}", block_id, next_set, pre_dom);
                     if next_set.len() == 0 {
                         next_set = pre_dom.clone();
                     } else {
@@ -101,6 +103,9 @@ impl DomAnaylsier {
     fn idom_anaylsis(&mut self, function: &Function) {
         let mut dom_tree_children_map: HashMap<BasicBlock, HashSet<BasicBlock>> = HashMap::new();
         for entry in &mut self.dom_table {
+            if entry.0 .0 == function.entry_block[0].0 {
+                continue;
+            }
             let dom_set = &entry.1.dom;
             let block_data = function.blocks.get(entry.0).unwrap();
             let mut predecessors = block_data.predecessor.clone();
@@ -112,8 +117,8 @@ impl DomAnaylsier {
                 // frist iterate over the predecessor to find if predecessor beem
                 // have dominate bb or not.
                 for pre in &predecessors {
-                    if dom_set.contains(pre) {
-                        entry.1.idom = pre.clone();
+                    if dom_set.contains(pre) && pre.0 != entry.0 .0 {
+                        entry.1.idom = Some(pre.clone());
                         if let Some(children) = dom_tree_children_map.get_mut(pre) {
                             children.insert(entry.0.clone());
                         } else {
@@ -152,14 +157,25 @@ impl DomAnaylsier {
             if block_data.predecessor.len() > 1 {
                 for pre_id in &block_data.predecessor {
                     let mut runner_id = pre_id.clone();
-                    let idom = self.dom_table.get(block_id).unwrap().idom.clone();
+                    let idom =
+                        if let Some(idom) = self.dom_table.get(block_id).unwrap().idom.clone() {
+                            idom
+                        } else {
+                            continue;
+                        };
                     while runner_id != idom {
                         self.dom_table
                             .get_mut(&runner_id)
                             .unwrap()
                             .dom_frontier
                             .insert(block_id.clone());
-                        runner_id = self.dom_table.get(&runner_id).unwrap().idom.clone();
+                        runner_id = if let Some(next_runner_id) =
+                            self.dom_table.get(&runner_id).unwrap().idom
+                        {
+                            next_runner_id
+                        } else {
+                            break;
+                        }
                     }
                 }
             }

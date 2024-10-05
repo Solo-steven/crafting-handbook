@@ -16,7 +16,9 @@ fn print_out_idom(output: &mut String, table: &DomTable, max_len: usize) {
 
     let mut idom_map: HashMap<BasicBlock, BasicBlock> = HashMap::new();
     for (block_id, entry) in table {
-        idom_map.insert(block_id.clone(), entry.idom);
+        if let Some(idom) = entry.idom {
+            idom_map.insert(block_id.clone(), idom);
+        }
     }
     let sorted_dom = sort_block_ids(
         idom_map
