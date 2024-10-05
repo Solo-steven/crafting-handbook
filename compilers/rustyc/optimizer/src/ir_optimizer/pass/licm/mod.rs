@@ -1,10 +1,11 @@
 mod debugger;
 mod util;
 use std::collections::HashSet;
-use util::get_def_values;
+use util::*;
 
 use crate::ir::function::{BasicBlock, Function};
 use crate::ir::instructions::{Instruction, InstructionData};
+use crate::ir::value::Value;
 use crate::ir_optimizer::anaylsis::domtree::DomTable;
 use crate::ir_optimizer::anaylsis::use_def_chain::{DefKind, UseDefTable};
 use crate::ir_optimizer::pass::OptimizerPass;
@@ -22,16 +23,21 @@ struct NaturalLoop {
 /// perform LICM. require dom table and use-def-table.
 /// reference: https://www.cs.cmu.edu/afs/cs/academic/class/15745-s19/www/lectures/L9-LICM.pdf
 pub struct LICMPass<'a> {
+    // Use and Def Table
     use_def_table: &'a UseDefTable,
+    // Dom Table
     dom_table: &'a DomTable,
+    /// All natural loop in CFG.
     loops: Vec<NaturalLoop>,
+    // Propagation Loop invariant.
+    known_loop_invariants: HashSet<Value>,
 }
 
 impl<'a> OptimizerPass for LICMPass<'a> {
     fn process(&mut self, function: &mut Function) {
         self.build_natural_loop(function);
-        let need_code_motion_insts = self.traversal_loop_to_find_loop_invariant(function);
-        self.motion_loop_invarant(function, need_code_motion_insts);
+        let hoistable_insts = self.traversal_loop_to_find_hoistable_loop_invariant(function);
+        self.motion_hoistable_loop_invarant(function, hoistable_insts);
     }
 }
 
@@ -41,6 +47,7 @@ impl<'a> LICMPass<'a> {
             use_def_table,
             dom_table,
             loops: Default::default(),
+            known_loop_invariants: Default::default(),
         }
     }
     fn dfs_visit_to_find_backward_edges(
@@ -171,36 +178,47 @@ impl<'a> LICMPass<'a> {
             });
         }
     }
-    /// ## Helper Function: Is Definition of RHS of Instruction is out of loop
-    /// need to pass function since we need to get the block id of RHS def instruction.
-    fn is_inst_def_out_of_loop(
+    /// ## Helper Function: Is Instruction a loop invariant
+    /// - return Some(value) if is loop invariant, value is LHS of inst.
+    /// - return None, if inst is not loop invariant.
+    fn is_loop_invatant(
         &self,
+        inst: &Instruction,
         function: &Function,
-        inst: &InstructionData,
         loop_blocks: &HashSet<BasicBlock>,
-    ) -> bool {
-        if let Some(values) = get_def_values(inst) {
-            let mut is_all_def_out_of_loop = true;
-            for val in values {
-                let is_def_out_of_loop = if let Some(def_kind) = self.use_def_table.1.get(&val) {
-                    match def_kind {
-                        DefKind::InternalDef(def_inst) => {
-                            let def_block = function.get_block_from_inst(def_inst).unwrap();
-                            !loop_blocks.contains(def_block)
-                        }
-                        DefKind::ParamDef(_) => true,
-                        DefKind::ExternalDef => {
-                            panic!()
-                        }
-                    }
+    ) -> Option<Value> {
+        let inst_data = function.instructions.get(inst).unwrap();
+        match get_rhs_values(inst_data) {
+            // for side effect inst, can not hoist
+            None => None,
+            Some(rhs_values) => {
+                let mut is_loop_invariant = true;
+                for rhs_value in rhs_values {
+                    let is_cur_rhs_value_def_out_of_loop =
+                        match self.use_def_table.1.get(&rhs_value) {
+                            // for const, always loop invarant
+                            None => true,
+                            // for def, check is def out of loop
+                            Some(cur_rhs_value_def) => match cur_rhs_value_def {
+                                DefKind::InternalDef(def_inst) => {
+                                    let def_block = function.get_block_from_inst(def_inst).unwrap();
+                                    !loop_blocks.contains(def_block)
+                                }
+                                _ => true,
+                            },
+                        };
+                    let is_cur_rhs_value_known_as_loop_invarant =
+                        self.known_loop_invariants.contains(&rhs_value);
+                    let is_cur_rhs_value_loop_invarant =
+                        is_cur_rhs_value_def_out_of_loop || is_cur_rhs_value_known_as_loop_invarant;
+                    is_loop_invariant = is_loop_invariant && is_cur_rhs_value_loop_invarant;
+                }
+                if is_loop_invariant {
+                    get_lhs_value(inst_data)
                 } else {
-                    true
-                };
-                is_all_def_out_of_loop = is_def_out_of_loop && is_all_def_out_of_loop;
+                    None
+                }
             }
-            is_all_def_out_of_loop
-        } else {
-            false
         }
     }
     /// ## Helper Function: Is block of inst is dominate all exits of loop
@@ -225,7 +243,7 @@ impl<'a> LICMPass<'a> {
     ///   }
     /// }
     /// ```
-    fn traversal_loop_to_find_loop_invariant(
+    fn traversal_loop_to_find_hoistable_loop_invariant(
         &mut self,
         function: &Function,
     ) -> Vec<(Instruction, usize)> {
@@ -234,14 +252,20 @@ impl<'a> LICMPass<'a> {
         for natural_loop in &self.loops {
             for block in &natural_loop.blocks {
                 for inst in &function.blocks.get(block).unwrap().instructions {
-                    if self.is_inst_def_out_of_loop(
-                        function,
-                        function.instructions.get(inst).unwrap(),
-                        &natural_loop.blocks,
-                    ) && self.is_block_dominate_exits(
-                        function.get_block_from_inst(inst).unwrap(),
-                        &natural_loop.exits,
-                    ) {
+                    let is_loop_invariant =
+                        match self.is_loop_invatant(inst, function, &natural_loop.blocks) {
+                            Some(val) => {
+                                self.known_loop_invariants.insert(val);
+                                true
+                            }
+                            None => false,
+                        };
+                    if is_loop_invariant
+                        && self.is_block_dominate_exits(
+                            function.get_block_from_inst(inst).unwrap(),
+                            &natural_loop.exits,
+                        )
+                    {
                         need_to_code_motion.push((inst.clone(), index));
                     }
                 }
@@ -251,7 +275,7 @@ impl<'a> LICMPass<'a> {
         need_to_code_motion
     }
     /// ## Entry function to motion the Loop invariant
-    fn motion_loop_invarant(
+    fn motion_hoistable_loop_invarant(
         &self,
         function: &mut Function,
         inst_and_loop_indexs: Vec<(Instruction, usize)>,
