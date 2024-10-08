@@ -97,7 +97,6 @@ pub fn compute_binary_immi(immi_1: Immi, immi_2: Immi, opcode: &OpCode, ir_type:
     match *opcode {
         OpCode::Add => {
             let result = immi_1.get_data_as_i128() + immi_2.get_data_as_i128();
-            println!("RESULT: {}, {:?}{:?}", result, immi_1, immi_2);
             convert_i128_to_target_ir_type_immi(result, ir_type)
         }
         OpCode::Sub => {

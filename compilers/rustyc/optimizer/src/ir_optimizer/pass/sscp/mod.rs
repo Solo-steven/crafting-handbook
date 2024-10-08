@@ -1,10 +1,11 @@
 mod lattice;
 mod util;
 use crate::ir::function::Function;
+use crate::ir::instructions::{InstructionData, OpCode};
 use crate::ir::value::{Value, ValueData};
-use crate::ir_optimizer::anaylsis::use_def_chain::{self, DefKind, UseDefTable};
+use crate::ir_optimizer::anaylsis::use_def_chain::{DefKind, UseDefTable};
 use crate::ir_optimizer::pass::OptimizerPass;
-use lattice::{is_lattice_element_equal, LatticeElement};
+use lattice::LatticeElement;
 use std::collections::HashMap;
 use util::get_lhs_value;
 
@@ -22,6 +23,7 @@ impl<'a> OptimizerPass for SSCPPass<'a> {
     fn process(&mut self, function: &mut Function) {
         self.initialize_pass(function);
         self.propagate_pass(function);
+        self.rewrite_pass(function);
     }
 }
 
@@ -69,7 +71,7 @@ impl<'a> SSCPPass<'a> {
         }
         println!("Init: {:#?}, {:#?}", self.lvalue_map_element, function.values);
     }
-    fn propagate_pass(&mut self, function: &mut Function) {
+    fn propagate_pass(&mut self, function: &Function) {
         let use_table = &self.use_def_table.0;
         while self.worklist.len() > 0 {
             let def_value = self.worklist.pop().unwrap();
@@ -85,7 +87,7 @@ impl<'a> SSCPPass<'a> {
                         let next_element = self
                             .get_lattice_element_from_inst_with_context(usage, function)
                             .expect("[Unreach case]: Instruction already get LHS value, must produce the lattice");
-                        if !is_lattice_element_equal(&next_element, element, function) {
+                        if next_element != *element {
                             self.lvalue_map_element.insert(lhs.clone(), next_element);
                             self.worklist.push(lhs.clone());
                         }
@@ -100,6 +102,29 @@ impl<'a> SSCPPass<'a> {
                     self.lvalue_map_element,
                     function.values
                 );
+            }
+        }
+    }
+    fn rewrite_pass(&self, function: &mut Function) {
+        for (val_of_ssa_name, element) in &self.lvalue_map_element {
+            match element.get_pessimistic_element() {
+                LatticeElement::BottomElement | LatticeElement::TopElement => {
+                    continue;
+                }
+                LatticeElement::Element(immi) => {
+                    let value = function.add_immi(immi);
+                    let def = match self.use_def_table.1.get(&val_of_ssa_name).unwrap() {
+                        DefKind::InternalDef(internal) => internal,
+                        _ => unreachable!(),
+                    };
+                    let inst_data_ref = function.instructions.get_mut(def).unwrap();
+                    *inst_data_ref = InstructionData::Move {
+                        opcode: OpCode::Mov,
+                        src: value,
+                        dst: val_of_ssa_name.clone(),
+                    };
+                }
+                _ => unreachable!(),
             }
         }
     }

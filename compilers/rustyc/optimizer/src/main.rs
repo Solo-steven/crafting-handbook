@@ -81,9 +81,9 @@ fn optimizer_example() {
     let mut pass = SSCPPass::new(&use_def_table);
     pass.process(&mut fun);
 
-    // write_string_to_file(pass.debugger(&fun));
-    // let mut file1 = File::create("./after.txt").unwrap();
-    // write!(file1, "{}", fun.print_to_string()).unwrap();
+    //write_string_to_file(pass.debugger(&fun));
+    let mut file1 = File::create("./after.txt").unwrap();
+    write!(file1, "{}", fun.print_to_string()).unwrap();
 }
 
 /// ## Generate Simple Graph
@@ -112,6 +112,32 @@ fn create_simple_loop_const_propagation_graph_1() -> Function {
     let i0_const = function.create_i16_const(0);
     let x_0 = function.build_mov_inst(i10_const);
     let i_12 = function.build_mov_inst(i0_const);
+    function.switch_to_block(end);
+    let x_1 = function.add_register(IrValueType::I16);
+    let x_2 = function.build_add_inst(x_1, i_12);
+    let _x_1 = function.insert_inst_to_block_front(
+        &end,
+        InstructionData::Phi {
+            opcode: OpCode::Phi,
+            dst: x_1,
+            from: vec![(header, x_0), (end, x_2)],
+        },
+    );
+    function
+}
+
+fn create_simple_loop_const_propagation_graph_2() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    let header = function.create_block();
+    function.mark_as_entry(header);
+    let end = function.create_block();
+    function.mark_as_exit(end);
+
+    function.switch_to_block(header);
+    let i10_const = function.create_i16_const(10);
+    let i20_const = function.create_i16_const(20);
+    let x_0 = function.build_mov_inst(i10_const);
+    let i_12 = function.build_mov_inst(i20_const);
     function.switch_to_block(end);
     let x_1 = function.add_register(IrValueType::I16);
     let x_2 = function.build_add_inst(x_1, i_12);
