@@ -13,7 +13,12 @@ pub enum LatticeElement {
     BottomElement,
     TopElement,
     Element(Immi),
-    PhiInst(Vec<LatticeElement>),
+    PhiInst(Vec<PhiLatticeElement>),
+}
+#[derive(Debug, Clone, PartialEq)]
+pub enum PhiLatticeElement {
+    Lattice(LatticeElement),
+    Immi(Immi),
 }
 
 impl LatticeElement {
@@ -26,78 +31,74 @@ impl LatticeElement {
             _ => panic!(),
         }
     }
-    /// ## Get the optimistic narrow element of current element
-    /// Using when propagate the element by using `Value(n)` function, will get the optimistic
-    /// phi instruction result, making propagation more useful.
-    fn get_optimistic_element(&self) -> LatticeElement {
+    /// ## Abstrct common logic from `get_xxx_element`
+    /// The only different between `get_optimistic_element` and `get_pessimistic_element`
+    /// is that the early return of phi elements
+    fn compute_element(&self, is_optimistic: bool) -> LatticeElement {
         let phi_inst_element = match *self {
             LatticeElement::PhiInst(ref elements) => elements,
             _ => return self.clone(),
         };
         let mut exist_immi: Option<Immi> = None;
         for ele in phi_inst_element {
-            // narrow down the lattice
-            let ele_not_phi = match *ele {
-                LatticeElement::PhiInst(_) => &ele.get_optimistic_element(),
-                _ => ele,
-            };
-            match *ele_not_phi {
-                LatticeElement::BottomElement => return LatticeElement::BottomElement,
-                LatticeElement::TopElement => continue,
-                LatticeElement::Element(ref current_immi) => match exist_immi {
+            if let PhiLatticeElement::Immi(immi_in_phi) = ele {
+                match exist_immi {
                     Some(ref exist_immi_value) => {
-                        if *exist_immi_value == *current_immi {
+                        if *exist_immi_value == *immi_in_phi {
                             continue;
                         } else {
                             return LatticeElement::BottomElement;
                         }
                     }
                     None => {
-                        exist_immi = Some(current_immi.clone());
+                        exist_immi = Some(immi_in_phi.clone());
                         continue;
                     }
-                },
-                _ => unreachable!(),
+                };
+            } else if let PhiLatticeElement::Lattice(ele_not_const) = ele {
+                // narrow down the lattice
+                let ele_not_phi = match *ele_not_const {
+                    LatticeElement::PhiInst(_) => &ele_not_const.compute_element(is_optimistic),
+                    _ => ele_not_const,
+                };
+                match *ele_not_phi {
+                    LatticeElement::BottomElement => return LatticeElement::BottomElement,
+                    LatticeElement::TopElement => {
+                        if is_optimistic {
+                            continue;
+                        } else {
+                            return LatticeElement::TopElement;
+                        }
+                    }
+                    LatticeElement::Element(ref current_immi) => match exist_immi {
+                        Some(ref exist_immi_value) => {
+                            if *exist_immi_value == *current_immi {
+                                continue;
+                            } else {
+                                return LatticeElement::BottomElement;
+                            }
+                        }
+                        None => {
+                            exist_immi = Some(current_immi.clone());
+                            continue;
+                        }
+                    },
+                    _ => unreachable!(),
+                }
             }
         }
         return LatticeElement::Element(exist_immi.unwrap());
     }
+    /// ## Get the optimistic narrow element of current element
+    /// Using when propagate the element by using `Value(n)` function, will get the optimistic
+    /// phi instruction result, making propagation more useful.
+    pub(super) fn get_optimistic_element(&self) -> LatticeElement {
+        self.compute_element(true)
+    }
     /// ## Special function for getting pessimistic element for Phi instruction
     /// Using when rewrite state, will get the pessimistic  phi instruction result.
     pub(super) fn get_pessimistic_element(&self) -> LatticeElement {
-        let phi_inst_element = match *self {
-            LatticeElement::PhiInst(ref elements) => elements,
-            _ => {
-                return self.clone();
-            }
-        };
-        let mut exist_immi: Option<Immi> = None;
-        for ele in phi_inst_element {
-            // narrow down the lattice
-            let ele_not_phi = match *ele {
-                LatticeElement::PhiInst(_) => &ele.get_pessimistic_element(),
-                _ => ele,
-            };
-            match *ele_not_phi {
-                LatticeElement::BottomElement => return LatticeElement::BottomElement,
-                LatticeElement::TopElement => return LatticeElement::TopElement,
-                LatticeElement::Element(ref current_immi) => match exist_immi {
-                    Some(ref exist_immi_value) => {
-                        if *exist_immi_value == *current_immi {
-                            continue;
-                        } else {
-                            return LatticeElement::BottomElement;
-                        }
-                    }
-                    None => {
-                        exist_immi = Some(current_immi.clone());
-                        continue;
-                    }
-                },
-                _ => unreachable!(),
-            }
-        }
-        return LatticeElement::Element(exist_immi.unwrap());
+        self.compute_element(false)
     }
 }
 
@@ -195,7 +196,7 @@ impl<'a> SSCPPass<'a> {
         }
     }
     /// ## Serve as `Value(n)` in propgation pass
-    ///
+    /// Using Lvalue element table to get the lattice element first and
     pub(super) fn get_lattice_element_from_inst_with_context(
         &self,
         inst: &Instruction,
@@ -317,13 +318,16 @@ impl<'a> SSCPPass<'a> {
             | InstructionData::Comment(_) => None,
             // edge case 1
             InstructionData::Phi { from, .. } => {
-                let mut elements: Vec<LatticeElement> = Vec::with_capacity(from.len());
+                let mut elements: Vec<PhiLatticeElement> = Vec::with_capacity(from.len());
                 for (_, value) in from {
                     let element: Option<&LatticeElement> = self.lvalue_map_element.get(value);
                     if let Some(ele) = element {
-                        elements.push(ele.get_optimistic_element());
+                        elements.push(PhiLatticeElement::Lattice(ele.get_optimistic_element()));
                     } else {
-                        continue;
+                        elements.push(PhiLatticeElement::Immi(match function.values.get(value).unwrap() {
+                            ValueData::Immi(immi) => immi.clone(),
+                            _ => unreachable!(),
+                        }));
                     }
                 }
                 Some(LatticeElement::PhiInst(elements))

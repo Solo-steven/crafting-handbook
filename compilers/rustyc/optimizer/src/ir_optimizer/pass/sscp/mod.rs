@@ -1,5 +1,7 @@
+mod debugger;
 mod lattice;
 mod util;
+
 use crate::ir::function::Function;
 use crate::ir::instructions::{InstructionData, OpCode};
 use crate::ir::value::{Value, ValueData};
@@ -69,7 +71,6 @@ impl<'a> SSCPPass<'a> {
                 self.worklist.push(value.clone());
             }
         }
-        println!("Init: {:#?}, {:#?}", self.lvalue_map_element, function.values);
     }
     fn propagate_pass(&mut self, function: &Function) {
         let use_table = &self.use_def_table.0;
@@ -96,12 +97,6 @@ impl<'a> SSCPPass<'a> {
                         continue;
                     }
                 }
-                println!(
-                    "SSA name: {:#?}, Iter: {:#?}, values: {:#?}",
-                    function.values.get(&def_value).unwrap(),
-                    self.lvalue_map_element,
-                    function.values
-                );
             }
         }
     }

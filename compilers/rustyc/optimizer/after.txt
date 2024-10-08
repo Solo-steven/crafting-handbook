@@ -1,9 +1,0 @@
-function test_fun () -> void {
-block1:
-	t1 = 10
-	t2 = 10
-	t3 = 20
-}
-;;  t1 -> i16
-;;  t2 -> i16
-;;  t3 -> i16
