@@ -3,6 +3,8 @@ pub mod ir_converter;
 pub mod ir_optimizer;
 
 use crate::ir::function::Function;
+use crate::ir::instructions::InstructionData;
+use crate::ir::instructions::OpCode;
 use crate::ir::value::IrValueType;
 use crate::ir_converter::Converter;
 use crate::ir_optimizer::anaylsis::domtree::DomAnaylsier;
@@ -11,6 +13,7 @@ use crate::ir_optimizer::pass::licm;
 use ir_optimizer::anaylsis::{DebuggerAnaylsis, OptimizerAnaylsis};
 use ir_optimizer::pass::gvn::GVNPass;
 use ir_optimizer::pass::licm::LICMPass;
+use ir_optimizer::pass::sscp::SSCPPass;
 use ir_optimizer::pass::{DebuggerPass, OptimizerPass};
 use rustyc_frontend::parser::Parser;
 use std::fs::File;
@@ -67,20 +70,60 @@ fn anaylsiser_example() {
 
 #[allow(dead_code)]
 fn optimizer_example() {
-    let mut fun = create_licm_graph_simple_example_from_cmu();
+    let mut fun = create_simple_const_propagation_graph();
     let mut file1 = File::create("./before.txt").unwrap();
     write!(file1, "{}", fun.print_to_string()).unwrap();
-    let mut dom = DomAnaylsier::new();
-    let dom_table = dom.anaylsis(&fun);
+    // let mut dom = DomAnaylsier::new();
+    // let dom_table = dom.anaylsis(&fun);
 
     let mut use_def = UseDefAnaylsier::new();
     let use_def_table = use_def.anaylsis(&fun);
-    let mut pass = LICMPass::new(&use_def_table, &dom_table);
+    let mut pass = SSCPPass::new(&use_def_table);
     pass.process(&mut fun);
 
-    write_string_to_file(pass.debugger(&fun));
-    let mut file1 = File::create("./after.txt").unwrap();
-    write!(file1, "{}", fun.print_to_string()).unwrap();
+    // write_string_to_file(pass.debugger(&fun));
+    // let mut file1 = File::create("./after.txt").unwrap();
+    // write!(file1, "{}", fun.print_to_string()).unwrap();
+}
+
+/// ## Generate Simple Graph
+fn create_simple_const_propagation_graph() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    let bb = function.create_block();
+    function.switch_to_block(bb);
+    function.mark_as_entry(bb);
+    let i10_const = function.create_i16_const(10);
+    let a = function.build_mov_inst(i10_const);
+    let b = function.build_mov_inst(i10_const);
+    let _c = function.build_add_inst(a, b);
+    function.mark_as_exit(bb);
+    function
+}
+
+fn create_simple_loop_const_propagation_graph_1() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    let header = function.create_block();
+    function.mark_as_entry(header);
+    let end = function.create_block();
+    function.mark_as_exit(end);
+
+    function.switch_to_block(header);
+    let i10_const = function.create_i16_const(10);
+    let i0_const = function.create_i16_const(0);
+    let x_0 = function.build_mov_inst(i10_const);
+    let i_12 = function.build_mov_inst(i0_const);
+    function.switch_to_block(end);
+    let x_1 = function.add_register(IrValueType::I16);
+    let x_2 = function.build_add_inst(x_1, i_12);
+    let _x_1 = function.insert_inst_to_block_front(
+        &end,
+        InstructionData::Phi {
+            opcode: OpCode::Phi,
+            dst: x_1,
+            from: vec![(header, x_0), (end, x_2)],
+        },
+    );
+    function
 }
 
 fn create_simple_loop() -> Function {

@@ -1,6 +1,6 @@
 use super::expr_key::{
-    content_ref_set_to_own, different_content_ref_sets, get_content_ref_of_set,
-    intersection_content_ref_sets, union_content_ref_sets,
+    content_ref_set_to_own, different_content_ref_sets, get_content_ref_of_set, intersection_content_ref_sets,
+    union_content_ref_sets,
 };
 use super::LCMPass;
 use crate::ir::function::Function;
@@ -34,19 +34,14 @@ impl LCMPass {
                             next_set = Some(predecessor_out_set.clone());
                             continue;
                         }
-                        next_set = Some(intersection_content_ref_sets(
-                            next_set.unwrap(),
-                            predecessor_out_set,
-                        ));
+                        next_set = Some(intersection_content_ref_sets(next_set.unwrap(), predecessor_out_set));
                     }
                     content_ref_set_to_own(next_set.unwrap_or(Default::default()))
                 };
-                self.available_in
-                    .insert(block_id.clone(), next_avaliable_in);
+                self.available_in.insert(block_id.clone(), next_avaliable_in);
                 // Get Available Out
                 let next_available_out = {
-                    let available_in =
-                        get_content_ref_of_set(self.available_in.get(block_id).unwrap());
+                    let available_in = get_content_ref_of_set(self.available_in.get(block_id).unwrap());
                     let use_set = get_content_ref_of_set(self.anticipate_in.get(block_id).unwrap());
                     content_ref_set_to_own(union_content_ref_sets(available_in, use_set))
                 };
@@ -54,8 +49,7 @@ impl LCMPass {
                 let exised_avaiable_out = self.available_out.get(block_id).unwrap();
                 if next_available_out != *exised_avaiable_out {
                     is_change = true;
-                    self.available_out
-                        .insert(block_id.clone(), next_available_out);
+                    self.available_out.insert(block_id.clone(), next_available_out);
                 }
             }
         }
@@ -67,8 +61,7 @@ impl LCMPass {
                 .insert(block_id.clone(), self.key_manager.get_value_number_set());
         }
         for block_id in &function.exit_block {
-            self.anticipate_in
-                .insert(block_id.clone(), Default::default());
+            self.anticipate_in.insert(block_id.clone(), Default::default());
         }
         let mut is_change = true;
         while is_change {
@@ -83,23 +76,16 @@ impl LCMPass {
                         if next_set.is_none() {
                             next_set = Some(sucessor_anticipate_in.clone());
                         } else {
-                            next_set = Some(intersection_content_ref_sets(
-                                next_set.unwrap(),
-                                sucessor_anticipate_in,
-                            ));
+                            next_set = Some(intersection_content_ref_sets(next_set.unwrap(), sucessor_anticipate_in));
                         }
                     }
                     content_ref_set_to_own(next_set.unwrap_or(Default::default()))
                 };
-                self.anticipate_out
-                    .insert(block_id.clone(), next_anticipate_out);
+                self.anticipate_out.insert(block_id.clone(), next_anticipate_out);
                 let next_anticipate_in = {
-                    let anticipate_out =
-                        get_content_ref_of_set(self.anticipate_out.get(block_id).unwrap());
-                    let use_set =
-                        get_content_ref_of_set(self.expression_use.get(block_id).unwrap());
-                    let kill_set =
-                        get_content_ref_of_set(self.expression_kill.get(block_id).unwrap());
+                    let anticipate_out = get_content_ref_of_set(self.anticipate_out.get(block_id).unwrap());
+                    let use_set = get_content_ref_of_set(self.expression_use.get(block_id).unwrap());
+                    let kill_set = get_content_ref_of_set(self.expression_kill.get(block_id).unwrap());
                     content_ref_set_to_own(different_content_ref_sets(
                         union_content_ref_sets(anticipate_out, use_set),
                         kill_set,
@@ -108,8 +94,7 @@ impl LCMPass {
                 let existed_anticipate_in = self.anticipate_in.get(block_id).unwrap();
                 if *existed_anticipate_in != next_anticipate_in {
                     is_change = true;
-                    self.anticipate_in
-                        .insert(block_id.clone(), next_anticipate_in);
+                    self.anticipate_in.insert(block_id.clone(), next_anticipate_in);
                 }
             }
         }

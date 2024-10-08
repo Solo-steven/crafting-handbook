@@ -24,12 +24,7 @@ impl<'a> DebuggerPass for GVNPass<'a> {
         output_string.push_str(&print_divider(row_len));
         for (block_id, inst) in &self.need_remove_insts {
             output_string.push_str(&print_header(
-                format!(
-                    "block {}: {}",
-                    block_id.0,
-                    inst_map_string.get(inst).unwrap()
-                )
-                .as_str(),
+                format!("block {}: {}", block_id.0, inst_map_string.get(inst).unwrap()).as_str(),
                 row_len,
             ));
         }

@@ -36,12 +36,7 @@ impl ValueNumberingPass {
                 break;
             }
             let frist_block = self.work_list.pop_front().unwrap();
-            self.super_value_numbering(
-                frist_block,
-                function,
-                &mut HashMap::new(),
-                &mut HashMap::new(),
-            );
+            self.super_value_numbering(frist_block, function, &mut HashMap::new(), &mut HashMap::new());
         }
     }
     fn super_value_numbering(
@@ -95,10 +90,7 @@ fn local_value_numbering(
 }
 /// Construct Key for a instruction. some instruction can not be semms as redundant, like load instruction or stackalloc
 /// instruction, so if meet those instruction, will return a None to stop table lookup.
-fn construct_key_from_inst(
-    inst: &InstructionData,
-    numbering_table: &mut NumberingTable,
-) -> Option<(InstOpKey, Value)> {
+fn construct_key_from_inst(inst: &InstructionData, numbering_table: &mut NumberingTable) -> Option<(InstOpKey, Value)> {
     match inst {
         InstructionData::Add {
             opcode,
@@ -236,10 +228,7 @@ fn construct_key_from_inst(
         } => {
             let src1_number = get_numbering(src1, numbering_table);
             let src2_number = get_numbering(src2, numbering_table);
-            Some((
-                InstOpKey::Cmp((src1_number, src2_number, flag.clone())),
-                dst.clone(),
-            ))
+            Some((InstOpKey::Cmp((src1_number, src2_number, flag.clone())), dst.clone()))
         }
         // those instruction should not be see as redunent.
         // TODO: Phi ?

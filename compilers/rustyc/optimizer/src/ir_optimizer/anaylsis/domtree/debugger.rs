@@ -5,9 +5,7 @@ use crate::ir::function::BasicBlock;
 use crate::ir::function::Function;
 use crate::ir_optimizer::anaylsis::DebuggerAnaylsis;
 use crate::ir_optimizer::print_table_helper::print_table_row;
-use crate::ir_optimizer::print_table_helper::{
-    get_max_block_id_len, print_divider, print_header, sort_block_ids,
-};
+use crate::ir_optimizer::print_table_helper::{get_max_block_id_len, print_divider, print_header, sort_block_ids};
 
 fn print_out_idom(output: &mut String, table: &DomTable, max_len: usize) {
     output.push_str(print_divider(max_len).as_str());
@@ -20,13 +18,7 @@ fn print_out_idom(output: &mut String, table: &DomTable, max_len: usize) {
             idom_map.insert(block_id.clone(), idom);
         }
     }
-    let sorted_dom = sort_block_ids(
-        idom_map
-            .keys()
-            .into_iter()
-            .map(|id| id.clone())
-            .collect::<Vec<_>>(),
-    );
+    let sorted_dom = sort_block_ids(idom_map.keys().into_iter().map(|id| id.clone()).collect::<Vec<_>>());
     for block in sorted_dom {
         let idom = idom_map.get(&block).unwrap();
         output.push_str(format!("|  Block id: {}  |  BB{}  |\n", block.0, idom.0).as_str());
@@ -55,11 +47,7 @@ macro_rules! generate_print_out_dom_set {
                     if len == 0 {
                         continue;
                     }
-                    let dom_vec = entry
-                        .$property
-                        .clone()
-                        .into_iter()
-                        .collect::<Vec<BasicBlock>>();
+                    let dom_vec = entry.$property.clone().into_iter().collect::<Vec<BasicBlock>>();
                     for dom in &sort_block_ids(dom_vec) {
                         let left;
                         if index == len / 2 {
@@ -96,11 +84,7 @@ impl DebuggerAnaylsis<DomTable> for DomAnaylsier {
         let row_body_len = "  BB  ".len() + max_id_len;
         let max_len = row_body_len + row_header_len + 3 - 2;
         let mut output = String::new();
-        let blocks = function
-            .blocks
-            .iter()
-            .map(|entry| entry.0.clone())
-            .collect::<Vec<_>>();
+        let blocks = function.blocks.iter().map(|entry| entry.0.clone()).collect::<Vec<_>>();
         let sorted_blocks = sort_block_ids(blocks);
         print_out_idom(&mut output, table, max_len);
         print_out_dom(

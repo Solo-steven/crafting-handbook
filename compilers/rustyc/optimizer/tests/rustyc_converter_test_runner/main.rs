@@ -37,9 +37,7 @@ fn trim_path_with_current_dir(path: &PathBuf) -> &str {
 }
 
 fn main() {
-    let ir_converter_test_cases_root = env::current_dir()
-        .unwrap()
-        .join("./tests/fixtures/ir_converter");
+    let ir_converter_test_cases_root = env::current_dir().unwrap().join("./tests/fixtures/ir_converter");
     let ir_converter_test_cases = read_test_cases_from_root(ir_converter_test_cases_root);
     let results = run_ir_converter_test_cases(ir_converter_test_cases);
 

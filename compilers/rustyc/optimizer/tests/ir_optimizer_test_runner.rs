@@ -13,9 +13,7 @@ use rustyc_optimizer::ir_optimizer::pass::{DebuggerPass, OptimizerPass};
 use std::{env, fs::read_to_string, path::PathBuf};
 
 fn get_root_path() -> PathBuf {
-    env::current_dir()
-        .unwrap()
-        .join("./tests/fixtures/ir_optimizer")
+    env::current_dir().unwrap().join("./tests/fixtures/ir_optimizer")
 }
 
 fn run_ir_pass_test_case_old<F>(suffix_path: &'static str, get_result: F)
@@ -23,8 +21,7 @@ where
     F: FnOnce() -> String,
 {
     let table_path = get_root_path().join(suffix_path).join("output.txt");
-    let expect_table =
-        read_to_string(table_path).expect("[Internal Error]: Pass Table is not exist.");
+    let expect_table = read_to_string(table_path).expect("[Internal Error]: Pass Table is not exist.");
     let result_string = get_result();
     assert_eq!(expect_table, result_string);
 }
@@ -57,8 +54,7 @@ fn run_ir_anaylsis_test_case<T>(
     mut anaylsis: impl OptimizerAnaylsis<T> + DebuggerAnaylsis<T>,
 ) {
     let table_path = get_root_path().join(suffix_path).join("output.txt");
-    let expect_table =
-        read_to_string(table_path).expect("[Internal Error]: Pass Table is not exist.");
+    let expect_table = read_to_string(table_path).expect("[Internal Error]: Pass Table is not exist.");
     let table = anaylsis.anaylsis(&mut function);
     let result_string = anaylsis.debugger(&function, &table);
     assert_eq!(expect_table, result_string);
@@ -104,21 +100,17 @@ generate_pass_cases!(
     //         pass.debugger(&func)
     //     }
     // ),
-    (
-        test_gvn_pass_conrnell_example,
-        "./gvn/conrnell_example",
-        || {
-            let mut dom_anaylsier = DomAnaylsier::new();
-            let mut func = create_gvn_graph_from_conrnell();
-            let before = func.print_to_string();
-            let table = dom_anaylsier.anaylsis(&func);
-            let mut pass = GVNPass::new(&table);
-            pass.process(&mut func);
-            let table = pass.debugger(&func);
-            let after = func.print_to_string();
-            (before, table, after)
-        }
-    ),
+    (test_gvn_pass_conrnell_example, "./gvn/conrnell_example", || {
+        let mut dom_anaylsier = DomAnaylsier::new();
+        let mut func = create_gvn_graph_from_conrnell();
+        let before = func.print_to_string();
+        let table = dom_anaylsier.anaylsis(&func);
+        let mut pass = GVNPass::new(&table);
+        pass.process(&mut func);
+        let table = pass.debugger(&func);
+        let after = func.print_to_string();
+        (before, table, after)
+    }),
     (test_licm_pass_cmu_example, "./licm/cmu_example", || {
         let mut fun = create_licm_graph_example_from_cmu();
         let before = fun.print_to_string();

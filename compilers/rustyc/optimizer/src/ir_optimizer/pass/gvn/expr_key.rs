@@ -10,9 +10,7 @@ pub enum RightHandSideInst {
     Phi(Vec<(BasicBlock, Value)>),
 }
 
-pub fn get_right_hand_side_inst_key(
-    instruction: &InstructionData,
-) -> Option<(RightHandSideInst, Value)> {
+pub fn get_right_hand_side_inst_key(instruction: &InstructionData) -> Option<(RightHandSideInst, Value)> {
     match instruction {
         InstructionData::Add {
             opcode,
@@ -125,10 +123,9 @@ pub fn get_right_hand_side_inst_key(
         | InstructionData::ToI64 { opcode, src, dst }
         | InstructionData::ToF32 { opcode, src, dst }
         | InstructionData::ToF64 { opcode, src, dst }
-        | InstructionData::ToAddress { opcode, src, dst } => Some((
-            RightHandSideInst::Unary((src.clone(), opcode.clone())),
-            dst.clone(),
-        )),
+        | InstructionData::ToAddress { opcode, src, dst } => {
+            Some((RightHandSideInst::Unary((src.clone(), opcode.clone())), dst.clone()))
+        }
         InstructionData::Icmp {
             opcode: _,
             flag,
@@ -146,9 +143,7 @@ pub fn get_right_hand_side_inst_key(
             RightHandSideInst::Cmp((src1.clone(), src2.clone(), flag.clone())),
             dst.clone(),
         )),
-        InstructionData::Phi { from, dst, .. } => {
-            Some((RightHandSideInst::Phi(from.clone()), dst.clone()))
-        }
+        InstructionData::Phi { from, dst, .. } => Some((RightHandSideInst::Phi(from.clone()), dst.clone())),
         _ => None,
     }
 }

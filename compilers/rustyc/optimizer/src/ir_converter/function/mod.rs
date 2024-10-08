@@ -35,11 +35,7 @@ macro_rules! get_size_from_symbol_type {
             },
             SymbolType::PointerType(_) => $converter.function.create_u8_const(4),
             SymbolType::StructalType(struct_name) => {
-                let size_usize = $converter
-                    .struct_size_table
-                    .get(struct_name)
-                    .unwrap()
-                    .clone();
+                let size_usize = $converter.struct_size_table.get(struct_name).unwrap().clone();
                 $converter.function.create_u8_const(size_usize as u8)
             }
             SymbolType::ArrayType(array_symbol_type) => {
@@ -60,19 +56,13 @@ macro_rules! get_size_from_symbol_type {
                     },
                     SymbolType::PointerType(_) => $converter.function.create_u8_const(4),
                     SymbolType::StructalType(struct_name) => {
-                        let size_usize = $converter
-                            .struct_size_table
-                            .get(struct_name)
-                            .unwrap()
-                            .clone();
+                        let size_usize = $converter.struct_size_table.get(struct_name).unwrap().clone();
                         $converter.function.create_u8_const(size_usize as u8)
                     }
                     _ => unreachable!(),
                 };
                 for val in &array_symbol_type.value_of_dims {
-                    array_size_value = $converter
-                        .function
-                        .build_mul_inst(array_size_value, val.clone());
+                    array_size_value = $converter.function.build_mul_inst(array_size_value, val.clone());
                 }
                 array_size_value
             }
@@ -148,27 +138,19 @@ impl<'a> FunctionCoverter<'a> {
             let symbol_type = self.map_ast_type_to_symbol_type(&param.value_type);
             let reg = match self.map_ast_type_to_symbol_type(&param.value_type) {
                 SymbolType::BasicType(ir_type) => self.function.add_register(ir_type),
-                SymbolType::ArrayType(_array_type) => {
-                    self.function.add_register(IrValueType::Address)
-                }
-                SymbolType::PointerType(_pointer_type) => {
-                    self.function.add_register(IrValueType::Address)
-                }
+                SymbolType::ArrayType(_array_type) => self.function.add_register(IrValueType::Address),
+                SymbolType::PointerType(_pointer_type) => self.function.add_register(IrValueType::Address),
                 SymbolType::StructalType(_) => self.function.add_register(IrValueType::Address),
             };
             self.function.params_value.push(reg);
-            self.symbol_table
-                .insert(name, SymbolEntry { reg, symbol_type })
+            self.symbol_table.insert(name, SymbolEntry { reg, symbol_type })
         }
     }
     /// ## Helper function when return type of is a struct type
     /// By our IR design, we can not return a structal type in our ir function. To solve this problem
     /// we push a extra pointer to perform copy struct.
     pub fn create_symbol_for_return_type(&mut self) {
-        let signature = self
-            .function_signature_table
-            .get(&self.function.name)
-            .unwrap();
+        let signature = self.function_signature_table.get(&self.function.name).unwrap();
         let return_symbol_type = &signature.return_type;
         if let SymbolType::StructalType(_) = return_symbol_type {
             let reg = self.function.add_register(IrValueType::Address);
@@ -220,10 +202,7 @@ impl<'a> FunctionCoverter<'a> {
     fn accpet_return_stmt(&mut self, return_stmt: &ReturnStatement) {
         if let Some(expr) = &return_stmt.value {
             let return_value = self.accept_expr_with_value(expr);
-            let self_signature = self
-                .function_signature_table
-                .get(&self.function.name)
-                .unwrap();
+            let self_signature = self.function_signature_table.get(&self.function.name).unwrap();
             let return_symbol_type = &self_signature.return_type;
             if let SymbolType::StructalType(struct_name) = &return_symbol_type {
                 let dst = self.symbol_table.get("__rustyc_return_strcut").unwrap();
@@ -236,8 +215,7 @@ impl<'a> FunctionCoverter<'a> {
         } else {
             self.function.build_ret_inst(None);
         }
-        self.function
-            .mark_as_exit(self.function.current_block.unwrap());
+        self.function.mark_as_exit(self.function.current_block.unwrap());
     }
     /// ## Accept a compound statement, control scope
     /// accept a compound stmt, control leave and enter the scope, pushing
@@ -284,13 +262,11 @@ impl<'a> FunctionCoverter<'a> {
             self.function.build_jump_inst(end_block);
 
             self.function.switch_to_block(last_block);
-            self.function
-                .build_brif_inst(value, conseq_block, alter_block);
+            self.function.build_brif_inst(value, conseq_block, alter_block);
         } else {
             self.function.connect_block(last_block, end_block);
             self.function.switch_to_block(last_block);
-            self.function
-                .build_brif_inst(value, conseq_block, end_block);
+            self.function.build_brif_inst(value, conseq_block, end_block);
         }
         self.function.switch_to_block(end_block);
     }
@@ -320,8 +296,7 @@ impl<'a> FunctionCoverter<'a> {
         match &for_stmt.test {
             Some(test_expr) => {
                 let test_value = self.accept_expr_with_value(test_expr);
-                self.function
-                    .build_brif_inst(test_value, body_block, final_block);
+                self.function.build_brif_inst(test_value, body_block, final_block);
             }
             None => {}
         }
@@ -373,37 +348,27 @@ impl<'a> FunctionCoverter<'a> {
                     SymbolType::BasicType(ref basic_ir_type) => {
                         let init_value = self.accept_expr_with_value(expr);
                         let offset = self.function.create_u8_const(0);
-                        self.function.build_store_register_inst(
-                            init_value,
-                            pointer,
-                            offset,
-                            basic_ir_type.clone(),
-                        );
+                        self.function
+                            .build_store_register_inst(init_value, pointer, offset, basic_ir_type.clone());
                     }
                     SymbolType::PointerType(_) => {
                         let init_value = self.accept_expr_with_value(expr);
                         let offset = self.function.create_u8_const(0);
-                        self.function.build_store_register_inst(
-                            init_value,
-                            pointer,
-                            offset,
-                            IrValueType::Address,
-                        );
+                        self.function
+                            .build_store_register_inst(init_value, pointer, offset, IrValueType::Address);
                     }
                     SymbolType::ArrayType(array_symbol_type) => {
                         let src = self.accept_expr_with_value(expr);
                         let mut usize_of_dims = Vec::new();
                         for value in &array_symbol_type.value_of_dims {
-                            if let ValueData::Immi(immi) = self.function.values.get(value).unwrap()
-                            {
+                            if let ValueData::Immi(immi) = self.function.values.get(value).unwrap() {
                                 let usize_dim = immi.get_data_as_i128() as usize;
                                 usize_of_dims.push(usize_dim);
                             } else {
                                 unreachable!();
                             }
                         }
-                        let size =
-                            get_size_from_symbol_type!(self, array_symbol_type.array_of.as_ref());
+                        let size = get_size_from_symbol_type!(self, array_symbol_type.array_of.as_ref());
                         if let ValueData::Immi(immi) = self.function.values.get(&size).unwrap() {
                             let base = immi.get_data_as_i128() as usize;
                             let mut total = base;
@@ -437,17 +402,12 @@ impl<'a> FunctionCoverter<'a> {
     /// Because util function can not get the value of array dim. so this wrapper function
     /// is fill up dims of array by calling `accept_expr` function.
     fn map_ast_type_to_symbol_type(&mut self, value_type: &ValueType) -> SymbolType {
-        let mut symbol_type = map_ast_type_to_symbol_type(
-            value_type,
-            &mut self.struct_layout_table,
-            &mut self.struct_size_table,
-        );
+        let mut symbol_type =
+            map_ast_type_to_symbol_type(value_type, &mut self.struct_layout_table, &mut self.struct_size_table);
         if let SymbolType::ArrayType(array_symbol_type) = &mut symbol_type {
             if let ValueType::ArrayType(array_value_type) = value_type {
                 for expr in &array_value_type.dims {
-                    array_symbol_type
-                        .value_of_dims
-                        .push(self.accept_expr_with_value(expr));
+                    array_symbol_type.value_of_dims.push(self.accept_expr_with_value(expr));
                 }
                 array_symbol_type.value_of_dims.reverse();
             } else {
@@ -460,28 +420,19 @@ impl<'a> FunctionCoverter<'a> {
     /// This function is a wrapper function for util function `get_size_from_ast_type`,
     /// Since util function can not get the size of variable arry. so this wrapper function
     /// will get size of variable array by the help of `accept_expr` and givn symbol type.
-    fn get_size_form_ast_type(
-        &mut self,
-        value_type: &ValueType,
-        helper_symbol_type: Option<&SymbolType>,
-    ) -> Value {
+    fn get_size_form_ast_type(&mut self, value_type: &ValueType, helper_symbol_type: Option<&SymbolType>) -> Value {
         if let Some(symbol_type) = helper_symbol_type {
             if let SymbolType::ArrayType(array_symbol_type) = &symbol_type {
                 if let ValueType::ArrayType(array_value_type) = value_type {
                     let values = &array_symbol_type.value_of_dims;
-                    let const_size = get_size_form_ast_type(
-                        &array_value_type.array_of,
-                        &mut self.struct_size_table,
-                    ) as u32;
+                    let const_size =
+                        get_size_form_ast_type(&array_value_type.array_of, &mut self.struct_size_table) as u32;
                     let mut size = self.function.create_u32_const(const_size);
                     for index in 0..values.len() {
                         let value = values[values.len() - index - 1];
                         let (next_size, next_value, _) =
-                            self.function.align_two_base_type_value_to_same_type(
-                                size,
-                                value,
-                                Some(IrValueType::U32),
-                            );
+                            self.function
+                                .align_two_base_type_value_to_same_type(size, value, Some(IrValueType::U32));
                         size = self.function.build_mul_inst(next_size, next_value);
                     }
                     return size;

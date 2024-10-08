@@ -115,11 +115,7 @@ impl Function {
     pub fn get_block_from_inst(&self, inst: &Instruction) -> Option<&BasicBlock> {
         self.inst_map_block.get(&inst)
     }
-    pub fn insert_inst_to_block_front(
-        &mut self,
-        block: &BasicBlock,
-        inst_data: InstructionData,
-    ) -> Instruction {
+    pub fn insert_inst_to_block_front(&mut self, block: &BasicBlock, inst_data: InstructionData) -> Instruction {
         let inst_id = self.get_next_inst_id();
         self.blocks
             .get_mut(block)
@@ -141,11 +137,7 @@ impl Function {
         self.instructions.remove(inst);
         self.instructions.insert(inst.clone(), inst_data);
     }
-    pub fn insert_value_data_and_type(
-        &mut self,
-        value_data: ValueData,
-        ir_type: Option<IrValueType>,
-    ) -> Value {
+    pub fn insert_value_data_and_type(&mut self, value_data: ValueData, ir_type: Option<IrValueType>) -> Value {
         if let ValueData::Immi(_) = &value_data {
             let value_id = Value(self.next_value_index);
             self.values.insert(value_id, value_data);

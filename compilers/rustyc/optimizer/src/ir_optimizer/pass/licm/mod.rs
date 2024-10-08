@@ -65,12 +65,7 @@ impl<'a> LICMPass<'a> {
             if visited_blocks.contains(successor) {
                 table.insert((id, successor.clone()));
             } else {
-                self.dfs_visit_to_find_backward_edges(
-                    function,
-                    successor.clone(),
-                    visited_blocks,
-                    table,
-                );
+                self.dfs_visit_to_find_backward_edges(function, successor.clone(), visited_blocks, table);
             }
         }
     }
@@ -118,15 +113,8 @@ impl<'a> LICMPass<'a> {
         let mut reach_tail = false;
         let mut can_exit_loop = false;
         for successor in &function.blocks.get(current).unwrap().successor {
-            let can_successor_reach_tail = self.dfs_visit_to_find_loop_blocks(
-                function,
-                current,
-                successor,
-                tail,
-                blocks,
-                exits,
-                visited_blocks,
-            );
+            let can_successor_reach_tail =
+                self.dfs_visit_to_find_loop_blocks(function, current, successor, tail, blocks, exits, visited_blocks);
             reach_tail = can_successor_reach_tail || reach_tail;
             can_exit_loop = !can_successor_reach_tail || can_exit_loop;
         }
@@ -194,21 +182,19 @@ impl<'a> LICMPass<'a> {
             Some(rhs_values) => {
                 let mut is_loop_invariant = true;
                 for rhs_value in rhs_values {
-                    let is_cur_rhs_value_def_out_of_loop =
-                        match self.use_def_table.1.get(&rhs_value) {
-                            // for const, always loop invarant
-                            None => true,
-                            // for def, check is def out of loop
-                            Some(cur_rhs_value_def) => match cur_rhs_value_def {
-                                DefKind::InternalDef(def_inst) => {
-                                    let def_block = function.get_block_from_inst(def_inst).unwrap();
-                                    !loop_blocks.contains(def_block)
-                                }
-                                _ => true,
-                            },
-                        };
-                    let is_cur_rhs_value_known_as_loop_invarant =
-                        self.known_loop_invariants.contains(&rhs_value);
+                    let is_cur_rhs_value_def_out_of_loop = match self.use_def_table.1.get(&rhs_value) {
+                        // for const, always loop invarant
+                        None => true,
+                        // for def, check is def out of loop
+                        Some(cur_rhs_value_def) => match cur_rhs_value_def {
+                            DefKind::InternalDef(def_inst) => {
+                                let def_block = function.get_block_from_inst(def_inst).unwrap();
+                                !loop_blocks.contains(def_block)
+                            }
+                            _ => true,
+                        },
+                    };
+                    let is_cur_rhs_value_known_as_loop_invarant = self.known_loop_invariants.contains(&rhs_value);
                     let is_cur_rhs_value_loop_invarant =
                         is_cur_rhs_value_def_out_of_loop || is_cur_rhs_value_known_as_loop_invarant;
                     is_loop_invariant = is_loop_invariant && is_cur_rhs_value_loop_invarant;
@@ -243,28 +229,22 @@ impl<'a> LICMPass<'a> {
     ///   }
     /// }
     /// ```
-    fn traversal_loop_to_find_hoistable_loop_invariant(
-        &mut self,
-        function: &Function,
-    ) -> Vec<(Instruction, usize)> {
+    fn traversal_loop_to_find_hoistable_loop_invariant(&mut self, function: &Function) -> Vec<(Instruction, usize)> {
         let mut need_to_code_motion = Vec::new();
         let mut index = 0 as usize;
         for natural_loop in &self.loops {
             for block in &natural_loop.blocks {
                 for inst in &function.blocks.get(block).unwrap().instructions {
-                    let is_loop_invariant =
-                        match self.is_loop_invatant(inst, function, &natural_loop.blocks) {
-                            Some(val) => {
-                                self.known_loop_invariants.insert(val);
-                                true
-                            }
-                            None => false,
-                        };
+                    let is_loop_invariant = match self.is_loop_invatant(inst, function, &natural_loop.blocks) {
+                        Some(val) => {
+                            self.known_loop_invariants.insert(val);
+                            true
+                        }
+                        None => false,
+                    };
                     if is_loop_invariant
-                        && self.is_block_dominate_exits(
-                            function.get_block_from_inst(inst).unwrap(),
-                            &natural_loop.exits,
-                        )
+                        && self
+                            .is_block_dominate_exits(function.get_block_from_inst(inst).unwrap(), &natural_loop.exits)
                     {
                         need_to_code_motion.push((inst.clone(), index));
                     }
@@ -275,22 +255,12 @@ impl<'a> LICMPass<'a> {
         need_to_code_motion
     }
     /// ## Entry function to motion the Loop invariant
-    fn motion_hoistable_loop_invarant(
-        &self,
-        function: &mut Function,
-        inst_and_loop_indexs: Vec<(Instruction, usize)>,
-    ) {
+    fn motion_hoistable_loop_invarant(&self, function: &mut Function, inst_and_loop_indexs: Vec<(Instruction, usize)>) {
         for (inst, index) in inst_and_loop_indexs {
             let natural_loop = &self.loops[index];
             let preheader_block = function.create_block();
             function.connect_block(preheader_block, natural_loop.header);
-            for header_predecessor in function
-                .blocks
-                .get(&natural_loop.header)
-                .unwrap()
-                .predecessor
-                .clone()
-            {
+            for header_predecessor in function.blocks.get(&natural_loop.header).unwrap().predecessor.clone() {
                 function.connect_block(header_predecessor, preheader_block);
                 self.rewrite_branch_target_of_header(
                     function,
@@ -316,12 +286,7 @@ impl<'a> LICMPass<'a> {
         preheader_block: &BasicBlock,
         header_block: &BasicBlock,
     ) {
-        for inst in &function
-            .blocks
-            .get(predesuccessor_block)
-            .unwrap()
-            .instructions
-        {
+        for inst in &function.blocks.get(predesuccessor_block).unwrap().instructions {
             match function.instructions.get_mut(inst).unwrap() {
                 InstructionData::Jump { dst, .. } => {
                     *dst = preheader_block.clone();

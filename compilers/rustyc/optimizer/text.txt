@@ -1,0 +1,203 @@
+Init: {
+    Value(
+        2,
+    ): Element(
+        Value(
+            5,
+        ),
+    ),
+    Value(
+        4,
+    ): TopElement,
+    Value(
+        3,
+    ): Element(
+        Value(
+            6,
+        ),
+    ),
+}, {
+    Value(
+        4,
+    ): VirRegister(
+        "t3",
+    ),
+    Value(
+        2,
+    ): VirRegister(
+        "t1",
+    ),
+    Value(
+        3,
+    ): VirRegister(
+        "t2",
+    ),
+    Value(
+        1,
+    ): Immi(
+        I16(
+            10,
+        ),
+    ),
+    Value(
+        5,
+    ): Immi(
+        I16(
+            10,
+        ),
+    ),
+    Value(
+        6,
+    ): Immi(
+        I16(
+            10,
+        ),
+    ),
+}
+RESULT: 20, I16(10)I16(10)
+SSA name: VirRegister(
+    "t2",
+), Iter: {
+    Value(
+        2,
+    ): Element(
+        Value(
+            5,
+        ),
+    ),
+    Value(
+        4,
+    ): Element(
+        Value(
+            7,
+        ),
+    ),
+    Value(
+        3,
+    ): Element(
+        Value(
+            6,
+        ),
+    ),
+}, values: {
+    Value(
+        4,
+    ): VirRegister(
+        "t3",
+    ),
+    Value(
+        7,
+    ): Immi(
+        I16(
+            20,
+        ),
+    ),
+    Value(
+        2,
+    ): VirRegister(
+        "t1",
+    ),
+    Value(
+        3,
+    ): VirRegister(
+        "t2",
+    ),
+    Value(
+        1,
+    ): Immi(
+        I16(
+            10,
+        ),
+    ),
+    Value(
+        5,
+    ): Immi(
+        I16(
+            10,
+        ),
+    ),
+    Value(
+        6,
+    ): Immi(
+        I16(
+            10,
+        ),
+    ),
+}
+RESULT: 20, I16(10)I16(10)
+SSA name: VirRegister(
+    "t1",
+), Iter: {
+    Value(
+        2,
+    ): Element(
+        Value(
+            5,
+        ),
+    ),
+    Value(
+        4,
+    ): Element(
+        Value(
+            7,
+        ),
+    ),
+    Value(
+        3,
+    ): Element(
+        Value(
+            6,
+        ),
+    ),
+}, values: {
+    Value(
+        2,
+    ): VirRegister(
+        "t1",
+    ),
+    Value(
+        3,
+    ): VirRegister(
+        "t2",
+    ),
+    Value(
+        5,
+    ): Immi(
+        I16(
+            10,
+        ),
+    ),
+    Value(
+        4,
+    ): VirRegister(
+        "t3",
+    ),
+    Value(
+        7,
+    ): Immi(
+        I16(
+            20,
+        ),
+    ),
+    Value(
+        1,
+    ): Immi(
+        I16(
+            10,
+        ),
+    ),
+    Value(
+        8,
+    ): Immi(
+        I16(
+            20,
+        ),
+    ),
+    Value(
+        6,
+    ): Immi(
+        I16(
+            10,
+        ),
+    ),
+}

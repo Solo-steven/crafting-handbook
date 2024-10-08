@@ -99,11 +99,7 @@ pub fn sorted_dom_children_in_dfs_ordering<'a>(
         index += 1;
     }
     for (block_id, entry) in dom_table {
-        let mut children = entry
-            .dom_tree_children
-            .clone()
-            .into_iter()
-            .collect::<Vec<_>>();
+        let mut children = entry.dom_tree_children.clone().into_iter().collect::<Vec<_>>();
         if children.len() == 0 {
             map.insert(block_id.clone(), children);
             continue;

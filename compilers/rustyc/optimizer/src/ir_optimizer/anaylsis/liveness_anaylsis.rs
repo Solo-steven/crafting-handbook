@@ -215,71 +215,19 @@ impl LivenessAnaylsier {
                     }
                     kill_set.insert(dst.clone());
                 }
-                InstructionData::Neg {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::BitwiseNot {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::LogicalNot {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::ToU8 {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::ToU16 {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::ToU32 {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::ToU64 {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::ToI16 {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::ToI32 {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::ToI64 {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::ToF32 {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::ToF64 {
-                    opcode: _,
-                    src,
-                    dst,
-                }
-                | InstructionData::ToAddress {
-                    opcode: _,
-                    src,
-                    dst,
-                } => {
+                InstructionData::Neg { opcode: _, src, dst }
+                | InstructionData::BitwiseNot { opcode: _, src, dst }
+                | InstructionData::LogicalNot { opcode: _, src, dst }
+                | InstructionData::ToU8 { opcode: _, src, dst }
+                | InstructionData::ToU16 { opcode: _, src, dst }
+                | InstructionData::ToU32 { opcode: _, src, dst }
+                | InstructionData::ToU64 { opcode: _, src, dst }
+                | InstructionData::ToI16 { opcode: _, src, dst }
+                | InstructionData::ToI32 { opcode: _, src, dst }
+                | InstructionData::ToI64 { opcode: _, src, dst }
+                | InstructionData::ToF32 { opcode: _, src, dst }
+                | InstructionData::ToF64 { opcode: _, src, dst }
+                | InstructionData::ToAddress { opcode: _, src, dst } => {
                     if self.is_value_register(src, function) && !kill_set.contains(src) {
                         use_set.insert(src.clone());
                     }
@@ -357,11 +305,7 @@ impl LivenessAnaylsier {
                 } => {
                     kill_set.insert(dst.clone());
                 }
-                InstructionData::Move {
-                    opcode: _,
-                    src,
-                    dst,
-                } => {
+                InstructionData::Move { opcode: _, src, dst } => {
                     if self.is_value_register(src, function) && !kill_set.contains(src) {
                         use_set.insert(src.clone());
                     }
@@ -390,11 +334,7 @@ impl LivenessAnaylsier {
                         use_set.insert(val.clone());
                     }
                 }
-                InstructionData::Phi {
-                    opcode: _,
-                    dst,
-                    from,
-                } => {
+                InstructionData::Phi { opcode: _, dst, from } => {
                     kill_set.insert(dst.clone());
                     for (_block, val) in from {
                         use_set.insert(val.clone());

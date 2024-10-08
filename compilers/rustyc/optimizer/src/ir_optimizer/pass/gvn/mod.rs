@@ -9,9 +9,7 @@ use crate::ir::value::Value;
 use crate::ir_optimizer::anaylsis::domtree::DomTable;
 use crate::ir_optimizer::pass::OptimizerPass;
 use expr_key::get_right_hand_side_inst_key;
-use scope_table::{
-    sorted_dom_children_in_dfs_ordering, ScopeInstCacheTable, ScopeReplaceValueCacheTable,
-};
+use scope_table::{sorted_dom_children_in_dfs_ordering, ScopeInstCacheTable, ScopeReplaceValueCacheTable};
 use std::collections::HashMap;
 
 pub struct GVNPass<'a> {
@@ -64,15 +62,13 @@ impl<'a> GVNPass<'a> {
             let inst_data = function.instructions.get_mut(inst).unwrap();
             if let InstructionData::Phi { dst, from, .. } = &inst_data {
                 if self.rewrite_phi_by_cache_table(dst, from) {
-                    self.need_remove_insts
-                        .push((block_id.clone(), inst.clone()))
+                    self.need_remove_insts.push((block_id.clone(), inst.clone()))
                 }
                 continue;
             }
             self.rewrite_inst_operand_by_replaceable_table(inst_data);
             if self.rewrite_inst_by_cache_table(inst_data) {
-                self.need_remove_insts
-                    .push((block_id.clone(), inst.clone()))
+                self.need_remove_insts.push((block_id.clone(), inst.clone()))
             }
         }
         for sucessor_id in &block_data.successor.clone() {
@@ -112,12 +108,8 @@ impl<'a> GVNPass<'a> {
             break;
         }
         if is_meaning_less {
-            let replace_value = self
-                .replaceable_value_table
-                .get(last_value)
-                .unwrap_or(last_value);
-            self.replaceable_value_table
-                .insert(dst.clone(), replace_value.clone());
+            let replace_value = self.replaceable_value_table.get(last_value).unwrap_or(last_value);
+            self.replaceable_value_table.insert(dst.clone(), replace_value.clone());
             return true;
         }
         // check is redundant
@@ -127,11 +119,7 @@ impl<'a> GVNPass<'a> {
             from: from.clone(),
         })
     }
-    fn rewrite_successor_phi_by_replaceable_table(
-        &mut self,
-        function: &mut Function,
-        successor_id: &BasicBlock,
-    ) {
+    fn rewrite_successor_phi_by_replaceable_table(&mut self, function: &mut Function, successor_id: &BasicBlock) {
         let successor_block_data = function.blocks.get(successor_id).unwrap();
         for inst in &successor_block_data.instructions {
             let inst_data = function.instructions.get_mut(inst).unwrap();
