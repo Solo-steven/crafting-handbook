@@ -158,9 +158,7 @@ impl Parser {
                         alter: Some(Box::new(self.parse_if_statement()?)),
                     })),
                     _ => {
-                        syntax_error!(
-                            "Else Keyword Must Concat With Block Statement Or If Statement"
-                        );
+                        syntax_error!("Else Keyword Must Concat With Block Statement Or If Statement");
                     }
                 }
             }
@@ -181,9 +179,7 @@ impl Parser {
             }
         }
         match self.get_token()? {
-            Token::Semi | Token::BracesRight => {
-                Ok(Stmt::ReturnStmt(ReturnStatement { argument: None }))
-            }
+            Token::Semi | Token::BracesRight => Ok(Stmt::ReturnStmt(ReturnStatement { argument: None })),
             _ => Ok(Stmt::ReturnStmt(ReturnStatement {
                 argument: Some(self.parse_expression()?),
             })),
@@ -299,9 +295,7 @@ impl Parser {
                         self.next_token()?;
                     }
                     _ => {
-                        syntax_error!(
-                            "Function Declaration Params Must Be Wrapped In ParenthesesRight"
-                        );
+                        syntax_error!("Function Declaration Params Must Be Wrapped In ParenthesesRight");
                     }
                 }
                 return Ok(params);
@@ -414,9 +408,7 @@ impl Parser {
             self.next_token()?;
             let mut right = self.parse_unary_expression()?;
             let next_op = self.get_token()?;
-            if is_binary_op(&next_op)
-                && (get_pre_of_binary_op(&next_op) > get_pre_of_binary_op(&current_op))
-            {
+            if is_binary_op(&next_op) && (get_pre_of_binary_op(&next_op) > get_pre_of_binary_op(&current_op)) {
                 right = self.parse_binary_ops(right, get_pre_of_binary_op(&next_op))?
             }
             left = Expr::BinaryExpr(BinaryExpression {
@@ -474,9 +466,7 @@ impl Parser {
                         Ok(expr)
                     }
                     _ => {
-                        syntax_error!(
-                            "CoverParenthesizedExpression Must End With ParentheseRight."
-                        );
+                        syntax_error!("CoverParenthesizedExpression Must End With ParentheseRight.");
                     }
                 };
             }

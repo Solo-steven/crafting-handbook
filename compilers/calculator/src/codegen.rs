@@ -45,8 +45,7 @@ impl<'ctx> Codegen<'ctx> {
             .create_jit_execution_engine(OptimizationLevel::Default)
             .ok()
             .unwrap();
-        let main_func: Option<JitFunction<unsafe extern "C" fn() -> f64>> =
-            unsafe { engine.get_function("main").ok() };
+        let main_func: Option<JitFunction<unsafe extern "C" fn() -> f64>> = unsafe { engine.get_function("main").ok() };
         match main_func {
             Some(fun) => unsafe {
                 let result: f64 = fun.call();
@@ -124,10 +123,7 @@ impl<'ctx> Codegen<'ctx> {
                 }
                 let llvm_fun_type = match function_declaration.return_type {
                     Type::Number => self.context.f64_type().fn_type(param_types.as_ref(), false),
-                    Type::Void => self
-                        .context
-                        .void_type()
-                        .fn_type(param_types.as_ref(), false),
+                    Type::Void => self.context.void_type().fn_type(param_types.as_ref(), false),
                 };
                 let llvm_fun_value = self.module.add_function(fun_name, llvm_fun_type, None);
                 /*
@@ -137,14 +133,12 @@ impl<'ctx> Codegen<'ctx> {
                    ->  3. Load every local register by load instruction
                           insert into symbol table.
                 */
-                let entry_block_of_function =
-                    self.context.append_basic_block(llvm_fun_value, "entry");
+                let entry_block_of_function = self.context.append_basic_block(llvm_fun_value, "entry");
                 let builder = self.context.create_builder();
                 builder.position_at_end(entry_block_of_function);
                 for i in 0..function_declaration.arguments.len() {
                     let argument = function_declaration.arguments[i].clone();
-                    let local_pointer_value =
-                        builder.build_alloca(self.context.f64_type(), &argument.clone().as_str());
+                    let local_pointer_value = builder.build_alloca(self.context.f64_type(), &argument.clone().as_str());
                     builder.build_store(
                         local_pointer_value,
                         entry_block_of_function
@@ -153,8 +147,7 @@ impl<'ctx> Codegen<'ctx> {
                             .get_nth_param(i as u32)
                             .unwrap(),
                     );
-                    self.symbol_table
-                        .insert(argument.clone(), local_pointer_value);
+                    self.symbol_table.insert(argument.clone(), local_pointer_value);
                 }
                 self.current_block = Some(entry_block_of_function);
                 self.accecpt_statement(&function_declaration.body)?;
@@ -178,12 +171,8 @@ impl<'ctx> Codegen<'ctx> {
                     Some(ref return_expr) => {
                         let llvm_value = self.accecpt_expression(return_expr)?;
                         match llvm_value {
-                            ExprResult::Float(float_value) => {
-                                builder.build_return(Some(&float_value))
-                            }
-                            ExprResult::BasicEnum(basic_value) => {
-                                builder.build_return(Some(&basic_value))
-                            }
+                            ExprResult::Float(float_value) => builder.build_return(Some(&float_value)),
+                            ExprResult::BasicEnum(basic_value) => builder.build_return(Some(&basic_value)),
                         };
                     }
                     None => {
@@ -208,12 +197,9 @@ impl<'ctx> Codegen<'ctx> {
                     "tmpCompare",
                 );
                 let llvm_function = llvm_basic_block.get_parent().unwrap();
-                let final_llvm_basic_block =
-                    self.context.append_basic_block(llvm_function, "tmpFinal");
+                let final_llvm_basic_block = self.context.append_basic_block(llvm_function, "tmpFinal");
                 // build conseq block
-                let conseq_llvm_basic_block = self
-                    .context
-                    .insert_basic_block_after(llvm_basic_block, "tmpConseq");
+                let conseq_llvm_basic_block = self.context.insert_basic_block_after(llvm_basic_block, "tmpConseq");
                 self.current_block = Some(conseq_llvm_basic_block);
                 self.accecpt_statement(if_statement.consequent.as_ref())?;
                 let conseq_builder = self.context.create_builder();
@@ -235,11 +221,7 @@ impl<'ctx> Codegen<'ctx> {
                     None => final_llvm_basic_block,
                 };
                 // build branch from original block (predecessor)
-                builder.build_conditional_branch(
-                    test_llvm_value,
-                    conseq_llvm_basic_block,
-                    alter_llvm_basic_block,
-                );
+                builder.build_conditional_branch(test_llvm_value, conseq_llvm_basic_block, alter_llvm_basic_block);
                 self.current_block = Some(final_llvm_basic_block);
             }
             Stmt::WhileStmt(ref while_statement) => {
@@ -249,8 +231,7 @@ impl<'ctx> Codegen<'ctx> {
                 */
 
                 let llvm_function = self.current_block.unwrap().get_parent().unwrap();
-                let test_llvm_basic_block =
-                    self.context.append_basic_block(llvm_function, "testloop");
+                let test_llvm_basic_block = self.context.append_basic_block(llvm_function, "testloop");
                 let llvm_basic_block = self.current_block.unwrap();
                 let builder = self.context.create_builder();
                 builder.position_at_end(llvm_basic_block);
@@ -268,17 +249,11 @@ impl<'ctx> Codegen<'ctx> {
                     self.context.f64_type().const_float(0.0),
                     "tmpCompare",
                 );
-                let body_llvm_basic_block = self
-                    .context
-                    .insert_basic_block_after(test_llvm_basic_block, "loop");
+                let body_llvm_basic_block = self.context.insert_basic_block_after(test_llvm_basic_block, "loop");
                 let after_llvm_basic_block = self
                     .context
                     .insert_basic_block_after(body_llvm_basic_block, "aftherloop");
-                test_builder.build_conditional_branch(
-                    test_llvm_value,
-                    body_llvm_basic_block,
-                    after_llvm_basic_block,
-                );
+                test_builder.build_conditional_branch(test_llvm_value, body_llvm_basic_block, after_llvm_basic_block);
                 self.current_block = Some(body_llvm_basic_block);
                 self.accecpt_statement(&while_statement.body)?;
                 let body_builder = self.context.create_builder();
@@ -299,14 +274,12 @@ impl<'ctx> Codegen<'ctx> {
                     self.accecpt_expression(&sequnce_expr.expressions[index])?;
                 }
                 // TODO: using unreach error;
-                panic!("[Runtime Error]: Unreach zone, Sequence expression should return last expression's llvm value.");
+                panic!(
+                    "[Runtime Error]: Unreach zone, Sequence expression should return last expression's llvm value."
+                );
             }
-            Expr::AssigmentExpr(ref assignment_expr) => {
-                self.accecpt_assigment_expression(assignment_expr)
-            }
-            Expr::ConditionExpr(ref conditional_expr) => {
-                self.accept_conditional_expression(conditional_expr)
-            }
+            Expr::AssigmentExpr(ref assignment_expr) => self.accecpt_assigment_expression(assignment_expr),
+            Expr::ConditionExpr(ref conditional_expr) => self.accept_conditional_expression(conditional_expr),
             Expr::BinaryExpr(ref binary_expr) => self.accecpt_binary_expression(binary_expr),
             Expr::UnaryExpr(ref unary_expr) => self.accept_unary_expression(unary_expr),
             Expr::NumberExpr(ref number_literal) => {
@@ -323,8 +296,7 @@ impl<'ctx> Codegen<'ctx> {
                 let option_symbol = self.symbol_table.get(identifier.name.as_str());
                 match option_symbol {
                     Some(llvm_pointer_value) => {
-                        let llvm_load_result =
-                            builder.build_load(*llvm_pointer_value, identifier.name.as_str());
+                        let llvm_load_result = builder.build_load(*llvm_pointer_value, identifier.name.as_str());
                         Ok(ExprResult::BasicEnum(llvm_load_result))
                     }
                     None => {
@@ -396,18 +368,13 @@ impl<'ctx> Codegen<'ctx> {
         let conseq_llvm_basic_block = self.context.append_basic_block(llvm_function, "tmpConseq");
         let alter_llvm_basic_block = self.context.append_basic_block(llvm_function, "tmpAlter");
         let final_llvm_basic_block = self.context.append_basic_block(llvm_function, "tmpFinal");
-        builder.build_conditional_branch(
-            test_llvm_value,
-            conseq_llvm_basic_block,
-            alter_llvm_basic_block,
-        );
+        builder.build_conditional_branch(test_llvm_value, conseq_llvm_basic_block, alter_llvm_basic_block);
         // consequnce
         self.current_block = Some(conseq_llvm_basic_block);
-        let conseq_llvm_value =
-            match self.accecpt_expression(conditional_expr.consequnce.as_ref())? {
-                ExprResult::Float(float_value) => float_value,
-                ExprResult::BasicEnum(basic_value) => basic_value.into_float_value(),
-            };
+        let conseq_llvm_value = match self.accecpt_expression(conditional_expr.consequnce.as_ref())? {
+            ExprResult::Float(float_value) => float_value,
+            ExprResult::BasicEnum(basic_value) => basic_value.into_float_value(),
+        };
         let conseq_builder = self.context.create_builder();
         conseq_builder.position_at_end(conseq_llvm_basic_block);
         conseq_builder.build_unconditional_branch(final_llvm_basic_block);
@@ -431,10 +398,7 @@ impl<'ctx> Codegen<'ctx> {
         self.current_block = Some(final_llvm_basic_block);
         Ok(ExprResult::BasicEnum(phi_node.as_basic_value()))
     }
-    fn accecpt_binary_expression(
-        &mut self,
-        binary_expr: &BinaryExpression,
-    ) -> CodegenResult<ExprResult<'ctx>> {
+    fn accecpt_binary_expression(&mut self, binary_expr: &BinaryExpression) -> CodegenResult<ExprResult<'ctx>> {
         /*
             Codegen Basic On Left-hand-side and Right-hand-side
                 -> 1. get llvm_value from left and right hand side.
@@ -453,115 +417,41 @@ impl<'ctx> Codegen<'ctx> {
         let builder = self.context.create_builder();
         builder.position_at_end(*llvm_basic_block);
         Ok(match binary_expr.operator {
-            Operator::Plus => ExprResult::Float(builder.build_float_add(
-                lhs_llvm_value,
-                rhs_llvm_value,
-                "tempAdd",
-            )),
-            Operator::Minus => ExprResult::Float(builder.build_float_sub(
-                lhs_llvm_value,
-                rhs_llvm_value,
-                "tempSub",
-            )),
-            Operator::Multply => ExprResult::Float(builder.build_float_mul(
-                lhs_llvm_value,
-                rhs_llvm_value,
-                "tempMul",
-            )),
-            Operator::Divide => ExprResult::Float(builder.build_float_div(
-                lhs_llvm_value,
-                rhs_llvm_value,
-                "tempDiv",
-            )),
-            Operator::Mod => ExprResult::Float(builder.build_float_rem(
-                lhs_llvm_value,
-                rhs_llvm_value,
-                "tempMod",
-            )),
+            Operator::Plus => ExprResult::Float(builder.build_float_add(lhs_llvm_value, rhs_llvm_value, "tempAdd")),
+            Operator::Minus => ExprResult::Float(builder.build_float_sub(lhs_llvm_value, rhs_llvm_value, "tempSub")),
+            Operator::Multply => ExprResult::Float(builder.build_float_mul(lhs_llvm_value, rhs_llvm_value, "tempMul")),
+            Operator::Divide => ExprResult::Float(builder.build_float_div(lhs_llvm_value, rhs_llvm_value, "tempDiv")),
+            Operator::Mod => ExprResult::Float(builder.build_float_rem(lhs_llvm_value, rhs_llvm_value, "tempMod")),
             Operator::Eq => {
-                let result = builder.build_float_compare(
-                    FloatPredicate::UEQ,
-                    lhs_llvm_value,
-                    rhs_llvm_value,
-                    "tempEq",
-                );
-                ExprResult::Float(builder.build_unsigned_int_to_float(
-                    result,
-                    self.context.f64_type(),
-                    "tempCast",
-                ))
+                let result = builder.build_float_compare(FloatPredicate::UEQ, lhs_llvm_value, rhs_llvm_value, "tempEq");
+                ExprResult::Float(builder.build_unsigned_int_to_float(result, self.context.f64_type(), "tempCast"))
             }
             Operator::NotEq => {
-                let result = builder.build_float_compare(
-                    FloatPredicate::ONE,
-                    lhs_llvm_value,
-                    rhs_llvm_value,
-                    "tempNotEq",
-                );
-                ExprResult::Float(builder.build_unsigned_int_to_float(
-                    result,
-                    self.context.f64_type(),
-                    "tempCast",
-                ))
+                let result =
+                    builder.build_float_compare(FloatPredicate::ONE, lhs_llvm_value, rhs_llvm_value, "tempNotEq");
+                ExprResult::Float(builder.build_unsigned_int_to_float(result, self.context.f64_type(), "tempCast"))
             }
             Operator::Gt => {
-                let result = builder.build_float_compare(
-                    FloatPredicate::OGT,
-                    lhs_llvm_value,
-                    rhs_llvm_value,
-                    "tempGt",
-                );
-                ExprResult::Float(builder.build_unsigned_int_to_float(
-                    result,
-                    self.context.f64_type(),
-                    "tempCast",
-                ))
+                let result = builder.build_float_compare(FloatPredicate::OGT, lhs_llvm_value, rhs_llvm_value, "tempGt");
+                ExprResult::Float(builder.build_unsigned_int_to_float(result, self.context.f64_type(), "tempCast"))
             }
             Operator::Gteq => {
-                let result = builder.build_float_compare(
-                    FloatPredicate::OGE,
-                    lhs_llvm_value,
-                    rhs_llvm_value,
-                    "tempGteq",
-                );
-                ExprResult::Float(builder.build_unsigned_int_to_float(
-                    result,
-                    self.context.f64_type(),
-                    "tempCast",
-                ))
+                let result =
+                    builder.build_float_compare(FloatPredicate::OGE, lhs_llvm_value, rhs_llvm_value, "tempGteq");
+                ExprResult::Float(builder.build_unsigned_int_to_float(result, self.context.f64_type(), "tempCast"))
             }
             Operator::Lt => {
-                let result = builder.build_float_compare(
-                    FloatPredicate::OLT,
-                    lhs_llvm_value,
-                    rhs_llvm_value,
-                    "tempLt",
-                );
-                ExprResult::Float(builder.build_unsigned_int_to_float(
-                    result,
-                    self.context.f64_type(),
-                    "tempCast",
-                ))
+                let result = builder.build_float_compare(FloatPredicate::OLT, lhs_llvm_value, rhs_llvm_value, "tempLt");
+                ExprResult::Float(builder.build_unsigned_int_to_float(result, self.context.f64_type(), "tempCast"))
             }
             Operator::Lteq => {
-                let result = builder.build_float_compare(
-                    FloatPredicate::OLE,
-                    lhs_llvm_value,
-                    rhs_llvm_value,
-                    "tempLteq",
-                );
-                ExprResult::Float(builder.build_unsigned_int_to_float(
-                    result,
-                    self.context.f64_type(),
-                    "tempCast",
-                ))
+                let result =
+                    builder.build_float_compare(FloatPredicate::OLE, lhs_llvm_value, rhs_llvm_value, "tempLteq");
+                ExprResult::Float(builder.build_unsigned_int_to_float(result, self.context.f64_type(), "tempCast"))
             }
         })
     }
-    fn accept_unary_expression(
-        &mut self,
-        unary_expr: &UnaryExpression,
-    ) -> CodegenResult<ExprResult<'ctx>> {
+    fn accept_unary_expression(&mut self, unary_expr: &UnaryExpression) -> CodegenResult<ExprResult<'ctx>> {
         /*
            Codegen floatneg command if operator is minus
             -> 1. if operator is plus, there is no need for generate command
@@ -588,10 +478,7 @@ impl<'ctx> Codegen<'ctx> {
             }
         })
     }
-    fn accecpt_call_expression(
-        &mut self,
-        call_expr: &CallExpression,
-    ) -> CodegenResult<ExprResult<'ctx>> {
+    fn accecpt_call_expression(&mut self, call_expr: &CallExpression) -> CodegenResult<ExprResult<'ctx>> {
         match self.module.get_function(call_expr.callee_name.as_str()) {
             Some(llvm_funtion_value) => {
                 let mut llvm_params_value = Vec::<BasicMetadataValueEnum>::new();

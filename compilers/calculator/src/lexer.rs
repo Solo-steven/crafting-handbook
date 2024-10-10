@@ -204,9 +204,7 @@ impl Lexer {
                     '|' => self.read_bitwise_or(),
                     '&' => self.read_bitwise_and(),
                     // Number Literal
-                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
-                        self.read_number_literal()
-                    }
+                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => self.read_number_literal(),
                     // Fallback -> Keyword OR Literal OR Identifier
                     _ => self.read_keyword_or_identifier(),
                 }

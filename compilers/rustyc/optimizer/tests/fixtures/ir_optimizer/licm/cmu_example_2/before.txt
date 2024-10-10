@@ -9,6 +9,7 @@ block2:
 block3:
 	phi t5, block3 t4, block2 t1
 	t4 = add t2 t3
+	brif t4, block4, block3
 block4:
 	ret void
 }

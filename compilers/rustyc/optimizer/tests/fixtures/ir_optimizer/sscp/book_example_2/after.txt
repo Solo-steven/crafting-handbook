@@ -1,0 +1,16 @@
+function test_fun () -> i16 {
+block1:
+	t1 = 10
+	t2 = 20
+	jump 2
+block2:
+	phi t3, block1 t1, block2 t4
+	t4 = 30
+	brif t4, block2, block3
+block3:
+	ret t4
+}
+;;  t1 -> i16
+;;  t2 -> i16
+;;  t3 -> i16
+;;  t4 -> i16

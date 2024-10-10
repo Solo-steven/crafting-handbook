@@ -97,17 +97,9 @@ impl LCMPass {
                 } else {
                     left = format!(" ");
                 }
-                let expr_key = self
-                    .key_manager
-                    .get_expr_key_from_value_number(value_number)
-                    .unwrap();
+                let expr_key = self.key_manager.get_expr_key_from_value_number(value_number).unwrap();
                 let right = print_expr_key(expr_key, function);
-                output.push_str(&print_table_row(
-                    &left,
-                    &right,
-                    max_block_id_len - 1,
-                    max_expr_key_len,
-                ));
+                output.push_str(&print_table_row(&left, &right, max_block_id_len - 1, max_expr_key_len));
                 index += 1;
             }
             output.push_str(print_divider(total_len).as_str());
@@ -121,14 +113,7 @@ impl DebuggerPass for LCMPass {
         let max_block_id_len = self.get_max_block_id_len(function);
         // fixed max len, since we pre-defined the structure
         let max_expr_key_len = 31 as usize;
-        let sorted_block_ids = sort_block_ids(
-            function
-                .blocks
-                .keys()
-                .into_iter()
-                .map(|id| id.clone())
-                .collect(),
-        );
+        let sorted_block_ids = sort_block_ids(function.blocks.keys().into_iter().map(|id| id.clone()).collect());
         // earliest pass
         self.debug_value_set(
             "Use Expr",

@@ -15,54 +15,22 @@ pub type ExprValueNumberSet = HashSet<ExprValueNumber>;
 
 pub fn get_expr_key_and_values(instruction: &InstructionData) -> Option<(ExpreKey, Vec<Value>)> {
     match instruction {
-        InstructionData::Add {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::Sub {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::Mul {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::Divide {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::Reminder {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::FAdd {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::FSub {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::FMul {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::FDivide {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::FReminder {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::BitwiseAnd {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::BitwiseOR {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::LogicalAnd {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::LogicalOR {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::ShiftLeft {
-            opcode, src1, src2, ..
-        }
-        | InstructionData::ShiftRight {
-            opcode, src1, src2, ..
-        } => Some((
+        InstructionData::Add { opcode, src1, src2, .. }
+        | InstructionData::Sub { opcode, src1, src2, .. }
+        | InstructionData::Mul { opcode, src1, src2, .. }
+        | InstructionData::Divide { opcode, src1, src2, .. }
+        | InstructionData::Reminder { opcode, src1, src2, .. }
+        | InstructionData::FAdd { opcode, src1, src2, .. }
+        | InstructionData::FSub { opcode, src1, src2, .. }
+        | InstructionData::FMul { opcode, src1, src2, .. }
+        | InstructionData::FDivide { opcode, src1, src2, .. }
+        | InstructionData::FReminder { opcode, src1, src2, .. }
+        | InstructionData::BitwiseAnd { opcode, src1, src2, .. }
+        | InstructionData::BitwiseOR { opcode, src1, src2, .. }
+        | InstructionData::LogicalAnd { opcode, src1, src2, .. }
+        | InstructionData::LogicalOR { opcode, src1, src2, .. }
+        | InstructionData::ShiftLeft { opcode, src1, src2, .. }
+        | InstructionData::ShiftRight { opcode, src1, src2, .. } => Some((
             ExpreKey::Binary((src1.clone(), src2.clone(), opcode.clone())),
             vec![src1.clone(), src2.clone()],
         )),
@@ -78,10 +46,9 @@ pub fn get_expr_key_and_values(instruction: &InstructionData) -> Option<(ExpreKe
         | InstructionData::ToI64 { opcode, src, .. }
         | InstructionData::ToF32 { opcode, src, .. }
         | InstructionData::ToF64 { opcode, src, .. }
-        | InstructionData::ToAddress { opcode, src, .. } => Some((
-            ExpreKey::Unary((src.clone(), opcode.clone())),
-            vec![src.clone()],
-        )),
+        | InstructionData::ToAddress { opcode, src, .. } => {
+            Some((ExpreKey::Unary((src.clone(), opcode.clone())), vec![src.clone()]))
+        }
         InstructionData::Icmp {
             opcode: _,
             flag,
@@ -178,22 +145,17 @@ impl ExprKeyManager {
         for (inst, inst_data) in &function.instructions {
             if let Some((key, values)) = get_expr_key_and_values(inst_data) {
                 // for use
-                let value_number =
-                    if let Some(value_number) = self.expr_key_map_value_number.get(&key) {
-                        self.inst_map_value_number
-                            .insert(inst.clone(), value_number.clone());
-                        value_number.clone()
-                    } else {
-                        let next_value_number = self.value_number_map_expr_key.len() as u64;
-                        self.all_expr_value_number.insert(next_value_number);
-                        self.inst_map_value_number
-                            .insert(inst.clone(), next_value_number);
-                        self.value_number_map_expr_key
-                            .insert(next_value_number, key.clone());
-                        self.expr_key_map_value_number
-                            .insert(key, next_value_number);
-                        next_value_number
-                    };
+                let value_number = if let Some(value_number) = self.expr_key_map_value_number.get(&key) {
+                    self.inst_map_value_number.insert(inst.clone(), value_number.clone());
+                    value_number.clone()
+                } else {
+                    let next_value_number = self.value_number_map_expr_key.len() as u64;
+                    self.all_expr_value_number.insert(next_value_number);
+                    self.inst_map_value_number.insert(inst.clone(), next_value_number);
+                    self.value_number_map_expr_key.insert(next_value_number, key.clone());
+                    self.expr_key_map_value_number.insert(key, next_value_number);
+                    next_value_number
+                };
                 if let Some(inst_set) = self.value_number_map_inst.get_mut(&value_number) {
                     inst_set.insert(inst.clone());
                 } else {
@@ -216,18 +178,12 @@ impl ExprKeyManager {
     }
     /// ## Get expr value number from inst id
     /// This function is used to build `expr_use` set of LCM.
-    pub fn get_expr_value_number_from_inst(
-        &self,
-        instruction: &Instruction,
-    ) -> Option<&ExprValueNumber> {
+    pub fn get_expr_value_number_from_inst(&self, instruction: &Instruction) -> Option<&ExprValueNumber> {
         self.inst_map_value_number.get(instruction)
     }
     /// ## Get expr value numbers from value (dst)
     /// This function is used to build `expr_kil` set of LCM.
-    pub fn get_kill_expr_value_numbers_from_dst_value(
-        &self,
-        value: &Value,
-    ) -> Option<&HashSet<ExprValueNumber>> {
+    pub fn get_kill_expr_value_numbers_from_dst_value(&self, value: &Value) -> Option<&HashSet<ExprValueNumber>> {
         self.ir_value_map_kill_exprs.get(value)
     }
     /// ## Get entire value number set
@@ -237,10 +193,7 @@ impl ExprKeyManager {
         self.all_expr_value_number.clone()
     }
     /// ##
-    pub fn get_expr_key_from_value_number(
-        &self,
-        value_number: &ExprValueNumber,
-    ) -> Option<&ExpreKey> {
+    pub fn get_expr_key_from_value_number(&self, value_number: &ExprValueNumber) -> Option<&ExpreKey> {
         self.value_number_map_expr_key.get(value_number)
     }
     pub fn borrow_all_expr_keys(&self) -> &ExprValueNumberSet {
@@ -252,9 +205,7 @@ impl ExprKeyManager {
     // }
 }
 
-pub fn get_content_ref_of_set<'a>(
-    hash_set: &'a ExprValueNumberSet,
-) -> HashSet<&'a ExprValueNumber> {
+pub fn get_content_ref_of_set<'a>(hash_set: &'a ExprValueNumberSet) -> HashSet<&'a ExprValueNumber> {
     hash_set.into_iter().map(|key| key).collect()
 }
 pub fn content_ref_set_to_own(hash_set: HashSet<&ExprValueNumber>) -> ExprValueNumberSet {
@@ -274,19 +225,11 @@ pub fn union_content_ref_sets<'a>(
     target_set: HashSet<&'a ExprValueNumber>,
     other_set: HashSet<&'a ExprValueNumber>,
 ) -> HashSet<&'a ExprValueNumber> {
-    target_set
-        .union(&other_set)
-        .into_iter()
-        .map(|key| *key)
-        .collect()
+    target_set.union(&other_set).into_iter().map(|key| *key).collect()
 }
 pub fn different_content_ref_sets<'a>(
     target_set: HashSet<&'a ExprValueNumber>,
     other_set: HashSet<&'a ExprValueNumber>,
 ) -> HashSet<&'a ExprValueNumber> {
-    target_set
-        .difference(&other_set)
-        .into_iter()
-        .map(|key| *key)
-        .collect()
+    target_set.difference(&other_set).into_iter().map(|key| *key).collect()
 }

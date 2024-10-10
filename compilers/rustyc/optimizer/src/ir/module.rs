@@ -70,8 +70,7 @@ impl Module {
     pub fn create_global_variable_ref(&mut self, global_name: String) -> Value {
         println!("{:?}", global_name);
         let value_id = Value(self.next_value_index);
-        self.values
-            .insert(value_id, ValueData::GlobalRef(global_name));
+        self.values.insert(value_id, ValueData::GlobalRef(global_name));
         self.value_types.insert(value_id, IrValueType::Address);
         self.next_value_index += 1;
         value_id
@@ -80,72 +79,63 @@ impl Module {
     pub fn create_u8_const(&mut self, data: u8) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::U8(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::U8(data)));
         value_id
     }
     /// Create u16 const and insert into value list.
     pub fn create_u16_const(&mut self, data: u16) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::U16(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::U16(data)));
         value_id
     }
     /// Create u32 const and insert into value list.
     pub fn create_u32_const(&mut self, data: u32) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::U32(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::U32(data)));
         value_id
     }
     /// Create u64 const and insert into value list.
     pub fn create_u64_const(&mut self, data: u64) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::U64(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::U64(data)));
         value_id
     }
     /// Create i16 const and insert into value list.
     pub fn create_i16_const(&mut self, data: i16) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::I16(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::I16(data)));
         value_id
     }
     /// Create i32 const and insert into value list.
     pub fn create_i32_const(&mut self, data: i32) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::I32(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::I32(data)));
         value_id
     }
     /// Create i64 const and insert into value list.
     pub fn create_i64_const(&mut self, data: i64) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::I64(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::I64(data)));
         value_id
     }
     /// Create f32 const and insert into value list.
     pub fn create_f32_const(&mut self, data: f32) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::F32(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::F32(data)));
         value_id
     }
     /// Create f64 const and insert into value list.
     pub fn create_f64_const(&mut self, data: f64) -> Value {
         let value_id = Value(self.next_temp_register_index);
         self.next_temp_register_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::F64(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::F64(data)));
         value_id
     }
 }
@@ -163,8 +153,8 @@ pub fn get_text_format_of_value(value: &ValueData) -> String {
             Immi::F32(data) => format!("{}", data),
             Immi::F64(data) => format!("{}", data),
         },
-        ValueData::VirRegister(register)
-        | ValueData::GlobalRef(register)
-        | ValueData::FunctionRef(register) => register.clone(),
+        ValueData::VirRegister(register) | ValueData::GlobalRef(register) | ValueData::FunctionRef(register) => {
+            register.clone()
+        }
     }
 }

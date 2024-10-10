@@ -43,12 +43,7 @@ impl DebuggerAnaylsis<UseDefTable> for UseDefAnaylsier {
         output_string.push_str(print_divider(max_len).as_str());
         output_string.push_str(print_header("Def Table", max_len).as_str());
         output_string.push_str(print_divider(max_len).as_str());
-        let values = table
-            .1
-            .keys()
-            .into_iter()
-            .map(|k| k.clone())
-            .collect::<Vec<_>>();
+        let values = table.1.keys().into_iter().map(|k| k.clone()).collect::<Vec<_>>();
         let sorted_values = sort_value_ids(values);
         for value in sorted_values {
             let def_kind = table.1.get(&value).unwrap();
@@ -94,12 +89,7 @@ impl DebuggerAnaylsis<UseDefTable> for UseDefAnaylsier {
         output_string.push_str(print_divider(max_len).as_str());
         output_string.push_str(print_header("Use Table", max_len).as_str());
         output_string.push_str(print_divider(max_len).as_str());
-        let values = table
-            .0
-            .keys()
-            .into_iter()
-            .map(|k| k.clone())
-            .collect::<Vec<_>>();
+        let values = table.0.keys().into_iter().map(|k| k.clone()).collect::<Vec<_>>();
         let sorted_values = sort_value_ids(values);
         for value in sorted_values {
             let insts = table.0.get(&value).unwrap();
@@ -114,12 +104,7 @@ impl DebuggerAnaylsis<UseDefTable> for UseDefAnaylsier {
                 };
                 let inst_string = inst_map_string.get(inst).unwrap();
                 //println!("{}", inst_string);
-                output_string.push_str(&print_table_row(
-                    &left,
-                    inst_string,
-                    max_len_of_value,
-                    max_len_of_insts,
-                ));
+                output_string.push_str(&print_table_row(&left, inst_string, max_len_of_value, max_len_of_insts));
                 index += 1;
             }
             output_string.push_str(print_divider(max_len).as_str());

@@ -6,16 +6,14 @@ use crate::ir::value::*;
 impl Function {
     pub fn create_global_variable_ref(&mut self, global_name: String) -> Value {
         let value_id = Value(self.next_value_index);
-        self.values
-            .insert(value_id, ValueData::GlobalRef(global_name));
+        self.values.insert(value_id, ValueData::GlobalRef(global_name));
         self.value_types.insert(value_id, IrValueType::Address);
         self.next_value_index += 1;
         value_id
     }
     pub fn create_function_ref(&mut self, function_name: String) -> Value {
         let value_id = Value(self.next_value_index);
-        self.values
-            .insert(value_id, ValueData::FunctionRef(function_name));
+        self.values.insert(value_id, ValueData::FunctionRef(function_name));
         self.value_types.insert(value_id, IrValueType::Address);
         self.next_value_index += 1;
         value_id
@@ -32,15 +30,17 @@ impl Function {
         self.next_value_index += 1;
         value_id
     }
+    pub fn add_immi(&mut self, immi: Immi) -> Value {
+        let value_id = Value(self.next_value_index);
+        self.next_value_index += 1;
+        self.values.insert(value_id, ValueData::Immi(immi));
+        value_id
+    }
     /// Private method for add inst id to block.
     fn add_inst_id_to_current_block(&mut self, inst_id: Instruction) {
         if let Some(block) = self.current_block {
             self.inst_map_block.insert(inst_id.clone(), block.clone());
-            self.blocks
-                .get_mut(&block)
-                .unwrap()
-                .instructions
-                .push_back(inst_id);
+            self.blocks.get_mut(&block).unwrap().instructions.push_back(inst_id);
         } else {
             panic!("Current block not set");
         }
@@ -48,30 +48,17 @@ impl Function {
     /// Simple type checker helper for instruction builder, a basic type can be only operate on the
     /// same type, Address type is a expection, address type can operate on any int type (like unsigned
     /// signed int).
-    fn check_value_pair_type_equal(
-        &self,
-        src1: Value,
-        src2: Value,
-        opcode: &OpCode,
-    ) -> IrValueType {
+    fn check_value_pair_type_equal(&self, src1: Value, src2: Value, opcode: &OpCode) -> IrValueType {
         let type1 = self.get_value_ir_type(src1);
         let type2 = self.get_value_ir_type(src2);
         // if one of type is address, the other type must be unsign or sign int
         if type1 == IrValueType::Address || type2 == IrValueType::Address {
             if type1 == IrValueType::Address {
                 match opcode {
-                    OpCode::FAdd
-                    | OpCode::FDivide
-                    | OpCode::FReminder
-                    | OpCode::FMul
-                    | OpCode::Fcmp => {
+                    OpCode::FAdd | OpCode::FDivide | OpCode::FReminder | OpCode::FMul | OpCode::Fcmp => {
                         panic!()
                     }
-                    OpCode::Add
-                    | OpCode::Divide
-                    | OpCode::Reminder
-                    | OpCode::Mul
-                    | OpCode::Icmp => match &type2 {
+                    OpCode::Add | OpCode::Divide | OpCode::Reminder | OpCode::Mul | OpCode::Icmp => match &type2 {
                         IrValueType::F32 | IrValueType::F64 => {
                             panic!("int operation can not used in float")
                         }
@@ -82,18 +69,10 @@ impl Function {
                 type1
             } else {
                 match opcode {
-                    OpCode::FAdd
-                    | OpCode::FDivide
-                    | OpCode::FReminder
-                    | OpCode::FMul
-                    | OpCode::Fcmp => {
+                    OpCode::FAdd | OpCode::FDivide | OpCode::FReminder | OpCode::FMul | OpCode::Fcmp => {
                         panic!()
                     }
-                    OpCode::Add
-                    | OpCode::Divide
-                    | OpCode::Reminder
-                    | OpCode::Mul
-                    | OpCode::Icmp => match &type1 {
+                    OpCode::Add | OpCode::Divide | OpCode::Reminder | OpCode::Mul | OpCode::Icmp => match &type1 {
                         IrValueType::F32 | IrValueType::F64 => {
                             panic!("int operation can not used in float")
                         }
@@ -105,24 +84,18 @@ impl Function {
             }
         } else if type1 == type2 {
             match opcode {
-                OpCode::FAdd
-                | OpCode::FDivide
-                | OpCode::FReminder
-                | OpCode::FMul
-                | OpCode::Fcmp => match &type1 {
+                OpCode::FAdd | OpCode::FDivide | OpCode::FReminder | OpCode::FMul | OpCode::Fcmp => match &type1 {
                     IrValueType::F32 | IrValueType::F64 => {}
                     _ => {
                         panic!("float operation can not used in int")
                     }
                 },
-                OpCode::Add | OpCode::Divide | OpCode::Reminder | OpCode::Mul | OpCode::Icmp => {
-                    match &type1 {
-                        IrValueType::F32 | IrValueType::F64 => {
-                            panic!("int operation can not used in float")
-                        }
-                        _ => {}
+                OpCode::Add | OpCode::Divide | OpCode::Reminder | OpCode::Mul | OpCode::Icmp => match &type1 {
+                    IrValueType::F32 | IrValueType::F64 => {
+                        panic!("int operation can not used in float")
                     }
-                }
+                    _ => {}
+                },
                 _ => {}
             };
             type1
@@ -472,72 +445,63 @@ impl Function {
     pub fn create_u8_const(&mut self, data: u8) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::U8(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::U8(data)));
         value_id
     }
     /// Create u16 const and insert into value list.
     pub fn create_u16_const(&mut self, data: u16) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::U16(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::U16(data)));
         value_id
     }
     /// Create u32 const and insert into value list.
     pub fn create_u32_const(&mut self, data: u32) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::U32(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::U32(data)));
         value_id
     }
     /// Create u64 const and insert into value list.
     pub fn create_u64_const(&mut self, data: u64) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::U64(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::U64(data)));
         value_id
     }
     /// Create i16 const and insert into value list.
     pub fn create_i16_const(&mut self, data: i16) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::I16(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::I16(data)));
         value_id
     }
     /// Create i32 const and insert into value list.
     pub fn create_i32_const(&mut self, data: i32) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::I32(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::I32(data)));
         value_id
     }
     /// Create i64 const and insert into value list.
     pub fn create_i64_const(&mut self, data: i64) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::I64(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::I64(data)));
         value_id
     }
     /// Create f32 const and insert into value list.
     pub fn create_f32_const(&mut self, data: f32) -> Value {
         let value_id = Value(self.next_value_index);
         self.next_value_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::F32(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::F32(data)));
         value_id
     }
     /// Create f64 const and insert into value list.
     pub fn create_f64_const(&mut self, data: f64) -> Value {
         let value_id = Value(self.next_temp_register_index);
         self.next_temp_register_index += 1;
-        self.values
-            .insert(value_id, ValueData::Immi(Immi::F64(data)));
+        self.values.insert(value_id, ValueData::Immi(Immi::F64(data)));
         value_id
     }
     /// Create add instruction with existed value.
@@ -686,12 +650,7 @@ impl Function {
         self.add_inst_id_to_current_block(inst_id);
         dst
     }
-    pub fn build_stack_alloc_inst(
-        &mut self,
-        size: Value,
-        align: usize,
-        ir_type: IrValueType,
-    ) -> Value {
+    pub fn build_stack_alloc_inst(&mut self, size: Value, align: usize, ir_type: IrValueType) -> Value {
         let inst_id = self.get_next_inst_id();
         let dst = self.add_register(IrValueType::Address);
         self.instructions.insert(
@@ -707,12 +666,7 @@ impl Function {
         self.add_inst_id_to_current_block(inst_id);
         dst
     }
-    pub fn build_load_register_inst(
-        &mut self,
-        base: Value,
-        offset: Value,
-        data_type: IrValueType,
-    ) -> Value {
+    pub fn build_load_register_inst(&mut self, base: Value, offset: Value, data_type: IrValueType) -> Value {
         let inst_id = self.get_next_inst_id();
         let dst = self.add_register(data_type.clone());
         // TODO: check if base and offset is int type
@@ -729,13 +683,7 @@ impl Function {
         self.add_inst_id_to_current_block(inst_id);
         dst
     }
-    pub fn build_store_register_inst(
-        &mut self,
-        src: Value,
-        base: Value,
-        offset: Value,
-        data_type: IrValueType,
-    ) {
+    pub fn build_store_register_inst(&mut self, src: Value, base: Value, offset: Value, data_type: IrValueType) {
         let inst_id = self.get_next_inst_id();
         // TODO: check if base and offset is int type
         self.instructions.insert(

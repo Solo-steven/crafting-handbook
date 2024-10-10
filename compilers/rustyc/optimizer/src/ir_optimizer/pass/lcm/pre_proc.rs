@@ -29,10 +29,7 @@ impl LCMPass {
             for inst in &block_data.instructions {
                 let inst_data = function.instructions.get(inst).unwrap();
                 if let Some(value) = get_dst_value(inst_data) {
-                    if let Some(kill_set) = self
-                        .key_manager
-                        .get_kill_expr_value_numbers_from_dst_value(&value)
-                    {
+                    if let Some(kill_set) = self.key_manager.get_kill_expr_value_numbers_from_dst_value(&value) {
                         expr_kill.extend(kill_set.into_iter());
                     }
                 }

@@ -159,18 +159,14 @@ impl<'a> Converter<'a> {
             global_symbol.push(&func.name);
         }
         for name in global_symbol {
-            let pointer = func_convert
-                .function
-                .create_global_variable_ref(name.clone());
+            let pointer = func_convert.function.create_global_variable_ref(name.clone());
             let mut symbol_type = self.global_symbol_cache.get(name).unwrap().clone();
             if let SymbolType::ArrayType(array_symbol_type) = &mut symbol_type {
-                let mut next_value_of_dims: Vec<Value> =
-                    Vec::with_capacity(array_symbol_type.value_of_dims.len());
+                let mut next_value_of_dims: Vec<Value> = Vec::with_capacity(array_symbol_type.value_of_dims.len());
                 for value in &array_symbol_type.value_of_dims {
-                    let next_value = func_convert.function.insert_value_data_and_type(
-                        self.module.values.get(value).unwrap().clone(),
-                        None,
-                    );
+                    let next_value = func_convert
+                        .function
+                        .insert_value_data_and_type(self.module.values.get(value).unwrap().clone(), None);
                     next_value_of_dims.push(next_value);
                 }
                 array_symbol_type.value_of_dims = next_value_of_dims;
@@ -210,17 +206,12 @@ impl<'a> Converter<'a> {
         }
     }
     fn map_ast_type_to_symbol_type(&mut self, value_type: &ValueType) -> SymbolType {
-        let mut symbol_type = map_ast_type_to_symbol_type(
-            value_type,
-            &mut self.struct_layout_table,
-            &mut self.struct_size_table,
-        );
+        let mut symbol_type =
+            map_ast_type_to_symbol_type(value_type, &mut self.struct_layout_table, &mut self.struct_size_table);
         if let SymbolType::ArrayType(array_symbol_type) = &mut symbol_type {
             if let ValueType::ArrayType(array_value_type) = value_type {
                 for expr in &array_value_type.dims {
-                    array_symbol_type
-                        .value_of_dims
-                        .push(self.accpet_expr_const(expr));
+                    array_symbol_type.value_of_dims.push(self.accpet_expr_const(expr));
                 }
             }
         }
@@ -269,10 +260,7 @@ impl<'a> Converter<'a> {
         }
     }
     fn accept_string_literal(&mut self, string_literal: &StringLiteral) -> Value {
-        let index = self
-            .module
-            .const_string
-            .get(string_literal.raw_value.as_ref());
+        let index = self.module.const_string.get(string_literal.raw_value.as_ref());
         match index {
             Some(i) => self.module.create_global_variable_ref(format!("str{}", i)),
             None => {
@@ -280,8 +268,7 @@ impl<'a> Converter<'a> {
                 self.module
                     .const_string
                     .insert(string_literal.raw_value.to_string(), len_index);
-                self.module
-                    .create_global_variable_ref(format!("str{}", len_index))
+                self.module.create_global_variable_ref(format!("str{}", len_index))
             }
         }
     }
@@ -332,9 +319,7 @@ fn map_ast_type_to_symbol_type(
             ) {
                 SymbolType::BasicType(basic_type) => PointerToSymbolType::BasicType(basic_type),
                 SymbolType::ArrayType(array_type) => PointerToSymbolType::ArrayType(array_type),
-                SymbolType::StructalType(struct_name) => {
-                    PointerToSymbolType::StructalType(struct_name)
-                }
+                SymbolType::StructalType(struct_name) => PointerToSymbolType::StructalType(struct_name),
 
                 _ => unreachable!(),
             },
@@ -399,13 +384,7 @@ fn map_ast_type_to_symbol_type(
                 )),
                 params_type: param_types
                     .iter()
-                    .map(|param_type| {
-                        map_ast_type_to_symbol_type(
-                            param_type,
-                            struct_layout_table,
-                            struct_size_table,
-                        )
-                    })
+                    .map(|param_type| map_ast_type_to_symbol_type(param_type, struct_layout_table, struct_size_table))
                     .collect(),
             },
         }),
@@ -418,10 +397,7 @@ fn map_ast_type_to_symbol_type(
 /// ## Helper function to get the size from a as type
 /// Get the size of a ast type in byte, please note that this function can not get a size of variable
 /// length array, it would panic.
-fn get_size_form_ast_type(
-    value_type: &ValueType,
-    struct_size_table: &mut StructSizeTable,
-) -> usize {
+fn get_size_form_ast_type(value_type: &ValueType, struct_size_table: &mut StructSizeTable) -> usize {
     match value_type {
         ValueType::Char => 1,
         ValueType::UnSignedChar => 1,

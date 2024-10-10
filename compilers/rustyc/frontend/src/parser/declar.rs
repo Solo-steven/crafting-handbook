@@ -47,9 +47,7 @@ impl<'a> Parser<'a> {
                 let is_identifier = self.get_token() == TokenKind::Identifier;
                 let mut pointer_type = self.parse_type_with_pointer_type(value_type.clone());
                 let id = match &pointer_type {
-                    ValueType::FunctionPointer {
-                        id, return_type, ..
-                    } => {
+                    ValueType::FunctionPointer { id, return_type, .. } => {
                         value_type = return_type.as_ref().clone();
                         id.clone()
                     }
@@ -61,13 +59,9 @@ impl<'a> Parser<'a> {
                 match self.get_token() {
                     TokenKind::ParenthesesLeft => {
                         if is_identifier {
-                            ParserResult::Ok(Declaration::FunType(
-                                self.parse_function_type(value_type, id)?,
-                            ))
+                            ParserResult::Ok(Declaration::FunType(self.parse_function_type(value_type, id)?))
                         } else {
-                            ParserResult::Ok(Declaration::FunType(
-                                self.parse_function_type(pointer_type, id)?,
-                            ))
+                            ParserResult::Ok(Declaration::FunType(self.parse_function_type(pointer_type, id)?))
                         }
                     }
                     TokenKind::Semi => {
@@ -260,24 +254,15 @@ impl<'a> Parser<'a> {
                 match self.get_token() {
                     TokenKind::_Complex => {
                         self.next_token();
-                        ParserResult::Ok(combine_value_type_with_signed(
-                            signed,
-                            ValueType::LongDoubleComplex,
-                        ))
+                        ParserResult::Ok(combine_value_type_with_signed(signed, ValueType::LongDoubleComplex))
                     }
-                    _ => ParserResult::Ok(combine_value_type_with_signed(
-                        signed,
-                        ValueType::LongDouble,
-                    )),
+                    _ => ParserResult::Ok(combine_value_type_with_signed(signed, ValueType::LongDouble)),
                 }
             }
             _ => ParserResult::Ok(combine_value_type_with_signed(signed, ValueType::Long)),
         }
     }
-    pub(super) fn parse_type_with_pointer_type(
-        &mut self,
-        value_type: ValueType<'a>,
-    ) -> ValueType<'a> {
+    pub(super) fn parse_type_with_pointer_type(&mut self, value_type: ValueType<'a>) -> ValueType<'a> {
         let mut qualifiers = Vec::new();
         let mut level = 0;
         loop {
@@ -317,10 +302,7 @@ impl<'a> Parser<'a> {
             value_type
         }
     }
-    pub(super) fn parse_type_with_array_type(
-        &mut self,
-        value_type: ValueType<'a>,
-    ) -> ParserResult<ValueType<'a>> {
+    pub(super) fn parse_type_with_array_type(&mut self, value_type: ValueType<'a>) -> ParserResult<ValueType<'a>> {
         let mut dims = Vec::new();
         loop {
             if is_token!(TokenKind::BracketLeft, self) {
@@ -378,10 +360,7 @@ impl<'a> Parser<'a> {
                     init_vale: None,
                 });
             }
-            ParserResult::Ok(EnumType::Def(EnumDefinition {
-                id,
-                enumerators: body,
-            }))
+            ParserResult::Ok(EnumType::Def(EnumDefinition { id, enumerators: body }))
         } else {
             ParserResult::Ok(EnumType::Declar(EnumDeclaration { id: id.unwrap() }))
         }
@@ -395,10 +374,7 @@ impl<'a> Parser<'a> {
         }
         if is_token!(TokenKind::BracesLeft, self) {
             let body = self.parse_struct_declarator_list()?;
-            ParserResult::Ok(UnionType::Def(UnionDefinition {
-                id,
-                declarator: body,
-            }))
+            ParserResult::Ok(UnionType::Def(UnionDefinition { id, declarator: body }))
         } else {
             ParserResult::Ok(UnionType::Declar(UnionDeclaration { id: id.unwrap() }))
         }
@@ -411,10 +387,7 @@ impl<'a> Parser<'a> {
         }
         if is_token!(TokenKind::BracesLeft, self) {
             let body = self.parse_struct_declarator_list()?;
-            ParserResult::Ok(StructType::Def(StructDefinition {
-                id,
-                declarator: body,
-            }))
+            ParserResult::Ok(StructType::Def(StructDefinition { id, declarator: body }))
         } else {
             ParserResult::Ok(StructType::Declar(StructDeclaration { id: id.unwrap() }))
         }

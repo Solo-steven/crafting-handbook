@@ -39,34 +39,22 @@ impl<'a> FunctionCoverter<'a> {
     pub(super) fn accept_expr(&mut self, expr: &Expression) -> Option<Value> {
         match expr {
             Expression::SequentialExpr(seq_expr) => self.accept_sequement_expr(seq_expr),
-            Expression::AssignmentExpr(assign_expr) => {
-                Some(self.accept_assignment_expr(assign_expr))
-            }
-            Expression::ConditionalExpr(condition_expr) => {
-                Some(self.accept_condition_expr(condition_expr))
-            }
+            Expression::AssignmentExpr(assign_expr) => Some(self.accept_assignment_expr(assign_expr)),
+            Expression::ConditionalExpr(condition_expr) => Some(self.accept_condition_expr(condition_expr)),
             Expression::BinaryExpr(binary_expr) => Some(self.accept_binary_expr(binary_expr)),
             Expression::UnaryExpr(unary_expr) => Some(self.accept_unary_expr(unary_expr)),
-            Expression::SizeOfTypeExpr(size_of_type_expr) => {
-                Some(self.accept_size_of_type_expr(size_of_type_expr))
-            }
+            Expression::SizeOfTypeExpr(size_of_type_expr) => Some(self.accept_size_of_type_expr(size_of_type_expr)),
             Expression::CastExpr(cast_expr) => Some(self.accpet_cast_expr(cast_expr)),
-            Expression::SizeOfValueExpr(size_of_value_expr) => {
-                Some(self.accept_size_of_value_expr(size_of_value_expr))
-            }
+            Expression::SizeOfValueExpr(size_of_value_expr) => Some(self.accept_size_of_value_expr(size_of_value_expr)),
             Expression::UpdateExpr(update_expr) => Some(self.accept_update_expr(update_expr)),
-            Expression::MemberExpr(_)
-            | Expression::DereferenceExpr(_)
-            | Expression::SubscriptExpr(_) => Some(self.accept_chain_expr(expr)),
+            Expression::MemberExpr(_) | Expression::DereferenceExpr(_) | Expression::SubscriptExpr(_) => {
+                Some(self.accept_chain_expr(expr))
+            }
             Expression::CallExpr(call_expr) => self.accept_call_expr_as_leftvalue(call_expr).0,
             Expression::Identifier(id) => Some(self.accept_identifier(id)),
             Expression::IntLiteral(int_literal) => Some(self.accept_int_literal(int_literal)),
-            Expression::FloatLiteral(float_literal) => {
-                Some(self.accept_float_literal(float_literal))
-            }
-            Expression::StringLiteral(string_literal) => {
-                Some(self.accept_string_literal(string_literal))
-            }
+            Expression::FloatLiteral(float_literal) => Some(self.accept_float_literal(float_literal)),
+            Expression::StringLiteral(string_literal) => Some(self.accept_string_literal(string_literal)),
             Expression::ParenthesesExpr(para_expr) => self.accept_expr(&para_expr.expr),
             _ => {
                 println!("{:?}", expr);
@@ -113,40 +101,25 @@ impl<'a> FunctionCoverter<'a> {
         match &data_type {
             SymbolType::PointerType(_) => {
                 let offset = self.function.create_u8_const(0);
-                self.function.build_store_register_inst(
-                    right_value,
-                    left_value,
-                    offset,
-                    IrValueType::Address,
-                );
+                self.function
+                    .build_store_register_inst(right_value, left_value, offset, IrValueType::Address);
                 right_value
             }
             SymbolType::BasicType(ir_type) => {
                 let offset = self.function.create_u8_const(0);
-                self.function.build_store_register_inst(
-                    right_value,
-                    left_value,
-                    offset,
-                    ir_type.clone(),
-                );
+                self.function
+                    .build_store_register_inst(right_value, left_value, offset, ir_type.clone());
                 right_value
             }
             SymbolType::StructalType(struct_type_name) => {
                 // size in byte
-                let size = self
-                    .struct_size_table
-                    .get(struct_type_name)
-                    .unwrap()
-                    .clone();
+                let size = self.struct_size_table.get(struct_type_name).unwrap().clone();
                 self.copy_memory(left_value, right_value, size, 4);
                 right_value
             }
             SymbolType::ArrayType(_) => {
                 // in C99, we can not assign a array. this should be check by type checker
-                unreachable_error!(
-                    self.error_map
-                        .unreach_assignment_expr_left_value_is_array_type
-                );
+                unreachable_error!(self.error_map.unreach_assignment_expr_left_value_is_array_type);
             }
         }
     }
@@ -154,9 +127,7 @@ impl<'a> FunctionCoverter<'a> {
     pub fn copy_memory(&mut self, dst: Value, src: Value, size: usize, _aligen: usize) {
         for i in 0..size {
             let offset = self.function.create_u8_const(i as u8);
-            let value = self
-                .function
-                .build_load_register_inst(src, offset, IrValueType::U8);
+            let value = self.function.build_load_register_inst(src, offset, IrValueType::U8);
             self.function
                 .build_store_register_inst(value, dst, offset, IrValueType::U8);
         }
@@ -174,26 +145,22 @@ impl<'a> FunctionCoverter<'a> {
         // conseq
         self.function
             .connect_block(self.function.current_block.unwrap(), cond_conseq_block);
-        self.function
-            .connect_block(cond_conseq_block, cond_final_block);
+        self.function.connect_block(cond_conseq_block, cond_final_block);
         self.function.switch_to_block(cond_conseq_block);
         let conseq_value = self.accept_expr_with_value(cond_expr.conseq.as_ref());
         self.function.build_jump_inst(cond_final_block);
         // alter
         self.function
             .connect_block(self.function.current_block.unwrap(), cond_alter_block);
-        self.function
-            .connect_block(cond_alter_block, cond_final_block);
+        self.function.connect_block(cond_alter_block, cond_final_block);
         self.function.switch_to_block(cond_alter_block);
         let alter_value = self.accept_expr_with_value(cond_expr.alter.as_ref());
         self.function.build_jump_inst(cond_final_block);
         // final
         let cond_final_block = self.function.create_block();
         self.function.switch_to_block(cond_final_block);
-        self.function.build_phi_inst(vec![
-            (cond_conseq_block, conseq_value),
-            (cond_alter_block, alter_value),
-        ])
+        self.function
+            .build_phi_inst(vec![(cond_conseq_block, conseq_value), (cond_alter_block, alter_value)])
     }
     /// ## Accept a binary expression in right hand side
     /// Generate binary expression is simple, just using posfix-order dfs to traversal child frist then generate
@@ -201,30 +168,22 @@ impl<'a> FunctionCoverter<'a> {
     fn accept_binary_expr(&mut self, binary_expr: &BinaryExpression) -> Value {
         let left_value = self.accept_expr_with_value(&binary_expr.left);
         let right_value = self.accept_expr_with_value(&binary_expr.right);
-        let (left_value, right_value, target_type) = self
-            .function
-            .align_two_base_type_value_to_same_type(left_value, right_value, None);
+        let (left_value, right_value, target_type) =
+            self.function
+                .align_two_base_type_value_to_same_type(left_value, right_value, None);
         let is_float = match target_type {
             IrValueType::F32 | IrValueType::F64 => true,
             _ => false,
         };
         match binary_expr.ops {
-            BinaryOps::BitwiseAnd => self
-                .function
-                .build_bitwise_and_inst(left_value, right_value),
+            BinaryOps::BitwiseAnd => self.function.build_bitwise_and_inst(left_value, right_value),
             BinaryOps::BitwiseOr => self.function.build_bitwise_or_inst(left_value, right_value),
             BinaryOps::BitwiseXor => {
                 todo!()
             }
-            BinaryOps::BitwiseLeftShift => {
-                self.function.build_shiftleft_inst(left_value, right_value)
-            }
-            BinaryOps::BitwiseRightShift => {
-                self.function.build_shiftright_inst(left_value, right_value)
-            }
-            BinaryOps::LogicalAnd => self
-                .function
-                .build_logical_and_inst(left_value, right_value),
+            BinaryOps::BitwiseLeftShift => self.function.build_shiftleft_inst(left_value, right_value),
+            BinaryOps::BitwiseRightShift => self.function.build_shiftright_inst(left_value, right_value),
+            BinaryOps::LogicalAnd => self.function.build_logical_and_inst(left_value, right_value),
             BinaryOps::LogicalOr => self.function.build_logical_or_inst(left_value, right_value),
             BinaryOps::Plus => {
                 if is_float {
@@ -263,56 +222,44 @@ impl<'a> FunctionCoverter<'a> {
             }
             BinaryOps::Gt => {
                 if is_float {
-                    self.function
-                        .build_fcmp_inst(left_value, right_value, CmpFlag::Gt)
+                    self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Gt)
                 } else {
-                    self.function
-                        .build_icmp_inst(left_value, right_value, CmpFlag::Gt)
+                    self.function.build_icmp_inst(left_value, right_value, CmpFlag::Gt)
                 }
             }
             BinaryOps::Lt => {
                 if is_float {
-                    self.function
-                        .build_fcmp_inst(left_value, right_value, CmpFlag::Lt)
+                    self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Lt)
                 } else {
-                    self.function
-                        .build_icmp_inst(left_value, right_value, CmpFlag::Lt)
+                    self.function.build_icmp_inst(left_value, right_value, CmpFlag::Lt)
                 }
             }
             BinaryOps::Geqt => {
                 if is_float {
-                    self.function
-                        .build_fcmp_inst(left_value, right_value, CmpFlag::Gteq)
+                    self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Gteq)
                 } else {
-                    self.function
-                        .build_icmp_inst(left_value, right_value, CmpFlag::Gteq)
+                    self.function.build_icmp_inst(left_value, right_value, CmpFlag::Gteq)
                 }
             }
             BinaryOps::Leqt => {
                 if is_float {
-                    self.function
-                        .build_fcmp_inst(left_value, right_value, CmpFlag::LtEq)
+                    self.function.build_fcmp_inst(left_value, right_value, CmpFlag::LtEq)
                 } else {
-                    self.function
-                        .build_icmp_inst(left_value, right_value, CmpFlag::LtEq)
+                    self.function.build_icmp_inst(left_value, right_value, CmpFlag::LtEq)
                 }
             }
             BinaryOps::Equal => {
                 if is_float {
-                    self.function
-                        .build_fcmp_inst(left_value, right_value, CmpFlag::Eq)
+                    self.function.build_fcmp_inst(left_value, right_value, CmpFlag::Eq)
                 } else {
-                    self.function
-                        .build_icmp_inst(left_value, right_value, CmpFlag::Eq)
+                    self.function.build_icmp_inst(left_value, right_value, CmpFlag::Eq)
                 }
             }
             BinaryOps::NotEqual => {
                 if is_float {
-                    self.function
-                        .build_fcmp_inst(left_value, right_value, CmpFlag::NotEq)
+                    self.function.build_fcmp_inst(left_value, right_value, CmpFlag::NotEq)
                 } else {
-                    self.function
-                        .build_icmp_inst(left_value, right_value, CmpFlag::NotEq)
+                    self.function.build_icmp_inst(left_value, right_value, CmpFlag::NotEq)
                 }
             }
         }
@@ -326,9 +273,7 @@ impl<'a> FunctionCoverter<'a> {
         match to_symbol_type {
             SymbolType::BasicType(ir_type) => self.function.generate_type_convert(src, &ir_type),
             SymbolType::PointerType(_pointer_type) => {
-                let cast_value = self
-                    .function
-                    .generate_type_convert(src, &IrValueType::Address);
+                let cast_value = self.function.generate_type_convert(src, &IrValueType::Address);
                 cast_value
             }
             SymbolType::StructalType(_) => {
@@ -445,17 +390,16 @@ impl<'a> FunctionCoverter<'a> {
                         SymbolType::BasicType(basic_type) => basic_type,
                         _ => unreachable!(),
                     };
-                    self.function
-                        .build_load_register_inst(value, offset_0, array_of_type)
+                    self.function.build_load_register_inst(value, offset_0, array_of_type)
                 } else {
                     unreachable!();
                 }
             }
             SymbolType::PointerType(pointer_type) => {
                 let offset_0 = self.function.create_u8_const(0);
-                let address =
-                    self.function
-                        .build_load_register_inst(value, offset_0, IrValueType::Address);
+                let address = self
+                    .function
+                    .build_load_register_inst(value, offset_0, IrValueType::Address);
                 let pointer_to_type = match pointer_type.pointer_to {
                     PointerToSymbolType::BasicType(basic_type) => basic_type,
                     _ => unreachable!(),
@@ -477,9 +421,7 @@ impl<'a> FunctionCoverter<'a> {
             todo!()
         } else {
             let offset_0 = self.function.create_u32_const(0);
-            let value = self
-                .function
-                .build_load_register_inst(reg, offset_0, ir_type.clone());
+            let value = self.function.build_load_register_inst(reg, offset_0, ir_type.clone());
             let const_one = self.function.create_u32_const(1);
             let (next_value, next_const, target_type) = self
                 .function
@@ -513,10 +455,7 @@ impl<'a> FunctionCoverter<'a> {
     /// build proper call instruction for function call, when callee return type is a struct type, we need to
     /// alloc a struct in current scope and pass to function, and callee function will perform copy by value to
     /// the pointer we passed into.
-    fn accept_call_expr_as_leftvalue(
-        &mut self,
-        call_expr: &CallExpression,
-    ) -> (Option<Value>, SymbolType) {
+    fn accept_call_expr_as_leftvalue(&mut self, call_expr: &CallExpression) -> (Option<Value>, SymbolType) {
         let mut arugments: Vec<Value> = call_expr
             .arguments
             .iter()
@@ -532,18 +471,15 @@ impl<'a> FunctionCoverter<'a> {
                         sig.return_type.clone()
                     }
                     None => {
-                        let SymbolEntry { reg, symbol_type } =
-                            self.symbol_table.get(&callee_name).unwrap();
+                        let SymbolEntry { reg, symbol_type } = self.symbol_table.get(&callee_name).unwrap();
                         if let SymbolType::PointerType(pointer_symbol_type) = symbol_type {
                             if let PointerToSymbolType::FunctionType { return_type, .. } =
                                 &pointer_symbol_type.pointer_to
                             {
                                 let offset = self.function.create_u8_const(0);
-                                let value = self.function.build_load_register_inst(
-                                    reg.clone(),
-                                    offset,
-                                    IrValueType::Address,
-                                );
+                                let value =
+                                    self.function
+                                        .build_load_register_inst(reg.clone(), offset, IrValueType::Address);
                                 callee = CalleeKind::Reg(value);
                                 *return_type.clone()
                             } else {
@@ -555,11 +491,8 @@ impl<'a> FunctionCoverter<'a> {
                     }
                 }
             }
-            Expression::MemberExpr(_)
-            | Expression::CallExpr(_)
-            | Expression::DereferenceExpr(_) => {
-                let (value, function_type) =
-                    self.accept_as_lefthand_expr(call_expr.callee.as_ref());
+            Expression::MemberExpr(_) | Expression::CallExpr(_) | Expression::DereferenceExpr(_) => {
+                let (value, function_type) = self.accept_as_lefthand_expr(call_expr.callee.as_ref());
                 let return_type = if let SymbolType::PointerType(PointerSymbolType {
                     pointer_to: pointer_to_type,
                     ..
@@ -584,11 +517,10 @@ impl<'a> FunctionCoverter<'a> {
         if let SymbolType::StructalType(struct_name) = &return_type {
             let struct_size = self.struct_size_table.get(struct_name).unwrap().clone();
             let struct_size_value = self.function.create_u32_const(struct_size as u32);
-            ret_value = Some(self.function.build_stack_alloc_inst(
-                struct_size_value,
-                8,
-                IrValueType::Aggregate,
-            ));
+            ret_value = Some(
+                self.function
+                    .build_stack_alloc_inst(struct_size_value, 8, IrValueType::Aggregate),
+            );
             arugments.push(ret_value.as_ref().unwrap().clone());
         };
         let ir_return_type = match &return_type {
@@ -597,9 +529,7 @@ impl<'a> FunctionCoverter<'a> {
             SymbolType::StructalType(_) => None,
             SymbolType::ArrayType(_) => unreachable!(),
         };
-        let call_inst_value = self
-            .function
-            .build_call_inst(callee, arugments, ir_return_type);
+        let call_inst_value = self.function.build_call_inst(callee, arugments, ir_return_type);
         if let Some(ret_val) = ret_value {
             if let Some(_call_inst_val) = call_inst_value.clone() {
                 unreachable!();
@@ -630,17 +560,14 @@ impl<'a> FunctionCoverter<'a> {
             SymbolType::PointerType(_pointer_type) => {
                 // struct_pointer = nested_struct.some_pointer_to_struct;
                 let offset_const = self.function.create_i32_const(offset as i32);
-                let pointer_value = self.function.build_load_register_inst(
-                    base,
-                    offset_const,
-                    IrValueType::Address,
-                );
+                let pointer_value = self
+                    .function
+                    .build_load_register_inst(base, offset_const, IrValueType::Address);
                 pointer_value
             }
             SymbolType::BasicType(ir_type) => {
                 let offset_const = self.function.create_i32_const(offset as i32);
-                self.function
-                    .build_load_register_inst(base, offset_const, ir_type)
+                self.function.build_load_register_inst(base, offset_const, ir_type)
             }
             SymbolType::ArrayType(_array_type) => {
                 // rarely used, something like `&two_dims[10]` or `*two_dim[10]`;
@@ -683,10 +610,9 @@ impl<'a> FunctionCoverter<'a> {
             ChainBase::Identifier(name) => {
                 let (base_reg, symbol_layout_ref) = match self.symbol_table.get(&name) {
                     Some(entry) => match &entry.symbol_type {
-                        SymbolType::StructalType(struct_type_name) => (
-                            entry.reg,
-                            self.struct_layout_table.get(struct_type_name).unwrap(),
-                        ),
+                        SymbolType::StructalType(struct_type_name) => {
+                            (entry.reg, self.struct_layout_table.get(struct_type_name).unwrap())
+                        }
                         SymbolType::PointerType(pointer_type) => match &pointer_type.pointer_to {
                             PointerToSymbolType::StructalType(name) => {
                                 (entry.reg, self.struct_layout_table.get(name).unwrap())
@@ -694,7 +620,11 @@ impl<'a> FunctionCoverter<'a> {
                             &PointerToSymbolType::BasicType(_) => (entry.reg, &empty_map),
                             _ => {
                                 println!("{:?}", pointer_type);
-                                unreachable!("{}", self.error_map.unreach_in_accpet_chain_expr_base_identifier_is_not_strutual_type)
+                                unreachable!(
+                                    "{}",
+                                    self.error_map
+                                        .unreach_in_accpet_chain_expr_base_identifier_is_not_strutual_type
+                                )
                             }
                         },
                         SymbolType::ArrayType(_) => (entry.reg, &empty_map),
@@ -728,8 +658,7 @@ impl<'a> FunctionCoverter<'a> {
                     PointerToSymbolType::StructalType(struct_name) => {
                         symbol_layout = self.struct_layout_table.get(struct_name).unwrap();
                     }
-                    PointerToSymbolType::ArrayType(_)
-                    | PointerToSymbolType::FunctionType { .. } => todo!(),
+                    PointerToSymbolType::ArrayType(_) | PointerToSymbolType::FunctionType { .. } => todo!(),
                 }
                 current_data_type = SymbolType::PointerType(pointer_symbol_type);
             }
@@ -753,29 +682,24 @@ impl<'a> FunctionCoverter<'a> {
                     for value in values {
                         let mut cur_row_base = self.function.create_i32_const(1);
                         for i in 0..(array_symbol_type.value_of_dims.len() - index - 1) {
-                            let (next_base, next_dim, _) =
-                                self.function.align_two_base_type_value_to_same_type(
-                                    cur_row_base,
-                                    array_symbol_type.value_of_dims[i],
-                                    Some(IrValueType::I32),
-                                );
+                            let (next_base, next_dim, _) = self.function.align_two_base_type_value_to_same_type(
+                                cur_row_base,
+                                array_symbol_type.value_of_dims[i],
+                                Some(IrValueType::I32),
+                            );
                             cur_row_base = self.function.build_mul_inst(next_base, next_dim);
                         }
                         let cur_row_index = self.function.build_mul_inst(value, cur_row_base);
-                        array_access_index = self
-                            .function
-                            .build_add_inst(array_access_index, cur_row_index);
+                        array_access_index = self.function.build_add_inst(array_access_index, cur_row_index);
                         index += 1;
                     }
                     // mul access index by the size of array type
-                    let value_of_array_element =
-                        get_size_from_symbol_type!(self, array_symbol_type.array_of.as_ref());
-                    let (next_index, next_value, _) =
-                        self.function.align_two_base_type_value_to_same_type(
-                            array_access_index,
-                            value_of_array_element,
-                            None,
-                        );
+                    let value_of_array_element = get_size_from_symbol_type!(self, array_symbol_type.array_of.as_ref());
+                    let (next_index, next_value, _) = self.function.align_two_base_type_value_to_same_type(
+                        array_access_index,
+                        value_of_array_element,
+                        None,
+                    );
                     let mul_value = self.function.build_mul_inst(next_index, next_value);
                     base = self.function.build_add_inst(base, mul_value);
                     offset = 0;
@@ -783,8 +707,7 @@ impl<'a> FunctionCoverter<'a> {
                     if array_symbol_type.value_of_dims.len() == level {
                         match array_symbol_type.array_of.as_ref() {
                             SymbolType::StructalType(struct_type_name) => {
-                                symbol_layout =
-                                    self.struct_layout_table.get(struct_type_name).unwrap();
+                                symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
                                 current_data_type = *array_symbol_type.array_of.clone();
                             }
                             SymbolType::PointerType(pointer_type) => {
@@ -792,8 +715,7 @@ impl<'a> FunctionCoverter<'a> {
                                     PointerToSymbolType::StructalType(name) => name,
                                     _ => unreachable!(),
                                 };
-                                symbol_layout =
-                                    self.struct_layout_table.get(struct_type_name).unwrap();
+                                symbol_layout = self.struct_layout_table.get(struct_type_name).unwrap();
                                 current_data_type = *array_symbol_type.array_of.clone();
                             }
                             SymbolType::BasicType(_) | SymbolType::ArrayType(_) => {
@@ -805,32 +727,26 @@ impl<'a> FunctionCoverter<'a> {
                     continue;
                 } else if let SymbolType::PointerType(pointer_symbol_type) = &current_data_type {
                     for value in &values {
-                        let value_of_size_of_array_element =
-                            self.function.create_i32_const(4 as i32);
+                        let value_of_size_of_array_element = self.function.create_i32_const(4 as i32);
                         let value_offset = self
                             .function
                             .build_mul_inst(value.clone(), value_of_size_of_array_element);
-                        base = self.function.build_load_register_inst(
-                            base,
-                            value_offset,
-                            IrValueType::Address,
-                        );
+                        base = self
+                            .function
+                            .build_load_register_inst(base, value_offset, IrValueType::Address);
                     }
                     offset = 0;
                     if pointer_symbol_type.level == level {
                         match &pointer_symbol_type.pointer_to {
                             PointerToSymbolType::StructalType(struct_type_name) => {
-                                symbol_layout =
-                                    self.struct_layout_table.get(&struct_type_name).unwrap();
-                                current_data_type =
-                                    SymbolType::StructalType(struct_type_name.clone());
+                                symbol_layout = self.struct_layout_table.get(&struct_type_name).unwrap();
+                                current_data_type = SymbolType::StructalType(struct_type_name.clone());
                             }
                             PointerToSymbolType::BasicType(ir_type) => {
                                 current_data_type = SymbolType::BasicType(ir_type.clone());
                             }
                             PointerToSymbolType::ArrayType(array_symbol_type) => {
-                                current_data_type =
-                                    SymbolType::ArrayType(array_symbol_type.clone());
+                                current_data_type = SymbolType::ArrayType(array_symbol_type.clone());
                             }
                             PointerToSymbolType::FunctionType { .. } => {
                                 unreachable!();
@@ -839,10 +755,7 @@ impl<'a> FunctionCoverter<'a> {
                     }
                     array_access_level = level;
                 } else {
-                    unreachable_error!(
-                        self.error_map
-                            .unreach_subscription_object_is_not_a_pointer_or_array
-                    );
+                    unreachable_error!(self.error_map.unreach_subscription_object_is_not_a_pointer_or_array);
                 }
                 continue;
             }
@@ -855,9 +768,9 @@ impl<'a> FunctionCoverter<'a> {
             let entry = symbol_layout.get(&property_name).unwrap();
             if is_pointer {
                 let offset_zero = self.function.create_u64_const(offset as u64);
-                base =
-                    self.function
-                        .build_load_register_inst(base, offset_zero, IrValueType::Address);
+                base = self
+                    .function
+                    .build_load_register_inst(base, offset_zero, IrValueType::Address);
                 offset = entry.offset;
             } else {
                 offset += entry.offset;
@@ -879,36 +792,25 @@ impl<'a> FunctionCoverter<'a> {
             base,
             offset,
             current_data_type,
-            if is_end_of_array_access {
-                0
-            } else {
-                array_access_level
-            },
+            if is_end_of_array_access { 0 } else { array_access_level },
         )
     }
     /// ## Helper function for `accept_chain_expr_base`
     /// There we do not using recursion visitor to unwind a chain expression to build the instructions, instead
     /// we frist iterative over chain expression to find how this expression is access memory, Is this access  
     /// by member select (both dot operator and dereference member select) or subscription access.
-    fn get_access_sequnce_from_chain_expr(
-        &mut self,
-        expr: &Expression,
-    ) -> (ChainBase, Vec<ChainSequnceType>) {
+    fn get_access_sequnce_from_chain_expr(&mut self, expr: &Expression) -> (ChainBase, Vec<ChainSequnceType>) {
         let mut cur = expr;
         let mut sequence = Vec::new();
         loop {
             match cur {
                 Expression::DereferenceExpr(derefer_expr) => {
                     cur = derefer_expr.pointer.as_ref();
-                    sequence.push(ChainSequnceType::Derefer(
-                        derefer_expr.property.name.to_string(),
-                    ));
+                    sequence.push(ChainSequnceType::Derefer(derefer_expr.property.name.to_string()));
                 }
                 Expression::MemberExpr(member_expr) => {
                     cur = member_expr.object.as_ref();
-                    sequence.push(ChainSequnceType::Member(
-                        member_expr.property.name.to_string(),
-                    ))
+                    sequence.push(ChainSequnceType::Member(member_expr.property.name.to_string()))
                 }
                 Expression::SubscriptExpr(ref subscript_expr_base) => {
                     let mut subscript_expr = subscript_expr_base;
@@ -917,8 +819,7 @@ impl<'a> FunctionCoverter<'a> {
                     loop {
                         level += 1;
                         values.push(self.accept_expr_with_value(&subscript_expr.index));
-                        if let Expression::SubscriptExpr(next_expr) = subscript_expr.object.as_ref()
-                        {
+                        if let Expression::SubscriptExpr(next_expr) = subscript_expr.object.as_ref() {
                             subscript_expr = next_expr;
                         } else {
                             break;
@@ -938,10 +839,7 @@ impl<'a> FunctionCoverter<'a> {
                     sequence.reverse();
                     match return_type {
                         SymbolType::StructalType(struct_name) => {
-                            return (
-                                ChainBase::CallExprReturnStruct(base, struct_name.clone()),
-                                sequence,
-                            );
+                            return (ChainBase::CallExprReturnStruct(base, struct_name.clone()), sequence);
                         }
                         SymbolType::PointerType(pointer_symbol_type) => {
                             return (
@@ -969,11 +867,9 @@ impl<'a> FunctionCoverter<'a> {
                 SymbolType::PointerType(_pointer_type) => {
                     // return the virtual register that contain the address that pointer point to.
                     let offset = self.function.create_u8_const(0);
-                    let pointer_value = self.function.build_load_register_inst(
-                        symbol.reg,
-                        offset,
-                        IrValueType::Address,
-                    );
+                    let pointer_value =
+                        self.function
+                            .build_load_register_inst(symbol.reg, offset, IrValueType::Address);
                     pointer_value
                 }
                 SymbolType::StructalType(_) | SymbolType::ArrayType(_) => {
@@ -1038,14 +934,12 @@ impl<'a> FunctionCoverter<'a> {
     fn accept_string_literal(&mut self, string_literal: &StringLiteral) -> Value {
         let index = self.const_strings.get(string_literal.raw_value.as_ref());
         if let Some(i) = index {
-            self.function
-                .create_global_variable_ref(format!("str{}", i))
+            self.function.create_global_variable_ref(format!("str{}", i))
         } else {
             let len_index = self.const_strings.len() + 1;
             self.const_strings
                 .insert(string_literal.raw_value.to_string(), len_index);
-            self.function
-                .create_global_variable_ref(format!("str{}", len_index))
+            self.function.create_global_variable_ref(format!("str{}", len_index))
         }
     }
     /// ## Accept a expression that treat as left value.
@@ -1062,9 +956,7 @@ impl<'a> FunctionCoverter<'a> {
     fn accept_as_lefthand_expr(&mut self, expr: &Expression) -> (Value, SymbolType) {
         match expr {
             Expression::Identifier(id) => {
-                if let Some(SymbolEntry { reg, symbol_type }) =
-                    self.symbol_table.get(id.name.as_ref())
-                {
+                if let Some(SymbolEntry { reg, symbol_type }) = self.symbol_table.get(id.name.as_ref()) {
                     (reg.clone(), symbol_type.clone())
                 } else {
                     let sig = self.function_signature_table.get(id.name.as_ref()).unwrap();
@@ -1085,12 +977,10 @@ impl<'a> FunctionCoverter<'a> {
                 let base = option_base.unwrap();
                 (base, return_type)
             }
-            Expression::DereferenceExpr(_)
-            | Expression::MemberExpr(_)
-            | Expression::SubscriptExpr(_) => self.accept_chain_expr_as_leftvalue(expr),
-            Expression::UnaryExpr(unary_expr) => {
-                self.accept_deference_unary_expr_as_leftvalue(unary_expr)
+            Expression::DereferenceExpr(_) | Expression::MemberExpr(_) | Expression::SubscriptExpr(_) => {
+                self.accept_chain_expr_as_leftvalue(expr)
             }
+            Expression::UnaryExpr(unary_expr) => self.accept_deference_unary_expr_as_leftvalue(unary_expr),
             _ => {
                 unreachable!();
             }
@@ -1099,10 +989,7 @@ impl<'a> FunctionCoverter<'a> {
     /// ## Accpet a deference unary expression as left hand side value
     /// when deference is left hand side, the operand must be a indirect expressioon, it should be
     /// ensure by type checker.
-    fn accept_deference_unary_expr_as_leftvalue(
-        &mut self,
-        unary_expr: &UnaryExpression,
-    ) -> (Value, SymbolType) {
+    fn accept_deference_unary_expr_as_leftvalue(&mut self, unary_expr: &UnaryExpression) -> (Value, SymbolType) {
         match &unary_expr.ops {
             UnaryOps::Dereference => {
                 let (value, symbol_type) = self.accept_as_lefthand_expr(&unary_expr.expr);
@@ -1112,17 +999,13 @@ impl<'a> FunctionCoverter<'a> {
                     // |-------|     |---|---------|
                     SymbolType::PointerType(mut pointer_symbol_type) => {
                         let offset_0 = self.function.create_u8_const(0);
-                        let next_value = self.function.build_load_register_inst(
-                            value,
-                            offset_0,
-                            IrValueType::Address,
-                        );
+                        let next_value = self
+                            .function
+                            .build_load_register_inst(value, offset_0, IrValueType::Address);
                         if pointer_symbol_type.level == 1 {
                             (
                                 next_value,
-                                map_pointer_to_symbol_to_symbol_type(
-                                    pointer_symbol_type.pointer_to,
-                                ),
+                                map_pointer_to_symbol_to_symbol_type(pointer_symbol_type.pointer_to),
                             )
                         } else {
                             pointer_symbol_type.level -= 1;
@@ -1131,11 +1014,9 @@ impl<'a> FunctionCoverter<'a> {
                     }
                     SymbolType::ArrayType(mut array_symbol_type) => {
                         let offset_0 = self.function.create_u8_const(0);
-                        let next_value = self.function.build_load_register_inst(
-                            value,
-                            offset_0,
-                            IrValueType::Address,
-                        );
+                        let next_value = self
+                            .function
+                            .build_load_register_inst(value, offset_0, IrValueType::Address);
                         array_symbol_type.value_of_dims.pop();
                         (next_value, SymbolType::ArrayType(array_symbol_type))
                     }

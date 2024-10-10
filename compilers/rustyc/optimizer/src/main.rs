@@ -3,21 +3,22 @@ pub mod ir_converter;
 pub mod ir_optimizer;
 
 use crate::ir::function::Function;
+use crate::ir::instructions::InstructionData;
+use crate::ir::instructions::OpCode;
 use crate::ir::value::IrValueType;
 use crate::ir_converter::Converter;
 use crate::ir_optimizer::anaylsis::domtree::DomAnaylsier;
 use crate::ir_optimizer::anaylsis::use_def_chain::UseDefAnaylsier;
-use crate::ir_optimizer::pass::licm;
 use ir_optimizer::anaylsis::{DebuggerAnaylsis, OptimizerAnaylsis};
-use ir_optimizer::pass::gvn::GVNPass;
 use ir_optimizer::pass::licm::LICMPass;
+use ir_optimizer::pass::sscp::SSCPPass;
 use ir_optimizer::pass::{DebuggerPass, OptimizerPass};
 use rustyc_frontend::parser::Parser;
 use std::fs::File;
 use std::io::Write;
 
 fn write_string_to_file(file_string: String) {
-    let mut file1 = File::create("./test.txt").unwrap();
+    let mut file1 = File::create("./output.txt").unwrap();
     write!(file1, "{}", file_string).unwrap();
 }
 #[allow(dead_code)]
@@ -72,7 +73,6 @@ fn optimizer_example() {
     write!(file1, "{}", fun.print_to_string()).unwrap();
     let mut dom = DomAnaylsier::new();
     let dom_table = dom.anaylsis(&fun);
-
     let mut use_def = UseDefAnaylsier::new();
     let use_def_table = use_def.anaylsis(&fun);
     let mut pass = LICMPass::new(&use_def_table, &dom_table);
@@ -81,18 +81,6 @@ fn optimizer_example() {
     write_string_to_file(pass.debugger(&fun));
     let mut file1 = File::create("./after.txt").unwrap();
     write!(file1, "{}", fun.print_to_string()).unwrap();
-}
-
-fn create_simple_loop() -> Function {
-    let mut function = Function::new(String::from("test_fun"));
-    let b1 = function.create_block();
-    function.mark_as_entry(b1);
-    let b2 = function.create_block();
-    function.mark_as_exit(b2);
-    function.connect_block(b1, b2);
-    function.connect_block(b2, b1);
-
-    function
 }
 
 fn create_backward_edge_example() -> Function {
@@ -165,6 +153,10 @@ fn main() {
     // anaylsiser_example();
 }
 
+/// ## Generate Simple Graph for Testing LICM
+/// Modify example from CMU ptt, page 9.
+/// ref: https://www.cs.cmu.edu/afs/cs/academic/class/15745-s19/www/lectures/L9-LICM.pdf
+/// adding empty block for entry, header and exit.
 pub fn create_licm_graph_simple_example_from_cmu() -> Function {
     let mut function = Function::new(String::from("test_fun"));
     // create blocks
@@ -201,6 +193,7 @@ pub fn create_licm_graph_simple_example_from_cmu() -> Function {
             from: vec![(b2, a_inner), (b1, a)],
         },
     );
+    function.build_brif_inst(a_inner, b3, b2);
     // exit
     function.switch_to_block(b3);
     function.build_ret_inst(None);

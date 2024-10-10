@@ -1,5 +1,7 @@
-use rustyc_optimizer::ir::{self, function::Function, value::IrValueType};
-
+use rustyc_optimizer::ir;
+use rustyc_optimizer::ir::function::Function;
+use rustyc_optimizer::ir::instructions::{InstructionData, OpCode};
+use rustyc_optimizer::ir::value::IrValueType;
 /// ## Generate Test Function For LCM 1
 /// This function graph is reference from CMU lecture in Page 21
 /// - ref: https://www.cs.cmu.edu/afs/cs/academic/class/15745-s16/www/lectures/L12-Lazy-Code-Motion.pdf
@@ -232,7 +234,10 @@ pub fn create_licm_graph_example_from_cmu() -> Function {
 
     function
 }
-
+/// ## Generate Simple Graph for Testing LICM
+/// Modify example from CMU ptt, page 9.
+/// ref: https://www.cs.cmu.edu/afs/cs/academic/class/15745-s19/www/lectures/L9-LICM.pdf
+/// adding empty block for entry, header and exit.
 pub fn create_licm_graph_simple_example_from_cmu() -> Function {
     let mut function = Function::new(String::from("test_fun"));
     // create blocks
@@ -269,6 +274,7 @@ pub fn create_licm_graph_simple_example_from_cmu() -> Function {
             from: vec![(b2, a_inner), (b1, a)],
         },
     );
+    function.build_brif_inst(a_inner, b3, b2);
     // exit
     function.switch_to_block(b3);
     function.build_ret_inst(None);
@@ -318,5 +324,122 @@ pub fn create_backward_edge_example() -> Function {
     function.connect_block(b8, b7);
     function.connect_block(b6, b5);
 
+    function
+}
+
+/// ## Generate Simple Graph For Test SSCP pass
+/// ```markdown
+/// --- block 1
+/// t1 = 10;
+/// t2 = 10
+/// t3 = t1 + t2;
+/// ```
+pub fn create_simple_const_propagation_graph() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    let bb = function.create_block();
+    function.switch_to_block(bb);
+    function.mark_as_entry(bb);
+    let i10_const = function.create_i16_const(10);
+    let a = function.build_mov_inst(i10_const);
+    let b = function.build_mov_inst(i10_const);
+    let _c = function.build_add_inst(a, b);
+    function.mark_as_exit(bb);
+    function
+}
+/// ## Generate Simple Graph For Test SSCP pass, example 1
+/// ref: engineer a compiler 2/e. page 518.
+/// ```markdown
+/// --- block 1
+/// t1 = 10
+/// t2 = 0
+/// jump block 2
+/// --- block 2
+/// phi t3, block1 t1, block2 t4
+/// t4 = add t3 t2
+/// brif t4, block 2, block 3
+/// --- block 3
+/// ret void
+/// ```
+pub fn create_simple_loop_const_propagation_graph_1() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    function.return_type = Some(IrValueType::I16);
+    let header = function.create_block();
+    function.mark_as_entry(header);
+    let mid = function.create_block();
+    let end = function.create_block();
+    function.mark_as_exit(end);
+    function.connect_block(header, mid);
+    function.connect_block(mid, end);
+    function.connect_block(mid, mid);
+
+    function.switch_to_block(header);
+    let i10_const = function.create_i16_const(10);
+    let i0_const = function.create_i16_const(0);
+    let t_1 = function.build_mov_inst(i10_const);
+    let t_2 = function.build_mov_inst(i0_const);
+    function.build_jump_inst(mid);
+    function.switch_to_block(mid);
+    let t_3 = function.add_register(IrValueType::I16);
+    let t_4 = function.build_add_inst(t_1, t_2);
+    function.insert_inst_to_block_front(
+        &mid,
+        InstructionData::Phi {
+            opcode: OpCode::Phi,
+            dst: t_3,
+            from: vec![(header, t_1), (mid, t_4)],
+        },
+    );
+    function.build_brif_inst(t_4, mid, end);
+    function.switch_to_block(end);
+    function.build_ret_inst(Some(t_4));
+    function
+}
+/// ## Generate Simple Graph For Test SSCP pass, example 2
+/// ref: engineer a compiler 2/e. page 518.
+/// ```markdown
+/// --- block 1
+/// t1 = 10
+/// t2 = 20
+/// jump block 2
+/// --- block 2
+/// phi t3, block1 t1, block2 t4
+/// t4 = add t3 t2
+/// brif t4, block 2, block 3
+/// --- block 3
+/// ret t4
+/// ;; make t4 live, will not be removed by DCE.
+/// ```
+pub fn create_simple_loop_const_propagation_graph_2() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    function.return_type = Some(IrValueType::I16);
+    let header = function.create_block();
+    function.mark_as_entry(header);
+    let mid = function.create_block();
+    let end = function.create_block();
+    function.mark_as_exit(end);
+    function.connect_block(header, mid);
+    function.connect_block(mid, end);
+    function.connect_block(mid, mid);
+
+    function.switch_to_block(header);
+    let i10_const = function.create_i16_const(10);
+    let i20_const = function.create_i16_const(20);
+    let t_1 = function.build_mov_inst(i10_const);
+    let t_2 = function.build_mov_inst(i20_const);
+    function.build_jump_inst(mid);
+    function.switch_to_block(mid);
+    let t_3 = function.add_register(IrValueType::I16);
+    let t_4 = function.build_add_inst(t_1, t_2);
+    function.insert_inst_to_block_front(
+        &mid,
+        InstructionData::Phi {
+            opcode: OpCode::Phi,
+            dst: t_3,
+            from: vec![(header, t_1), (mid, t_4)],
+        },
+    );
+    function.build_brif_inst(t_4, mid, end);
+    function.switch_to_block(end);
+    function.build_ret_inst(Some(t_4));
     function
 }

@@ -6,27 +6,15 @@ use crate::{expect_token, is_token, is_type_name_token};
 impl<'a> Parser<'a> {
     pub(super) fn parse_statement(&mut self) -> ParserResult<Statement<'a>> {
         match self.get_token() {
-            TokenKind::BracesLeft => {
-                ParserResult::Ok(Statement::CompoundStmt(self.parse_compound_statement()?))
-            }
+            TokenKind::BracesLeft => ParserResult::Ok(Statement::CompoundStmt(self.parse_compound_statement()?)),
             TokenKind::If => ParserResult::Ok(Statement::IfStmt(self.parse_if_statement()?)),
-            TokenKind::While => {
-                ParserResult::Ok(Statement::WhileStmt(self.parse_while_statement()?))
-            }
-            TokenKind::Do => {
-                ParserResult::Ok(Statement::DoWhileStmt(self.parse_do_while_statement()?))
-            }
-            TokenKind::Return => {
-                ParserResult::Ok(Statement::ReturnStmt(self.parse_return_statement()?))
-            }
-            TokenKind::Break => {
-                ParserResult::Ok(Statement::BreakStmt(self.parse_break_statement()?))
-            }
+            TokenKind::While => ParserResult::Ok(Statement::WhileStmt(self.parse_while_statement()?)),
+            TokenKind::Do => ParserResult::Ok(Statement::DoWhileStmt(self.parse_do_while_statement()?)),
+            TokenKind::Return => ParserResult::Ok(Statement::ReturnStmt(self.parse_return_statement()?)),
+            TokenKind::Break => ParserResult::Ok(Statement::BreakStmt(self.parse_break_statement()?)),
             TokenKind::For => ParserResult::Ok(Statement::ForStmt(self.parse_for_statement()?)),
             TokenKind::Goto => ParserResult::Ok(Statement::GotoStmt(self.parse_goto_statement()?)),
-            TokenKind::Continue => {
-                ParserResult::Ok(Statement::ContinueStmt(self.parse_continue_statement()?))
-            }
+            TokenKind::Continue => ParserResult::Ok(Statement::ContinueStmt(self.parse_continue_statement()?)),
             TokenKind::Identifier => {
                 if self.lookahead().kind == TokenKind::Colon {
                     ParserResult::Ok(Statement::LabeledStmt(self.parse_labeled_statement()?))

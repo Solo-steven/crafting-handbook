@@ -41,8 +41,7 @@ impl<'a> OptimizerPass for Mem2RegPass<'a> {
                 }
             } else {
                 // if there is no pointer access and use is in multiple block, perform ssa construct algorithm for phi inst.
-                let rename_phis =
-                    self.insert_phi_node_in_df_of_store_inst(alloc_pointer, function, use_table);
+                let rename_phis = self.insert_phi_node_in_df_of_store_inst(alloc_pointer, function, use_table);
                 if !self.rename_load_and_store_inst(
                     bb_id.clone(),
                     function,
@@ -155,11 +154,7 @@ impl<'a> Mem2RegPass<'a> {
                     ir_type: _3,
                 } = function.instructions.get(inst_id).unwrap()
                 {
-                    alloc_pointers_and_bb_ids.push((
-                        dst.clone(),
-                        inst_id.clone(),
-                        entry_block_id.clone(),
-                    ));
+                    alloc_pointers_and_bb_ids.push((dst.clone(), inst_id.clone(), entry_block_id.clone()));
                 }
             }
         }
@@ -272,11 +267,7 @@ impl<'a> Mem2RegPass<'a> {
                         // if there is no assignment value before use. we can not replace the value.
                         if let Some(new_src) = stack.last() {
                             uninit_variable = true;
-                            change_to_mov_insts.push((
-                                inst_id.clone(),
-                                dst.clone(),
-                                new_src.clone(),
-                            ));
+                            change_to_mov_insts.push((inst_id.clone(), dst.clone(), new_src.clone()));
                         }
                     }
                     InstructionData::StoreRegister {
@@ -319,14 +310,9 @@ impl<'a> Mem2RegPass<'a> {
         }
         // DFS traveral all sucessor with same argument
         for sucessor in function.blocks.get(&block).unwrap().successor.clone() {
-            uninit_variable = self.rename_load_and_store_inst(
-                sucessor.clone(),
-                function,
-                rename_phis,
-                use_set,
-                stack,
-                visit_marks,
-            ) && uninit_variable;
+            uninit_variable =
+                self.rename_load_and_store_inst(sucessor.clone(), function, rename_phis, use_set, stack, visit_marks)
+                    && uninit_variable;
         }
         // recover the stack by poping out the value insert in this basic block.
         for _i in 0..add_stack_count {

@@ -3,10 +3,10 @@ use crate::ast::expr::*;
 use crate::parser::{Parser, ParserResult};
 use crate::token::*;
 use crate::{
-    expect_token, get_binary_op_priority, is_assignment_ops_token, is_binary_ops_token,
-    is_current_type_name_token, is_looksahed_type_name_token, is_token, is_unary_ops_token,
-    is_update_ops_token, map_assignment_token_to_assignment_ops, map_binary_token_to_binary_ops,
-    map_unary_token_to_unary_ops, map_update_token_to_update_ops,
+    expect_token, get_binary_op_priority, is_assignment_ops_token, is_binary_ops_token, is_current_type_name_token,
+    is_looksahed_type_name_token, is_token, is_unary_ops_token, is_update_ops_token,
+    map_assignment_token_to_assignment_ops, map_binary_token_to_binary_ops, map_unary_token_to_unary_ops,
+    map_update_token_to_update_ops,
 };
 
 impl<'a> Parser<'a> {
@@ -95,8 +95,7 @@ impl<'a> Parser<'a> {
             if is_binary_ops_token!(self) {
                 let next_ops = map_binary_token_to_binary_ops!(self.get_token());
                 if get_binary_op_priority!(&next_ops) > get_binary_op_priority!(&cur_ops) {
-                    right =
-                        self.parse_binary_operation(right, get_binary_op_priority!(&next_ops))?;
+                    right = self.parse_binary_operation(right, get_binary_op_priority!(&next_ops))?;
                 }
             }
             left = Expression::BinaryExpr(BinaryExpression {
@@ -136,9 +135,7 @@ impl<'a> Parser<'a> {
                     value_type = self.parse_type_with_pointer_type(value_type);
                     value_type = self.parse_type_with_array_type(value_type)?;
                     expect_token!(TokenKind::ParenthesesRight, self);
-                    return ParserResult::Ok(Expression::SizeOfTypeExpr(SizeOfTypeExpression {
-                        value_type,
-                    }));
+                    return ParserResult::Ok(Expression::SizeOfTypeExpr(SizeOfTypeExpression { value_type }));
                 }
                 let expr = self.parse_unary_expr()?;
                 expect_token!(TokenKind::ParenthesesRight, self);
@@ -248,9 +245,7 @@ impl<'a> Parser<'a> {
     /// - struct init literal
     fn parse_primary_expr(&mut self) -> ParserResult<Expression<'a>> {
         match self.get_token() {
-            TokenKind::Identifier => {
-                ParserResult::Ok(Expression::Identifier(self.parse_identifier()?))
-            }
+            TokenKind::Identifier => ParserResult::Ok(Expression::Identifier(self.parse_identifier()?)),
             TokenKind::IntLiteral(base, (long_suffix, is_short)) => {
                 let raw_value = self.get_raw_value();
                 self.next_token();
@@ -278,11 +273,7 @@ impl<'a> Parser<'a> {
                 ParserResult::Ok(Expression::FloatLiteral(FloatLiteral {
                     raw_value,
                     base,
-                    value_type: if is_float {
-                        ValueType::Float
-                    } else {
-                        ValueType::Double
-                    },
+                    value_type: if is_float { ValueType::Float } else { ValueType::Double },
                 }))
             }
             TokenKind::CharLiteral => {
@@ -305,7 +296,9 @@ impl<'a> Parser<'a> {
             }
             TokenKind::BracesLeft => {
                 if self.cache_type_name.is_none() {
-                    ParserResult::Err(String::from("init list can only used when have type name or direct left hand side of declar"))
+                    ParserResult::Err(String::from(
+                        "init list can only used when have type name or direct left hand side of declar",
+                    ))
                 } else {
                     let s = ParserResult::Ok(Expression::InitExpr(InitExpression {
                         value_type: self.cache_type_name.take(),

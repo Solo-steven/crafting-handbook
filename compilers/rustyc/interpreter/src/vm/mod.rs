@@ -90,8 +90,7 @@ impl VM {
     }
     fn ldr_instruction(&mut self, instruction: &LoadRegisterInstruction) {
         // get address by base + offset
-        let address =
-            (self.registers.get(instruction.base as usize) as i32 + instruction.offset) as usize;
+        let address = (self.registers.get(instruction.base as usize) as i32 + instruction.offset) as usize;
         // get value by memory[address]
         let value = self.memory[address];
         // set register to value
@@ -99,8 +98,7 @@ impl VM {
     }
     fn str_instruction(&mut self, instruction: &StoreRegisterInstruction) {
         // get address by base + offset
-        let address =
-            (self.registers.get(instruction.base as usize) as i32 + instruction.offset) as usize;
+        let address = (self.registers.get(instruction.base as usize) as i32 + instruction.offset) as usize;
         // set memory by dst register
         self.memory[address] = self.registers.get(instruction.src as usize);
     }
@@ -110,8 +108,7 @@ impl VM {
     }
     /// Execute `IMMI` instruction
     fn immi_instruction(&mut self, instruction: &ImmiInstruction) {
-        self.registers
-            .set(instruction.dst as usize, instruction.value);
+        self.registers.set(instruction.dst as usize, instruction.value);
     }
     /// Execute `ADD` instruction
     fn add_instruction(&mut self, instruction: &AddInstruction) {

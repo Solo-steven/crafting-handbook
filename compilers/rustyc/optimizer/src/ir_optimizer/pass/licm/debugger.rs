@@ -57,8 +57,7 @@ impl<'a> DebuggerPass for LICMPass<'a> {
             }
             output_string.push_str(print_divider(len_of_row).as_str());
             let mut inner_index = 0 as usize;
-            let sorted_exits =
-                sort_block_ids(natural_loop.exits.iter().map(|b| b.clone()).collect());
+            let sorted_exits = sort_block_ids(natural_loop.exits.iter().map(|b| b.clone()).collect());
             for block in &sorted_exits {
                 let left = format!(
                     "{}",

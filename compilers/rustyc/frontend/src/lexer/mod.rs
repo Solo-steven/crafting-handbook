@@ -571,9 +571,8 @@ impl<'a> Lexer<'a> {
         loop {
             if let Some(ch) = self.get_char() {
                 match ch {
-                    '+' | '-' | '*' | '%' | '/' | '&' | '\'' | '"' | '<' | '>' | '=' | '?'
-                    | '#' | '~' | '^' | '!' | '{' | '}' | '[' | ']' | '(' | ')' | ';' | ','
-                    | '.' => break,
+                    '+' | '-' | '*' | '%' | '/' | '&' | '\'' | '"' | '<' | '>' | '=' | '?' | '#' | '~' | '^' | '!'
+                    | '{' | '}' | '[' | ']' | '(' | ')' | ';' | ',' | '.' => break,
                     '\t' | ' ' | '\n' => break,
                     '\\' => {
                         let next_char = self.source[self.current_offset + 1..].chars().next();
@@ -658,8 +657,7 @@ impl<'a> Lexer<'a> {
             if let Some(ch) = self.get_char() {
                 if escap {
                     match ch {
-                        '\\' | 'a' | 'b' | '?' | '\'' | '\"' | 'f' | 'n' | 'r' | 't' | 'v'
-                        | '\n' => {
+                        '\\' | 'a' | 'b' | '?' | '\'' | '\"' | 'f' | 'n' | 'r' | 't' | 'v' | '\n' => {
                             self.eat_char();
                             escap = false;
                         }
@@ -728,9 +726,7 @@ impl<'a> Lexer<'a> {
     fn read_number(&mut self) {
         match self.get_char() {
             Some(ch) => match ch {
-                '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
-                    self.read_non_zero_decimal_start_number()
-                }
+                '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => self.read_non_zero_decimal_start_number(),
                 '0' => {
                     if let Some(next_char) = self.source[self.current_offset + 1..].chars().next() {
                         if next_char == 'X' || next_char == 'x' {
@@ -966,8 +962,8 @@ impl<'a> Lexer<'a> {
         loop {
             if let Some(ch) = self.get_char() {
                 match ch {
-                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'a' | 'b' | 'c'
-                    | 'd' | 'e' | 'f' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' => self.eat_char(),
+                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f'
+                    | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' => self.eat_char(),
                     _ => break,
                 }
             } else {
