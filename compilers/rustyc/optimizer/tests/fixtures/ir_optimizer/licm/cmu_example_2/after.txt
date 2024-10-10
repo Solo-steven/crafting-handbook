@@ -8,6 +8,7 @@ block2:
 	jump 5
 block3:
 	phi t5, block3 t4, block2 t1
+	brif t4, block4, block5
 block4:
 	ret void
 block5:

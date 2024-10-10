@@ -9,6 +9,7 @@ use rustyc_optimizer::ir_optimizer::anaylsis::{DebuggerAnaylsis, OptimizerAnayls
 use rustyc_optimizer::ir_optimizer::pass::gvn::GVNPass;
 use rustyc_optimizer::ir_optimizer::pass::lcm::LCMPass;
 use rustyc_optimizer::ir_optimizer::pass::licm::LICMPass;
+use rustyc_optimizer::ir_optimizer::pass::sscp::SSCPPass;
 use rustyc_optimizer::ir_optimizer::pass::{DebuggerPass, OptimizerPass};
 use std::{env, fs::read_to_string, path::PathBuf};
 
@@ -132,6 +133,39 @@ generate_pass_cases!(
         let mut use_def = UseDefAnaylsier::new();
         let use_def_table = use_def.anaylsis(&fun);
         let mut pass = LICMPass::new(&use_def_table, &dom_table);
+        pass.process(&mut fun);
+        let table = pass.debugger(&fun);
+        let after = fun.print_to_string();
+        (before, table, after)
+    }),
+    (test_sscp_pass_book_example_1, "./sscp/book_example_1", || {
+        let mut fun = create_simple_loop_const_propagation_graph_1();
+        let before = fun.print_to_string();
+        let mut use_def = UseDefAnaylsier::new();
+        let use_def_table = use_def.anaylsis(&fun);
+        let mut pass = SSCPPass::new(&use_def_table);
+        pass.process(&mut fun);
+        let table = pass.debugger(&fun);
+        let after = fun.print_to_string();
+        (before, table, after)
+    }),
+    (test_sscp_pass_book_example_2, "./sscp/book_example_2", || {
+        let mut fun = create_simple_loop_const_propagation_graph_2();
+        let before = fun.print_to_string();
+        let mut use_def = UseDefAnaylsier::new();
+        let use_def_table = use_def.anaylsis(&fun);
+        let mut pass = SSCPPass::new(&use_def_table);
+        pass.process(&mut fun);
+        let table = pass.debugger(&fun);
+        let after = fun.print_to_string();
+        (before, table, after)
+    }),
+    (test_sscp_pass_simple_example, "./sscp/simple_example", || {
+        let mut fun = create_simple_const_propagation_graph();
+        let before = fun.print_to_string();
+        let mut use_def = UseDefAnaylsier::new();
+        let use_def_table = use_def.anaylsis(&fun);
+        let mut pass = SSCPPass::new(&use_def_table);
         pass.process(&mut fun);
         let table = pass.debugger(&fun);
         let after = fun.print_to_string();

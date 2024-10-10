@@ -9,9 +9,7 @@ use crate::ir::value::IrValueType;
 use crate::ir_converter::Converter;
 use crate::ir_optimizer::anaylsis::domtree::DomAnaylsier;
 use crate::ir_optimizer::anaylsis::use_def_chain::UseDefAnaylsier;
-use crate::ir_optimizer::pass::licm;
 use ir_optimizer::anaylsis::{DebuggerAnaylsis, OptimizerAnaylsis};
-use ir_optimizer::pass::gvn::GVNPass;
 use ir_optimizer::pass::licm::LICMPass;
 use ir_optimizer::pass::sscp::SSCPPass;
 use ir_optimizer::pass::{DebuggerPass, OptimizerPass};
@@ -20,7 +18,7 @@ use std::fs::File;
 use std::io::Write;
 
 fn write_string_to_file(file_string: String) {
-    let mut file1 = File::create("./test.txt").unwrap();
+    let mut file1 = File::create("./output.txt").unwrap();
     write!(file1, "{}", file_string).unwrap();
 }
 #[allow(dead_code)]
@@ -70,145 +68,19 @@ fn anaylsiser_example() {
 
 #[allow(dead_code)]
 fn optimizer_example() {
-    let mut fun = create_simple_loop_const_propagation_graph_1();
+    let mut fun = create_licm_graph_simple_example_from_cmu();
     let mut file1 = File::create("./before.txt").unwrap();
     write!(file1, "{}", fun.print_to_string()).unwrap();
-    // let mut dom = DomAnaylsier::new();
-    // let dom_table = dom.anaylsis(&fun);
-
+    let mut dom = DomAnaylsier::new();
+    let dom_table = dom.anaylsis(&fun);
     let mut use_def = UseDefAnaylsier::new();
     let use_def_table = use_def.anaylsis(&fun);
-    let mut pass = SSCPPass::new(&use_def_table);
+    let mut pass = LICMPass::new(&use_def_table, &dom_table);
     pass.process(&mut fun);
 
     write_string_to_file(pass.debugger(&fun));
     let mut file1 = File::create("./after.txt").unwrap();
     write!(file1, "{}", fun.print_to_string()).unwrap();
-}
-
-/// ## Generate Simple Graph For Test SSCP pass
-/// ```markdown
-/// t1 = 10;
-/// t2 = 10
-/// t3 = t1 + t2;
-/// ```
-fn create_simple_const_propagation_graph() -> Function {
-    let mut function = Function::new(String::from("test_fun"));
-    let bb = function.create_block();
-    function.switch_to_block(bb);
-    function.mark_as_entry(bb);
-    let i10_const = function.create_i16_const(10);
-    let a = function.build_mov_inst(i10_const);
-    let b = function.build_mov_inst(i10_const);
-    let _c = function.build_add_inst(a, b);
-    function.mark_as_exit(bb);
-    function
-}
-/// ## Generate Simple Graph For Test SSCP pass, example 1
-/// ref: engineer a compiler 2/e. page 518.
-/// ```markdown
-/// --- block 1
-/// t1 = 10
-/// t2 = 0
-/// jump block 2
-/// --- block 2
-/// phi t3, block1 t1, block2 t4
-/// t4 = add t3 t2
-/// brif t4, block 2, block 3
-/// --- block 3
-/// ret void
-/// ```
-fn create_simple_loop_const_propagation_graph_1() -> Function {
-    let mut function = Function::new(String::from("test_fun"));
-    let header = function.create_block();
-    function.mark_as_entry(header);
-    let mid = function.create_block();
-    let end = function.create_block();
-    function.mark_as_exit(end);
-    function.connect_block(header, mid);
-    function.connect_block(mid, end);
-    function.connect_block(mid, mid);
-
-    function.switch_to_block(header);
-    let i10_const = function.create_i16_const(10);
-    let i0_const = function.create_i16_const(0);
-    let x_0 = function.build_mov_inst(i10_const);
-    let i_12 = function.build_mov_inst(i0_const);
-    function.build_jump_inst(mid);
-    function.switch_to_block(mid);
-    let x_1 = function.add_register(IrValueType::I16);
-    let x_2 = function.build_add_inst(x_1, i_12);
-    function.insert_inst_to_block_front(
-        &mid,
-        InstructionData::Phi {
-            opcode: OpCode::Phi,
-            dst: x_1,
-            from: vec![(header, x_0), (mid, x_2)],
-        },
-    );
-    function.build_brif_inst(x_2, mid, end);
-    function.switch_to_block(end);
-    function.build_ret_inst(None);
-    function
-}
-/// ## Generate Simple Graph For Test SSCP pass, example 2
-/// ref: engineer a compiler 2/e. page 518.
-/// ```markdown
-/// --- block 1
-/// t1 = 10
-/// t2 = 20
-/// jump block 2
-/// --- block 2
-/// phi t3, block1 t1, block2 t4
-/// t4 = add t3 t2
-/// brif t4, block 2, block 3
-/// --- block 3
-/// ret void
-/// ```
-fn create_simple_loop_const_propagation_graph_2() -> Function {
-    let mut function = Function::new(String::from("test_fun"));
-    let header = function.create_block();
-    function.mark_as_entry(header);
-    let mid = function.create_block();
-    let end = function.create_block();
-    function.mark_as_exit(end);
-    function.connect_block(header, mid);
-    function.connect_block(mid, end);
-    function.connect_block(mid, mid);
-
-    function.switch_to_block(header);
-    let i10_const = function.create_i16_const(10);
-    let i0_const = function.create_i16_const(20);
-    let x_0 = function.build_mov_inst(i10_const);
-    let i_12 = function.build_mov_inst(i0_const);
-    function.build_jump_inst(mid);
-    function.switch_to_block(mid);
-    let x_1 = function.add_register(IrValueType::I16);
-    let x_2 = function.build_add_inst(x_1, i_12);
-    function.insert_inst_to_block_front(
-        &mid,
-        InstructionData::Phi {
-            opcode: OpCode::Phi,
-            dst: x_1,
-            from: vec![(header, x_0), (mid, x_2)],
-        },
-    );
-    function.build_brif_inst(x_2, mid, end);
-    function.switch_to_block(end);
-    function.build_ret_inst(None);
-    function
-}
-
-fn create_simple_loop() -> Function {
-    let mut function = Function::new(String::from("test_fun"));
-    let b1 = function.create_block();
-    function.mark_as_entry(b1);
-    let b2 = function.create_block();
-    function.mark_as_exit(b2);
-    function.connect_block(b1, b2);
-    function.connect_block(b2, b1);
-
-    function
 }
 
 fn create_backward_edge_example() -> Function {
@@ -281,6 +153,10 @@ fn main() {
     // anaylsiser_example();
 }
 
+/// ## Generate Simple Graph for Testing LICM
+/// Modify example from CMU ptt, page 9.
+/// ref: https://www.cs.cmu.edu/afs/cs/academic/class/15745-s19/www/lectures/L9-LICM.pdf
+/// adding empty block for entry, header and exit.
 pub fn create_licm_graph_simple_example_from_cmu() -> Function {
     let mut function = Function::new(String::from("test_fun"));
     // create blocks
@@ -317,6 +193,7 @@ pub fn create_licm_graph_simple_example_from_cmu() -> Function {
             from: vec![(b2, a_inner), (b1, a)],
         },
     );
+    function.build_brif_inst(a_inner, b3, b2);
     // exit
     function.switch_to_block(b3);
     function.build_ret_inst(None);
