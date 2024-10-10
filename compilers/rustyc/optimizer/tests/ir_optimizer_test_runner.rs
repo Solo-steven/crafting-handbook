@@ -4,6 +4,7 @@ use build_ir_graph::*;
 use rustyc_optimizer::ir::function::Function;
 use rustyc_optimizer::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
 use rustyc_optimizer::ir_optimizer::anaylsis::domtree::DomAnaylsier;
+use rustyc_optimizer::ir_optimizer::anaylsis::post_domtree::PostDomAnaylsier;
 use rustyc_optimizer::ir_optimizer::anaylsis::use_def_chain::UseDefAnaylsier;
 use rustyc_optimizer::ir_optimizer::anaylsis::{DebuggerAnaylsis, OptimizerAnaylsis};
 use rustyc_optimizer::ir_optimizer::pass::gvn::GVNPass;
@@ -230,5 +231,17 @@ generate_anaylsis_cases!(
         "./dfs_ordering/simple_example",
         create_use_def_graph(),
         DFSOrdering::new()
+    ),
+    (
+        test_diamond_shape_example,
+        "./post_dom/diamond_example",
+        create_diamond_dom_graph(),
+        PostDomAnaylsier::new()
+    ),
+    (
+        test_diamond_shape_like_example,
+        "./post_dom/diamond_like_example",
+        create_diamond_like_dom_graph(),
+        PostDomAnaylsier::new()
     )
 );

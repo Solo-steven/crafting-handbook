@@ -443,3 +443,46 @@ pub fn create_simple_loop_const_propagation_graph_2() -> Function {
     function.build_ret_inst(Some(t_4));
     function
 }
+
+/// ## Generate Simple Diamond shape IR graph for post dom
+/// ```markdown
+///       | -> b2 -|
+///  b1 - |        | -> b4
+///       | -> b3 -|
+/// ```
+pub fn create_diamond_dom_graph() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    let header = function.create_block();
+    let left = function.create_block();
+    let right = function.create_block();
+    let exit = function.create_block();
+    function.mark_as_entry(header);
+    function.mark_as_exit(exit);
+    function.connect_block(header, left);
+    function.connect_block(left, exit);
+    function.connect_block(header, right);
+    function.connect_block(right, exit);
+
+    function
+}
+/// ## Generate Simple Diamond-Like shape IR graph for post dom
+/// ```markdown
+///       | -> b2 --> b4
+///  b1 - |
+///       | -> b3
+/// ```
+pub fn create_diamond_like_dom_graph() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    let header = function.create_block();
+    let left_exit = function.create_block();
+    let right = function.create_block();
+    let exit = function.create_block();
+    function.mark_as_entry(header);
+    function.mark_as_exit(exit);
+    function.mark_as_exit(left_exit);
+    function.connect_block(header, left_exit);
+    function.connect_block(header, right);
+    function.connect_block(right, exit);
+
+    function
+}
