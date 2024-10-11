@@ -7,8 +7,8 @@ use std::mem::replace;
 
 /// Table for record every block's dom and idom and dom-frontier
 pub struct PostDomTable {
-    table: HashMap<BasicBlock, PostDomTableEntry>,
-    extra_exit_block: Option<BasicBlock>,
+    pub table: HashMap<BasicBlock, PostDomTableEntry>,
+    pub extra_exit_block: Option<BasicBlock>,
 }
 /// Entry for record dom, idom and dom-frontier for a bb.
 #[derive(Debug, Clone, PartialEq)]
