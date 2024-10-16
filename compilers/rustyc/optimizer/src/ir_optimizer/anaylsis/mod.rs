@@ -3,6 +3,7 @@ use crate::ir::function::Function;
 pub mod dfs_ordering;
 pub mod domtree;
 pub mod liveness_anaylsis;
+pub mod post_domtree;
 pub mod use_def_chain;
 
 pub trait OptimizerAnaylsis<T> {

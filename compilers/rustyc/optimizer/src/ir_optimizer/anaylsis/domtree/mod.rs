@@ -11,8 +11,8 @@ pub type DomTable = HashMap<BasicBlock, DomTableEntry>;
 pub struct DomTableEntry {
     pub dom: HashSet<BasicBlock>,
     pub idom: Option<BasicBlock>,
-    pub dom_frontier: HashSet<BasicBlock>,
     pub dom_tree_children: HashSet<BasicBlock>,
+    pub dom_frontier: HashSet<BasicBlock>,
 }
 /// Struct for anaylsis dom related info for a control flow graph
 pub struct DomAnaylsier {
@@ -22,6 +22,8 @@ pub struct DomAnaylsier {
 impl OptimizerAnaylsis<DomTable> for DomAnaylsier {
     /// Public api for anaylsis dom information
     fn anaylsis(&mut self, function: &Function) -> DomTable {
+        self.init_table_entry(function);
+        // dominator relative analysis
         self.dom_anaylsis(function);
         self.idom_anaylsis(function);
         self.dom_frontier_anaylsis(function);
@@ -35,31 +37,34 @@ impl DomAnaylsier {
             dom_table: HashMap::new(),
         }
     }
+    fn init_table_entry(&mut self, function: &Function) {
+        for (block_id, _) in &function.blocks {
+            self.dom_table.insert(
+                block_id.clone(),
+                DomTableEntry {
+                    dom: HashSet::new(),
+                    idom: None,
+                    dom_tree_children: HashSet::new(),
+                    dom_frontier: HashSet::new(),
+                },
+            );
+        }
+    }
+    fn get_all_dom_set(function: &Function) -> HashSet<BasicBlock> {
+        function.blocks.keys().map(|key| key.clone()).collect()
+    }
     /// Iterative DOM data flow anaylsis, algorithm is from the book `Engineering a Compiler`.
     fn dom_anaylsis(&mut self, function: &Function) {
-        // init dom property for every block.
-        let all_block_set: HashSet<BasicBlock> = function.blocks.keys().map(|key| key.clone()).collect();
+        // init dom property of table entry
+        //  - for entry block: only contain entry block itself
+        //  - for other block: all blocks
         for (block_id, _) in &function.blocks {
             if block_id.0 == function.entry_block[0].0 {
-                self.dom_table.insert(
-                    block_id.clone(),
-                    DomTableEntry {
-                        dom: HashSet::from([block_id.clone()]),
-                        idom: None,
-                        dom_frontier: HashSet::new(),
-                        dom_tree_children: HashSet::new(),
-                    },
-                );
+                let entry = self.dom_table.get_mut(block_id).unwrap();
+                entry.dom = HashSet::from([block_id.clone()]);
             } else {
-                self.dom_table.insert(
-                    block_id.clone(),
-                    DomTableEntry {
-                        dom: all_block_set.clone(),
-                        idom: None,
-                        dom_frontier: HashSet::new(),
-                        dom_tree_children: HashSet::new(),
-                    },
-                );
+                let entry = self.dom_table.get_mut(block_id).unwrap();
+                entry.dom = Self::get_all_dom_set(function);
             }
         }
         // iterative algorithm for dom data flow analysis
@@ -70,14 +75,14 @@ impl DomAnaylsier {
             is_change = false;
             for block_id in &ordering {
                 let bb = function.blocks.get(block_id).unwrap();
-                let mut next_set = HashSet::new();
+                // Skip if is entry
                 if block_id.0 == function.entry_block[0].0 {
                     continue;
                 }
+                let mut next_set = HashSet::new();
                 for pre in &bb.predecessor {
                     let pre_dom_entry = self.dom_table.get(pre).unwrap();
                     let pre_dom = &pre_dom_entry.dom;
-                    //println!("[{:?}]: {:?}, {:?}", block_id, next_set, pre_dom);
                     if next_set.len() == 0 {
                         next_set = pre_dom.clone();
                     } else {
@@ -87,7 +92,7 @@ impl DomAnaylsier {
                 next_set.insert(block_id.clone());
                 let cur_entry = self.dom_table.get_mut(block_id).unwrap();
                 let cur_dom = &cur_entry.dom;
-                if &next_set != cur_dom {
+                if next_set != *cur_dom {
                     is_change = true;
                     cur_entry.dom = next_set;
                 }

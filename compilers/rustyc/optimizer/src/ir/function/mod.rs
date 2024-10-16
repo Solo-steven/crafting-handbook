@@ -61,6 +61,40 @@ impl Function {
             current_block: None,
         }
     }
+    /// ## Gernate only shape of function AKA block relation
+    /// This function currently is only used by post dominator anaylsis, since
+    /// it might be need to create another exit block for single exit.
+    pub fn skeleton(&self) -> Function {
+        let mut blocks: HashMap<BasicBlock, BasicBlockData> = Default::default();
+        for (block_id, block_data) in &self.blocks {
+            blocks.insert(
+                block_id.clone(),
+                BasicBlockData {
+                    name: block_data.name.clone(),
+                    successor: block_data.successor.clone(),
+                    predecessor: block_data.predecessor.clone(),
+                    instructions: Default::default(),
+                },
+            );
+        }
+        Self {
+            name: self.name.clone(),
+            return_type: self.return_type.clone(),
+            instructions: HashMap::new(),
+            next_inst_index: 1,
+            blocks,
+            next_block_index: self.next_block_index,
+            inst_map_block: HashMap::new(),
+            params_value: Vec::new(),
+            values: HashMap::new(),
+            value_types: HashMap::new(),
+            next_value_index: 1,
+            next_temp_register_index: 1,
+            entry_block: self.entry_block.clone(),
+            exit_block: self.entry_block.clone(),
+            current_block: None,
+        }
+    }
     fn get_next_inst_id(&mut self) -> Instruction {
         let id = self.next_inst_index;
         self.next_inst_index += 1;

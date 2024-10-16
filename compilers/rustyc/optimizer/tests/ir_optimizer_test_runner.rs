@@ -4,8 +4,10 @@ use build_ir_graph::*;
 use rustyc_optimizer::ir::function::Function;
 use rustyc_optimizer::ir_optimizer::anaylsis::dfs_ordering::DFSOrdering;
 use rustyc_optimizer::ir_optimizer::anaylsis::domtree::DomAnaylsier;
+use rustyc_optimizer::ir_optimizer::anaylsis::post_domtree::PostDomAnaylsier;
 use rustyc_optimizer::ir_optimizer::anaylsis::use_def_chain::UseDefAnaylsier;
 use rustyc_optimizer::ir_optimizer::anaylsis::{DebuggerAnaylsis, OptimizerAnaylsis};
+use rustyc_optimizer::ir_optimizer::pass::dce::DCEPass;
 use rustyc_optimizer::ir_optimizer::pass::gvn::GVNPass;
 use rustyc_optimizer::ir_optimizer::pass::lcm::LCMPass;
 use rustyc_optimizer::ir_optimizer::pass::licm::LICMPass;
@@ -170,6 +172,58 @@ generate_pass_cases!(
         let table = pass.debugger(&fun);
         let after = fun.print_to_string();
         (before, table, after)
+    }),
+    (test_dce_pass_if_critical, "./dce/if_critical", || {
+        let mut fun = create_simple_if_like_graph();
+        let before = fun.print_to_string();
+        let mut use_def = UseDefAnaylsier::new();
+        let use_def_table = use_def.anaylsis(&fun);
+        let mut post_dom = PostDomAnaylsier::new();
+        let post_dom_table = post_dom.anaylsis(&fun);
+        let mut pass = DCEPass::new(&use_def_table, &post_dom_table, true);
+        pass.process(&mut fun);
+        let table = pass.debugger(&fun);
+        let after = fun.print_to_string();
+        (before, table, after)
+    }),
+    (test_dce_pass_if_non_critical, "./dce/if_change_cfg", || {
+        let mut fun = create_simple_if_like_cfg_change_graph();
+        let before = fun.print_to_string();
+        let mut use_def = UseDefAnaylsier::new();
+        let use_def_table = use_def.anaylsis(&fun);
+        let mut post_dom = PostDomAnaylsier::new();
+        let post_dom_table = post_dom.anaylsis(&fun);
+        let mut pass = DCEPass::new(&use_def_table, &post_dom_table, true);
+        pass.process(&mut fun);
+        let table = pass.debugger(&fun);
+        let after = fun.print_to_string();
+        (before, table, after)
+    }),
+    (test_dce_pass_diamond, "./dce/diamond", || {
+        let mut fun = create_diamond_dom_graph();
+        let before = fun.print_to_string();
+        let mut use_def = UseDefAnaylsier::new();
+        let use_def_table = use_def.anaylsis(&fun);
+        let mut post_dom = PostDomAnaylsier::new();
+        let post_dom_table = post_dom.anaylsis(&fun);
+        let mut pass = DCEPass::new(&use_def_table, &post_dom_table, true);
+        pass.process(&mut fun);
+        let table = pass.debugger(&fun);
+        let after = fun.print_to_string();
+        (before, table, after)
+    }),
+    (test_dce_pass_diamond_like, "./dce/diamond_like", || {
+        let mut fun = create_diamond_like_dom_graph();
+        let before = fun.print_to_string();
+        let mut use_def = UseDefAnaylsier::new();
+        let use_def_table = use_def.anaylsis(&fun);
+        let mut post_dom = PostDomAnaylsier::new();
+        let post_dom_table = post_dom.anaylsis(&fun);
+        let mut pass = DCEPass::new(&use_def_table, &post_dom_table, true);
+        pass.process(&mut fun);
+        let table = pass.debugger(&fun);
+        let after = fun.print_to_string();
+        (before, table, after)
     })
 );
 
@@ -230,5 +284,17 @@ generate_anaylsis_cases!(
         "./dfs_ordering/simple_example",
         create_use_def_graph(),
         DFSOrdering::new()
+    ),
+    (
+        test_diamond_shape_example,
+        "./post_dom/diamond_example",
+        create_diamond_dom_graph(),
+        PostDomAnaylsier::new()
+    ),
+    (
+        test_diamond_shape_like_example,
+        "./post_dom/diamond_like_example",
+        create_diamond_like_dom_graph(),
+        PostDomAnaylsier::new()
     )
 );

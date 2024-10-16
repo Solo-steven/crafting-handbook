@@ -443,3 +443,218 @@ pub fn create_simple_loop_const_propagation_graph_2() -> Function {
     function.build_ret_inst(Some(t_4));
     function
 }
+
+/// ## Generate Simple Diamond shape IR graph for post dom
+/// Need to remove t_2.
+/// ```markdown
+///       | -> b2 -|
+///  b1 - |        | -> b4
+///       | -> b3 -|
+/// ```
+/// ```markdown
+/// --- b1
+/// t1 = 10
+/// t2 = t1 + 10
+/// brif t1 block 2, block 3
+/// --- b2
+/// t3 = 10
+/// jump b4
+/// --- b3
+/// t4 = 10
+/// jump b4
+/// --- b4
+/// t5 = phi b3 t4, b2 t3
+/// t6 = t5 + 10
+/// ret t5
+/// ```
+pub fn create_diamond_dom_graph() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    function.return_type = Some(IrValueType::I16);
+    let header = function.create_block();
+    let left = function.create_block();
+    let right = function.create_block();
+    let exit = function.create_block();
+    function.mark_as_entry(header);
+    function.mark_as_exit(exit);
+    function.connect_block(header, left);
+    function.connect_block(left, exit);
+    function.connect_block(header, right);
+    function.connect_block(right, exit);
+
+    function.switch_to_block(header);
+    let i10_const = function.create_i16_const(10);
+    let t_1 = function.build_mov_inst(i10_const);
+    let _t_2 = function.build_add_inst(t_1, i10_const);
+    function.build_brif_inst(t_1, left, right);
+
+    function.switch_to_block(left);
+    let t_3 = function.build_mov_inst(i10_const);
+    function.build_jump_inst(exit);
+
+    function.switch_to_block(right);
+    let t_4 = function.build_mov_inst(i10_const);
+    function.build_jump_inst(exit);
+
+    function.switch_to_block(exit);
+    let t_5 = function.build_phi_inst(vec![(left, t_3), (right, t_4)]);
+    let t_5 = function.build_add_inst(t_5, i10_const);
+    function.build_ret_inst(Some(t_5));
+
+    function
+}
+/// ## Generate Simple Diamond-Like shape IR graph for post dom
+/// ```markdown
+///       | -> b2 --> b4
+///  b1 - |
+///       | -> b3
+/// ```
+/// ```markdown
+/// --- b1
+/// t1 = 10
+/// t2 = t1 + 10
+/// brif t1 block 2, block 3
+/// --- b2
+/// t3 = 10
+/// ret t3
+/// --- b3
+/// t4 = 10
+/// jump b4
+/// --- b4
+/// t5 = t4 + 10
+/// ret t5
+/// ```
+pub fn create_diamond_like_dom_graph() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    function.return_type = Some(IrValueType::I16);
+    let header = function.create_block();
+    let left = function.create_block();
+    let right = function.create_block();
+    let exit = function.create_block();
+    function.mark_as_entry(header);
+    function.mark_as_exit(exit);
+    function.mark_as_exit(left);
+    function.connect_block(header, left);
+    function.connect_block(header, right);
+    function.connect_block(right, exit);
+
+    function.switch_to_block(header);
+    let i10_const = function.create_i16_const(10);
+    let t_1 = function.build_mov_inst(i10_const);
+    let _t_2 = function.build_add_inst(t_1, i10_const);
+    function.build_brif_inst(t_1, left, right);
+
+    function.switch_to_block(left);
+    let t_3 = function.build_mov_inst(i10_const);
+    function.build_ret_inst(Some(t_3));
+
+    function.switch_to_block(right);
+    let t_4 = function.build_mov_inst(i10_const);
+    function.build_jump_inst(exit);
+
+    function.switch_to_block(exit);
+    let t_5 = function.build_add_inst(t_4, i10_const);
+    function.build_ret_inst(Some(t_5));
+
+    function
+}
+/// ## Generate Simple Diamond-Like shape IR graph for post dom
+/// ```markdown
+///       | -> b2--|
+///  b1 - |        |--> |-----|
+///       |             |  b3 |
+///       | ----------> |-----|
+/// ```
+/// ```markdown
+/// --- b1
+/// t1 = 10
+/// t2 = t1 + 10
+/// brif t1 block 2, block 3
+/// --- b2
+/// t3 = 10
+/// t4 = 10
+/// store t_4, t_3, 10, i16
+/// jump b3
+/// --- b3
+/// t5 = 10
+/// ret t5
+/// ```
+pub fn create_simple_if_like_graph() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    function.return_type = Some(IrValueType::I16);
+    let header = function.create_block();
+    let right = function.create_block();
+    let exit = function.create_block();
+    function.mark_as_entry(header);
+    function.mark_as_exit(exit);
+    function.connect_block(header, right);
+    function.connect_block(right, exit);
+    function.connect_block(header, exit);
+
+    function.switch_to_block(header);
+    let i10_const = function.create_i16_const(10);
+    let t_1 = function.build_mov_inst(i10_const);
+    let _t_2 = function.build_add_inst(t_1, i10_const);
+    function.build_brif_inst(t_1, exit, right);
+
+    function.switch_to_block(right);
+    let t_3 = function.build_mov_inst(i10_const);
+    let t_4 = function.build_mov_inst(i10_const);
+    function.build_store_register_inst(t_4, t_3, i10_const, IrValueType::I16);
+    function.build_jump_inst(exit);
+
+    function.switch_to_block(exit);
+    let t_5 = function.build_mov_inst(i10_const);
+    function.build_ret_inst(Some(t_5));
+
+    function
+}
+
+/// ## Generate Simple Diamond-Like shape IR graph for post dom
+/// ```markdown
+///       | -> b2--|
+///  b1 - |        |--> |-----|
+///       |             |  b3 |
+///       | ----------> |-----|
+/// ```
+/// ```markdown
+/// --- b1
+/// t1 = 10
+/// t2 = t1 + 10
+/// brif t1 block 2, block 3
+/// --- b2
+/// t3 = 10
+/// t4 = 10
+/// jump b3
+/// --- b3
+/// t5 = 10
+/// ret t5
+/// ```
+pub fn create_simple_if_like_cfg_change_graph() -> Function {
+    let mut function = Function::new(String::from("test_fun"));
+    function.return_type = Some(IrValueType::I16);
+    let header = function.create_block();
+    let right = function.create_block();
+    let exit = function.create_block();
+    function.mark_as_entry(header);
+    function.mark_as_exit(exit);
+    function.connect_block(header, right);
+    function.connect_block(right, exit);
+    function.connect_block(header, exit);
+
+    function.switch_to_block(header);
+    let i10_const = function.create_i16_const(10);
+    let t_1 = function.build_mov_inst(i10_const);
+    let _t_2 = function.build_add_inst(t_1, i10_const);
+    function.build_brif_inst(t_1, exit, right);
+
+    function.switch_to_block(right);
+    let _t_3 = function.build_mov_inst(i10_const);
+    let _t_4 = function.build_mov_inst(i10_const);
+    function.build_jump_inst(exit);
+
+    function.switch_to_block(exit);
+    let t_5 = function.build_mov_inst(i10_const);
+    function.build_ret_inst(Some(t_5));
+
+    function
+}
