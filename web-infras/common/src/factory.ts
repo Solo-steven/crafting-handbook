@@ -3,10 +3,16 @@ import * as AST from "./ast";
 import { SyntaxKinds } from "./kind";
 import { AssigmentOperatorKinds, BinaryOperatorKinds, UnaryOperatorKinds, UpdateOperatorKinds } from "./kind";
 
-export function createIdentifier(name: string, start: SourcePosition, end: SourcePosition): AST.Identifier {
+export function createIdentifier(
+  name: string,
+  start: SourcePosition,
+  end: SourcePosition,
+  typeAnnotation: AST.TSTypeAnnotation | undefined = undefined,
+): AST.Identifier {
   return {
     kind: SyntaxKinds.Identifier,
     name,
+    typeAnnotation,
     start,
     end,
   };
@@ -1461,6 +1467,306 @@ export function createJSXOpeningFragment(start: SourcePosition, end: SourcePosit
 export function createJSXClosingFragment(start: SourcePosition, end: SourcePosition): AST.JSXClosingFragment {
   return {
     kind: SyntaxKinds.JSXClosingFragment,
+    start,
+    end,
+  };
+}
+
+export function createTSStringKeyword(start: SourcePosition, end: SourcePosition): AST.TSStringKeyword {
+  return {
+    kind: SyntaxKinds.TSStringKeyword,
+    start,
+    end,
+  };
+}
+
+export function createTSNumberKeyword(start: SourcePosition, end: SourcePosition): AST.TSNumberKeyword {
+  return {
+    kind: SyntaxKinds.TSNumberKeyword,
+    start,
+    end,
+  };
+}
+
+export function createTSBigintKeyword(start: SourcePosition, end: SourcePosition): AST.TSBigIntKeyword {
+  return {
+    kind: SyntaxKinds.TSBigIntKeyword,
+    start,
+    end,
+  };
+}
+
+export function createTSBoolKeyword(start: SourcePosition, end: SourcePosition): AST.TSBooleanKeyword {
+  return {
+    kind: SyntaxKinds.TSBooleanKeyword,
+    start,
+    end,
+  };
+}
+
+export function createTSNullKeyword(start: SourcePosition, end: SourcePosition): AST.TSNullKeyword {
+  return {
+    kind: SyntaxKinds.TSNullKeyword,
+    start,
+    end,
+  };
+}
+
+export function createTSUndefinedKeyword(start: SourcePosition, end: SourcePosition): AST.TSUndefinedKeyword {
+  return {
+    kind: SyntaxKinds.TSUndefinedKeyword,
+    start,
+    end,
+  };
+}
+
+export function createTSSymbolKeyword(start: SourcePosition, end: SourcePosition): AST.TSSymbolKeyword {
+  return {
+    kind: SyntaxKinds.TSSymbolKeyword,
+    start,
+    end,
+  };
+}
+
+export function createTSAnyKeyword(start: SourcePosition, end: SourcePosition): AST.TSAnyKeyword {
+  return {
+    kind: SyntaxKinds.TSAnyKeyword,
+    start,
+    end,
+  };
+}
+
+export function createTSNeverKeyword(start: SourcePosition, end: SourcePosition): AST.TSUndefinedKeyword {
+  return {
+    kind: SyntaxKinds.TSUndefinedKeyword,
+    start,
+    end,
+  };
+}
+
+export function createTSUnknowKeyword(start: SourcePosition, end: SourcePosition): AST.TSUnknowKeyword {
+  return {
+    kind: SyntaxKinds.TSUnknowKeyword,
+    start,
+    end,
+  };
+}
+
+export function createTSTypeAnnotation(
+  typeAnnotation: AST.TSTypeNode,
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSTypeAnnotation {
+  return {
+    kind: SyntaxKinds.TSTypeAnnotation,
+    typeAnnotation,
+    start,
+    end,
+  };
+}
+
+export function createTSTypePredicate(
+  parameterName: AST.TSTypePredicate["parameterName"],
+  asserts: AST.TSTypePredicate["asserts"],
+  typeAnnotation: AST.TSTypePredicate["typeAnnotation"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSTypePredicate {
+  return {
+    kind: SyntaxKinds.TSTypePredicate,
+    parameterName,
+    asserts,
+    typeAnnotation,
+    start,
+    end,
+  };
+}
+
+export function createTSCallSignatureDeclaration(
+  parameters: AST.TSCallSignatureDeclaration["parameters"],
+  returnType: AST.TSCallSignatureDeclaration["returnType"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSCallSignatureDeclaration {
+  return {
+    kind: SyntaxKinds.TSCallSignatureDeclaration,
+    parameters,
+    returnType,
+    start,
+    end,
+  };
+}
+
+export function createTSConstructSignatureDeclaration(
+  parameters: AST.TSConstructSignatureDeclaration["parameters"],
+  returnType: AST.TSConstructSignatureDeclaration["returnType"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSConstructSignatureDeclaration {
+  return {
+    kind: SyntaxKinds.TSConstructSignatureDeclaration,
+    parameters,
+    returnType,
+    start,
+    end,
+  };
+}
+
+export function createTSPropertySignature(
+  key: AST.TSPropertySignature["key"],
+  computed: AST.TSPropertySignature["computed"],
+  optional: AST.TSPropertySignature["optional"],
+  typeAnnotation: AST.TSPropertySignature["typeAnnotation"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSPropertySignature {
+  return {
+    kind: SyntaxKinds.TSPropertySignature,
+    key,
+    computed,
+    optional,
+    typeAnnotation,
+    start,
+    end,
+  };
+}
+
+export function createTSMethodSignature(
+  key: AST.TSPropertySignature["key"],
+  computed: AST.TSPropertySignature["computed"],
+  optional: AST.TSPropertySignature["optional"],
+  parameters: AST.TSConstructSignatureDeclaration["parameters"],
+  returnType: AST.TSConstructSignatureDeclaration["returnType"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSMethodSignature {
+  return {
+    kind: SyntaxKinds.TSMethodSignature,
+    key,
+    computed,
+    optional,
+    parameters,
+    returnType,
+    start,
+    end,
+  };
+}
+
+export function createTSTypeReference(
+  typeName: AST.TSEntityName,
+  typeArguments: AST.TSTypeReference["typeArguments"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSTypeReference {
+  return {
+    kind: SyntaxKinds.TSTypeReference,
+    typeName,
+    typeArguments,
+    start,
+    end,
+  };
+}
+
+export function createTSQualifiedName(
+  left: AST.TSEntityName,
+  right: AST.Identifier,
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSQualifiedName {
+  return {
+    kind: SyntaxKinds.TSQualifiedName,
+    left,
+    right,
+    start,
+    end,
+  };
+}
+
+export function createTSTypeAliasDeclaration(
+  name: AST.TSTypeAliasDeclaration["name"],
+  typeAnnotation: AST.TSTypeAliasDeclaration["typeAnnotation"],
+  typeParameters: AST.TSTypeAliasDeclaration["typeParameters"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSTypeAliasDeclaration {
+  return {
+    kind: SyntaxKinds.TSTypeAliasDeclaration,
+    name,
+    typeAnnotation,
+    typeParameters,
+    start,
+    end,
+  };
+}
+
+export function createTSInterfaceBody(
+  body: AST.TSInterfaceBody["body"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSInterfaceBody {
+  return {
+    kind: SyntaxKinds.TSInterfaceBody,
+    body,
+    start,
+    end,
+  };
+}
+
+export function createTSInterface(
+  name: AST.TSInterfaceDeclaration["name"],
+  typeParameters: AST.TSInterfaceDeclaration["typeParameters"],
+  body: AST.TSInterfaceDeclaration["body"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSInterfaceDeclaration {
+  return {
+    kind: SyntaxKinds.TSInterfaceDeclaration,
+    name,
+    typeParameters,
+    body,
+    start,
+    end,
+  };
+}
+
+export function createTSTypeParameterInstantiation(
+  params: Array<AST.TSTypeNode>,
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSTypeParameterInstantiation {
+  return {
+    kind: SyntaxKinds.TSTypeParameterInstantiation,
+    params,
+    start,
+    end,
+  };
+}
+
+export function createTSTypeParameterDeclaration(
+  params: Array<AST.TSTypeParameter>,
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSTypeParameterDeclaration {
+  return {
+    kind: SyntaxKinds.TSTypeParameterDeclaration,
+    params,
+    start,
+    end,
+  };
+}
+
+export function createTSTypeParameter(
+  constraint: AST.TSTypeNode | undefined,
+  defaultType: AST.TSTypeNode | undefined,
+  name: AST.Identifier,
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSTypeParameter {
+  return {
+    kind: SyntaxKinds.TSTypeParameter,
+    constraint,
+    default: defaultType,
+    name,
     start,
     end,
   };

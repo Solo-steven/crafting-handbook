@@ -245,6 +245,48 @@ export enum SyntaxKinds {
   JSXExpressionContainer,
   JSXSelfClosedToken, // token for `/>`
   JSXCloseTagStart, // token for `</`
+  /** ======================================
+   *      TypeScript AST Node
+   * ======================================
+   */
+  // ========= Type computation
+  TSConditionalType,
+  TSConstructorType,
+  TSUnionType,
+  TSIntersectionType,
+  TSTypeQuery,
+  TSArrayType,
+  // ========= Type Interface and Type Alias =====
+  TSTypeAliasDeclaration,
+  TSInterfaceDeclaration,
+  TSInterfaceBody,
+  TSTypeLiteral,
+  TSCallSignatureDeclaration,
+  TSConstructSignatureDeclaration,
+  TSIndexSignature,
+  TSPropertySignature,
+  // ========= Type Parameter
+  TSTypeParameterInstantiation,
+  TSTypeParameterDeclaration,
+  TSTypeParameter,
+  // ======= Other Type
+  TSMethodSignature,
+  TSQualifiedName,
+  TSTypeReference,
+  TSTypePredicate,
+  TSTypeAnnotation,
+  TSFunctionType,
+  // ======= Basic Type ======
+  TSStringKeyword,
+  TSNumberKeyword,
+  TSBigIntKeyword,
+  TSBooleanKeyword,
+  TSNullKeyword,
+  TSUndefinedKeyword,
+  TSSymbolKeyword,
+  TSAnyKeyword,
+  TSNeverKeyword,
+  TSUnknowKeyword,
 }
 export const LexicalLiteral = {
   whiteSpaceChars: [" ", "\t"],
@@ -539,6 +581,7 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.ColonPunctuator]: ":", // :
   [SyntaxKinds.HashTagPunctuator]: "#", // #
   [SyntaxKinds.AtPunctuator]: "@", // @
+
   // ========== Template ===========
   [SyntaxKinds.TemplateHead]: "TemplateHead",
   [SyntaxKinds.TemplateTail]: "TemplateTail",
@@ -679,6 +722,40 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.JSXExpressionContainer]: "JSXExpressionContainer",
   [SyntaxKinds.JSXCloseTagStart]: "JSXClosedTagStart",
   [SyntaxKinds.JSXSelfClosedToken]: "JSXSelfClosedToken",
+  // ====== TypeScript Basic Type
+  [SyntaxKinds.TSConditionalType]: "TSConditionalType",
+  [SyntaxKinds.TSConstructorType]: "",
+  [SyntaxKinds.TSUnionType]: "",
+  [SyntaxKinds.TSIntersectionType]: "",
+  [SyntaxKinds.TSTypeQuery]: "",
+  [SyntaxKinds.TSArrayType]: "",
+  [SyntaxKinds.TSTypeAliasDeclaration]: "",
+  [SyntaxKinds.TSInterfaceDeclaration]: "",
+  [SyntaxKinds.TSTypeLiteral]: "",
+  [SyntaxKinds.TSCallSignatureDeclaration]: "",
+  [SyntaxKinds.TSConstructSignatureDeclaration]: "",
+  [SyntaxKinds.TSIndexSignature]: "",
+  [SyntaxKinds.TSPropertySignature]: "",
+  [SyntaxKinds.TSMethodSignature]: "",
+  [SyntaxKinds.TSQualifiedName]: "",
+  [SyntaxKinds.TSTypePredicate]: "",
+  [SyntaxKinds.TSTypeAnnotation]: "",
+  [SyntaxKinds.TSTypeReference]: "",
+  [SyntaxKinds.TSStringKeyword]: "",
+  [SyntaxKinds.TSNumberKeyword]: "",
+  [SyntaxKinds.TSBigIntKeyword]: "",
+  [SyntaxKinds.TSBooleanKeyword]: "",
+  [SyntaxKinds.TSNullKeyword]: "",
+  [SyntaxKinds.TSUndefinedKeyword]: "",
+  [SyntaxKinds.TSSymbolKeyword]: "",
+  [SyntaxKinds.TSAnyKeyword]: "",
+  [SyntaxKinds.TSNeverKeyword]: "",
+  [SyntaxKinds.TSUnknowKeyword]: "",
+  [SyntaxKinds.TSFunctionType]: "",
+  [SyntaxKinds.TSInterfaceBody]: "",
+  [SyntaxKinds.TSTypeParameterInstantiation]: "",
+  [SyntaxKinds.TSTypeParameterDeclaration]: "",
+  [SyntaxKinds.TSTypeParameter]: "",
 };
 /** ===================================
  *          Union SytaxKinds

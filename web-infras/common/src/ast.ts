@@ -141,6 +141,7 @@ export interface ThisExpression extends ExpressionModuleItem {
 export interface Identifier extends ExpressionModuleItem {
   kind: SyntaxKinds.Identifier;
   name: string;
+  typeAnnotation?: TSTypeAnnotation;
 }
 export interface PrivateName extends ExpressionModuleItem {
   kind: SyntaxKinds.PrivateName;
@@ -395,6 +396,7 @@ export interface ExpressionStatement extends ModuleItem {
 export interface ObjectPattern extends ModuleItem {
   kind: SyntaxKinds.ObjectPattern;
   properties: Array<ObjectPatternProperty | RestElement | AssignmentPattern>;
+  typeAnnotation?: TSTypeAnnotation;
 }
 export interface ObjectPatternProperty extends ModuleItem {
   kind: SyntaxKinds.ObjectPatternProperty;
@@ -406,15 +408,18 @@ export interface ObjectPatternProperty extends ModuleItem {
 export interface ArrayPattern extends ModuleItem {
   kind: SyntaxKinds.ArrayPattern;
   elements: Array<null | Pattern>;
+  typeAnnotation?: TSTypeAnnotation;
 }
 export interface AssignmentPattern extends ModuleItem {
   kind: SyntaxKinds.AssignmentPattern;
   left: Pattern;
   right: Expression;
+  typeAnnotation?: TSTypeAnnotation;
 }
 export interface RestElement extends ModuleItem {
   kind: SyntaxKinds.RestElement;
   argument: Pattern;
+  typeAnnotation?: TSTypeAnnotation;
 }
 
 export type Pattern =
@@ -622,7 +627,12 @@ export interface Decorator extends ModuleItem {
   kind: SyntaxKinds.Decorator;
   expression: Expression;
 }
-export type Declaration = FunctionDeclaration | VariableDeclaration | ClassDeclaration;
+export type Declaration =
+  | FunctionDeclaration
+  | VariableDeclaration
+  | ClassDeclaration
+  | TSTypeAliasDeclaration
+  | TSInterfaceDeclaration;
 
 /** ==========================================
  * Import Declaration
@@ -684,6 +694,167 @@ export interface ImportAttribute extends ModuleItem {
   value: StringLiteral;
 }
 
+/** ========================================
+ *   TypeScript AST
+ * reference from typescript-eslint AST spec
+ * to create estree based AST for TypeScript.
+ * =========================================
+ */
+export type TSTypeNode =
+  // TSConditionalType |
+  // TSArrayType |
+  | TSInterfaceDeclaration
+  | TSTypeAliasDeclaration
+  | TSFunctionType
+  | TSTypeLiteral
+  | TSTypePredicate
+  | TSTypeReference
+  | TSStringKeyword
+  | TSNumberKeyword
+  | TSBigIntKeyword
+  | TSBooleanKeyword
+  | TSNullKeyword
+  | TSUndefinedKeyword
+  | TSSymbolKeyword
+  | TSAnyKeyword
+  | TSNeverKeyword
+  | TSUnknowKeyword;
+// export interface TSConditionalType extends ModuleItem {
+//   kind: SyntaxKinds.TSConditionalType;
+//   checkType: TSTypeNode;
+//   extendType: TSTypeNode;
+//   trueType: TSTypeNode;
+//   falseType: TSTypeNode;
+// }
+// export interface TSArrayType extends ModuleItem {
+//   kind: SyntaxKinds.TSArrayType;
+//   elementType: TSTypeNode;
+// }
+export interface TSTypeParameterDeclaration extends ModuleItem {
+  kind: SyntaxKinds.TSTypeParameterDeclaration;
+  params: Array<TSTypeParameter>;
+}
+
+export interface TSTypeParameter extends ModuleItem {
+  kind: SyntaxKinds.TSTypeParameter;
+  constraint: TSTypeNode | undefined;
+  default: TSTypeNode | undefined;
+  name: Identifier;
+}
+
+export interface TSTypeParameterInstantiation extends ModuleItem {
+  kind: SyntaxKinds.TSTypeParameterInstantiation;
+  params: Array<TSTypeNode>;
+}
+export interface TSTypeAliasDeclaration extends ModuleItem {
+  kind: SyntaxKinds.TSTypeAliasDeclaration;
+  name: Identifier;
+  typeAnnotation: TSTypeNode;
+  typeParameters: TSTypeParameterDeclaration | undefined;
+}
+export interface TSInterfaceDeclaration extends ModuleItem {
+  kind: SyntaxKinds.TSInterfaceDeclaration;
+  name: Identifier;
+  body: TSInterfaceBody;
+  typeParameters: TSTypeParameterDeclaration | undefined;
+}
+export interface TSInterfaceBody extends ModuleItem {
+  kind: SyntaxKinds.TSInterfaceBody;
+  body: TSTypeElement[];
+}
+export interface TSUnionType extends ModuleItem {
+  kind: SyntaxKinds.TSUnionType;
+  types: Array<TSTypeNode>;
+}
+export type TSParameter = Identifier | ObjectPattern | AssignmentPattern | ArrayPattern | RestElement;
+export interface TSTypeAnnotation extends ModuleItem {
+  kind: SyntaxKinds.TSTypeAnnotation;
+  typeAnnotation: TSTypeNode;
+}
+export interface TSTypePredicate extends ModuleItem {
+  kind: SyntaxKinds.TSTypePredicate;
+  parameterName: Identifier;
+  asserts: boolean;
+  typeAnnotation: TSTypeAnnotation | undefined;
+}
+export interface TSFunctionSignatureBase extends ModuleItem {
+  returnType: TSTypeAnnotation | undefined;
+  parameters: Array<TSParameter>;
+  // typeparam
+}
+export interface TSFunctionType extends ModuleItem {
+  returnType: TSTypeAnnotation | undefined;
+  parameters: Array<TSParameter>;
+  // type param
+}
+export interface TSTypeLiteral extends ModuleItem {
+  members: Array<TSTypeElement>;
+}
+export type TSTypeElement =
+  | TSCallSignatureDeclaration
+  | TSConstructSignatureDeclaration
+  // | TSIndexSignature
+  | TSMethodSignature
+  | TSPropertySignature;
+export interface TSPropertySignature extends ModuleItem {
+  kind: SyntaxKinds.TSPropertySignature;
+  key: PropertyName;
+  computed: boolean;
+  optional: boolean;
+  typeAnnotation: TSTypeAnnotation | undefined;
+}
+export interface TSCallSignatureDeclaration extends TSFunctionSignatureBase {
+  kind: SyntaxKinds.TSCallSignatureDeclaration;
+}
+export interface TSConstructSignatureDeclaration extends TSFunctionSignatureBase {
+  kind: SyntaxKinds.TSConstructSignatureDeclaration;
+}
+export interface TSMethodSignature extends TSFunctionSignatureBase {
+  kind: SyntaxKinds.TSMethodSignature;
+  key: PropertyName;
+  computed: boolean;
+  optional: boolean;
+}
+export interface TSTypeReference extends ModuleItem {
+  typeName: TSEntityName;
+  typeArguments: TSTypeParameterInstantiation | undefined;
+}
+export interface TSQualifiedName extends ModuleItem {
+  kind: SyntaxKinds.TSQualifiedName;
+  left: TSEntityName;
+  right: Identifier;
+}
+export type TSEntityName = Identifier | TSQualifiedName;
+export interface TSStringKeyword extends ModuleItem {
+  kind: SyntaxKinds.TSStringKeyword;
+}
+export interface TSNumberKeyword extends ModuleItem {
+  kind: SyntaxKinds.TSNumberKeyword;
+}
+export interface TSBigIntKeyword extends ModuleItem {
+  kind: SyntaxKinds.TSBigIntKeyword;
+}
+export interface TSBooleanKeyword extends ModuleItem {
+  kind: SyntaxKinds.TSBooleanKeyword;
+}
+export interface TSNullKeyword extends ModuleItem {
+  kind: SyntaxKinds.TSNullKeyword;
+}
+export interface TSUndefinedKeyword extends ModuleItem {
+  kind: SyntaxKinds.TSUndefinedKeyword;
+}
+export interface TSSymbolKeyword extends ModuleItem {
+  kind: SyntaxKinds.TSSymbolKeyword;
+}
+export interface TSAnyKeyword extends ModuleItem {
+  kind: SyntaxKinds.TSAnyKeyword;
+}
+export interface TSNeverKeyword extends ModuleItem {
+  kind: SyntaxKinds.TSNeverKeyword;
+}
+export interface TSUnknowKeyword extends ModuleItem {
+  kind: SyntaxKinds.TSUnknowKeyword;
+}
 /** ========================================
  *   Helper
  * =========================================

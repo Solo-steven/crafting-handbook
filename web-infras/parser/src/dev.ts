@@ -4,7 +4,7 @@ import { parse } from "@/src/index";
 import { transformSyntaxKindToLiteral } from "../tests/parserRunner/helpers/transform";
 import fs from "fs";
 import path from "path";
-const code = fs.readFileSync(path.join(__dirname, "test.js")).toString();
+const code = fs.readFileSync(path.join(__dirname, "test.ts")).toString();
 // console.log(code);
 // const writePath = path.join(__dirname, "test.json");
 

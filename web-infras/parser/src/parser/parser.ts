@@ -121,6 +121,28 @@ import {
   MetaProperty,
   CallExpression,
   ThisExpression,
+  TSTypeAliasDeclaration,
+  TSTypeNode,
+  TSTypeLiteral,
+  TSTypeElement,
+  TSParameter,
+  TSTypeAnnotation,
+  TSStringKeyword,
+  TSNumberKeyword,
+  TSFunctionType,
+  TSBigIntKeyword,
+  TSBooleanKeyword,
+  TSNullKeyword,
+  TSUndefinedKeyword,
+  TSSymbolKeyword,
+  TSAnyKeyword,
+  TSUnknowKeyword,
+  TSTypeReference,
+  TSEntityName,
+  TSInterfaceDeclaration,
+  TSTypeParameterDeclaration,
+  TSTypeParameterInstantiation,
+  TSTypeParameter,
 } from "web-infra-common";
 import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
@@ -263,6 +285,14 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
    */
   function getEndPosition(): SourcePosition {
     return lexer.getEndPosition();
+  }
+  /**
+   * Private API for parser, just wrapper of lexer, get end
+   * position of last token.
+   * @returns {SourcePosition}
+   */
+  function getLastTokenEndPositon(): SourcePosition {
+    return lexer.getLastTokenEndPositon();
   }
   /**
    * Private API for parser, just wrapper of lookahead method
@@ -929,15 +959,13 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       case SyntaxKinds.ClassKeyword:
       case SyntaxKinds.AtPunctuator:
         return parseDeclaration();
-      case SyntaxKinds.Identifier:
-        if (isContextKeyword("async")) {
-          const { kind, lineTerminatorFlag: flag } = lookahead();
-          if (kind === SyntaxKinds.FunctionKeyword && flag == false) {
-            nextToken();
-            return parseFunctionDeclaration(true);
-          }
+      case SyntaxKinds.Identifier: {
+        const declar = tryParseDeclarationWithIdentifierStart();
+        if (!declar) {
+          return parseStatement();
         }
-        return parseStatement();
+        return declar;
+      }
       case SyntaxKinds.LetKeyword:
         if (isLetPossibleIdentifier()) {
           return parseStatement();
@@ -984,16 +1012,13 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     const token = getToken();
     switch (token) {
       // async function declaration
-      case SyntaxKinds.Identifier:
-        if (isContextKeyword("async")) {
-          nextToken();
-          if (getLineTerminatorFlag()) {
-            raiseError(ErrorMessageMap.missing_semicolon, getStartPosition());
-          }
-          return parseFunctionDeclaration(true);
-        } else {
+      case SyntaxKinds.Identifier: {
+        const declar = tryParseDeclarationWithIdentifierStart();
+        if (!declar) {
           throw createUnreachError();
         }
+        return declar;
+      }
       // function delcaration
       case SyntaxKinds.FunctionKeyword:
         return parseFunctionDeclaration(false);
@@ -1006,6 +1031,21 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
         return parseClassDeclaration(null);
       default:
         throw createUnexpectError();
+    }
+  }
+  function tryParseDeclarationWithIdentifierStart(): Declaration | undefined {
+    if (isContextKeyword("async")) {
+      nextToken();
+      if (getLineTerminatorFlag()) {
+        raiseError(ErrorMessageMap.missing_semicolon, getStartPosition());
+      }
+      return parseFunctionDeclaration(true);
+    } else if (isContextKeyword("type")) {
+      return parseTSTypeAlias();
+    } else if (isContextKeyword("interface")) {
+      return parseTSInterfaceDeclaration();
+    } else {
+      return undefined;
     }
   }
   /**
@@ -2242,12 +2282,15 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
         continue;
       }
       // parse SpreadElement (identifer, Object, Array)
+      let param: Pattern;
       if (match(SyntaxKinds.SpreadOperator)) {
         isEndWithRest = true;
-        params.push(parseRestElement(true));
-        break;
+        param = parseRestElement(true);
+      } else {
+        param = parseBindingElement();
       }
-      params.push(parseBindingElement());
+      parseFunctionParamType(param as TSParameter);
+      params.push(param);
     }
     if (!match(SyntaxKinds.ParenthesesRightPunctuator)) {
       if (isEndWithRest && match(SyntaxKinds.CommaToken)) {
@@ -6018,5 +6061,376 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       return exportName.name;
     }
     return exportName.value;
+  }
+
+  function parseTSTypeAlias(): TSTypeAliasDeclaration {
+    const start = getStartPosition();
+    nextToken(); // eat `type`
+    const name = parseIdentifierReference();
+    const typeParameters = tryParseTSTypeParameterDeclaration();
+    expect(SyntaxKinds.AssginOperator);
+    const typeNode = parseTSTypeNode();
+    return Factory.createTSTypeAliasDeclaration(
+      name,
+      typeNode,
+      typeParameters,
+      start,
+      getLastTokenEndPositon(),
+    );
+  }
+  function parseTSInterfaceDeclaration(): TSInterfaceDeclaration {
+    const start = getStartPosition();
+    nextToken(); // eat `interface`
+    const id = parseIdentifierReference();
+    const typeParameters = tryParseTSTypeParameterDeclaration();
+    const body = parseTSInterfaceBody();
+    return Factory.createTSInterface(id, typeParameters, body, start, getLastTokenEndPositon());
+  }
+  function tryParseTSTypeParameterDeclaration() {
+    if (match(SyntaxKinds.LtOperator)) {
+      return parseTSTypeParameterDeclaration();
+    }
+  }
+  function parseTSTypeParameterDeclaration(): TSTypeParameterDeclaration {
+    const { start } = expect(SyntaxKinds.LtOperator);
+    const params = [parseTSTypeParameter()];
+    while (match(SyntaxKinds.CommaToken)) {
+      nextToken();
+      params.push(parseTSTypeParameter());
+    }
+    const { end } = expect(SyntaxKinds.GtOperator);
+    return Factory.createTSTypeParameterDeclaration(params, start, end);
+  }
+  function parseTSTypeParameter(): TSTypeParameter {
+    const name = parseIdentifierReference();
+    let constraint: TSTypeNode | undefined = undefined;
+    if (match(SyntaxKinds.ExtendsKeyword)) {
+      nextToken();
+      constraint = parseTSTypeNode();
+    }
+    let defaultType: TSTypeNode | undefined = undefined;
+    if (match(SyntaxKinds.AssginOperator)) {
+      nextToken();
+      defaultType = parseTSTypeNode();
+    }
+    return Factory.createTSTypeParameter(
+      constraint,
+      defaultType,
+      name,
+      cloneSourcePosition(name.start),
+      getLastTokenEndPositon(),
+    );
+  }
+  function tryParseTSTypeParameterInstantiation(): TSTypeParameterInstantiation | undefined {
+    if (match(SyntaxKinds.LtOperator)) {
+      return parseTSTypeParameterInstantiation();
+    }
+  }
+  function parseTSTypeParameterInstantiation(): TSTypeParameterInstantiation {
+    const { start } = expect(SyntaxKinds.LtOperator);
+    const params = [parseTSTypeNode()];
+    while (match(SyntaxKinds.CommaToken)) {
+      nextToken();
+      params.push(parseTSTypeNode());
+    }
+    const { end } = expect(SyntaxKinds.GtOperator);
+    return Factory.createTSTypeParameterInstantiation(params, start, end);
+  }
+  function parseTSTypeNode(): TSTypeNode {
+    switch (getToken()) {
+      case SyntaxKinds.BracesLeftPunctuator: {
+        return parseTSTypeLiteral();
+      }
+      case SyntaxKinds.ParenthesesLeftPunctuator: {
+        return parseTSFunctionType();
+      }
+      default: {
+        const currentValue = getSourceValue();
+        switch (currentValue) {
+          case "string": {
+            return parseTSStringKeyword();
+          }
+          case "number": {
+            return parseTSNunberKeyword();
+          }
+          case "bigint": {
+            return parseTSBigIntKeyword();
+          }
+          case "boolean": {
+            return parseTSBoolKeyword();
+          }
+          case "null": {
+            return parseTSNullKeyword();
+          }
+          case "undefined": {
+            return parseTSUndefiniedKeyword();
+          }
+          case "symbol": {
+            return parseTSSymbolKeyword();
+          }
+          case "any": {
+            return parseTSAnyKeyword();
+          }
+          case "never": {
+            return parseTSNeverKeyword();
+          }
+          case "unknown": {
+            return parseTSUnknownKeyword();
+          }
+          default: {
+            return parseTSTypeReference();
+          }
+        }
+      }
+    }
+  }
+  function parseTSStringKeyword(): TSStringKeyword {
+    const { start, end } = expect(SyntaxKinds.Identifier);
+    return Factory.createTSStringKeyword(start, end);
+  }
+  function parseTSNunberKeyword(): TSNumberKeyword {
+    const { start, end } = expect(SyntaxKinds.Identifier);
+    return Factory.createTSNumberKeyword(start, end);
+  }
+  function parseTSBigIntKeyword(): TSBigIntKeyword {
+    const { start, end } = expect(SyntaxKinds.Identifier);
+    return Factory.createTSBigintKeyword(start, end);
+  }
+  function parseTSBoolKeyword(): TSBooleanKeyword {
+    const { start, end } = expect(SyntaxKinds.Identifier);
+    return Factory.createTSBoolKeyword(start, end);
+  }
+  function parseTSNullKeyword(): TSNullKeyword {
+    const { start, end } = expect(SyntaxKinds.Identifier);
+    return Factory.createTSNullKeyword(start, end);
+  }
+  function parseTSUndefiniedKeyword(): TSUndefinedKeyword {
+    const { start, end } = expect(SyntaxKinds.Identifier);
+    return Factory.createTSUndefinedKeyword(start, end);
+  }
+  function parseTSSymbolKeyword(): TSSymbolKeyword {
+    const { start, end } = expect(SyntaxKinds.Identifier);
+    return Factory.createTSSymbolKeyword(start, end);
+  }
+  function parseTSAnyKeyword(): TSAnyKeyword {
+    const { start, end } = expect(SyntaxKinds.Identifier);
+    return Factory.createTSAnyKeyword(start, end);
+  }
+  function parseTSNeverKeyword(): TSUndefinedKeyword {
+    const { start, end } = expect(SyntaxKinds.Identifier);
+    return Factory.createTSNeverKeyword(start, end);
+  }
+  function parseTSUnknownKeyword(): TSUnknowKeyword {
+    const { start, end } = expect(SyntaxKinds.Identifier);
+    return Factory.createTSUnknowKeyword(start, end);
+  }
+  function parseFunctionParamType(param: TSParameter) {
+    const type = tryParseTypeAnnotation();
+    param.typeAnnotation = type;
+  }
+  function parseTSTypeReference(): TSTypeReference {
+    const typeName = parseTSEntityName();
+    const typeArguments = tryParseTSTypeParameterInstantiation();
+    return Factory.createTSTypeReference(
+      typeName,
+      typeArguments,
+      cloneSourcePosition(typeName.start),
+      cloneSourcePosition(typeName.end),
+    );
+  }
+  function parseTSEntityName(): TSEntityName {
+    let left: TSEntityName = parseIdentifierReference();
+    while (match(SyntaxKinds.DotOperator)) {
+      nextToken();
+      const right = parseIdentifierName();
+      left = Factory.createTSQualifiedName(
+        left,
+        right,
+        cloneSourcePosition(left.start),
+        cloneSourcePosition(right.end),
+      );
+    }
+    return left;
+  }
+  function parseTSFunctionType(): TSFunctionType {
+    const start = getStartPosition();
+    const { parameters, returnType } = parseTSFunctionSingnature(SyntaxKinds.ArrowOperator, false);
+    return {
+      kind: SyntaxKinds.TSFunctionType,
+      parameters,
+      returnType,
+      start,
+      end: getLastTokenEndPositon(),
+    };
+  }
+  function parseTSFunctionSingnature(expectToken: SyntaxKinds, optional: boolean) {
+    const parameters = parseFunctionParam() as TSParameter[];
+    const matchToken = match(expectToken);
+    if (optional && !matchToken) {
+      return {
+        parameters: parameters as TSParameter[],
+        returnType: undefined,
+      };
+    }
+    // parse type or type predication
+    const { start } = expect(expectToken);
+    const assertion = parseTSAssertionInReturnType();
+    const typePredicatePrefix = parseTypePredicatePrefixInReturnType();
+    if (!typePredicatePrefix) {
+      if (!assertion) {
+        // : type
+        const returnType = parseTypeAnnoationWithoutColon(start);
+        return { parameters, returnType };
+      }
+      // : asserts type
+      const name = parseIdentifierReference();
+      const typePredicate = Factory.createTSTypePredicate(
+        name,
+        true,
+        undefined,
+        start,
+        cloneSourcePosition(name.end),
+      );
+      const returnType = Factory.createTSTypeAnnotation(
+        typePredicate,
+        cloneSourcePosition(typePredicate.start),
+        cloneSourcePosition(typePredicate.end),
+      );
+      return {
+        parameters,
+        returnType,
+      };
+    }
+    // : asserts type is otherType
+    const name = parseIdentifierReference();
+    nextToken(); // eat `is`
+    console.log(name, getSourceValue());
+    const typeAnnotation = parseTypeAnnoationWithoutColon(getStartPosition());
+    const typePredicate = Factory.createTSTypePredicate(
+      name,
+      assertion,
+      typeAnnotation,
+      start,
+      cloneSourcePosition(typeAnnotation.end),
+    );
+    const returnType = Factory.createTSTypeAnnotation(
+      typePredicate,
+      cloneSourcePosition(typePredicate.start),
+      cloneSourcePosition(typePredicate.end),
+    );
+    return {
+      parameters,
+      returnType,
+    };
+  }
+  function parseTSAssertionInReturnType(): boolean {
+    if (isContextKeyword("asserts")) {
+      const { kind: lookaheadToken, value, lineTerminatorFlag } = lookahead();
+      if ((lookaheadToken === SyntaxKinds.Identifier || value === "is") && !lineTerminatorFlag) {
+        nextToken();
+        return true;
+      }
+    }
+    return false;
+  }
+  function parseTypePredicatePrefixInReturnType() {
+    return match(SyntaxKinds.Identifier) && lookahead().value === "is";
+  }
+  function parseTSTypeLiteral(): TSTypeLiteral {
+    const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
+    const members: Array<TSTypeElement> = [];
+    while (!match([SyntaxKinds.EOFToken, SyntaxKinds.BracesRightPunctuator])) {
+      members.push(parseTSTypeElment());
+    }
+    const { end } = expect(SyntaxKinds.BracesRightPunctuator);
+    return {
+      kind: SyntaxKinds.TSTypeLiteral,
+      members,
+      start,
+      end,
+    };
+  }
+  function parseTSInterfaceBody() {
+    const { start } = expect(SyntaxKinds.BracesLeftPunctuator);
+    const members: Array<TSTypeElement> = [];
+    while (!match([SyntaxKinds.EOFToken, SyntaxKinds.BracesRightPunctuator])) {
+      members.push(parseTSTypeElment());
+    }
+    const { end } = expect(SyntaxKinds.BracesRightPunctuator);
+    return Factory.createTSInterfaceBody(members, start, end);
+  }
+  function parseTSTypeElment(): TSTypeElement {
+    switch (getToken()) {
+      case SyntaxKinds.ParenthesesLeftPunctuator: {
+        // TSCallSignatureDeclaration
+        const start = getStartPosition();
+        const { parameters, returnType } = parseTSFunctionSingnature(SyntaxKinds.ColonPunctuator, true);
+        return Factory.createTSCallSignatureDeclaration(
+          parameters,
+          returnType,
+          start,
+          getLastTokenEndPositon(),
+        );
+      }
+      case SyntaxKinds.NewKeyword: {
+        // TSConstructSignatureDeclaration
+        const start = getStartPosition();
+        nextToken();
+        const { parameters, returnType } = parseTSFunctionSingnature(SyntaxKinds.ColonPunctuator, true);
+        return Factory.createTSConstructSignatureDeclaration(
+          parameters,
+          returnType,
+          start,
+          getLastTokenEndPositon(),
+        );
+      }
+      default: {
+        // TSMethodSignature
+        // TSPropertySignature
+        const isComputedRef = { isComputed: false };
+        const key = parsePropertyName(isComputedRef);
+        let optional = false;
+        if (match(SyntaxKinds.QustionOperator)) {
+          optional = true;
+          nextToken();
+        }
+        if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
+          const { parameters, returnType } = parseTSFunctionSingnature(SyntaxKinds.ColonPunctuator, true);
+          return Factory.createTSMethodSignature(
+            key,
+            optional,
+            isComputedRef.isComputed,
+            parameters,
+            returnType,
+            cloneSourcePosition(key.start),
+            getLastTokenEndPositon(),
+          );
+        }
+        const typeAnnotation = parseTypeAnnoation();
+        return Factory.createTSPropertySignature(
+          key,
+          isComputedRef.isComputed,
+          optional,
+          typeAnnotation,
+          cloneSourcePosition(key.start),
+          cloneSourcePosition(typeAnnotation.end),
+        );
+      }
+    }
+  }
+  function tryParseTypeAnnotation(): TSTypeAnnotation | undefined {
+    if (match(SyntaxKinds.ColonPunctuator)) {
+      return parseTypeAnnoation();
+    }
+    return undefined;
+  }
+  function parseTypeAnnoation(): TSTypeAnnotation {
+    const { start } = expect(SyntaxKinds.ColonPunctuator);
+    const typeNode = parseTSTypeNode();
+    return Factory.createTSTypeAnnotation(typeNode, start, cloneSourcePosition(typeNode.end));
+  }
+  function parseTypeAnnoationWithoutColon(start: SourcePosition): TSTypeAnnotation {
+    const typeNode = parseTSTypeNode();
+    return Factory.createTSTypeAnnotation(typeNode, start, cloneSourcePosition(typeNode.end));
   }
 }
