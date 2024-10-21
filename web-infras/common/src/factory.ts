@@ -7,12 +7,14 @@ export function createIdentifier(
   name: string,
   start: SourcePosition,
   end: SourcePosition,
-  typeAnnotation: AST.TSTypeAnnotation | undefined = undefined,
+  typeAnnotation: AST.TSTypeAnnotation | undefined,
+  optional: boolean | undefined,
 ): AST.Identifier {
   return {
     kind: SyntaxKinds.Identifier,
     name,
     typeAnnotation,
+    optional,
     start,
     end,
   };
@@ -275,6 +277,8 @@ export function createObjectMethodDefintion(
   key: AST.ObjectMethodDefinition["key"],
   body: AST.ObjectMethodDefinition["body"],
   params: AST.ObjectMethodDefinition["params"],
+  typeParameters: AST.ObjectMethodDefinition["typeParameters"],
+  returnType: AST.ObjectMethodDefinition["returnType"],
   async: AST.ObjectMethodDefinition["async"],
   generator: AST.ObjectMethodDefinition["generator"],
   computed: AST.ObjectMethodDefinition["computed"],
@@ -288,6 +292,8 @@ export function createObjectMethodDefintion(
     computed,
     key,
     params,
+    typeParameters,
+    returnType,
     body,
     start,
     end,
@@ -297,6 +303,8 @@ export function createObjectAccessor(
   key: AST.ObjectAccessor["key"],
   body: AST.ObjectAccessor["body"],
   params: AST.ObjectAccessor["params"],
+  typeParameters: AST.ObjectAccessor["typeParameters"],
+  returnType: AST.ObjectAccessor["returnType"],
   type: AST.ObjectAccessor["type"],
   computed: AST.ObjectAccessor["computed"],
   start: SourcePosition,
@@ -306,6 +314,8 @@ export function createObjectAccessor(
     kind: SyntaxKinds.ObjectAccessor,
     key,
     params,
+    typeParameters,
+    returnType,
     body,
     type,
     computed,
@@ -378,6 +388,7 @@ export function createChainExpression(
 export function createCallExpression(
   callee: AST.Expression,
   calleeArguments: Array<AST.Expression>,
+  typeArguments: AST.CallExpression["typeArguments"],
   optional: boolean,
   start: SourcePosition,
   end: SourcePosition,
@@ -386,6 +397,7 @@ export function createCallExpression(
     kind: SyntaxKinds.CallExpression,
     optional,
     callee,
+    typeArguments,
     arguments: calleeArguments,
     start,
     end,
@@ -483,6 +495,8 @@ export function createArrowExpression(
   isExpression: boolean,
   body: AST.Expression | AST.FunctionBody,
   calleeArguments: AST.ArrorFunctionExpression["arguments"],
+  typeParameters: AST.ArrorFunctionExpression["typeParameters"],
+  returnType: AST.ArrorFunctionExpression["returnType"],
   async: boolean,
   start: SourcePosition,
   end: SourcePosition,
@@ -492,6 +506,8 @@ export function createArrowExpression(
     expressionBody: isExpression,
     async,
     arguments: calleeArguments,
+    typeParameters,
+    returnType,
     body,
     start,
     end,
@@ -599,6 +615,8 @@ export function createFunction(
   name: AST.Function["name"],
   body: AST.Function["body"],
   params: AST.Function["params"],
+  typeParameters: AST.Function["typeParameters"],
+  returnType: AST.Function["returnType"],
   generator: AST.Function["generator"],
   async: AST.Function["async"],
   start: SourcePosition,
@@ -610,6 +628,8 @@ export function createFunction(
     async,
     body,
     params,
+    typeParameters,
+    returnType,
     start,
     end,
   };
@@ -715,6 +735,8 @@ export function createClassMethodDefintion(
   key: AST.ClassMethodDefinition["key"],
   body: AST.ClassMethodDefinition["body"],
   params: AST.ClassMethodDefinition["params"],
+  typeParameters: AST.ClassMethodDefinition["typeParameters"],
+  returnType: AST.ClassMethodDefinition["returnType"],
   async: AST.ClassMethodDefinition["async"],
   generator: AST.ClassMethodDefinition["generator"],
   computed: AST.ClassMethodDefinition["computed"],
@@ -731,6 +753,8 @@ export function createClassMethodDefintion(
     static: isStatic,
     key,
     params,
+    typeParameters,
+    returnType,
     body,
     decorators,
     start,
@@ -741,6 +765,7 @@ export function createClassConstructor(
   key: AST.ClassConstructor["key"],
   body: AST.ClassConstructor["body"],
   params: AST.ClassConstructor["params"],
+  returnType: AST.ClassConstructor["returnType"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.ClassConstructor {
@@ -749,6 +774,7 @@ export function createClassConstructor(
     key,
     body,
     params,
+    returnType,
     start,
     end,
   };
@@ -757,6 +783,8 @@ export function createClassAccessor(
   key: AST.ClassAccessor["key"],
   body: AST.ClassAccessor["body"],
   params: AST.ClassAccessor["params"],
+  typeParameters: AST.ClassAccessor["typeParameters"],
+  returnType: AST.ClassAccessor["returnType"],
   type: AST.ClassAccessor["type"],
   computed: AST.ClassAccessor["computed"],
   decorators: AST.Class["decorators"],
@@ -767,6 +795,8 @@ export function createClassAccessor(
     kind: SyntaxKinds.ClassAccessor,
     key,
     params,
+    typeParameters,
+    returnType,
     body,
     type,
     computed,
@@ -1086,6 +1116,8 @@ export function createForOfStatement(
 export function createAssignmentPattern(
   left: AST.AssignmentPattern["left"],
   right: AST.AssignmentPattern["right"],
+  typeAnnotation: AST.AssignmentPattern["typeAnnotation"],
+  optional: AST.AssignmentPattern["optional"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.AssignmentPattern {
@@ -1093,12 +1125,16 @@ export function createAssignmentPattern(
     kind: SyntaxKinds.AssignmentPattern,
     left,
     right,
+    typeAnnotation,
+    optional,
     start,
     end,
   };
 }
 export function createArrayPattern(
   elements: AST.ArrayPattern["elements"],
+  typeAnnotation: AST.ArrayPattern["typeAnnotation"],
+  optional: AST.ArrayPattern["optional"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.ArrayPattern {
@@ -1106,17 +1142,23 @@ export function createArrayPattern(
     kind: SyntaxKinds.ArrayPattern,
     elements,
     start,
+    typeAnnotation,
+    optional,
     end,
   };
 }
 export function createObjectPattern(
   properties: AST.ObjectPattern["properties"],
+  typeAnnotation: AST.ObjectPattern["typeAnnotation"],
+  optional: AST.ObjectPattern["optional"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.ObjectPattern {
   return {
     kind: SyntaxKinds.ObjectPattern,
     properties,
+    typeAnnotation,
+    optional,
     start,
     end,
   };
@@ -1141,12 +1183,16 @@ export function createObjectPatternProperty(
 }
 export function createRestElement(
   argument: AST.RestElement["argument"],
+  typeAnnotation: AST.RestElement["typeAnnotation"],
+  optional: AST.RestElement["optional"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.RestElement {
   return {
     kind: SyntaxKinds.RestElement,
     argument,
+    typeAnnotation,
+    optional,
     start,
     end,
   };
@@ -1585,6 +1631,7 @@ export function createTSTypePredicate(
 export function createTSCallSignatureDeclaration(
   parameters: AST.TSCallSignatureDeclaration["parameters"],
   returnType: AST.TSCallSignatureDeclaration["returnType"],
+  typeParameters: AST.TSCallSignatureDeclaration["typeParameters"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.TSCallSignatureDeclaration {
@@ -1592,6 +1639,7 @@ export function createTSCallSignatureDeclaration(
     kind: SyntaxKinds.TSCallSignatureDeclaration,
     parameters,
     returnType,
+    typeParameters,
     start,
     end,
   };
@@ -1600,6 +1648,7 @@ export function createTSCallSignatureDeclaration(
 export function createTSConstructSignatureDeclaration(
   parameters: AST.TSConstructSignatureDeclaration["parameters"],
   returnType: AST.TSConstructSignatureDeclaration["returnType"],
+  typeParameters: AST.TSConstructSignatureDeclaration["typeParameters"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.TSConstructSignatureDeclaration {
@@ -1607,6 +1656,7 @@ export function createTSConstructSignatureDeclaration(
     kind: SyntaxKinds.TSConstructSignatureDeclaration,
     parameters,
     returnType,
+    typeParameters,
     start,
     end,
   };
@@ -1632,11 +1682,12 @@ export function createTSPropertySignature(
 }
 
 export function createTSMethodSignature(
-  key: AST.TSPropertySignature["key"],
-  computed: AST.TSPropertySignature["computed"],
-  optional: AST.TSPropertySignature["optional"],
-  parameters: AST.TSConstructSignatureDeclaration["parameters"],
-  returnType: AST.TSConstructSignatureDeclaration["returnType"],
+  key: AST.TSMethodSignature["key"],
+  computed: AST.TSMethodSignature["computed"],
+  optional: AST.TSMethodSignature["optional"],
+  parameters: AST.TSMethodSignature["parameters"],
+  returnType: AST.TSMethodSignature["returnType"],
+  typeParameters: AST.TSMethodSignature["typeParameters"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.TSMethodSignature {
@@ -1647,6 +1698,7 @@ export function createTSMethodSignature(
     optional,
     parameters,
     returnType,
+    typeParameters,
     start,
     end,
   };
@@ -1767,6 +1819,167 @@ export function createTSTypeParameter(
     constraint,
     default: defaultType,
     name,
+    start,
+    end,
+  };
+}
+
+export function createTSConditionType(
+  checkType: AST.TSConditionalType["checkType"],
+  extendType: AST.TSConditionalType["extendType"],
+  trueType: AST.TSConditionalType["trueType"],
+  falseType: AST.TSConditionalType["falseType"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSConditionalType {
+  return {
+    kind: SyntaxKinds.TSConditionalType,
+    checkType,
+    extendType,
+    trueType,
+    falseType,
+    start,
+    end,
+  };
+}
+
+export function createTSUnionType(
+  types: Array<AST.TSTypeNode>,
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSUnionType {
+  return {
+    kind: SyntaxKinds.TSUnionType,
+    types,
+    start,
+    end,
+  };
+}
+
+export function createTSIntersectionType(
+  types: Array<AST.TSTypeNode>,
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSIntersectionType {
+  return {
+    kind: SyntaxKinds.TSIntersectionType,
+    types,
+    start,
+    end,
+  };
+}
+
+export function createTSTypeQuery(
+  exprName: AST.TSTypeQuery["exprName"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSTypeQuery {
+  return {
+    kind: SyntaxKinds.TSTypeQuery,
+    exprName,
+    start,
+    end,
+  };
+}
+
+export function createTSTypeOperator(
+  typeAnnotation: AST.TSTypeOperator["typeAnnotation"],
+  operator: AST.TSTypeOperator["operator"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSTypeOperator {
+  return {
+    kind: SyntaxKinds.TSTypeOperator,
+    typeAnnotation,
+    operator,
+    start,
+    end,
+  };
+}
+
+export function createTSArrayType(
+  elementType: AST.TSArrayType["elementType"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSArrayType {
+  return {
+    kind: SyntaxKinds.TSArrayType,
+    elementType,
+    start,
+    end,
+  };
+}
+
+export function createTSIndexedAccessType(
+  indexedType: AST.TSIndexedAccessType["indexedType"],
+  objectType: AST.TSIndexedAccessType["objectType"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSIndexedAccessType {
+  return {
+    kind: SyntaxKinds.TSIndexedAccessType,
+    indexedType,
+    objectType,
+    start,
+    end,
+  };
+}
+
+export function createTSFunctionType(
+  returnType: AST.TSFunctionType["returnType"],
+  parameters: AST.TSFunctionType["parameters"],
+  typeParameters: AST.TSFunctionType["typeParameters"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSFunctionType {
+  return {
+    kind: SyntaxKinds.TSFunctionType,
+    returnType,
+    parameters,
+    typeParameters,
+    start,
+    end,
+  };
+}
+
+export function createTSConstrcutorType(
+  returnType: AST.TSConstrcutorType["returnType"],
+  parameters: AST.TSConstrcutorType["parameters"],
+  typeParameters: AST.TSConstrcutorType["typeParameters"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSConstrcutorType {
+  return {
+    kind: SyntaxKinds.TSConstructorType,
+    returnType,
+    parameters,
+    typeParameters,
+    start,
+    end,
+  };
+}
+
+export function createTSTupleType(
+  elementTypes: AST.TSTupleType["elementTypes"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSTupleType {
+  return {
+    kind: SyntaxKinds.TSTupleType,
+    elementTypes,
+    start,
+    end,
+  };
+}
+
+export function createTSLiteralType(
+  literal: AST.TSLiteralType["literal"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSLiteralType {
+  return {
+    kind: SyntaxKinds.TSLiteralType,
+    literal,
     start,
     end,
   };

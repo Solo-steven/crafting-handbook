@@ -35,6 +35,8 @@ export interface MethodDefinition extends ModuleItem {
   key: PropertyName | PrivateName;
   body: FunctionBody;
   params: Array<Pattern>;
+  typeParameters: TSTypeParameterDeclaration | undefined;
+  returnType: TSTypeAnnotation | undefined;
   type: "constructor" | "method" | "get" | "set";
   computed: boolean;
   generator: boolean;
@@ -141,7 +143,8 @@ export interface ThisExpression extends ExpressionModuleItem {
 export interface Identifier extends ExpressionModuleItem {
   kind: SyntaxKinds.Identifier;
   name: string;
-  typeAnnotation?: TSTypeAnnotation;
+  typeAnnotation: TSTypeAnnotation | undefined;
+  optional: boolean | undefined;
 }
 export interface PrivateName extends ExpressionModuleItem {
   kind: SyntaxKinds.PrivateName;
@@ -266,6 +269,8 @@ export interface ArrorFunctionExpression extends ExpressionModuleItem {
   expressionBody: boolean;
   async: boolean;
   arguments: Array<Pattern>;
+  typeParameters: TSTypeParameterDeclaration | undefined;
+  returnType: TSTypeAnnotation | undefined;
   body: Expression | FunctionBody;
 }
 export interface MetaProperty extends ExpressionModuleItem {
@@ -293,6 +298,7 @@ export interface CallExpression extends ExpressionModuleItem {
   kind: SyntaxKinds.CallExpression;
   callee: Expression;
   arguments: Array<Expression>;
+  typeArguments?: TSTypeParameterInstantiation;
   optional: boolean;
 }
 export interface TaggedTemplateExpression extends ExpressionModuleItem {
@@ -396,7 +402,8 @@ export interface ExpressionStatement extends ModuleItem {
 export interface ObjectPattern extends ModuleItem {
   kind: SyntaxKinds.ObjectPattern;
   properties: Array<ObjectPatternProperty | RestElement | AssignmentPattern>;
-  typeAnnotation?: TSTypeAnnotation;
+  typeAnnotation: TSTypeAnnotation | undefined;
+  optional: boolean | undefined;
 }
 export interface ObjectPatternProperty extends ModuleItem {
   kind: SyntaxKinds.ObjectPatternProperty;
@@ -408,18 +415,21 @@ export interface ObjectPatternProperty extends ModuleItem {
 export interface ArrayPattern extends ModuleItem {
   kind: SyntaxKinds.ArrayPattern;
   elements: Array<null | Pattern>;
-  typeAnnotation?: TSTypeAnnotation;
+  typeAnnotation: TSTypeAnnotation | undefined;
+  optional: boolean | undefined;
 }
 export interface AssignmentPattern extends ModuleItem {
   kind: SyntaxKinds.AssignmentPattern;
   left: Pattern;
   right: Expression;
-  typeAnnotation?: TSTypeAnnotation;
+  typeAnnotation: TSTypeAnnotation | undefined;
+  optional: boolean | undefined;
 }
 export interface RestElement extends ModuleItem {
   kind: SyntaxKinds.RestElement;
   argument: Pattern;
-  typeAnnotation?: TSTypeAnnotation;
+  typeAnnotation: TSTypeAnnotation | undefined;
+  optional: boolean | undefined;
 }
 
 export type Pattern =
@@ -565,6 +575,8 @@ export interface VariableDeclarator extends ModuleItem {
 export interface Function extends Omit<ModuleItem, "kind"> {
   name: Identifier | null;
   params: Array<Pattern>;
+  typeParameters: TSTypeParameterDeclaration | undefined;
+  returnType: TSTypeAnnotation | undefined;
   body: FunctionBody;
   generator: boolean;
   async: boolean;
@@ -600,7 +612,7 @@ export interface ClassMethodDefinition extends Omit<MethodDefinition, "type"> {
   decorators: Decorator[] | null;
 }
 export interface ClassConstructor
-  extends Omit<MethodDefinition, "generator" | "async" | "static" | "computed" | "type"> {
+  extends Omit<MethodDefinition, "generator" | "async" | "static" | "computed" | "type" | "typeParameters"> {
   kind: SyntaxKinds.ClassConstructor;
   key: Identifier;
 }
@@ -701,12 +713,20 @@ export interface ImportAttribute extends ModuleItem {
  * =========================================
  */
 export type TSTypeNode =
-  // TSConditionalType |
-  // TSArrayType |
+  | TSConditionalType
+  | TSUnionType
+  | TSIntersectionType
+  | TSTypeOperator
+  | TSArrayType
+  | TSIndexedAccessType
+  | TSTypeQuery
+  | TSLiteralType
+  | TSConstrcutorType
   | TSInterfaceDeclaration
   | TSTypeAliasDeclaration
   | TSFunctionType
   | TSTypeLiteral
+  | TSTupleType
   | TSTypePredicate
   | TSTypeReference
   | TSStringKeyword
@@ -719,17 +739,40 @@ export type TSTypeNode =
   | TSAnyKeyword
   | TSNeverKeyword
   | TSUnknowKeyword;
-// export interface TSConditionalType extends ModuleItem {
-//   kind: SyntaxKinds.TSConditionalType;
-//   checkType: TSTypeNode;
-//   extendType: TSTypeNode;
-//   trueType: TSTypeNode;
-//   falseType: TSTypeNode;
-// }
-// export interface TSArrayType extends ModuleItem {
-//   kind: SyntaxKinds.TSArrayType;
-//   elementType: TSTypeNode;
-// }
+
+// ======== TS Comnputed Type
+export interface TSConditionalType extends ModuleItem {
+  kind: SyntaxKinds.TSConditionalType;
+  checkType: TSTypeNode;
+  extendType: TSTypeNode;
+  trueType: TSTypeNode;
+  falseType: TSTypeNode;
+}
+export interface TSUnionType extends ModuleItem {
+  kind: SyntaxKinds.TSUnionType;
+  types: Array<TSTypeNode>;
+}
+export interface TSIntersectionType extends ModuleItem {
+  kind: SyntaxKinds.TSIntersectionType;
+  types: Array<TSTypeNode>;
+}
+export interface TSTypeOperator extends ModuleItem {
+  kind: SyntaxKinds.TSTypeOperator;
+  operator: "keyof" | "unique" | "readonly";
+  typeAnnotation: TSTypeNode;
+}
+export interface TSArrayType extends ModuleItem {
+  kind: SyntaxKinds.TSArrayType;
+  elementType: TSTypeNode;
+}
+export interface TSIndexedAccessType extends ModuleItem {
+  kind: SyntaxKinds.TSIndexedAccessType;
+  indexedType: TSTypeNode;
+  objectType: TSTypeNode;
+}
+// ======= TS High Level Basic Type
+
+// ======= TS Type-Param
 export interface TSTypeParameterDeclaration extends ModuleItem {
   kind: SyntaxKinds.TSTypeParameterDeclaration;
   params: Array<TSTypeParameter>;
@@ -745,6 +788,13 @@ export interface TSTypeParameter extends ModuleItem {
 export interface TSTypeParameterInstantiation extends ModuleItem {
   kind: SyntaxKinds.TSTypeParameterInstantiation;
   params: Array<TSTypeNode>;
+}
+// ===== TS Basic Type
+export interface TSFunctionType extends TSFunctionSignatureBase {
+  kind: SyntaxKinds.TSFunctionType;
+}
+export interface TSConstrcutorType extends TSFunctionSignatureBase {
+  kind: SyntaxKinds.TSConstructorType;
 }
 export interface TSTypeAliasDeclaration extends ModuleItem {
   kind: SyntaxKinds.TSTypeAliasDeclaration;
@@ -762,10 +812,6 @@ export interface TSInterfaceBody extends ModuleItem {
   kind: SyntaxKinds.TSInterfaceBody;
   body: TSTypeElement[];
 }
-export interface TSUnionType extends ModuleItem {
-  kind: SyntaxKinds.TSUnionType;
-  types: Array<TSTypeNode>;
-}
 export type TSParameter = Identifier | ObjectPattern | AssignmentPattern | ArrayPattern | RestElement;
 export interface TSTypeAnnotation extends ModuleItem {
   kind: SyntaxKinds.TSTypeAnnotation;
@@ -780,12 +826,7 @@ export interface TSTypePredicate extends ModuleItem {
 export interface TSFunctionSignatureBase extends ModuleItem {
   returnType: TSTypeAnnotation | undefined;
   parameters: Array<TSParameter>;
-  // typeparam
-}
-export interface TSFunctionType extends ModuleItem {
-  returnType: TSTypeAnnotation | undefined;
-  parameters: Array<TSParameter>;
-  // type param
+  typeParameters: TSTypeParameterDeclaration | undefined;
 }
 export interface TSTypeLiteral extends ModuleItem {
   members: Array<TSTypeElement>;
@@ -814,6 +855,18 @@ export interface TSMethodSignature extends TSFunctionSignatureBase {
   key: PropertyName;
   computed: boolean;
   optional: boolean;
+}
+export interface TSTypeQuery extends ModuleItem {
+  kind: SyntaxKinds.TSTypeQuery;
+  exprName: TSEntityName;
+}
+export interface TSTupleType extends ModuleItem {
+  kind: SyntaxKinds.TSTupleType;
+  elementTypes: Array<TSTypeNode>;
+}
+export interface TSLiteralType extends ModuleItem {
+  kind: SyntaxKinds.TSLiteralType;
+  literal: StringLiteral | NumberLiteral | BoolLiteral | NullLiteral | UndefinbedLiteral;
 }
 export interface TSTypeReference extends ModuleItem {
   typeName: TSEntityName;

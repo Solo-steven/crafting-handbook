@@ -6,7 +6,7 @@ import { SourcePosition } from "web-infra-common";
 import { SyntaxError, SyntaxErrorHandler } from "./type";
 
 export function createErrorHandler(code: string): SyntaxErrorHandler {
-  const errors: Array<SyntaxError> = [];
+  let errors: Array<SyntaxError> = [];
   function pushSyntaxErrors(...syntaxErrors: Array<SyntaxError>) {
     errors.push(...syntaxErrors);
   }
@@ -46,9 +46,17 @@ export function createErrorHandler(code: string): SyntaxErrorHandler {
       .map(() => " ")
       .join("");
   }
+  function markAsTry() {
+    return errors.length;
+  }
+  function restoreTryFail(index: number) {
+    errors = errors.slice(0, index);
+  }
   return {
     pushSyntaxErrors,
     haveError,
     formatErrorString,
+    markAsTry,
+    restoreTryFail,
   };
 }

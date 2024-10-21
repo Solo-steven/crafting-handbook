@@ -1,1 +1,1 @@
-[Syntax Error]: Unexpect token :(2, 5).
+[Syntax Error]: Unexpect token PrivateName(2, 3).

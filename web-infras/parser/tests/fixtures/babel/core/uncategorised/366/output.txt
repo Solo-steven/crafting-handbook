@@ -1,1 +1,1 @@
-[Error]: Lexical Error, SyntaxError: Invalid Unicode escape sequence, start position is (1, 16)
+[Error]: Lexical Error, Invalid Unicode escape sequence, start position is (1, 16)

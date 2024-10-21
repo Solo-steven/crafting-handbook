@@ -4,6 +4,7 @@ import { parse } from "@/src/index";
 import { transformSyntaxKindToLiteral } from "../tests/parserRunner/helpers/transform";
 import fs from "fs";
 import path from "path";
+import { ParserPlugin } from "./parser/config";
 const code = fs.readFileSync(path.join(__dirname, "test.ts")).toString();
 // console.log(code);
 // const writePath = path.join(__dirname, "test.json");
@@ -49,7 +50,7 @@ function printLexer(code: string) {
   );
 }
 function printParser(code: string) {
-  const ast = parse(code, { sourceType: "script", plugins: ["jsx"] });
+  const ast = parse(code, { sourceType: "module", plugins: [ParserPlugin.TypeScript] });
   transformSyntaxKindToLiteral(ast);
   console.log(JSON.stringify(ast, null, 4));
   return 0;

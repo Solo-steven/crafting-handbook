@@ -8,4 +8,6 @@ export type SyntaxErrorHandler = {
   pushSyntaxErrors: (...syntaxErrors: Array<SyntaxError>) => void;
   haveError: () => boolean;
   formatErrorString: () => string;
+  markAsTry(): number;
+  restoreTryFail(index: number): void;
 };

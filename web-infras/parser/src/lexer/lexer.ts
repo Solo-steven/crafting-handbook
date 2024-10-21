@@ -5,6 +5,8 @@ import {
   createLexerContext,
   cloneLexerContext,
   cloneLexerState,
+  LexerState,
+  LexerContext,
 } from "./type";
 import {
   isCodePointLineTerminate,
@@ -34,6 +36,23 @@ export function createLexer(code: string) {
    *             Public API of Lexer
    *  ===========================================================
    */
+  /**
+   * fork state and context of lexer, used by parser to try parse
+   * some syntax.
+   * @returns {[LexerState, LexerContext]}
+   */
+  function forkState(): [LexerState, LexerContext] {
+    return [cloneLexerState(state), cloneLexerContext(context)];
+  }
+  /**
+   * Restore lexer state and context, used by parser when failed on try parse
+   * @param restoreState
+   * @param restoreContext
+   */
+  function restoreState(restoreState: LexerState, restoreContext: LexerContext) {
+    state = restoreState;
+    context = restoreContext;
+  }
   /**
    * Public Api for getting change line flag of current token.
    * @returns {boolean}
@@ -325,6 +344,72 @@ export function createLexer(code: string) {
     return getSliceStringFromCode(startIndex, getCurrentIndex());
   }
   /**
+   *
+   * @returns
+   */
+  function reLexGtRelateToken() {
+    switch (state.token.kind) {
+      // `>=` to `>`, `=`
+      case SyntaxKinds.GeqtOperator: {
+        state.cursor.pos -= 2;
+        startToken();
+        eatChar();
+        finishToken(SyntaxKinds.GtOperator);
+        return;
+      }
+      // `>>` to `>`, `>`
+      case SyntaxKinds.BitwiseRightShiftOperator: {
+        state.cursor.pos -= 2;
+        startToken();
+        eatChar();
+        finishToken(SyntaxKinds.GtOperator);
+        return;
+      }
+      // `>>>` to `>`, `>>`
+      case SyntaxKinds.BitwiseRightShiftFillOperator: {
+        state.cursor.pos -= 3;
+        startToken();
+        eatChar();
+        finishToken(SyntaxKinds.GtOperator);
+        return;
+      }
+      // `>>=` to `>`, `>=`
+      case SyntaxKinds.BitwiseRightShiftAssginOperator: {
+        state.cursor.pos -= 3;
+        startToken();
+        eatChar();
+        finishToken(SyntaxKinds.GtOperator);
+        return;
+      }
+      // `>>>=`, to `>`, `>>=`
+      case SyntaxKinds.BitwiseRightShiftFillAssginOperator: {
+        state.cursor.pos -= 4;
+        startToken();
+        eatChar();
+        finishToken(SyntaxKinds.GtOperator);
+        return;
+      }
+      default: {
+        return;
+      }
+    }
+  }
+  function reLexLtRelateToken() {
+    switch (state.token.kind) {
+      // `<<` to `<`, `<`
+      case SyntaxKinds.BitwiseLeftShiftOperator: {
+        state.cursor.pos -= 2;
+        startToken();
+        eatChar();
+        finishToken(SyntaxKinds.LtOperator);
+        return;
+      }
+      default: {
+        return;
+      }
+    }
+  }
+  /**
    * Public API for sync the strict mode context with parser.
    * @param {boolean} strictMode
    */
@@ -351,6 +436,11 @@ export function createLexer(code: string) {
     setJSXGtContext,
     // only used by strict mode
     setStrictModeContext,
+    // only used by TS
+    reLexGtRelateToken,
+    reLexLtRelateToken,
+    forkState,
+    restoreState,
   };
   /** ===========================================================
    *             Private API for Lexer
