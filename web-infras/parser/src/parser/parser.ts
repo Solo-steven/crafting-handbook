@@ -147,6 +147,7 @@ import {
   TSTypeOperator,
   TSTupleType,
   TSLiteralType,
+  TSVoidKeyword,
 } from "web-infra-common";
 import { ExpectToken } from "./type";
 import { ErrorMessageMap } from "./error";
@@ -181,6 +182,13 @@ interface ASTArrayWithMetaData<T> {
   nodes: Array<T>;
   start: SourcePosition;
   end: SourcePosition;
+}
+
+interface LefthansSideParseState {
+  shouldStop: boolean;
+  hasOptional: boolean;
+  optional: boolean;
+  abortLastTime: boolean;
 }
 /**
  * Create context for parser
@@ -1968,6 +1976,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
         symbolScopeRecorder.enterCatchParam();
         // catch clause should not have init
         const param = parseBindingElement(false);
+        parseFunctionParamType(param as TSParameter, false);
         if (!symbolScopeRecorder.setCatchParamTo(isIdentifer(param) ? SymbolType.Var : SymbolType.Let)) {
           throw createMessageError(ErrorMessageMap.v8_error_duplicate_identifier);
         }
@@ -2101,7 +2110,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       if (variableKind === "lexical" && scope.kind !== "RHSLayer" && scope.letIdentifier.length > 0) {
         throw new Error("TODO ERROR: Better");
       }
-      id = parseFunctionParamType(id as TSParameter);
+      id = parseFunctionParamType(id as TSParameter, false);
       // custom logical for check is lexical binding have let identifier ?
       if (
         // variable declarations binding pattern but but have init.
@@ -2340,12 +2349,12 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       if (match(SyntaxKinds.SpreadOperator)) {
         isEndWithRest = true;
         param = parseRestElement(true);
-        param = parseFunctionParamType(param as TSParameter);
+        param = parseFunctionParamType(param as TSParameter, true);
         params.push(param);
         break;
       } else {
         param = parseBindingElement();
-        param = parseFunctionParamType(param as TSParameter);
+        param = parseFunctionParamType(param as TSParameter, true);
         params.push(param);
       }
     }
@@ -2959,8 +2968,15 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     if (shouldEarlyReturn(test)) {
       return test;
     }
+    // for `arrow function` param, will first
     if (!match(SyntaxKinds.QustionOperator)) {
       return test;
+    }
+    if (requirePlugin(ParserPlugin.TypeScript)) {
+      const { kind } = lookahead();
+      if (kind === SyntaxKinds.ColonPunctuator || kind === SyntaxKinds.ParenthesesRightPunctuator) {
+        return test;
+      }
     }
     nextToken();
     const conseq = parseAssignmentExpressionAllowIn();
@@ -3227,62 +3243,24 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     if (shouldEarlyReturn(base)) {
       return base;
     }
-    let shouldStop = false;
-    let hasOptional = false;
-    let abortLastTime = false;
-    while (!shouldStop) {
-      let optional = false;
-      if (match(SyntaxKinds.QustionDotOperator)) {
-        optional = true;
-        hasOptional = true;
-        nextToken();
-      }
-      let typeArguments: TSTypeParameterInstantiation | undefined = undefined;
-      let abort = () => {};
-      if ((match(SyntaxKinds.LtOperator) || match(SyntaxKinds.BitwiseLeftShiftOperator)) && !abortLastTime) {
-        const result = tryParse(() => {
-          return tryParseTSTypeParameterInstantiation();
-        });
-        if (result) {
-          typeArguments = result?.[0];
-          abort = () => {
-            lexer.restoreState(result[1], result[2]);
-            errorhandler.restoreTryFail(result[3]);
-            abortLastTime = true;
-          };
-        }
+    const state: LefthansSideParseState = {
+      shouldStop: false,
+      hasOptional: false,
+      optional: false,
+      abortLastTime: false,
+    };
+    while (!state.shouldStop) {
+      state.optional = false;
+      if (state.abortLastTime) {
+        base = parseLeftHandSideExpressionWithoutTypeArguments(base, state);
       } else {
-        abortLastTime = true;
-      }
-      if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-        // callexpression
-        base = parseCallExpression(base, optional);
-      } else if (match([SyntaxKinds.DotOperator, SyntaxKinds.BracketLeftPunctuator]) || optional) {
-        // memberexpression
-        if (typeArguments) {
-          abort();
-        } else {
-          base = parseMemberExpression(base, optional);
-        }
-      } else if (match(SyntaxKinds.TemplateHead) || match(SyntaxKinds.TemplateNoSubstitution)) {
-        // tag template expressuin
-        if (hasOptional) {
-          // recoverable error
-          raiseError(
-            ErrorMessageMap.syntax_error_tag_template_expression_can_not_use_option_chain,
-            getStartPosition(),
-          );
-        }
-        base = parseTagTemplateExpression(base);
-      } else {
-        if (typeArguments) {
-          abort();
-        } else {
-          shouldStop = true;
-        }
+        base = parseLeftHandSideExpressionWithTypeArguments(base, state);
       }
     }
-    if (hasOptional) {
+    if (state.abortLastTime && state.hasOptional) {
+      throw createUnexpectError();
+    }
+    if (state.hasOptional) {
       return Factory.createChainExpression(
         base,
         cloneSourcePosition(base.start),
@@ -3290,6 +3268,115 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       );
     }
     return base;
+  }
+  function parseLeftHandSideExpressionWithTypeArguments(base: Expression, state: LefthansSideParseState) {
+    parseQuestionDotOfLeftHandSideExpression(state);
+    const [typeArguments, abort] = parseTypeArgumentsOfLeftHandSideExpression(state);
+    if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
+      // callexpression
+      base = parseCallExpression(base, state.optional, typeArguments);
+    } else if (match([SyntaxKinds.DotOperator, SyntaxKinds.BracketLeftPunctuator]) || state.optional) {
+      // memberexpression
+      if (typeArguments) {
+        abort();
+      } else {
+        base = parseMemberExpression(base, state.optional);
+      }
+    } else if (match(SyntaxKinds.TemplateHead) || match(SyntaxKinds.TemplateNoSubstitution)) {
+      // tag template expressuin
+      if (state.hasOptional) {
+        // recoverable error
+        raiseError(
+          ErrorMessageMap.syntax_error_tag_template_expression_can_not_use_option_chain,
+          getStartPosition(),
+        );
+      }
+      base = parseTagTemplateExpression(base);
+    } else {
+      if (typeArguments) {
+        const currentToken = getToken();
+        if (
+          currentToken === SyntaxKinds.GtOperator ||
+          currentToken === SyntaxKinds.BitwiseRightShiftOperator ||
+          (currentToken !== SyntaxKinds.ParenthesesLeftPunctuator &&
+            canStartExpression() &&
+            !getLineTerminatorFlag())
+        ) {
+          abort();
+        } else {
+          // base == TSInstanitExpr
+          base = Factory.createTSInstantiationExpression(
+            base,
+            typeArguments,
+            cloneSourcePosition(base.start),
+            getLastTokenEndPositon(),
+          );
+          if (
+            match(SyntaxKinds.DotOperator) ||
+            (match(SyntaxKinds.QustionDotOperator) &&
+              lookahead().kind !== SyntaxKinds.ParenthesesLeftPunctuator)
+          ) {
+            // TODO: should error
+          }
+        }
+      } else {
+        state.shouldStop = true;
+      }
+    }
+    return base;
+  }
+  function parseLeftHandSideExpressionWithoutTypeArguments(base: Expression, state: LefthansSideParseState) {
+    parseQuestionDotOfLeftHandSideExpression(state);
+    if (match(SyntaxKinds.ParenthesesLeftPunctuator)) {
+      // callexpression
+      state.abortLastTime = false;
+      base = parseCallExpression(base, state.optional, undefined);
+    } else if (match([SyntaxKinds.DotOperator, SyntaxKinds.BracketLeftPunctuator]) || state.optional) {
+      // memberexpression
+      state.abortLastTime = false;
+      base = parseMemberExpression(base, state.optional);
+    } else if (match(SyntaxKinds.TemplateHead) || match(SyntaxKinds.TemplateNoSubstitution)) {
+      // tag template expressuin
+      if (state.hasOptional) {
+        // recoverable error
+        raiseError(
+          ErrorMessageMap.syntax_error_tag_template_expression_can_not_use_option_chain,
+          getStartPosition(),
+        );
+      }
+      state.abortLastTime = false;
+      base = parseTagTemplateExpression(base);
+    } else {
+      state.shouldStop = true;
+    }
+    return base;
+  }
+  function parseQuestionDotOfLeftHandSideExpression(state: LefthansSideParseState) {
+    if (match(SyntaxKinds.QustionDotOperator)) {
+      state.optional = true;
+      state.hasOptional = true;
+      nextToken();
+    }
+  }
+  function parseTypeArgumentsOfLeftHandSideExpression(
+    state: LefthansSideParseState,
+  ): [TSTypeParameterInstantiation | undefined, () => void] {
+    let typeArguments: TSTypeParameterInstantiation | undefined = undefined;
+    let abort = () => {};
+    if (match(SyntaxKinds.LtOperator) || match(SyntaxKinds.BitwiseLeftShiftOperator)) {
+      const result = tryParse(() => {
+        return tryParseTSTypeParameterInstantiation();
+      });
+      if (result) {
+        typeArguments = result?.[0];
+        abort = () => {
+          lexer.restoreState(result[1], result[2]);
+          errorhandler.restoreTryFail(result[3]);
+          state.abortLastTime = true;
+        };
+      }
+    }
+    return [typeArguments, abort];
   }
   /**
    * Check is a assignable left value
@@ -3311,13 +3398,17 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
    * @param {boolean} optional is this call optional ?
    * @returns {Expression}
    */
-  function parseCallExpression(callee: Expression, optional: boolean): Expression {
+  function parseCallExpression(
+    callee: Expression,
+    optional: boolean,
+    typeParameter: TSTypeParameterInstantiation | undefined,
+  ): Expression {
     expectButNotEat([SyntaxKinds.ParenthesesLeftPunctuator]);
     const { nodes, end } = parseArguments();
     return Factory.createCallExpression(
       callee,
       nodes,
-      undefined,
+      typeParameter,
       optional,
       cloneSourcePosition(callee.start),
       end,
@@ -3609,21 +3700,18 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
             // 2.second case is not change line after async, making it become async arrow
             //   function.
             // --------------------------
-            // case 2 for TS, `async` `<` might be generic
-            if (
-              kind === SyntaxKinds.ParenthesesLeftPunctuator ||
-              kind === SyntaxKinds.LtOperator ||
-              kind === SyntaxKinds.BitwiseLeftShiftOperator
-            ) {
+            if (kind === SyntaxKinds.ParenthesesLeftPunctuator) {
               const containEsc = getEscFlag();
-              const id = parseIdentifierReference();
-              tryParseTSTypeParameterInstantiation();
+              const id = parseIdentifierReference(); // async
               // TODO: better accept type param or argument to create async arrow or async call.
               const [[meta, strictModeScope], arrowExprScope] = parseWithArrowExpressionScope(() =>
                 parseWithCatpureLayer(parseArgumentsWithType),
               );
-              const returnType = tryParseTSReturnTypeOrTypePredicate(SyntaxKinds.ColonPunctuator);
-              if (flag || !match(SyntaxKinds.ArrowOperator)) {
+              if (
+                flag ||
+                (!match(SyntaxKinds.ArrowOperator) &&
+                  !(match(SyntaxKinds.ColonPunctuator) && requirePlugin(ParserPlugin.TypeScript)))
+              ) {
                 return Factory.createCallExpression(
                   id,
                   meta.nodes,
@@ -3636,6 +3724,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
               if (containEsc) {
                 raiseError(ErrorMessageMap.invalid_esc_char_in_keyword, id.start);
               }
+              const returnType = tryParseTSReturnTypeOrTypePredicate(SyntaxKinds.ColonPunctuator);
               enterArrowFunctionBodyScope(true);
               const arrowFunExpr = parseArrowFunctionExpression(
                 meta,
@@ -3646,6 +3735,66 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
               exitArrowFunctionBodyScope();
               arrowFunExpr.returnType = returnType;
               return arrowFunExpr;
+            }
+            // case 2-TS: `async` `<` or async `<<`
+            // for `<`, is possible to be a
+            // - typeParameter: for a async function declaration
+            // - typeArguments: for a function call which callee is `async`
+            // - binary expression: `async < literal-item`.
+            if (kind === SyntaxKinds.LtOperator) {
+              const id = parseIdentifierReference();
+              const typeParameterResult = tryParse(parseTSTypeParameterDeclaration);
+              if (typeParameterResult) {
+                // there
+                const [
+                  [{ start, end, nodes, trailingComma, typeAnnotations }, strictModeScope],
+                  arrowExprScope,
+                ] = parseWithArrowExpressionScope(() => parseWithCatpureLayer(parseArgumentsWithType));
+                const returnType = tryParseTSReturnTypeOrTypePredicateForArrowExpression(true, nodes);
+                if (match(SyntaxKinds.ArrowOperator)) {
+                  enterArrowFunctionBodyScope(true);
+                  const arrowExpr = parseArrowFunctionExpression(
+                    { start, end, nodes, trailingComma, typeAnnotations },
+                    undefined,
+                    strictModeScope,
+                    arrowExprScope,
+                  );
+                  exitArrowFunctionBodyScope();
+                  arrowExpr.returnType = returnType;
+                  arrowExpr.typeParameters = typeParameterResult[0];
+                  return arrowExpr;
+                }
+                abortTryParseResult(typeParameterResult[1], typeParameterResult[2], typeParameterResult[3]);
+              }
+              const typeArgumentResult = tryParse(parseTSTypeParameterInstantiation);
+              if (typeArgumentResult) {
+                const typeArguments = typeArgumentResult[0];
+                const callArguments = parseArguments().nodes;
+                return Factory.createCallExpression(
+                  id,
+                  callArguments,
+                  typeArguments,
+                  false,
+                  cloneSourcePosition(id.start),
+                  getLastTokenEndPositon(),
+                );
+              }
+              return id;
+            }
+            // for '<<', it must be `async<<T....` which is type argument -> async as function call
+            if (kind === SyntaxKinds.BitwiseLeftShiftOperator) {
+              const id = parseIdentifierReference();
+              lexer.reLexLtRelateToken();
+              const typeArguments = parseTSTypeParameterInstantiation();
+              const callArguments = parseArguments().nodes;
+              return Factory.createCallExpression(
+                id,
+                callArguments,
+                typeArguments,
+                false,
+                cloneSourcePosition(id.start),
+                getLastTokenEndPositon(),
+              );
             }
             // case 3: `async` `Identifer` ...
             // There might be two case :
@@ -4153,12 +4302,13 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     let base = parsePrimaryExpression();
     staticSematicForBaseInNewExpression(base);
     base = parseNewExpressionCallee(base);
+    const typeArgument = tryParseTSTypeParameterInstantiationForNewExpression();
     if (!match(SyntaxKinds.ParenthesesLeftPunctuator)) {
       // accpect New XXX -> No argument
-      return Factory.createNewExpression(base, [], start, cloneSourcePosition(base.end));
+      return Factory.createNewExpression(base, [], typeArgument, start, cloneSourcePosition(base.end));
     }
     const { end, nodes } = parseArguments();
-    return Factory.createNewExpression(base, nodes, start, end);
+    return Factory.createNewExpression(base, nodes, typeArgument, start, end);
   }
   /**
    * The base of new expression can not be a import call expression, if must be a import
@@ -4196,6 +4346,51 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       base = parseMemberExpression(base, false);
     }
     return base;
+  }
+  function tryParseTSTypeParameterInstantiationForNewExpression() {
+    if (match(SyntaxKinds.LtOperator) || match(SyntaxKinds.BitwiseLeftShiftOperator)) {
+      const result = tryParse(tryParseTSTypeParameterInstantiation);
+      if (
+        match([
+          SyntaxKinds.ParenthesesLeftPunctuator,
+          SyntaxKinds.TemplateNoSubstitution,
+          SyntaxKinds.TemplateHead,
+        ])
+      ) {
+        return result?.[0];
+      }
+      if (
+        match([
+          SyntaxKinds.LtOperator,
+          SyntaxKinds.GtOperator,
+          SyntaxKinds.MinusOperator,
+          SyntaxKinds.MinusOperator,
+        ]) ||
+        !(getLineTerminatorFlag() || isBinaryOps(getToken()) || !canStartExpression())
+      ) {
+        if (result) abortTryParseResult(result[1], result[2], result[3]);
+        return;
+      }
+      return result?.[0];
+    }
+  }
+  // TODO: finish all possible
+  // reference: https://github.com/oxc-project/oxc/blob/eac34b676f473f79bcb4a55d6322d0b02a15d6fa/crates/oxc_parser/src/ts/types.rs#L1382
+  function canStartExpression() {
+    switch (getToken()) {
+      case SyntaxKinds.Identifier:
+      case SyntaxKinds.PlusOperator:
+      case SyntaxKinds.MinusOperator:
+        return true;
+      case SyntaxKinds.TrueKeyword:
+      case SyntaxKinds.FalseKeyword:
+      case SyntaxKinds.NullKeyword:
+      case SyntaxKinds.UndefinedKeyword:
+      case SyntaxKinds.StringLiteral:
+        return true;
+      default:
+        return false;
+    }
   }
   /**
    * Parse super expression, only parse the arguments and super or a first level
@@ -4928,10 +5123,9 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     expectButNotEat(SyntaxKinds.ParenthesesLeftPunctuator);
     const [[{ start, end, nodes, trailingComma, typeAnnotations }, strictModeScope], arrowExprScope] =
       parseWithArrowExpressionScope(() => parseWithCatpureLayer(parseArgumentsWithType));
-    const notArrowExpression =
-      !possibleBeArrow ||
-      (!match(SyntaxKinds.ArrowOperator) &&
-        !(match(SyntaxKinds.ColonPunctuator) && requirePlugin(ParserPlugin.TypeScript)));
+    const returnType = tryParseTSReturnTypeOrTypePredicateForArrowExpression(possibleBeArrow, nodes);
+    const notArrowExpression = !possibleBeArrow || !match(SyntaxKinds.ArrowOperator);
+
     if (notArrowExpression) {
       // transfor to sequence or signal expression
       for (const element of nodes) {
@@ -4964,7 +5158,49 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       arrowExprScope,
     );
     exitArrowFunctionBodyScope();
+    arrowExpr.returnType = returnType;
     return arrowExpr;
+  }
+  function tryParseTSReturnTypeOrTypePredicateForArrowExpression(
+    possibleBeArrow: boolean,
+    functionArguments: Expression[],
+  ) {
+    let returnType: undefined | ArrorFunctionExpression["returnType"] = undefined;
+    if (
+      possibleBeArrow &&
+      simpleCheckIsArgumentCanBeAssignable(functionArguments) &&
+      match(SyntaxKinds.ColonPunctuator) &&
+      requirePlugin(ParserPlugin.TypeScript)
+    ) {
+      const result = tryParse(() => parseTSReturnTypeOrTypePredicate(SyntaxKinds.ColonPunctuator));
+      if (!match(SyntaxKinds.ArrowOperator)) {
+        if (!result) throw createUnreachError();
+        lexer.restoreState(result[1], result[2]);
+        errorhandler.restoreTryFail(result[3]);
+      } else {
+        returnType = result?.[0];
+      }
+    }
+    return returnType;
+  }
+  function simpleCheckIsArgumentCanBeAssignable(functionArguments: Array<Expression>) {
+    for (const argu of functionArguments) {
+      switch (argu.kind) {
+        case SyntaxKinds.ObjectExpression:
+        case SyntaxKinds.ArrayExpression:
+        case SyntaxKinds.Identifier:
+        case SyntaxKinds.SpreadElement:
+          continue;
+        case SyntaxKinds.AssigmentExpression:
+          if (argu.operator === SyntaxKinds.AssginOperator) {
+            continue;
+          }
+          return false;
+        default:
+          return false;
+      }
+    }
+    return true;
   }
   /**
    * Parse arrow function expression, by given argumentlist and meta data, include
@@ -4987,7 +5223,6 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     strictModeScope: StrictModeScope,
     arrowExprScope: AsyncArrowExpressionScope,
   ): ArrorFunctionExpression {
-    const returnType = tryParseTSReturnTypeOrTypePredicate(SyntaxKinds.ColonPunctuator);
     if (getLineTerminatorFlag()) {
       // recoverable error
       raiseError(ErrorMessageMap.extra_error_no_line_break_is_allowed_before_arrow, getStartPosition());
@@ -4999,7 +5234,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       strictModeScope,
       arrowExprScope,
     );
-    let body: Expression | FunctionBody | undefined;
+    let body: Expression | FunctionBody;
     let isExpression = false;
     if (match(SyntaxKinds.BracesLeftPunctuator)) {
       body = parseFunctionBody();
@@ -5014,7 +5249,7 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       body,
       functionArguments,
       typeParameters,
-      returnType,
+      undefined,
       isCurrentScopeParseAwaitAsExpression(),
       cloneSourcePosition(metaData.start),
       cloneSourcePosition(body.end),
@@ -6275,6 +6510,10 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     }
     return;
   }
+  function abortTryParseResult(state: LexerState, context: LexerContext, index: number) {
+    lexer.restoreState(state, context);
+    errorhandler.restoreTryFail(index);
+  }
   function parseInType<T>(worker: () => T): T {
     context.isInType = true;
     let result;
@@ -6452,14 +6691,32 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     );
   }
   function parseTSGenericArrowFunctionExpression(): ArrorFunctionExpression {
-    const typeParameters = parseTSTypeParameterDeclaration();
-    const [[meta, strictModeScope], arrowExprScope] = parseWithArrowExpressionScope(() =>
-      parseWithCatpureLayer(parseArgumentsWithType),
-    );
+    const start = getStartPosition();
+    const typeParameters = tryParseTSTypeParameterDeclaration();
+    const [parmas, scope] = parseWithCatpureLayer(parseFunctionParam);
+    const returnType = tryParseTSReturnTypeOrTypePredicate(SyntaxKinds.ColonPunctuator);
+    expect(SyntaxKinds.ArrowOperator);
     enterArrowFunctionBodyScope(true);
-    const arrowFunExpr = parseArrowFunctionExpression(meta, typeParameters, strictModeScope, arrowExprScope);
+    let body: Expression | FunctionBody;
+    let isExpression = false;
+    if (match(SyntaxKinds.BracesLeftPunctuator)) {
+      body = parseFunctionBody();
+    } else {
+      body = parseAssignmentExpressionInheritIn();
+      isExpression = true;
+    }
+    postStaticSematicEarlyErrorForStrictModeOfFunction(null, scope);
     exitArrowFunctionBodyScope();
-    return arrowFunExpr;
+    return Factory.createArrowExpression(
+      isExpression,
+      body,
+      parmas,
+      typeParameters,
+      returnType,
+      isCurrentScopeParseAwaitAsExpression(),
+      start,
+      getLastTokenEndPositon(),
+    );
   }
   function isTSFunctionTypeStart() {
     if (match(SyntaxKinds.LtOperator)) {
@@ -6585,6 +6842,9 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
       case SyntaxKinds.StringLiteral: {
         return parseTSLiteralType();
       }
+      case SyntaxKinds.VoidKeyword: {
+        return parseTSVoidKeyword();
+      }
       default: {
         const currentValue = getSourceValue();
         switch (currentValue) {
@@ -6665,6 +6925,10 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     const { start, end } = expect(SyntaxKinds.Identifier);
     return Factory.createTSUnknowKeyword(start, end);
   }
+  function parseTSVoidKeyword(): TSVoidKeyword {
+    const { start, end } = expect(SyntaxKinds.VoidKeyword);
+    return Factory.createTSVoidKeyword(start, end);
+  }
   function parseTypeQuery(): TSTypeQuery {
     const { start } = expect(SyntaxKinds.TypeofKeyword);
     const exprName = parseTSEntityName();
@@ -6689,28 +6953,69 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return Factory.createTSLiteralType(literal as unknown as any, start, getLastTokenEndPositon());
   }
-  function parseFunctionParamType(param: TSParameter) {
+  /**
+   * Try parse type annotation, optional mark and default vakue
+   * for function param, parse pattern :
+   * ```
+   * (`?`)? (`:` TypeNode )? (`=` expression)?
+   * ```
+   * This function will create a assignment pattern if default
+   * value exist.
+   * @param {TSParameter} param
+   * @returns
+   */
+  function parseFunctionParamType(param: TSParameter, shouldParseDefaultValue: boolean) {
     if (!requirePlugin(ParserPlugin.TypeScript)) return param;
     const optional = tryParseOptionalTypeParam();
     const type = tryParseTypeAnnotation();
     param.typeAnnotation = type;
     param.optional = optional;
-    if (match(SyntaxKinds.AssginOperator)) {
+    if (match(SyntaxKinds.AssginOperator) && shouldParseDefaultValue) {
       return parseDefaultValueForBindingElement(param);
     }
     return param;
   }
+  /**
+   * First helper of parse possible type annotation for argument. parse
+   * expect pattern
+   * ```
+   * (`?`)? (`:` TypeNode)?
+   * ```
+   * return binary tuple, optional TypeAnnotation Node and is optional value.
+   *
+   * NOTE: This function only used to parse type of argument for possible arrow
+   * expression.
+   *
+   * @returns {[TSTypeAnnotation | undefined, boolean]}
+   */
   function parsePossibleArugmentType(): [TSTypeAnnotation | undefined, boolean] {
     const optional = tryParseOptionalTypeParam();
     const type = tryParseTypeAnnotation();
     return [type, optional];
   }
+  /**
+   * Second helper for parse possible default value for type argument, expect
+   * parse pattern:
+   * ```
+   * (`=` Expression)?
+   * ```
+   * If assignment operator is exist, will create a assignment expression
+   * which wrap left expression as left value, so it gonna transform left
+   * expression into pattern.
+   *
+   * NOTE: This function only used to parse type of argument for possible arrow
+   * expression.
+   *
+   * @param {Expression} left
+   * @returns
+   */
   function parsePossibleArugmentDefaultValue(left: Expression) {
     if (match(SyntaxKinds.AssginOperator)) {
       nextToken();
+      const leftPat = exprToPattern(left, false);
       const right = parseAssignmentExpressionInheritIn();
       return Factory.createAssignmentExpression(
-        left as Pattern,
+        leftPat,
         right,
         SyntaxKinds.AssginOperator,
         cloneSourcePosition(left.start),
@@ -6719,6 +7024,10 @@ export function createParser(code: string, errorhandler: SyntaxErrorHandler, opt
     }
     return left;
   }
+  /**
+   * Util helper for parse qustion mark for function param type
+   * @returns
+   */
   function tryParseOptionalTypeParam() {
     let optional = false;
     if (match(SyntaxKinds.QustionOperator)) {

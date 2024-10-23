@@ -1,0 +1,100 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "CallExpression",
+                "optional": false,
+                "callee": {
+                    "kind": "Identifer",
+                    "name": "makeBox",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 8,
+                        "index": 7
+                    }
+                },
+                "typeArguments": {
+                    "kind": "TSTypeParameterInstantiation",
+                    "params": [
+                        {
+                            "kind": "TSNumberKeyword",
+                            "start": {
+                                "row": 1,
+                                "col": 9,
+                                "index": 8
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 15,
+                                "index": 14
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 8,
+                        "index": 7
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 16,
+                        "index": 15
+                    }
+                },
+                "arguments": [
+                    {
+                        "kind": "Identifer",
+                        "name": "a",
+                        "start": {
+                            "row": 2,
+                            "col": 2,
+                            "index": 17
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 18
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 2,
+                    "col": 4,
+                    "index": 19
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 2,
+                "col": 4,
+                "index": 19
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 20
+    }
+}

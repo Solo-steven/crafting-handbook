@@ -286,6 +286,7 @@ export interface NewExpression extends ExpressionModuleItem {
   kind: SyntaxKinds.NewExpression;
   callee: Expression;
   arguments: Array<Expression>;
+  typeArguments: TSTypeParameterInstantiation | undefined;
 }
 export interface MemberExpression extends ExpressionModuleItem {
   kind: SyntaxKinds.MemberExpression;
@@ -298,7 +299,7 @@ export interface CallExpression extends ExpressionModuleItem {
   kind: SyntaxKinds.CallExpression;
   callee: Expression;
   arguments: Array<Expression>;
-  typeArguments?: TSTypeParameterInstantiation;
+  typeArguments: TSTypeParameterInstantiation | undefined;
   optional: boolean;
 }
 export interface TaggedTemplateExpression extends ExpressionModuleItem {
@@ -349,6 +350,12 @@ export interface SequenceExpression extends ExpressionModuleItem {
   exprs: Array<Expression>;
 }
 
+export interface TSInstantiationExpression extends ExpressionModuleItem {
+  kind: SyntaxKinds.TSInstantiationExpression;
+  typeArguments: TSTypeParameterInstantiation;
+  expression: Expression;
+}
+
 export type Expression =
   // jsx element
   | JSXElement
@@ -389,7 +396,9 @@ export type Expression =
   | ConditionalExpression
   | YieldExpression
   | AssigmentExpression
-  | SequenceExpression;
+  | SequenceExpression
+  // TS expression
+  | TSInstantiationExpression;
 export interface ExpressionStatement extends ModuleItem {
   kind: SyntaxKinds.ExpressionStatement;
   expr: Expression;
@@ -738,7 +747,8 @@ export type TSTypeNode =
   | TSSymbolKeyword
   | TSAnyKeyword
   | TSNeverKeyword
-  | TSUnknowKeyword;
+  | TSUnknowKeyword
+  | TSVoidKeyword;
 
 // ======== TS Comnputed Type
 export interface TSConditionalType extends ModuleItem {
@@ -907,6 +917,9 @@ export interface TSNeverKeyword extends ModuleItem {
 }
 export interface TSUnknowKeyword extends ModuleItem {
   kind: SyntaxKinds.TSUnknowKeyword;
+}
+export interface TSVoidKeyword extends ModuleItem {
+  kind: SyntaxKinds.TSVoidKeyword;
 }
 /** ========================================
  *   Helper

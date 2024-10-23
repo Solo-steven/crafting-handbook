@@ -52,6 +52,8 @@ function printLexer(code: string) {
 function printParser(code: string) {
   const ast = parse(code, { sourceType: "module", plugins: [ParserPlugin.TypeScript] });
   transformSyntaxKindToLiteral(ast);
+  const astJsonString = JSON.stringify(ast, null, 4);
+  fs.writeFileSync("./test.json", astJsonString);
   console.log(JSON.stringify(ast, null, 4));
   return 0;
 }

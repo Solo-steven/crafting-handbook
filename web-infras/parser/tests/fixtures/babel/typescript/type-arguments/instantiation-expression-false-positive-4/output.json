@@ -1,0 +1,283 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "let",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "f",
+                        "optional": false,
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 6,
+                            "index": 5
+                        }
+                    },
+                    "init": null,
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 6,
+                        "index": 5
+                    }
+                },
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "h",
+                        "optional": false,
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        }
+                    },
+                    "init": {
+                        "kind": "DecimalLiteral",
+                        "rawValue": "0",
+                        "start": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 13,
+                            "index": 12
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 8,
+                        "index": 7
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    }
+                },
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "j",
+                        "optional": false,
+                        "start": {
+                            "row": 1,
+                            "col": 15,
+                            "index": 14
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 16,
+                            "index": 15
+                        }
+                    },
+                    "init": {
+                        "kind": "DecimalLiteral",
+                        "rawValue": "0",
+                        "start": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 20,
+                            "index": 19
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 15,
+                        "index": 14
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 20,
+                        "index": 19
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 20,
+                "index": 19
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "Identifer",
+                    "name": "f",
+                    "start": {
+                        "row": 3,
+                        "col": 1,
+                        "index": 22
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 2,
+                        "index": 23
+                    }
+                },
+                "right": {
+                    "kind": "BinaryExpression",
+                    "operator": "<",
+                    "left": {
+                        "kind": "BinaryExpression",
+                        "operator": ">>>",
+                        "left": {
+                            "kind": "Identifer",
+                            "name": "h",
+                            "start": {
+                                "row": 3,
+                                "col": 5,
+                                "index": 26
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 6,
+                                "index": 27
+                            }
+                        },
+                        "right": {
+                            "kind": "DecimalLiteral",
+                            "rawValue": "0",
+                            "start": {
+                                "row": 3,
+                                "col": 11,
+                                "index": 32
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 12,
+                                "index": 33
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 26
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 12,
+                            "index": 33
+                        }
+                    },
+                    "right": {
+                        "kind": "BinaryExpression",
+                        "operator": ">>>",
+                        "left": {
+                            "kind": "Identifer",
+                            "name": "j",
+                            "start": {
+                                "row": 3,
+                                "col": 15,
+                                "index": 36
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 16,
+                                "index": 37
+                            }
+                        },
+                        "right": {
+                            "kind": "DecimalLiteral",
+                            "rawValue": "0",
+                            "start": {
+                                "row": 3,
+                                "col": 21,
+                                "index": 42
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 22,
+                                "index": 43
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 15,
+                            "index": 36
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 22,
+                            "index": 43
+                        }
+                    },
+                    "start": {
+                        "row": 3,
+                        "col": 5,
+                        "index": 26
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 22,
+                        "index": 43
+                    }
+                },
+                "start": {
+                    "row": 3,
+                    "col": 1,
+                    "index": 22
+                },
+                "end": {
+                    "row": 3,
+                    "col": 22,
+                    "index": 43
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 22
+            },
+            "end": {
+                "row": 3,
+                "col": 22,
+                "index": 43
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 45
+    }
+}

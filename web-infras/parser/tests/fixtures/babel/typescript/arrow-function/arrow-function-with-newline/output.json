@@ -1,0 +1,114 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": false,
+                "async": true,
+                "arguments": [
+                    {
+                        "kind": "Identifer",
+                        "name": "f",
+                        "optional": false,
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        }
+                    }
+                ],
+                "returnType": {
+                    "kind": "TSTypeAnnotation",
+                    "typeAnnotation": {
+                        "kind": "TSTypeReference",
+                        "typeName": {
+                            "kind": "Identifer",
+                            "name": "t",
+                            "start": {
+                                "row": 2,
+                                "col": 3,
+                                "index": 12
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 4,
+                                "index": 13
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 12
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 4,
+                            "index": 13
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 1,
+                        "index": 10
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 4,
+                        "index": 13
+                    }
+                },
+                "body": {
+                    "kind": "FunctionBody",
+                    "body": [],
+                    "start": {
+                        "row": 2,
+                        "col": 8,
+                        "index": 17
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 11,
+                        "index": 20
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 2,
+                    "col": 11,
+                    "index": 20
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 7,
+                "index": 6
+            },
+            "end": {
+                "row": 2,
+                "col": 11,
+                "index": 20
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 7,
+        "index": 6
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 21
+    }
+}

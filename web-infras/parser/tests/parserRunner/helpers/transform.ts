@@ -136,6 +136,14 @@ const VisitorTable: Visitor = {
   [SyntaxKinds.JSXFragment]: transformKind,
   [SyntaxKinds.JSXOpeningFragment]: transformKind,
   [SyntaxKinds.JSXClosingFragment]: transformKind,
+  [SyntaxKinds.TSConditionalType]: transformKind,
+  [SyntaxKinds.TSUnionType]: transformKind,
+  [SyntaxKinds.TSIntersectionType]: transformKind,
+  [SyntaxKinds.TSArrayType]: transformKind,
+  [SyntaxKinds.TSTypeOperator]: transformKind,
+  [SyntaxKinds.TSIndexedAccessType]: transformKind,
+  [SyntaxKinds.TSFunctionType]: transformKind,
+  [SyntaxKinds.TSConstructorType]: transformKind,
   [SyntaxKinds.TSTypeAliasDeclaration]: transformKind,
   [SyntaxKinds.TSInterfaceDeclaration]: transformKind,
   [SyntaxKinds.TSTypeLiteral]: transformKind,
@@ -157,11 +165,12 @@ const VisitorTable: Visitor = {
   [SyntaxKinds.TSAnyKeyword]: transformKind,
   [SyntaxKinds.TSNeverKeyword]: transformKind,
   [SyntaxKinds.TSUnknowKeyword]: transformKind,
-  [SyntaxKinds.TSFunctionType]: transformKind,
   [SyntaxKinds.TSInterfaceBody]: transformKind,
   [SyntaxKinds.TSTypeParameterInstantiation]: transformKind,
   [SyntaxKinds.TSTypeParameterDeclaration]: transformKind,
   [SyntaxKinds.TSTypeParameter]: transformKind,
+  [SyntaxKinds.TSVoidKeyword]: transformKind,
+  [SyntaxKinds.TSInstantiationExpression]: transformKind,
 };
 function transformKind(node: ModuleItem, visior: Visitor) {
   // @ts-expect-error a ast node's syntax kind must be table.

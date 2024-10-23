@@ -350,13 +350,13 @@ export function createLexer(code: string) {
   function reLexGtRelateToken() {
     switch (state.token.kind) {
       // `>=` to `>`, `=`
-      case SyntaxKinds.GeqtOperator: {
-        state.cursor.pos -= 2;
-        startToken();
-        eatChar();
-        finishToken(SyntaxKinds.GtOperator);
-        return;
-      }
+      // case SyntaxKinds.GeqtOperator: {
+      //   state.cursor.pos -= 2;
+      //   startToken();
+      //   eatChar();
+      //   finishToken(SyntaxKinds.GtOperator);
+      //   return;
+      // }
       // `>>` to `>`, `>`
       case SyntaxKinds.BitwiseRightShiftOperator: {
         state.cursor.pos -= 2;
@@ -374,21 +374,21 @@ export function createLexer(code: string) {
         return;
       }
       // `>>=` to `>`, `>=`
-      case SyntaxKinds.BitwiseRightShiftAssginOperator: {
-        state.cursor.pos -= 3;
-        startToken();
-        eatChar();
-        finishToken(SyntaxKinds.GtOperator);
-        return;
-      }
+      // case SyntaxKinds.BitwiseRightShiftAssginOperator: {
+      //   state.cursor.pos -= 3;
+      //   startToken();
+      //   eatChar();
+      //   finishToken(SyntaxKinds.GtOperator);
+      //   return;
+      // }
       // `>>>=`, to `>`, `>>=`
-      case SyntaxKinds.BitwiseRightShiftFillAssginOperator: {
-        state.cursor.pos -= 4;
-        startToken();
-        eatChar();
-        finishToken(SyntaxKinds.GtOperator);
-        return;
-      }
+      // case SyntaxKinds.BitwiseRightShiftFillAssginOperator: {
+      //   state.cursor.pos -= 4;
+      //   startToken();
+      //   eatChar();
+      //   finishToken(SyntaxKinds.GtOperator);
+      //   return;
+      // }
       default: {
         return;
       }

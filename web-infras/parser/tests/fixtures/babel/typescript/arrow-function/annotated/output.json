@@ -51,9 +51,9 @@
                     }
                 ],
                 "returnType": {
-                    "kind": 10252,
+                    "kind": "TSTypeAnnotation",
                     "typeAnnotation": {
-                        "kind": 10258,
+                        "kind": "TSNumberKeyword",
                         "start": {
                             "row": 1,
                             "col": 14,

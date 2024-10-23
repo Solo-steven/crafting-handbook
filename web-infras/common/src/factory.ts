@@ -406,6 +406,7 @@ export function createCallExpression(
 export function createNewExpression(
   callee: AST.Expression,
   calleeArguments: Array<AST.Expression>,
+  typeArguments: AST.NewExpression["typeArguments"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.NewExpression {
@@ -413,6 +414,7 @@ export function createNewExpression(
     kind: SyntaxKinds.NewExpression,
     callee,
     arguments: calleeArguments,
+    typeArguments,
     start,
     end,
   };
@@ -1980,6 +1982,29 @@ export function createTSLiteralType(
   return {
     kind: SyntaxKinds.TSLiteralType,
     literal,
+    start,
+    end,
+  };
+}
+
+export function createTSVoidKeyword(start: SourcePosition, end: SourcePosition): AST.TSVoidKeyword {
+  return {
+    kind: SyntaxKinds.TSVoidKeyword,
+    start,
+    end,
+  };
+}
+
+export function createTSInstantiationExpression(
+  expression: AST.TSInstantiationExpression["expression"],
+  typeArguments: AST.TSInstantiationExpression["typeArguments"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSInstantiationExpression {
+  return {
+    kind: SyntaxKinds.TSInstantiationExpression,
+    expression,
+    typeArguments,
     start,
     end,
   };

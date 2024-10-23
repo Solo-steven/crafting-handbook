@@ -1,0 +1,174 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ConditionalExpression",
+                "test": {
+                    "kind": "DecimalLiteral",
+                    "rawValue": "0",
+                    "start": {
+                        "row": 2,
+                        "col": 1,
+                        "index": 47
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 2,
+                        "index": 48
+                    }
+                },
+                "consequnce": {
+                    "kind": "ArrowFunctionExpression",
+                    "expressionBody": true,
+                    "async": false,
+                    "arguments": [
+                        {
+                            "kind": "Identifer",
+                            "name": "v",
+                            "start": {
+                                "row": 2,
+                                "col": 5,
+                                "index": 51
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 6,
+                                "index": 52
+                            }
+                        }
+                    ],
+                    "body": {
+                        "kind": "AssigmentExpression",
+                        "operator": "+=",
+                        "left": {
+                            "kind": "Identifer",
+                            "name": "sum",
+                            "start": {
+                                "row": 2,
+                                "col": 11,
+                                "index": 57
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 14,
+                                "index": 60
+                            }
+                        },
+                        "right": {
+                            "kind": "Identifer",
+                            "name": "v",
+                            "start": {
+                                "row": 2,
+                                "col": 18,
+                                "index": 64
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 19,
+                                "index": 65
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 11,
+                            "index": 57
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 19,
+                            "index": 65
+                        },
+                        "parentheses": true
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 5,
+                        "index": 51
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 19,
+                        "index": 65
+                    }
+                },
+                "alter": {
+                    "kind": "ArrowFunctionExpression",
+                    "expressionBody": true,
+                    "async": false,
+                    "arguments": [
+                        {
+                            "kind": "Identifer",
+                            "name": "v",
+                            "start": {
+                                "row": 2,
+                                "col": 23,
+                                "index": 69
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 24,
+                                "index": 70
+                            }
+                        }
+                    ],
+                    "body": {
+                        "kind": "DecimalLiteral",
+                        "rawValue": "0",
+                        "start": {
+                            "row": 2,
+                            "col": 28,
+                            "index": 74
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 29,
+                            "index": 75
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 23,
+                        "index": 69
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 29,
+                        "index": 75
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 47
+                },
+                "end": {
+                    "row": 2,
+                    "col": 29,
+                    "index": 75
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 47
+            },
+            "end": {
+                "row": 2,
+                "col": 29,
+                "index": 75
+            }
+        }
+    ],
+    "start": {
+        "row": 2,
+        "col": 1,
+        "index": 47
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 77
+    }
+}

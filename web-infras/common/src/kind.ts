@@ -269,6 +269,8 @@ export enum SyntaxKinds {
   TSIndexSignature,
   TSPropertySignature,
   TSMethodSignature,
+  // ========= Type Expression
+  TSInstantiationExpression,
   // ========= Type Parameter
   TSTypeParameterInstantiation,
   TSTypeParameterDeclaration,
@@ -293,6 +295,7 @@ export enum SyntaxKinds {
   TSAnyKeyword,
   TSNeverKeyword,
   TSUnknowKeyword,
+  TSVoidKeyword,
 }
 export const LexicalLiteral = {
   whiteSpaceChars: [" ", "\t"],
@@ -769,6 +772,8 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.TSInterfaceBody]: "TSInterfaceBody",
   [SyntaxKinds.TSTupleType]: "TSTupleType",
   [SyntaxKinds.TSLiteralType]: "TSLiteralType",
+  [SyntaxKinds.TSVoidKeyword]: "TSVoidKeyword",
+  [SyntaxKinds.TSInstantiationExpression]: "TSInstantiationExpression",
 };
 /** ===================================
  *          Union SytaxKinds
