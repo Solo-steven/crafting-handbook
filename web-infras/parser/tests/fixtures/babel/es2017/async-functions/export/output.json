@@ -69,41 +69,41 @@
                     "name": "bar",
                     "start": {
                         "row": 2,
-                        "col": 31,
-                        "index": 61
+                        "col": 25,
+                        "index": 55
                     },
                     "end": {
                         "row": 2,
-                        "col": 34,
-                        "index": 64
+                        "col": 28,
+                        "index": 58
                     }
                 },
                 "generator": false,
-                "async": true,
+                "async": false,
                 "body": {
                     "kind": "FunctionBody",
                     "body": [],
                     "start": {
                         "row": 2,
-                        "col": 37,
-                        "index": 67
+                        "col": 31,
+                        "index": 61
                     },
                     "end": {
                         "row": 2,
-                        "col": 39,
-                        "index": 69
+                        "col": 33,
+                        "index": 63
                     }
                 },
                 "params": [],
                 "start": {
                     "row": 2,
-                    "col": 22,
-                    "index": 52
+                    "col": 16,
+                    "index": 46
                 },
                 "end": {
                     "row": 2,
-                    "col": 39,
-                    "index": 69
+                    "col": 33,
+                    "index": 63
                 }
             },
             "start": {
@@ -113,8 +113,8 @@
             },
             "end": {
                 "row": 2,
-                "col": 39,
-                "index": 69
+                "col": 33,
+                "index": 63
             }
         }
     ],
@@ -126,6 +126,6 @@
     "end": {
         "row": 3,
         "col": 1,
-        "index": 70
+        "index": 64
     }
 }

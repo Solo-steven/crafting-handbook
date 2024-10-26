@@ -1,0 +1,499 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "TSAsExpression",
+                "expression": {
+                    "kind": "Identifer",
+                    "name": "x",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    }
+                },
+                "typeAnnotation": {
+                    "kind": "TSTypeReference",
+                    "typeName": {
+                        "kind": "Identifer",
+                        "name": "T",
+                        "start": {
+                            "row": 1,
+                            "col": 6,
+                            "index": 5
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 6,
+                        "index": 5
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 7,
+                "index": 6
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "TSAsExpression",
+                "expression": {
+                    "kind": "BinaryExpression",
+                    "operator": "<",
+                    "left": {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 2,
+                            "col": 1,
+                            "index": 8
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 2,
+                            "index": 9
+                        }
+                    },
+                    "right": {
+                        "kind": "Identifer",
+                        "name": "y",
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 12
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 6,
+                            "index": 13
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 1,
+                        "index": 8
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 6,
+                        "index": 13
+                    }
+                },
+                "typeAnnotation": {
+                    "kind": "TSBooleanKeyword",
+                    "start": {
+                        "row": 2,
+                        "col": 10,
+                        "index": 17
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 17,
+                        "index": 24
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 8
+                },
+                "end": {
+                    "row": 2,
+                    "col": 17,
+                    "index": 24
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 8
+            },
+            "end": {
+                "row": 2,
+                "col": 17,
+                "index": 24
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "BinaryExpression",
+                "operator": "<=",
+                "left": {
+                    "kind": "TSAsExpression",
+                    "expression": {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 3,
+                            "col": 1,
+                            "index": 49
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 2,
+                            "index": 50
+                        }
+                    },
+                    "typeAnnotation": {
+                        "kind": "TSBooleanKeyword",
+                        "start": {
+                            "row": 3,
+                            "col": 6,
+                            "index": 54
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 13,
+                            "index": 61
+                        }
+                    },
+                    "start": {
+                        "row": 3,
+                        "col": 1,
+                        "index": 49
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 13,
+                        "index": 61
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "y",
+                    "start": {
+                        "row": 3,
+                        "col": 17,
+                        "index": 65
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 18,
+                        "index": 66
+                    }
+                },
+                "start": {
+                    "row": 3,
+                    "col": 1,
+                    "index": 49
+                },
+                "end": {
+                    "row": 3,
+                    "col": 18,
+                    "index": 66
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 49
+            },
+            "end": {
+                "row": 3,
+                "col": 18,
+                "index": 66
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "TSAsExpression",
+                "expression": {
+                    "kind": "BinaryExpression",
+                    "operator": "===",
+                    "left": {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 4,
+                            "col": 1,
+                            "index": 92
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 2,
+                            "index": 93
+                        }
+                    },
+                    "right": {
+                        "kind": "DecimalLiteral",
+                        "rawValue": "1",
+                        "start": {
+                            "row": 4,
+                            "col": 7,
+                            "index": 98
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 8,
+                            "index": 99
+                        }
+                    },
+                    "start": {
+                        "row": 4,
+                        "col": 1,
+                        "index": 92
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 8,
+                        "index": 99
+                    }
+                },
+                "typeAnnotation": {
+                    "kind": "TSNumberKeyword",
+                    "start": {
+                        "row": 4,
+                        "col": 12,
+                        "index": 103
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 18,
+                        "index": 109
+                    }
+                },
+                "start": {
+                    "row": 4,
+                    "col": 1,
+                    "index": 92
+                },
+                "end": {
+                    "row": 4,
+                    "col": 18,
+                    "index": 109
+                }
+            },
+            "start": {
+                "row": 4,
+                "col": 1,
+                "index": 92
+            },
+            "end": {
+                "row": 4,
+                "col": 18,
+                "index": 109
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "TSAsExpression",
+                "expression": {
+                    "kind": "TSAsExpression",
+                    "expression": {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 5,
+                            "col": 1,
+                            "index": 135
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 2,
+                            "index": 136
+                        }
+                    },
+                    "typeAnnotation": {
+                        "kind": "TSAnyKeyword",
+                        "start": {
+                            "row": 5,
+                            "col": 6,
+                            "index": 140
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 9,
+                            "index": 143
+                        }
+                    },
+                    "start": {
+                        "row": 5,
+                        "col": 1,
+                        "index": 135
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 9,
+                        "index": 143
+                    }
+                },
+                "typeAnnotation": {
+                    "kind": "TSTypeReference",
+                    "typeName": {
+                        "kind": "Identifer",
+                        "name": "T",
+                        "start": {
+                            "row": 5,
+                            "col": 13,
+                            "index": 147
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 14,
+                            "index": 148
+                        }
+                    },
+                    "start": {
+                        "row": 5,
+                        "col": 13,
+                        "index": 147
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 14,
+                        "index": 148
+                    }
+                },
+                "start": {
+                    "row": 5,
+                    "col": 1,
+                    "index": 135
+                },
+                "end": {
+                    "row": 5,
+                    "col": 14,
+                    "index": 148
+                }
+            },
+            "start": {
+                "row": 5,
+                "col": 1,
+                "index": 135
+            },
+            "end": {
+                "row": 5,
+                "col": 14,
+                "index": 148
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "BinaryExpression",
+                "operator": "??",
+                "left": {
+                    "kind": "TSAsExpression",
+                    "expression": {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 6,
+                            "col": 1,
+                            "index": 150
+                        },
+                        "end": {
+                            "row": 6,
+                            "col": 2,
+                            "index": 151
+                        }
+                    },
+                    "typeAnnotation": {
+                        "kind": "TSBooleanKeyword",
+                        "start": {
+                            "row": 6,
+                            "col": 6,
+                            "index": 155
+                        },
+                        "end": {
+                            "row": 6,
+                            "col": 13,
+                            "index": 162
+                        }
+                    },
+                    "start": {
+                        "row": 6,
+                        "col": 1,
+                        "index": 150
+                    },
+                    "end": {
+                        "row": 6,
+                        "col": 13,
+                        "index": 162
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "y",
+                    "start": {
+                        "row": 6,
+                        "col": 17,
+                        "index": 166
+                    },
+                    "end": {
+                        "row": 6,
+                        "col": 18,
+                        "index": 167
+                    }
+                },
+                "start": {
+                    "row": 6,
+                    "col": 1,
+                    "index": 150
+                },
+                "end": {
+                    "row": 6,
+                    "col": 18,
+                    "index": 167
+                }
+            },
+            "start": {
+                "row": 6,
+                "col": 1,
+                "index": 150
+            },
+            "end": {
+                "row": 6,
+                "col": 18,
+                "index": 167
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 7,
+        "col": 1,
+        "index": 193
+    }
+}

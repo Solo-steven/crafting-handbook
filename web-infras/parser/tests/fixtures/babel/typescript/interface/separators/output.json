@@ -1,0 +1,474 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "TSInterfaceDeclaration",
+            "name": {
+                "kind": 10130,
+                "name": "Comma",
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 1,
+                    "col": 16,
+                    "index": 15
+                }
+            },
+            "extends": [],
+            "body": {
+                "kind": "TSInterfaceBody",
+                "body": [
+                    {
+                        "kind": "TSPropertySignature",
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "x",
+                            "start": {
+                                "row": 1,
+                                "col": 19,
+                                "index": 18
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 20,
+                                "index": 19
+                            }
+                        },
+                        "computed": false,
+                        "optional": false,
+                        "typeAnnotation": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSNumberKeyword",
+                                "start": {
+                                    "row": 1,
+                                    "col": 22,
+                                    "index": 21
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 28,
+                                    "index": 27
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 20,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 28,
+                                "index": 27
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 28,
+                            "index": 27
+                        }
+                    },
+                    {
+                        "kind": "TSPropertySignature",
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "y",
+                            "start": {
+                                "row": 1,
+                                "col": 30,
+                                "index": 29
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 31,
+                                "index": 30
+                            }
+                        },
+                        "computed": false,
+                        "optional": false,
+                        "typeAnnotation": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSNumberKeyword",
+                                "start": {
+                                    "row": 1,
+                                    "col": 33,
+                                    "index": 32
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 39,
+                                    "index": 38
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 31,
+                                "index": 30
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 39,
+                                "index": 38
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 30,
+                            "index": 29
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 39,
+                            "index": 38
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 17,
+                    "index": 16
+                },
+                "end": {
+                    "row": 1,
+                    "col": 41,
+                    "index": 40
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 41,
+                "index": 40
+            }
+        },
+        {
+            "kind": "TSInterfaceDeclaration",
+            "name": {
+                "kind": 10130,
+                "name": "Semi",
+                "start": {
+                    "row": 2,
+                    "col": 11,
+                    "index": 51
+                },
+                "end": {
+                    "row": 2,
+                    "col": 15,
+                    "index": 55
+                }
+            },
+            "extends": [],
+            "body": {
+                "kind": "TSInterfaceBody",
+                "body": [
+                    {
+                        "kind": "TSPropertySignature",
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "x",
+                            "start": {
+                                "row": 2,
+                                "col": 18,
+                                "index": 58
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 19,
+                                "index": 59
+                            }
+                        },
+                        "computed": false,
+                        "optional": false,
+                        "typeAnnotation": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSNumberKeyword",
+                                "start": {
+                                    "row": 2,
+                                    "col": 21,
+                                    "index": 61
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 27,
+                                    "index": 67
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 19,
+                                "index": 59
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 27,
+                                "index": 67
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 18,
+                            "index": 58
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 27,
+                            "index": 67
+                        }
+                    },
+                    {
+                        "kind": "TSPropertySignature",
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "y",
+                            "start": {
+                                "row": 2,
+                                "col": 29,
+                                "index": 69
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 30,
+                                "index": 70
+                            }
+                        },
+                        "computed": false,
+                        "optional": false,
+                        "typeAnnotation": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSNumberKeyword",
+                                "start": {
+                                    "row": 2,
+                                    "col": 32,
+                                    "index": 72
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 38,
+                                    "index": 78
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 30,
+                                "index": 70
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 38,
+                                "index": 78
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 29,
+                            "index": 69
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 38,
+                            "index": 78
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 2,
+                    "col": 16,
+                    "index": 56
+                },
+                "end": {
+                    "row": 2,
+                    "col": 40,
+                    "index": 80
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 41
+            },
+            "end": {
+                "row": 2,
+                "col": 40,
+                "index": 80
+            }
+        },
+        {
+            "kind": "TSInterfaceDeclaration",
+            "name": {
+                "kind": 10130,
+                "name": "Newline",
+                "start": {
+                    "row": 3,
+                    "col": 11,
+                    "index": 91
+                },
+                "end": {
+                    "row": 3,
+                    "col": 18,
+                    "index": 98
+                }
+            },
+            "extends": [],
+            "body": {
+                "kind": "TSInterfaceBody",
+                "body": [
+                    {
+                        "kind": "TSPropertySignature",
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "x",
+                            "start": {
+                                "row": 4,
+                                "col": 5,
+                                "index": 105
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 6,
+                                "index": 106
+                            }
+                        },
+                        "computed": false,
+                        "optional": false,
+                        "typeAnnotation": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSNumberKeyword",
+                                "start": {
+                                    "row": 4,
+                                    "col": 8,
+                                    "index": 108
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 14,
+                                    "index": 114
+                                }
+                            },
+                            "start": {
+                                "row": 4,
+                                "col": 6,
+                                "index": 106
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 14,
+                                "index": 114
+                            }
+                        },
+                        "start": {
+                            "row": 4,
+                            "col": 5,
+                            "index": 105
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 14,
+                            "index": 114
+                        }
+                    },
+                    {
+                        "kind": "TSPropertySignature",
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "y",
+                            "start": {
+                                "row": 5,
+                                "col": 5,
+                                "index": 119
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 6,
+                                "index": 120
+                            }
+                        },
+                        "computed": false,
+                        "optional": false,
+                        "typeAnnotation": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSNumberKeyword",
+                                "start": {
+                                    "row": 5,
+                                    "col": 8,
+                                    "index": 122
+                                },
+                                "end": {
+                                    "row": 5,
+                                    "col": 14,
+                                    "index": 128
+                                }
+                            },
+                            "start": {
+                                "row": 5,
+                                "col": 6,
+                                "index": 120
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 14,
+                                "index": 128
+                            }
+                        },
+                        "start": {
+                            "row": 5,
+                            "col": 5,
+                            "index": 119
+                        },
+                        "end": {
+                            "row": 5,
+                            "col": 14,
+                            "index": 128
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 3,
+                    "col": 19,
+                    "index": 99
+                },
+                "end": {
+                    "row": 6,
+                    "col": 2,
+                    "index": 130
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 81
+            },
+            "end": {
+                "row": 6,
+                "col": 2,
+                "index": 130
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 7,
+        "col": 1,
+        "index": 131
+    }
+}

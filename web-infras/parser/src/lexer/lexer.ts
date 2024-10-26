@@ -347,16 +347,17 @@ export function createLexer(code: string) {
    *
    * @returns
    */
-  function reLexGtRelateToken() {
+  function reLexGtRelateToken(allowAssign: boolean) {
     switch (state.token.kind) {
       // `>=` to `>`, `=`
-      // case SyntaxKinds.GeqtOperator: {
-      //   state.cursor.pos -= 2;
-      //   startToken();
-      //   eatChar();
-      //   finishToken(SyntaxKinds.GtOperator);
-      //   return;
-      // }
+      case SyntaxKinds.GeqtOperator: {
+        if (!allowAssign) return;
+        state.cursor.pos -= 2;
+        startToken();
+        eatChar();
+        finishToken(SyntaxKinds.GtOperator);
+        return;
+      }
       // `>>` to `>`, `>`
       case SyntaxKinds.BitwiseRightShiftOperator: {
         state.cursor.pos -= 2;

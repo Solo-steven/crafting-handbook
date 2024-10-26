@@ -1,0 +1,341 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "TSSatisfiesExpression",
+                "expression": {
+                    "kind": "Identifer",
+                    "name": "x",
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    }
+                },
+                "typeAnnotation": {
+                    "kind": "TSTypeReference",
+                    "typeName": {
+                        "kind": "Identifer",
+                        "name": "T",
+                        "start": {
+                            "row": 1,
+                            "col": 13,
+                            "index": 12
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 14,
+                        "index": 13
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 14,
+                    "index": 13
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 14,
+                "index": 13
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "TSSatisfiesExpression",
+                "expression": {
+                    "kind": "BinaryExpression",
+                    "operator": "<",
+                    "left": {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "start": {
+                            "row": 2,
+                            "col": 1,
+                            "index": 15
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 2,
+                            "index": 16
+                        }
+                    },
+                    "right": {
+                        "kind": "Identifer",
+                        "name": "y",
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 19
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 6,
+                            "index": 20
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 1,
+                        "index": 15
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 6,
+                        "index": 20
+                    }
+                },
+                "typeAnnotation": {
+                    "kind": "TSBooleanKeyword",
+                    "start": {
+                        "row": 2,
+                        "col": 17,
+                        "index": 31
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 24,
+                        "index": 38
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 15
+                },
+                "end": {
+                    "row": 2,
+                    "col": 24,
+                    "index": 38
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 15
+            },
+            "end": {
+                "row": 2,
+                "col": 24,
+                "index": 38
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "TSSatisfiesExpression",
+                    "expression": {
+                        "kind": "Identifer",
+                        "name": "a",
+                        "start": {
+                            "row": 3,
+                            "col": 2,
+                            "index": 71
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 3,
+                            "index": 72
+                        }
+                    },
+                    "typeAnnotation": {
+                        "kind": "TSAnyKeyword",
+                        "start": {
+                            "row": 3,
+                            "col": 14,
+                            "index": 83
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 17,
+                            "index": 86
+                        }
+                    },
+                    "start": {
+                        "row": 3,
+                        "col": 2,
+                        "index": 71
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 17,
+                        "index": 86
+                    },
+                    "parentheses": true
+                },
+                "right": {
+                    "kind": "NullLiteral",
+                    "start": {
+                        "row": 3,
+                        "col": 21,
+                        "index": 90
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 25,
+                        "index": 94
+                    }
+                },
+                "start": {
+                    "row": 3,
+                    "col": 2,
+                    "index": 71
+                },
+                "end": {
+                    "row": 3,
+                    "col": 25,
+                    "index": 94
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 2,
+                "index": 71
+            },
+            "end": {
+                "row": 3,
+                "col": 25,
+                "index": 94
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "ArrayPattern",
+                    "elements": [
+                        {
+                            "kind": "TSSatisfiesExpression",
+                            "expression": {
+                                "kind": "Identifer",
+                                "name": "a",
+                                "start": {
+                                    "row": 4,
+                                    "col": 3,
+                                    "index": 98
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 4,
+                                    "index": 99
+                                }
+                            },
+                            "typeAnnotation": {
+                                "kind": "TSAnyKeyword",
+                                "start": {
+                                    "row": 4,
+                                    "col": 15,
+                                    "index": 110
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 18,
+                                    "index": 113
+                                }
+                            },
+                            "start": {
+                                "row": 4,
+                                "col": 3,
+                                "index": 98
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 18,
+                                "index": 113
+                            },
+                            "parentheses": true
+                        }
+                    ],
+                    "start": {
+                        "row": 4,
+                        "col": 1,
+                        "index": 96
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 20,
+                        "index": 115
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "b",
+                    "start": {
+                        "row": 4,
+                        "col": 23,
+                        "index": 118
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 24,
+                        "index": 119
+                    }
+                },
+                "start": {
+                    "row": 4,
+                    "col": 1,
+                    "index": 96
+                },
+                "end": {
+                    "row": 4,
+                    "col": 24,
+                    "index": 119
+                }
+            },
+            "start": {
+                "row": 4,
+                "col": 1,
+                "index": 96
+            },
+            "end": {
+                "row": 4,
+                "col": 24,
+                "index": 119
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 5,
+        "col": 1,
+        "index": 121
+    }
+}

@@ -1,0 +1,154 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "TSInterfaceDeclaration",
+            "name": {
+                "kind": 10130,
+                "name": "I",
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "extends": [
+                {
+                    "kind": "TSInterfaceHeritage",
+                    "typeName": {
+                        "kind": "TSQualifiedName",
+                        "left": {
+                            "kind": "Identifer",
+                            "name": "X",
+                            "start": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 22,
+                                "index": 21
+                            }
+                        },
+                        "right": {
+                            "kind": "Identifer",
+                            "name": "Y",
+                            "start": {
+                                "row": 1,
+                                "col": 23,
+                                "index": 22
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 24,
+                                "index": 23
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 21,
+                            "index": 20
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        }
+                    },
+                    "typeArguments": {
+                        "kind": "TSTypeParameterInstantiation",
+                        "params": [
+                            {
+                                "kind": "TSTypeReference",
+                                "typeName": {
+                                    "kind": "Identifer",
+                                    "name": "Z",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 25,
+                                        "index": 24
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 26,
+                                        "index": 25
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 25,
+                                    "index": 24
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 26,
+                                    "index": 25
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 24,
+                            "index": 23
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 27,
+                            "index": 26
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 21,
+                        "index": 20
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 27,
+                        "index": 26
+                    }
+                }
+            ],
+            "body": {
+                "kind": "TSInterfaceBody",
+                "body": [],
+                "start": {
+                    "row": 1,
+                    "col": 28,
+                    "index": 27
+                },
+                "end": {
+                    "row": 1,
+                    "col": 30,
+                    "index": 29
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 30,
+                "index": 29
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 30
+    }
+}

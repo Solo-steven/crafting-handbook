@@ -356,6 +356,29 @@ export interface TSInstantiationExpression extends ExpressionModuleItem {
   expression: Expression;
 }
 
+export interface TSTypeAssertionExpression extends ExpressionModuleItem {
+  kind: SyntaxKinds.TSTypeAssertionExpression;
+  expression: Expression;
+  typeAnnotation: TSTypeNode;
+}
+
+export interface TSAsExpression extends ExpressionModuleItem {
+  kind: SyntaxKinds.TSAsExpression;
+  expression: Expression;
+  typeAnnotation: TSTypeNode;
+}
+
+export interface TSSatisfiesExpression extends ExpressionModuleItem {
+  kind: SyntaxKinds.TSSatisfiesExpression;
+  expression: Expression;
+  typeAnnotation: TSTypeNode;
+}
+
+export interface TSNonNullExpression extends ExpressionModuleItem {
+  kind: SyntaxKinds.TSNonNullExpression;
+  expression: Expression;
+}
+
 export type Expression =
   // jsx element
   | JSXElement
@@ -398,7 +421,11 @@ export type Expression =
   | AssigmentExpression
   | SequenceExpression
   // TS expression
-  | TSInstantiationExpression;
+  | TSInstantiationExpression
+  | TSTypeAssertionExpression
+  | TSAsExpression
+  | TSSatisfiesExpression
+  | TSNonNullExpression;
 export interface ExpressionStatement extends ModuleItem {
   kind: SyntaxKinds.ExpressionStatement;
   expr: Expression;
@@ -447,7 +474,11 @@ export type Pattern =
   | ObjectPattern
   | ArrayPattern
   | Identifier
-  | MemberExpression;
+  | MemberExpression
+  | TSAsExpression
+  | TSTypeAssertionExpression
+  | TSSatisfiesExpression
+  | TSNonNullExpression;
 
 /** ==========================
  * Statement
@@ -540,6 +571,8 @@ export interface ForOfStatement extends ModuleItem {
   await: boolean;
   body: Statement;
 }
+// TODO. better Type
+// type ForOfInStatementLeft = VariableDeclaration | Pattern | TSAsExpression | TSTypeAssertionExpression;
 export interface ForInStatement extends ModuleItem {
   kind: SyntaxKinds.ForInStatement;
   left: Expression | VariableDeclaration;
@@ -648,12 +681,9 @@ export interface Decorator extends ModuleItem {
   kind: SyntaxKinds.Decorator;
   expression: Expression;
 }
-export type Declaration =
-  | FunctionDeclaration
-  | VariableDeclaration
-  | ClassDeclaration
-  | TSTypeAliasDeclaration
-  | TSInterfaceDeclaration;
+export type Declaration = FunctionDeclaration | VariableDeclaration | ClassDeclaration | TSDeclaration;
+
+type TSDeclaration = TSTypeAliasDeclaration | TSInterfaceDeclaration | TSEnumDeclaration | TSDeclareFunction;
 
 /** ==========================================
  * Import Declaration
@@ -696,7 +726,13 @@ export interface ExportSpecifier extends ModuleItem {
 }
 export interface ExportDefaultDeclaration extends ModuleItem {
   kind: SyntaxKinds.ExportDefaultDeclaration;
-  declaration: FunctionDeclaration | FunctionExpression | ClassDeclaration | ClassExpression | Expression;
+  declaration:
+    | FunctionDeclaration
+    | FunctionExpression
+    | ClassDeclaration
+    | ClassExpression
+    | Expression
+    | TSDeclaration;
 }
 export interface ExportAllDeclaration extends ModuleItem {
   kind: SyntaxKinds.ExportAllDeclaration;
@@ -803,9 +839,29 @@ export interface TSTypeParameterInstantiation extends ModuleItem {
 export interface TSFunctionType extends TSFunctionSignatureBase {
   kind: SyntaxKinds.TSFunctionType;
 }
+export interface TSDeclareFunction extends Omit<Function, "body">, ModuleItem {
+  kind: SyntaxKinds.TSDeclareFunction;
+}
 export interface TSConstrcutorType extends TSFunctionSignatureBase {
   kind: SyntaxKinds.TSConstructorType;
 }
+export interface TSEnumDeclaration extends ModuleItem {
+  id: Identifier;
+  kind: SyntaxKinds.TSEnumDeclaration;
+  body: TSEnumBody;
+}
+
+export interface TSEnumBody extends ModuleItem {
+  kind: SyntaxKinds.TSEnumBody;
+  members: Array<TSEnumMember>;
+}
+export interface TSEnumMember extends ModuleItem {
+  kind: SyntaxKinds.TSEnumMember;
+  computed: boolean;
+  id: Identifier;
+  init: Expression | undefined;
+}
+
 export interface TSTypeAliasDeclaration extends ModuleItem {
   kind: SyntaxKinds.TSTypeAliasDeclaration;
   name: Identifier;
@@ -817,6 +873,11 @@ export interface TSInterfaceDeclaration extends ModuleItem {
   name: Identifier;
   body: TSInterfaceBody;
   typeParameters: TSTypeParameterDeclaration | undefined;
+  extends: Array<TSInterfaceHeritage>;
+}
+export interface TSInterfaceHeritage extends ModuleItem {
+  typeName: TSEntityName;
+  typeArguments: TSTypeParameterInstantiation | undefined;
 }
 export interface TSInterfaceBody extends ModuleItem {
   kind: SyntaxKinds.TSInterfaceBody;

@@ -1,1 +1,6 @@
-Cannot read properties of null (reading 'name')
+[SyntaxError]: function statement requires a name (2,14)
+2|    function*(x = yield 3) {}
+ |            ^
+[SyntaxError]: yield expression can not used in parameter list (2,19)
+2|    function*(x = yield 3) {}
+ |                 ^

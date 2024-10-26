@@ -1,0 +1,113 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportDefaultDeclaration",
+            "declaration": {
+                "kind": "TSDeclareFunction",
+                "name": null,
+                "params": [
+                    {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "typeAnnotation": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSNumberKeyword",
+                                "start": {
+                                    "row": 1,
+                                    "col": 29,
+                                    "index": 28
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 35,
+                                    "index": 34
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 27,
+                                "index": 26
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 35,
+                                "index": 34
+                            }
+                        },
+                        "optional": true,
+                        "start": {
+                            "row": 1,
+                            "col": 25,
+                            "index": 24
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 26,
+                            "index": 25
+                        }
+                    }
+                ],
+                "returnType": {
+                    "kind": "TSTypeAnnotation",
+                    "typeAnnotation": {
+                        "kind": "TSVoidKeyword",
+                        "start": {
+                            "row": 1,
+                            "col": 38,
+                            "index": 37
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 42,
+                            "index": 41
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 36,
+                        "index": 35
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 42,
+                        "index": 41
+                    }
+                },
+                "generator": false,
+                "async": false,
+                "start": {
+                    "row": 1,
+                    "col": 16,
+                    "index": 15
+                },
+                "end": {
+                    "row": 1,
+                    "col": 42,
+                    "index": 41
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 42,
+                "index": 41
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 43
+    }
+}

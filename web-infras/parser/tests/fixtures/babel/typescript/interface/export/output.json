@@ -1,0 +1,127 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "TSInterfaceDeclaration",
+                "name": {
+                    "kind": 10130,
+                    "name": "I",
+                    "start": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 19,
+                        "index": 18
+                    }
+                },
+                "extends": [],
+                "body": {
+                    "kind": "TSInterfaceBody",
+                    "body": [],
+                    "start": {
+                        "row": 1,
+                        "col": 20,
+                        "index": 19
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 22,
+                        "index": 21
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 22,
+                    "index": 21
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 22,
+                "index": 21
+            }
+        },
+        {
+            "kind": "ExportDefaultDeclaration",
+            "declaration": {
+                "kind": "TSInterfaceDeclaration",
+                "name": {
+                    "kind": 10130,
+                    "name": "A",
+                    "start": {
+                        "row": 2,
+                        "col": 26,
+                        "index": 47
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 27,
+                        "index": 48
+                    }
+                },
+                "extends": [],
+                "body": {
+                    "kind": "TSInterfaceBody",
+                    "body": [],
+                    "start": {
+                        "row": 2,
+                        "col": 28,
+                        "index": 49
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 30,
+                        "index": 51
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 16,
+                    "index": 37
+                },
+                "end": {
+                    "row": 2,
+                    "col": 30,
+                    "index": 51
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 22
+            },
+            "end": {
+                "row": 2,
+                "col": 30,
+                "index": 51
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 52
+    }
+}

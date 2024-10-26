@@ -1,0 +1,6 @@
+[SyntaxError]: 'import' and 'export' may appear only with 'sourceType: "module"' (1,1)
+1|export default interface {}
+ |^
+[SyntaxError]: Missing semicolon or line terminator. (1,26)
+1|export default interface {}
+ |                        ^

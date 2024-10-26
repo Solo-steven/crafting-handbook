@@ -1,0 +1,123 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "TSAsExpression",
+                    "expression": {
+                        "kind": "TSAsExpression",
+                        "expression": {
+                            "kind": "Identifer",
+                            "name": "a",
+                            "start": {
+                                "row": 1,
+                                "col": 3,
+                                "index": 2
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 4,
+                                "index": 3
+                            }
+                        },
+                        "typeAnnotation": {
+                            "kind": "TSAnyKeyword",
+                            "start": {
+                                "row": 1,
+                                "col": 8,
+                                "index": 7
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 11,
+                                "index": 10
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 3,
+                            "index": 2
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 11,
+                            "index": 10
+                        },
+                        "parentheses": true
+                    },
+                    "typeAnnotation": {
+                        "kind": "TSStringKeyword",
+                        "start": {
+                            "row": 1,
+                            "col": 16,
+                            "index": 15
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 22,
+                            "index": 21
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 3,
+                        "index": 2
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 22,
+                        "index": 21
+                    },
+                    "parentheses": true
+                },
+                "right": {
+                    "kind": "NullLiteral",
+                    "start": {
+                        "row": 1,
+                        "col": 26,
+                        "index": 25
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 30,
+                        "index": 29
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 3,
+                    "index": 2
+                },
+                "end": {
+                    "row": 1,
+                    "col": 30,
+                    "index": 29
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 3,
+                "index": 2
+            },
+            "end": {
+                "row": 1,
+                "col": 30,
+                "index": 29
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 3,
+        "index": 2
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 30
+    }
+}

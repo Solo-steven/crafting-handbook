@@ -1,0 +1,253 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "TSInterfaceDeclaration",
+            "name": {
+                "kind": 10130,
+                "name": "I",
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "extends": [],
+            "body": {
+                "kind": "TSInterfaceBody",
+                "body": [
+                    {
+                        "kind": "TSMethodSignature",
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "m",
+                            "start": {
+                                "row": 2,
+                                "col": 5,
+                                "index": 18
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 6,
+                                "index": 19
+                            }
+                        },
+                        "computed": false,
+                        "optional": false,
+                        "parameters": [],
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 8,
+                            "index": 21
+                        }
+                    },
+                    {
+                        "kind": "TSMethodSignature",
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "m",
+                            "start": {
+                                "row": 3,
+                                "col": 5,
+                                "index": 27
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 6,
+                                "index": 28
+                            }
+                        },
+                        "computed": false,
+                        "optional": false,
+                        "parameters": [
+                            {
+                                "kind": "Identifer",
+                                "name": "x",
+                                "typeAnnotation": {
+                                    "kind": "TSTypeAnnotation",
+                                    "typeAnnotation": {
+                                        "kind": "TSNumberKeyword",
+                                        "start": {
+                                            "row": 3,
+                                            "col": 11,
+                                            "index": 33
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 17,
+                                            "index": 39
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 3,
+                                        "col": 9,
+                                        "index": 31
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 17,
+                                        "index": 39
+                                    }
+                                },
+                                "optional": true,
+                                "start": {
+                                    "row": 3,
+                                    "col": 7,
+                                    "index": 29
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 8,
+                                    "index": 30
+                                }
+                            },
+                            {
+                                "kind": "RestElement",
+                                "argument": {
+                                    "kind": "Identifer",
+                                    "name": "y",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 22,
+                                        "index": 44
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 23,
+                                        "index": 45
+                                    }
+                                },
+                                "typeAnnotation": {
+                                    "kind": "TSTypeAnnotation",
+                                    "typeAnnotation": {
+                                        "kind": "TSArrayType",
+                                        "elementType": {
+                                            "kind": "TSNumberKeyword",
+                                            "start": {
+                                                "row": 3,
+                                                "col": 25,
+                                                "index": 47
+                                            },
+                                            "end": {
+                                                "row": 3,
+                                                "col": 31,
+                                                "index": 53
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 3,
+                                            "col": 25,
+                                            "index": 47
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 33,
+                                            "index": 55
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 3,
+                                        "col": 23,
+                                        "index": 45
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 33,
+                                        "index": 55
+                                    }
+                                },
+                                "optional": false,
+                                "start": {
+                                    "row": 3,
+                                    "col": 19,
+                                    "index": 41
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 23,
+                                    "index": 45
+                                }
+                            }
+                        ],
+                        "returnType": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSVoidKeyword",
+                                "start": {
+                                    "row": 3,
+                                    "col": 36,
+                                    "index": 58
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 40,
+                                    "index": 62
+                                }
+                            },
+                            "start": {
+                                "row": 3,
+                                "col": 34,
+                                "index": 56
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 40,
+                                "index": 62
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 27
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 40,
+                            "index": 62
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                },
+                "end": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 65
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 4,
+                "col": 2,
+                "index": 65
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 5,
+        "col": 1,
+        "index": 66
+    }
+}

@@ -139,6 +139,15 @@ import {
   TSUnionType,
   TSInstantiationExpression,
   TSVoidKeyword,
+  TSInterfaceHeritage,
+  TSTypeAssertionExpression,
+  TSAsExpression,
+  TSSatisfiesExpression,
+  TSNonNullExpression,
+  TSEnumDeclaration,
+  TSEnumBody,
+  TSEnumMember,
+  TSDeclareFunction,
 } from "./ast";
 import { SyntaxKinds } from "./kind";
 
@@ -291,6 +300,15 @@ export type Visitor = {
   [SyntaxKinds.TSUnknowKeyword]?: (node: TSUnknowKeyword, visitor: Visitor) => void;
   [SyntaxKinds.TSVoidKeyword]?: (node: TSVoidKeyword, visitor: Visitor) => void;
   [SyntaxKinds.TSInstantiationExpression]?: (node: TSInstantiationExpression, visitor: Visitor) => void;
+  [SyntaxKinds.TSInterfaceHeritage]?: (node: TSInterfaceHeritage, visitor: Visitor) => void;
+  [SyntaxKinds.TSTypeAssertionExpression]?: (node: TSTypeAssertionExpression, visitor: Visitor) => void;
+  [SyntaxKinds.TSAsExpression]?: (node: TSAsExpression, visitor: Visitor) => void;
+  [SyntaxKinds.TSSatisfiesExpression]?: (node: TSSatisfiesExpression, visitor: Visitor) => void;
+  [SyntaxKinds.TSNonNullExpression]?: (node: TSNonNullExpression, visitor: Visitor) => void;
+  [SyntaxKinds.TSEnumDeclaration]?: (node: TSEnumDeclaration, visitor: Visitor) => void;
+  [SyntaxKinds.TSEnumBody]?: (node: TSEnumBody, visitor: Visitor) => void;
+  [SyntaxKinds.TSEnumMember]?: (node: TSEnumMember, visitor: Visitor) => void;
+  [SyntaxKinds.TSDeclareFunction]?: (node: TSDeclareFunction, visitor: Visitor) => void;
 };
 
 export const PropagationtVisitorTable: Visitor = {
@@ -754,6 +772,7 @@ export const PropagationtVisitorTable: Visitor = {
   [SyntaxKinds.TSInterfaceDeclaration]: function (node: TSInterfaceDeclaration, visitor: Visitor) {
     visitNode(node.body, visitor);
     visitNode(node.typeParameters, visitor);
+    visitNodes(node.extends, visitor);
   },
   [SyntaxKinds.TSTypeLiteral]: function (node: TSTypeLiteral, visitor: Visitor) {
     visitNodes(node.members, visitor);
@@ -825,6 +844,42 @@ export const PropagationtVisitorTable: Visitor = {
     visitNode(node.name, visitor);
     visitNode(node.constraint, visitor);
     visitNode(node.default, visitor);
+  },
+  [SyntaxKinds.TSInterfaceHeritage]: function (node: TSInterfaceHeritage, visitor: Visitor) {
+    visitNode(node.typeName, visitor);
+    visitNode(node.typeArguments, visitor);
+  },
+  [SyntaxKinds.TSTypeAssertionExpression]: function (node: TSTypeAssertionExpression, visitor: Visitor) {
+    visitNode(node.expression, visitor);
+    visitNode(node.typeAnnotation, visitor);
+  },
+  [SyntaxKinds.TSAsExpression]: function (node: TSAsExpression, visitor: Visitor) {
+    visitNode(node.expression, visitor);
+    visitNode(node.typeAnnotation, visitor);
+  },
+  [SyntaxKinds.TSSatisfiesExpression]: function (node: TSSatisfiesExpression, visitor: Visitor) {
+    visitNode(node.expression, visitor);
+    visitNode(node.typeAnnotation, visitor);
+  },
+  [SyntaxKinds.TSNonNullExpression]: function (node: TSNonNullExpression, visitor: Visitor) {
+    visitNode(node.expression, visitor);
+  },
+  [SyntaxKinds.TSEnumDeclaration]: function (node: TSEnumDeclaration, visitor: Visitor) {
+    visitNode(node.id, visitor);
+    visitNode(node.body, visitor);
+  },
+  [SyntaxKinds.TSEnumBody]: function (node: TSEnumBody, visitor: Visitor) {
+    visitNodes(node.members, visitor);
+  },
+  [SyntaxKinds.TSEnumMember]: function (node: TSEnumMember, visitor: Visitor) {
+    visitNode(node.init, visitor);
+    visitNode(node.id, visitor);
+  },
+  [SyntaxKinds.TSDeclareFunction]: function (node: TSDeclareFunction, visitor: Visitor) {
+    visitNode(node.name, visitor);
+    visitNodes(node.params, visitor);
+    visitNode(node.typeParameters, visitor);
+    visitNode(node.returnType, visitor);
   },
 };
 

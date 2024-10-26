@@ -1769,6 +1769,7 @@ export function createTSInterfaceBody(
 export function createTSInterface(
   name: AST.TSInterfaceDeclaration["name"],
   typeParameters: AST.TSInterfaceDeclaration["typeParameters"],
+  extendsTypes: AST.TSInterfaceDeclaration["extends"],
   body: AST.TSInterfaceDeclaration["body"],
   start: SourcePosition,
   end: SourcePosition,
@@ -1777,7 +1778,23 @@ export function createTSInterface(
     kind: SyntaxKinds.TSInterfaceDeclaration,
     name,
     typeParameters,
+    extends: extendsTypes,
     body,
+    start,
+    end,
+  };
+}
+
+export function createTSInterfaceHeritage(
+  typeName: AST.TSEntityName,
+  typeArguments: AST.TSTypeReference["typeArguments"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSInterfaceHeritage {
+  return {
+    kind: SyntaxKinds.TSInterfaceHeritage,
+    typeName,
+    typeArguments,
     start,
     end,
   };
@@ -2005,6 +2022,132 @@ export function createTSInstantiationExpression(
     kind: SyntaxKinds.TSInstantiationExpression,
     expression,
     typeArguments,
+    start,
+    end,
+  };
+}
+
+export function createTSTypeAssertionExpression(
+  expression: AST.TSTypeAssertionExpression["expression"],
+  typeAnnotation: AST.TSTypeAssertionExpression["typeAnnotation"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSTypeAssertionExpression {
+  return {
+    kind: SyntaxKinds.TSTypeAssertionExpression,
+    expression,
+    typeAnnotation,
+    start,
+    end,
+  };
+}
+
+export function createTSAsExpression(
+  expression: AST.TSAsExpression["expression"],
+  typeAnnotation: AST.TSAsExpression["typeAnnotation"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSAsExpression {
+  return {
+    kind: SyntaxKinds.TSAsExpression,
+    expression,
+    typeAnnotation,
+    start,
+    end,
+  };
+}
+
+export function createTSSatisfiesExpression(
+  expression: AST.TSSatisfiesExpression["expression"],
+  typeAnnotation: AST.TSSatisfiesExpression["typeAnnotation"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSSatisfiesExpression {
+  return {
+    kind: SyntaxKinds.TSSatisfiesExpression,
+    expression,
+    typeAnnotation,
+    start,
+    end,
+  };
+}
+
+export function createTSNonNullExpression(
+  expression: AST.TSNonNullExpression["expression"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSNonNullExpression {
+  return {
+    kind: SyntaxKinds.TSNonNullExpression,
+    expression,
+    start,
+    end,
+  };
+}
+
+export function createTSEnumDeclaration(
+  id: AST.TSEnumDeclaration["id"],
+  body: AST.TSEnumDeclaration["body"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSEnumDeclaration {
+  return {
+    kind: SyntaxKinds.TSEnumDeclaration,
+    id,
+    body,
+    start,
+    end,
+  };
+}
+
+export function createTSEnumBody(
+  members: AST.TSEnumBody["members"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSEnumBody {
+  return {
+    kind: SyntaxKinds.TSEnumBody,
+    members,
+    start,
+    end,
+  };
+}
+
+export function createTSEnumMember(
+  id: AST.TSEnumMember["id"],
+  computed: AST.TSEnumMember["computed"],
+  init: AST.TSEnumMember["init"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSEnumMember {
+  return {
+    kind: SyntaxKinds.TSEnumMember,
+    computed,
+    id,
+    init,
+    start,
+    end,
+  };
+}
+
+export function createTSDeclarFunction(
+  name: AST.TSDeclareFunction["name"],
+  returnType: AST.TSDeclareFunction["returnType"],
+  params: AST.TSDeclareFunction["params"],
+  typeParameters: AST.TSDeclareFunction["typeParameters"],
+  generator: AST.TSDeclareFunction["generator"],
+  async: AST.TSDeclareFunction["async"],
+  start: SourcePosition,
+  end: SourcePosition,
+): AST.TSDeclareFunction {
+  return {
+    kind: SyntaxKinds.TSDeclareFunction,
+    name,
+    params,
+    returnType,
+    typeParameters,
+    generator,
+    async,
     start,
     end,
   };

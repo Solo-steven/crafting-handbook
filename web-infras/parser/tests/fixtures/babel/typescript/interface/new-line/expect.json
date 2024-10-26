@@ -1,0 +1,7 @@
+{
+    "expect": "Failed",
+    "config": {
+        "sourceType": "module",
+        "plugins": ["typescript"]
+    }
+}

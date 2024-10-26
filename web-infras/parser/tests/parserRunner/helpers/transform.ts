@@ -171,6 +171,14 @@ const VisitorTable: Visitor = {
   [SyntaxKinds.TSTypeParameter]: transformKind,
   [SyntaxKinds.TSVoidKeyword]: transformKind,
   [SyntaxKinds.TSInstantiationExpression]: transformKind,
+  [SyntaxKinds.TSInterfaceHeritage]: transformKind,
+  [SyntaxKinds.TSTypeAssertionExpression]: transformKind,
+  [SyntaxKinds.TSAsExpression]: transformKind,
+  [SyntaxKinds.TSSatisfiesExpression]: transformKind,
+  [SyntaxKinds.TSEnumDeclaration]: transformKind,
+  [SyntaxKinds.TSEnumBody]: transformKind,
+  [SyntaxKinds.TSEnumMember]: transformKind,
+  [SyntaxKinds.TSDeclareFunction]: transformKind,
 };
 function transformKind(node: ModuleItem, visior: Visitor) {
   // @ts-expect-error a ast node's syntax kind must be table.

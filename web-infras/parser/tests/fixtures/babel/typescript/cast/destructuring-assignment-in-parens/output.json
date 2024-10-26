@@ -1,0 +1,918 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "ObjectPattern",
+                    "properties": [
+                        {
+                            "kind": "ObjectPatternProperty",
+                            "computed": false,
+                            "shorted": false,
+                            "key": {
+                                "kind": "Identifer",
+                                "name": "a",
+                                "start": {
+                                    "row": 1,
+                                    "col": 3,
+                                    "index": 2
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 4,
+                                    "index": 3
+                                }
+                            },
+                            "value": {
+                                "kind": "TSAsExpression",
+                                "expression": {
+                                    "kind": "Identifer",
+                                    "name": "x",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 6,
+                                        "index": 5
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 7,
+                                        "index": 6
+                                    }
+                                },
+                                "typeAnnotation": {
+                                    "kind": "TSTypeReference",
+                                    "typeName": {
+                                        "kind": "Identifer",
+                                        "name": "T",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 11,
+                                            "index": 10
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 12,
+                                            "index": 11
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 11,
+                                        "index": 10
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 12,
+                                        "index": 11
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 6,
+                                    "index": 5
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 12,
+                                    "index": 11
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 3,
+                                "index": 2
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 12,
+                                "index": 11
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 2,
+                        "index": 1
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 13,
+                        "index": 12
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "b",
+                    "start": {
+                        "row": 1,
+                        "col": 16,
+                        "index": 15
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 17,
+                        "index": 16
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 2,
+                    "index": 1
+                },
+                "end": {
+                    "row": 1,
+                    "col": 17,
+                    "index": 16
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 1,
+                "col": 2,
+                "index": 1
+            },
+            "end": {
+                "row": 1,
+                "col": 17,
+                "index": 16
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "ArrayPattern",
+                    "elements": [
+                        {
+                            "kind": "TSAsExpression",
+                            "expression": {
+                                "kind": "Identifer",
+                                "name": "a",
+                                "start": {
+                                    "row": 2,
+                                    "col": 3,
+                                    "index": 21
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 4,
+                                    "index": 22
+                                }
+                            },
+                            "typeAnnotation": {
+                                "kind": "TSTypeReference",
+                                "typeName": {
+                                    "kind": "Identifer",
+                                    "name": "T",
+                                    "start": {
+                                        "row": 2,
+                                        "col": 8,
+                                        "index": 26
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 9,
+                                        "index": 27
+                                    }
+                                },
+                                "start": {
+                                    "row": 2,
+                                    "col": 8,
+                                    "index": 26
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 9,
+                                    "index": 27
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 3,
+                                "index": 21
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 9,
+                                "index": 27
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 2,
+                        "col": 2,
+                        "index": 20
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 10,
+                        "index": 28
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "b",
+                    "start": {
+                        "row": 2,
+                        "col": 13,
+                        "index": 31
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 14,
+                        "index": 32
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 2,
+                    "index": 20
+                },
+                "end": {
+                    "row": 2,
+                    "col": 14,
+                    "index": 32
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 2,
+                "col": 2,
+                "index": 20
+            },
+            "end": {
+                "row": 2,
+                "col": 14,
+                "index": 32
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "ObjectPattern",
+                    "properties": [
+                        {
+                            "kind": "ObjectPatternProperty",
+                            "computed": false,
+                            "shorted": false,
+                            "key": {
+                                "kind": "Identifer",
+                                "name": "a",
+                                "start": {
+                                    "row": 3,
+                                    "col": 3,
+                                    "index": 37
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 4,
+                                    "index": 38
+                                }
+                            },
+                            "value": {
+                                "kind": "AssigmentPattern",
+                                "left": {
+                                    "kind": "TSAsExpression",
+                                    "expression": {
+                                        "kind": "Identifer",
+                                        "name": "x",
+                                        "start": {
+                                            "row": 3,
+                                            "col": 7,
+                                            "index": 41
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 8,
+                                            "index": 42
+                                        }
+                                    },
+                                    "typeAnnotation": {
+                                        "kind": "TSTypeReference",
+                                        "typeName": {
+                                            "kind": "Identifer",
+                                            "name": "T",
+                                            "start": {
+                                                "row": 3,
+                                                "col": 12,
+                                                "index": 46
+                                            },
+                                            "end": {
+                                                "row": 3,
+                                                "col": 13,
+                                                "index": 47
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 3,
+                                            "col": 12,
+                                            "index": 46
+                                        },
+                                        "end": {
+                                            "row": 3,
+                                            "col": 13,
+                                            "index": 47
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 3,
+                                        "col": 7,
+                                        "index": 41
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 13,
+                                        "index": 47
+                                    },
+                                    "parentheses": true
+                                },
+                                "right": {
+                                    "kind": "Identifer",
+                                    "name": "c",
+                                    "start": {
+                                        "row": 3,
+                                        "col": 17,
+                                        "index": 51
+                                    },
+                                    "end": {
+                                        "row": 3,
+                                        "col": 18,
+                                        "index": 52
+                                    }
+                                },
+                                "start": {
+                                    "row": 3,
+                                    "col": 7,
+                                    "index": 41
+                                },
+                                "end": {
+                                    "row": 3,
+                                    "col": 18,
+                                    "index": 52
+                                }
+                            },
+                            "start": {
+                                "row": 3,
+                                "col": 3,
+                                "index": 37
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 18,
+                                "index": 52
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 3,
+                        "col": 2,
+                        "index": 36
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 19,
+                        "index": 53
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "b",
+                    "start": {
+                        "row": 3,
+                        "col": 22,
+                        "index": 56
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 23,
+                        "index": 57
+                    }
+                },
+                "start": {
+                    "row": 3,
+                    "col": 2,
+                    "index": 36
+                },
+                "end": {
+                    "row": 3,
+                    "col": 23,
+                    "index": 57
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 3,
+                "col": 2,
+                "index": 36
+            },
+            "end": {
+                "row": 3,
+                "col": 23,
+                "index": 57
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "ArrayPattern",
+                    "elements": [
+                        {
+                            "kind": "AssigmentPattern",
+                            "left": {
+                                "kind": "TSAsExpression",
+                                "expression": {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 4,
+                                        "col": 4,
+                                        "index": 63
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 5,
+                                        "index": 64
+                                    }
+                                },
+                                "typeAnnotation": {
+                                    "kind": "TSTypeReference",
+                                    "typeName": {
+                                        "kind": "Identifer",
+                                        "name": "T",
+                                        "start": {
+                                            "row": 4,
+                                            "col": 9,
+                                            "index": 68
+                                        },
+                                        "end": {
+                                            "row": 4,
+                                            "col": 10,
+                                            "index": 69
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 4,
+                                        "col": 9,
+                                        "index": 68
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 10,
+                                        "index": 69
+                                    }
+                                },
+                                "start": {
+                                    "row": 4,
+                                    "col": 4,
+                                    "index": 63
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 10,
+                                    "index": 69
+                                },
+                                "parentheses": true
+                            },
+                            "right": {
+                                "kind": "Identifer",
+                                "name": "c",
+                                "start": {
+                                    "row": 4,
+                                    "col": 14,
+                                    "index": 73
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 15,
+                                    "index": 74
+                                }
+                            },
+                            "start": {
+                                "row": 4,
+                                "col": 4,
+                                "index": 63
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 15,
+                                "index": 74
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 4,
+                        "col": 2,
+                        "index": 61
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 16,
+                        "index": 75
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "b",
+                    "start": {
+                        "row": 4,
+                        "col": 19,
+                        "index": 78
+                    },
+                    "end": {
+                        "row": 4,
+                        "col": 20,
+                        "index": 79
+                    }
+                },
+                "start": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 61
+                },
+                "end": {
+                    "row": 4,
+                    "col": 20,
+                    "index": 79
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 4,
+                "col": 2,
+                "index": 61
+            },
+            "end": {
+                "row": 4,
+                "col": 20,
+                "index": 79
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "ObjectPattern",
+                    "properties": [
+                        {
+                            "kind": "RestElement",
+                            "argument": {
+                                "kind": "TSAsExpression",
+                                "expression": {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 5,
+                                        "col": 7,
+                                        "index": 88
+                                    },
+                                    "end": {
+                                        "row": 5,
+                                        "col": 8,
+                                        "index": 89
+                                    }
+                                },
+                                "typeAnnotation": {
+                                    "kind": "TSTypeReference",
+                                    "typeName": {
+                                        "kind": "Identifer",
+                                        "name": "T",
+                                        "start": {
+                                            "row": 5,
+                                            "col": 12,
+                                            "index": 93
+                                        },
+                                        "end": {
+                                            "row": 5,
+                                            "col": 13,
+                                            "index": 94
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 5,
+                                        "col": 12,
+                                        "index": 93
+                                    },
+                                    "end": {
+                                        "row": 5,
+                                        "col": 13,
+                                        "index": 94
+                                    }
+                                },
+                                "start": {
+                                    "row": 5,
+                                    "col": 7,
+                                    "index": 88
+                                },
+                                "end": {
+                                    "row": 5,
+                                    "col": 13,
+                                    "index": 94
+                                }
+                            },
+                            "start": {
+                                "row": 5,
+                                "col": 4,
+                                "index": 85
+                            },
+                            "end": {
+                                "row": 5,
+                                "col": 13,
+                                "index": 94
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 5,
+                        "col": 2,
+                        "index": 83
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 14,
+                        "index": 95
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "b",
+                    "start": {
+                        "row": 5,
+                        "col": 17,
+                        "index": 98
+                    },
+                    "end": {
+                        "row": 5,
+                        "col": 18,
+                        "index": 99
+                    }
+                },
+                "start": {
+                    "row": 5,
+                    "col": 2,
+                    "index": 83
+                },
+                "end": {
+                    "row": 5,
+                    "col": 18,
+                    "index": 99
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 5,
+                "col": 2,
+                "index": 83
+            },
+            "end": {
+                "row": 5,
+                "col": 18,
+                "index": 99
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "ArrayPattern",
+                    "elements": [
+                        {
+                            "kind": "RestElement",
+                            "argument": {
+                                "kind": "TSAsExpression",
+                                "expression": {
+                                    "kind": "Identifer",
+                                    "name": "a",
+                                    "start": {
+                                        "row": 6,
+                                        "col": 6,
+                                        "index": 107
+                                    },
+                                    "end": {
+                                        "row": 6,
+                                        "col": 7,
+                                        "index": 108
+                                    }
+                                },
+                                "typeAnnotation": {
+                                    "kind": "TSTypeReference",
+                                    "typeName": {
+                                        "kind": "Identifer",
+                                        "name": "T",
+                                        "start": {
+                                            "row": 6,
+                                            "col": 11,
+                                            "index": 112
+                                        },
+                                        "end": {
+                                            "row": 6,
+                                            "col": 12,
+                                            "index": 113
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 6,
+                                        "col": 11,
+                                        "index": 112
+                                    },
+                                    "end": {
+                                        "row": 6,
+                                        "col": 12,
+                                        "index": 113
+                                    }
+                                },
+                                "start": {
+                                    "row": 6,
+                                    "col": 6,
+                                    "index": 107
+                                },
+                                "end": {
+                                    "row": 6,
+                                    "col": 12,
+                                    "index": 113
+                                }
+                            },
+                            "start": {
+                                "row": 6,
+                                "col": 3,
+                                "index": 104
+                            },
+                            "end": {
+                                "row": 6,
+                                "col": 12,
+                                "index": 113
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 6,
+                        "col": 2,
+                        "index": 103
+                    },
+                    "end": {
+                        "row": 6,
+                        "col": 13,
+                        "index": 114
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "b",
+                    "start": {
+                        "row": 6,
+                        "col": 16,
+                        "index": 117
+                    },
+                    "end": {
+                        "row": 6,
+                        "col": 17,
+                        "index": 118
+                    }
+                },
+                "start": {
+                    "row": 6,
+                    "col": 2,
+                    "index": 103
+                },
+                "end": {
+                    "row": 6,
+                    "col": 17,
+                    "index": 118
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 6,
+                "col": 2,
+                "index": 103
+            },
+            "end": {
+                "row": 6,
+                "col": 17,
+                "index": 118
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "AssigmentExpression",
+                "operator": "=",
+                "left": {
+                    "kind": "ObjectPattern",
+                    "properties": [
+                        {
+                            "kind": "RestElement",
+                            "argument": {
+                                "kind": 10255,
+                                "expression": {
+                                    "kind": "Identifer",
+                                    "name": "x",
+                                    "start": {
+                                        "row": 7,
+                                        "col": 6,
+                                        "index": 126
+                                    },
+                                    "end": {
+                                        "row": 7,
+                                        "col": 7,
+                                        "index": 127
+                                    }
+                                },
+                                "start": {
+                                    "row": 7,
+                                    "col": 6,
+                                    "index": 126
+                                },
+                                "end": {
+                                    "row": 7,
+                                    "col": 8,
+                                    "index": 128
+                                }
+                            },
+                            "start": {
+                                "row": 7,
+                                "col": 3,
+                                "index": 123
+                            },
+                            "end": {
+                                "row": 7,
+                                "col": 8,
+                                "index": 128
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 7,
+                        "col": 2,
+                        "index": 122
+                    },
+                    "end": {
+                        "row": 7,
+                        "col": 9,
+                        "index": 129
+                    }
+                },
+                "right": {
+                    "kind": "Identifer",
+                    "name": "y",
+                    "start": {
+                        "row": 7,
+                        "col": 12,
+                        "index": 132
+                    },
+                    "end": {
+                        "row": 7,
+                        "col": 13,
+                        "index": 133
+                    }
+                },
+                "start": {
+                    "row": 7,
+                    "col": 2,
+                    "index": 122
+                },
+                "end": {
+                    "row": 7,
+                    "col": 13,
+                    "index": 133
+                },
+                "parentheses": true
+            },
+            "start": {
+                "row": 7,
+                "col": 2,
+                "index": 122
+            },
+            "end": {
+                "row": 7,
+                "col": 13,
+                "index": 133
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 2,
+        "index": 1
+    },
+    "end": {
+        "row": 8,
+        "col": 1,
+        "index": 136
+    }
+}

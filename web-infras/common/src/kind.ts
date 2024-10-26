@@ -262,6 +262,7 @@ export enum SyntaxKinds {
   // ========= Type Interface and Type Alias =====
   TSTypeAliasDeclaration,
   TSInterfaceDeclaration,
+  TSInterfaceHeritage,
   TSInterfaceBody,
   TSTypeLiteral,
   TSCallSignatureDeclaration,
@@ -269,8 +270,16 @@ export enum SyntaxKinds {
   TSIndexSignature,
   TSPropertySignature,
   TSMethodSignature,
+  // ======== Type Enum
+  TSEnumDeclaration,
+  TSEnumBody,
+  TSEnumMember,
   // ========= Type Expression
   TSInstantiationExpression,
+  TSTypeAssertionExpression,
+  TSAsExpression,
+  TSSatisfiesExpression,
+  TSNonNullExpression,
   // ========= Type Parameter
   TSTypeParameterInstantiation,
   TSTypeParameterDeclaration,
@@ -284,6 +293,7 @@ export enum SyntaxKinds {
   TSTypeQuery,
   TSTupleType,
   TSLiteralType,
+  TSDeclareFunction,
   // ======= Atom Basic Type ======
   TSStringKeyword,
   TSNumberKeyword,
@@ -774,6 +784,15 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.TSLiteralType]: "TSLiteralType",
   [SyntaxKinds.TSVoidKeyword]: "TSVoidKeyword",
   [SyntaxKinds.TSInstantiationExpression]: "TSInstantiationExpression",
+  [SyntaxKinds.TSInterfaceHeritage]: "TSInterfaceHeritage",
+  [SyntaxKinds.TSTypeAssertionExpression]: "TSTypeAssertionExpression",
+  [SyntaxKinds.TSAsExpression]: "TSAsExpression",
+  [SyntaxKinds.TSSatisfiesExpression]: "TSSatisfiesExpression",
+  [SyntaxKinds.TSNonNullExpression]: "TSNonNullExpression",
+  [SyntaxKinds.TSEnumDeclaration]: "TSEnumDeclaration",
+  [SyntaxKinds.TSEnumBody]: "TSEnumBody",
+  [SyntaxKinds.TSEnumMember]: "TSEnumMember",
+  [SyntaxKinds.TSDeclareFunction]: "TSDeclareFunction",
 };
 /** ===================================
  *          Union SytaxKinds
