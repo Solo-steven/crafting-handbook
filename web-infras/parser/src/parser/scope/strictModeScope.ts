@@ -14,6 +14,8 @@ export type StrictModeScope =
       kind: "RHSLayer";
     };
 
+export type StrictModeScopeRecorder = ReturnType<typeof createStrictModeScopeRecorder>;
+
 export function createStrictModeScopeRecorder() {
   const strictModeScopes: Array<StrictModeScope> = [];
 

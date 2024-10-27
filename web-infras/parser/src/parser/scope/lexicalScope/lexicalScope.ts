@@ -7,6 +7,7 @@ import {
   ExportContext,
 } from "./type";
 
+export type LexicalScopeRecorder = ReturnType<typeof createLexicalScopeRecorder>;
 /**
  * Lexical Scope Recorder is focus on the position of the current
  * parse position, is it in function, what kind of function ?, is in

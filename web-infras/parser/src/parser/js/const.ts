@@ -1,10 +1,4 @@
 import { Keywords, LexicalLiteral, SourcePosition, SyntaxKinds } from "web-infra-common";
-import { Token } from "../lexer/type";
-
-export type ExpectToken = Omit<Token, "kind" | "startPosition" | "endPosition"> & {
-  start: SourcePosition;
-  end: SourcePosition;
-};
 
 export const IdentiferWithKeyworArray = [SyntaxKinds.Identifier, ...Keywords];
 export const PreserveWordSet = new Set(LexicalLiteral.preserveword);

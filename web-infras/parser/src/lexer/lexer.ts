@@ -23,6 +23,8 @@ const KeywordLiteralSet = new Set([
   ...LexicalLiteral.UndefinbedLiteral,
 ]);
 
+export type Lexer = ReturnType<typeof createLexer>;
+
 export function createLexer(code: string) {
   /**
    * state and context for lexer,

@@ -29,6 +29,7 @@ const defaultConfig: ParserConfig = {
   allowUndeclaredExports: false,
   plugins: [],
 };
+
 export function getConfigFromUserInput(config?: ParserUserConfig): ParserConfig {
   return {
     ...defaultConfig,

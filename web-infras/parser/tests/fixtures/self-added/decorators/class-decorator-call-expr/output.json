@@ -42,7 +42,124 @@
                 "col": 2,
                 "index": 59
             },
-            "decorators": null
+            "decorators": [
+                {
+                    "kind": "Decorator",
+                    "expression": {
+                        "kind": "CallExpression",
+                        "optional": false,
+                        "callee": {
+                            "kind": "Identifer",
+                            "name": "testCallExprDe",
+                            "start": {
+                                "row": 1,
+                                "col": 2,
+                                "index": 1
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 16,
+                                "index": 15
+                            }
+                        },
+                        "arguments": [
+                            {
+                                "kind": "Identifer",
+                                "name": "arg1",
+                                "start": {
+                                    "row": 1,
+                                    "col": 17,
+                                    "index": 16
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 21,
+                                    "index": 20
+                                }
+                            },
+                            {
+                                "kind": "ObjectExpression",
+                                "properties": [
+                                    {
+                                        "kind": "ObjectProperty",
+                                        "computed": false,
+                                        "shorted": false,
+                                        "key": {
+                                            "kind": "Identifer",
+                                            "name": "testProp",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 25,
+                                                "index": 24
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 33,
+                                                "index": 32
+                                            }
+                                        },
+                                        "value": {
+                                            "kind": "Identifer",
+                                            "name": "argu2",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 35,
+                                                "index": 34
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 40,
+                                                "index": 39
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 1,
+                                            "col": 25,
+                                            "index": 24
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 40,
+                                            "index": 39
+                                        }
+                                    }
+                                ],
+                                "trailingComma": false,
+                                "start": {
+                                    "row": 1,
+                                    "col": 23,
+                                    "index": 22
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 42,
+                                    "index": 41
+                                }
+                            }
+                        ],
+                        "start": {
+                            "row": 1,
+                            "col": 2,
+                            "index": 1
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 43,
+                            "index": 42
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 1,
+                        "index": 0
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 43,
+                        "index": 42
+                    }
+                }
+            ]
         }
     ],
     "start": {

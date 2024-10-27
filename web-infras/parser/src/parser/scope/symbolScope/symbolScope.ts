@@ -12,6 +12,9 @@ import {
   createSymbolScopeRecorderContext,
   isPrivateNameExist,
 } from "./type";
+
+export type SymbolScopeRecorder = ReturnType<typeof createSymbolScopeRecorder>;
+
 /**
  * Symbol recorder is used to check the duplicate identifier, it should work the the lexical
  * scope recorder for position relate context in program.
