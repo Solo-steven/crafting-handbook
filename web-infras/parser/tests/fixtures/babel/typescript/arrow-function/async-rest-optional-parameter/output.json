@@ -1,0 +1,152 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "ArrowFunctionExpression",
+                "expressionBody": false,
+                "async": true,
+                "arguments": [
+                    {
+                        "kind": "RestElement",
+                        "argument": {
+                            "kind": "Identifer",
+                            "name": "args",
+                            "start": {
+                                "row": 1,
+                                "col": 10,
+                                "index": 9
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 14,
+                                "index": 13
+                            }
+                        },
+                        "typeAnnotation": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSArrayType",
+                                "elementType": {
+                                    "kind": "TSAnyKeyword",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 17,
+                                        "index": 16
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 20,
+                                        "index": 19
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 17,
+                                    "index": 16
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 22,
+                                    "index": 21
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 15,
+                                "index": 14
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 22,
+                                "index": 21
+                            }
+                        },
+                        "optional": true,
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        }
+                    }
+                ],
+                "returnType": {
+                    "kind": "TSTypeAnnotation",
+                    "typeAnnotation": {
+                        "kind": "TSAnyKeyword",
+                        "start": {
+                            "row": 1,
+                            "col": 26,
+                            "index": 25
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 29,
+                            "index": 28
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 24,
+                        "index": 23
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 29,
+                        "index": 28
+                    }
+                },
+                "body": {
+                    "kind": "FunctionBody",
+                    "body": [],
+                    "start": {
+                        "row": 1,
+                        "col": 33,
+                        "index": 32
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 35,
+                        "index": 34
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 6,
+                    "index": 5
+                },
+                "end": {
+                    "row": 1,
+                    "col": 35,
+                    "index": 34
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 6,
+                "index": 5
+            },
+            "end": {
+                "row": 1,
+                "col": 35,
+                "index": 34
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 6,
+        "index": 5
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 35
+    }
+}

@@ -245,6 +245,67 @@ export enum SyntaxKinds {
   JSXExpressionContainer,
   JSXSelfClosedToken, // token for `/>`
   JSXCloseTagStart, // token for `</`
+  /** ======================================
+   *      TypeScript AST Node
+   * ======================================
+   */
+  // ========= Type computation
+  TSConditionalType,
+  TSUnionType,
+  TSIntersectionType,
+  TSTypeOperator,
+  TSArrayType,
+  TSIndexedAccessType,
+  // ========= High Level Type
+  TSConstructorType,
+  TSFunctionType,
+  // ========= Type Interface and Type Alias =====
+  TSTypeAliasDeclaration,
+  TSInterfaceDeclaration,
+  TSInterfaceHeritage,
+  TSInterfaceBody,
+  TSTypeLiteral,
+  TSCallSignatureDeclaration,
+  TSConstructSignatureDeclaration,
+  TSIndexSignature,
+  TSPropertySignature,
+  TSMethodSignature,
+  // ======== Type Enum
+  TSEnumDeclaration,
+  TSEnumBody,
+  TSEnumMember,
+  // ========= Type Expression
+  TSInstantiationExpression,
+  TSTypeAssertionExpression,
+  TSAsExpression,
+  TSSatisfiesExpression,
+  TSNonNullExpression,
+  // ========= Type Parameter
+  TSTypeParameterInstantiation,
+  TSTypeParameterDeclaration,
+  TSTypeParameter,
+  // ======= Other Type
+  TSQualifiedName,
+  TSTypePredicate,
+  TSTypeAnnotation,
+  // ======= Other Basic Type
+  TSTypeReference,
+  TSTypeQuery,
+  TSTupleType,
+  TSLiteralType,
+  TSDeclareFunction,
+  // ======= Atom Basic Type ======
+  TSStringKeyword,
+  TSNumberKeyword,
+  TSBigIntKeyword,
+  TSBooleanKeyword,
+  TSNullKeyword,
+  TSUndefinedKeyword,
+  TSSymbolKeyword,
+  TSAnyKeyword,
+  TSNeverKeyword,
+  TSUnknowKeyword,
+  TSVoidKeyword,
 }
 export const LexicalLiteral = {
   whiteSpaceChars: [" ", "\t"],
@@ -539,6 +600,7 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.ColonPunctuator]: ":", // :
   [SyntaxKinds.HashTagPunctuator]: "#", // #
   [SyntaxKinds.AtPunctuator]: "@", // @
+
   // ========== Template ===========
   [SyntaxKinds.TemplateHead]: "TemplateHead",
   [SyntaxKinds.TemplateTail]: "TemplateTail",
@@ -679,6 +741,58 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.JSXExpressionContainer]: "JSXExpressionContainer",
   [SyntaxKinds.JSXCloseTagStart]: "JSXClosedTagStart",
   [SyntaxKinds.JSXSelfClosedToken]: "JSXSelfClosedToken",
+  // ====== TypeScript Computed Type
+  [SyntaxKinds.TSConditionalType]: "TSConditionalType",
+  [SyntaxKinds.TSUnionType]: "TSUnionType",
+  [SyntaxKinds.TSIntersectionType]: "TSIntersectionType",
+  [SyntaxKinds.TSTypeOperator]: "TSTypeOperator",
+  [SyntaxKinds.TSArrayType]: "TSArrayType",
+  [SyntaxKinds.TSIndexedAccessType]: "TSIndexedAccessType",
+  [SyntaxKinds.TSTypeAliasDeclaration]: "TSTypeAliasDeclaration",
+  [SyntaxKinds.TSInterfaceDeclaration]: "TSInterfaceDeclaration",
+  // ====== TypeScript High Basic Type
+  [SyntaxKinds.TSFunctionType]: "TSFunctionType",
+  [SyntaxKinds.TSConstructorType]: "TSConstructorType",
+  // ====== TypeScript Type Param
+  [SyntaxKinds.TSTypeParameterInstantiation]: "TSTypeParameterInstantiation",
+  [SyntaxKinds.TSTypeParameterDeclaration]: "TSTypeParameterDeclaration",
+  [SyntaxKinds.TSTypeParameter]: "TSTypeParameter",
+  // ====== TypeScript Basic Type
+  [SyntaxKinds.TSTypeLiteral]: "TSTypeLiteral",
+  [SyntaxKinds.TSCallSignatureDeclaration]: "TSCallSignatureDeclaration",
+  [SyntaxKinds.TSConstructSignatureDeclaration]: "TSConstructSignatureDeclaration",
+  [SyntaxKinds.TSIndexSignature]: "TSIndexSignature",
+  [SyntaxKinds.TSPropertySignature]: "TSPropertySignature",
+  [SyntaxKinds.TSMethodSignature]: "TSMethodSignature",
+  [SyntaxKinds.TSQualifiedName]: "TSQualifiedName",
+  [SyntaxKinds.TSTypePredicate]: "TSTypePredicate",
+  [SyntaxKinds.TSTypeAnnotation]: "TSTypeAnnotation",
+  [SyntaxKinds.TSTypeReference]: "TSTypeReference",
+  [SyntaxKinds.TSStringKeyword]: "TSStringKeyword",
+  [SyntaxKinds.TSNumberKeyword]: "TSNumberKeyword",
+  [SyntaxKinds.TSBigIntKeyword]: "TSBigIntKeyword",
+  [SyntaxKinds.TSBooleanKeyword]: "TSBooleanKeyword",
+  [SyntaxKinds.TSNullKeyword]: "TSNullKeyword",
+  [SyntaxKinds.TSUndefinedKeyword]: "TSUndefinedKeyword",
+  [SyntaxKinds.TSSymbolKeyword]: "TSSymbolKeyword",
+  [SyntaxKinds.TSAnyKeyword]: "TSAnyKeyword",
+  [SyntaxKinds.TSNeverKeyword]: "TSNeverKeyword",
+  [SyntaxKinds.TSUnknowKeyword]: "TSUnknowKeyword",
+  [SyntaxKinds.TSTypeQuery]: "TSTypeQuery",
+  [SyntaxKinds.TSInterfaceBody]: "TSInterfaceBody",
+  [SyntaxKinds.TSTupleType]: "TSTupleType",
+  [SyntaxKinds.TSLiteralType]: "TSLiteralType",
+  [SyntaxKinds.TSVoidKeyword]: "TSVoidKeyword",
+  [SyntaxKinds.TSInstantiationExpression]: "TSInstantiationExpression",
+  [SyntaxKinds.TSInterfaceHeritage]: "TSInterfaceHeritage",
+  [SyntaxKinds.TSTypeAssertionExpression]: "TSTypeAssertionExpression",
+  [SyntaxKinds.TSAsExpression]: "TSAsExpression",
+  [SyntaxKinds.TSSatisfiesExpression]: "TSSatisfiesExpression",
+  [SyntaxKinds.TSNonNullExpression]: "TSNonNullExpression",
+  [SyntaxKinds.TSEnumDeclaration]: "TSEnumDeclaration",
+  [SyntaxKinds.TSEnumBody]: "TSEnumBody",
+  [SyntaxKinds.TSEnumMember]: "TSEnumMember",
+  [SyntaxKinds.TSDeclareFunction]: "TSDeclareFunction",
 };
 /** ===================================
  *          Union SytaxKinds

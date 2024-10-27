@@ -104,6 +104,50 @@ import {
   JSXOpeningFragment,
   Decorator,
   ClassAccessorProperty,
+  TSTypeAliasDeclaration,
+  TSInterfaceDeclaration,
+  TSTypeLiteral,
+  TSCallSignatureDeclaration,
+  TSConstructSignatureDeclaration,
+  TSPropertySignature,
+  TSMethodSignature,
+  TSQualifiedName,
+  TSTypePredicate,
+  TSTypeAnnotation,
+  TSTypeReference,
+  TSStringKeyword,
+  TSNumberKeyword,
+  TSBigIntKeyword,
+  TSBooleanKeyword,
+  TSTypeParameter,
+  TSTypeParameterDeclaration,
+  TSTypeParameterInstantiation,
+  TSInterfaceBody,
+  TSFunctionType,
+  TSUnknowKeyword,
+  TSNeverKeyword,
+  TSAnyKeyword,
+  TSSymbolKeyword,
+  TSUndefinedKeyword,
+  TSNullKeyword,
+  TSConstrcutorType,
+  TSConditionalType,
+  TSIntersectionType,
+  TSArrayType,
+  TSTypeOperator,
+  TSIndexedAccessType,
+  TSUnionType,
+  TSInstantiationExpression,
+  TSVoidKeyword,
+  TSInterfaceHeritage,
+  TSTypeAssertionExpression,
+  TSAsExpression,
+  TSSatisfiesExpression,
+  TSNonNullExpression,
+  TSEnumDeclaration,
+  TSEnumBody,
+  TSEnumMember,
+  TSDeclareFunction,
 } from "./ast";
 import { SyntaxKinds } from "./kind";
 
@@ -217,6 +261,54 @@ export type Visitor = {
   [SyntaxKinds.JSXFragment]?: (node: JSXFragment, visitor: Visitor) => void;
   [SyntaxKinds.JSXOpeningFragment]?: (node: JSXOpeningFragment, visitor: Visitor) => void;
   [SyntaxKinds.JSXClosingFragment]?: (node: JSXClosingFragment, visitor: Visitor) => void;
+  [SyntaxKinds.TSConditionalType]?: (node: TSConditionalType, visitor: Visitor) => void;
+  [SyntaxKinds.TSUnionType]?: (node: TSUnionType, visitor: Visitor) => void;
+  [SyntaxKinds.TSIntersectionType]?: (node: TSIntersectionType, visitor: Visitor) => void;
+  [SyntaxKinds.TSArrayType]?: (node: TSArrayType, visitor: Visitor) => void;
+  [SyntaxKinds.TSTypeOperator]?: (node: TSTypeOperator, visitor: Visitor) => void;
+  [SyntaxKinds.TSArrayType]?: (node: TSArrayType, visitor: Visitor) => void;
+  [SyntaxKinds.TSIndexedAccessType]?: (node: TSIndexedAccessType, visitor: Visitor) => void;
+  [SyntaxKinds.TSFunctionType]?: (node: TSFunctionType, visitor: Visitor) => void;
+  [SyntaxKinds.TSConstructorType]?: (node: TSConstrcutorType, visitor: Visitor) => void;
+  [SyntaxKinds.TSTypeAliasDeclaration]?: (node: TSTypeAliasDeclaration, visitor: Visitor) => void;
+  [SyntaxKinds.TSInterfaceDeclaration]?: (node: TSInterfaceDeclaration, visitor: Visitor) => void;
+  [SyntaxKinds.TSInterfaceBody]?: (node: TSInterfaceBody, visitor: Visitor) => void;
+  [SyntaxKinds.TSTypeLiteral]?: (node: TSTypeLiteral, visitor: Visitor) => void;
+  [SyntaxKinds.TSCallSignatureDeclaration]?: (node: TSCallSignatureDeclaration, visitor: Visitor) => void;
+  [SyntaxKinds.TSConstructSignatureDeclaration]?: (
+    node: TSConstructSignatureDeclaration,
+    visitor: Visitor,
+  ) => void;
+  [SyntaxKinds.TSTypeParameterInstantiation]?: (node: TSTypeParameterInstantiation, visitor: Visitor) => void;
+  [SyntaxKinds.TSTypeParameterDeclaration]?: (node: TSTypeParameterDeclaration, visitor: Visitor) => void;
+  [SyntaxKinds.TSTypeParameter]?: (node: TSTypeParameter, visitor: Visitor) => void;
+  [SyntaxKinds.TSPropertySignature]?: (node: TSPropertySignature, visitor: Visitor) => void;
+  [SyntaxKinds.TSMethodSignature]?: (node: TSMethodSignature, visitor: Visitor) => void;
+  [SyntaxKinds.TSQualifiedName]?: (node: TSQualifiedName, visitor: Visitor) => void;
+  [SyntaxKinds.TSTypePredicate]?: (node: TSTypePredicate, visitor: Visitor) => void;
+  [SyntaxKinds.TSTypeAnnotation]?: (node: TSTypeAnnotation, visitor: Visitor) => void;
+  [SyntaxKinds.TSTypeReference]?: (node: TSTypeReference, visitor: Visitor) => void;
+  [SyntaxKinds.TSStringKeyword]?: (node: TSStringKeyword, visitor: Visitor) => void;
+  [SyntaxKinds.TSNumberKeyword]?: (node: TSNumberKeyword, visitor: Visitor) => void;
+  [SyntaxKinds.TSBigIntKeyword]?: (node: TSBigIntKeyword, visitor: Visitor) => void;
+  [SyntaxKinds.TSBooleanKeyword]?: (node: TSBooleanKeyword, visitor: Visitor) => void;
+  [SyntaxKinds.TSNullKeyword]?: (node: TSNullKeyword, visitor: Visitor) => void;
+  [SyntaxKinds.TSUndefinedKeyword]?: (node: TSUndefinedKeyword, visitor: Visitor) => void;
+  [SyntaxKinds.TSSymbolKeyword]?: (node: TSSymbolKeyword, visitor: Visitor) => void;
+  [SyntaxKinds.TSAnyKeyword]?: (node: TSAnyKeyword, visitor: Visitor) => void;
+  [SyntaxKinds.TSNeverKeyword]?: (node: TSNeverKeyword, visitor: Visitor) => void;
+  [SyntaxKinds.TSUnknowKeyword]?: (node: TSUnknowKeyword, visitor: Visitor) => void;
+  [SyntaxKinds.TSVoidKeyword]?: (node: TSVoidKeyword, visitor: Visitor) => void;
+  [SyntaxKinds.TSInstantiationExpression]?: (node: TSInstantiationExpression, visitor: Visitor) => void;
+  [SyntaxKinds.TSInterfaceHeritage]?: (node: TSInterfaceHeritage, visitor: Visitor) => void;
+  [SyntaxKinds.TSTypeAssertionExpression]?: (node: TSTypeAssertionExpression, visitor: Visitor) => void;
+  [SyntaxKinds.TSAsExpression]?: (node: TSAsExpression, visitor: Visitor) => void;
+  [SyntaxKinds.TSSatisfiesExpression]?: (node: TSSatisfiesExpression, visitor: Visitor) => void;
+  [SyntaxKinds.TSNonNullExpression]?: (node: TSNonNullExpression, visitor: Visitor) => void;
+  [SyntaxKinds.TSEnumDeclaration]?: (node: TSEnumDeclaration, visitor: Visitor) => void;
+  [SyntaxKinds.TSEnumBody]?: (node: TSEnumBody, visitor: Visitor) => void;
+  [SyntaxKinds.TSEnumMember]?: (node: TSEnumMember, visitor: Visitor) => void;
+  [SyntaxKinds.TSDeclareFunction]?: (node: TSDeclareFunction, visitor: Visitor) => void;
 };
 
 export const PropagationtVisitorTable: Visitor = {
@@ -241,7 +333,9 @@ export const PropagationtVisitorTable: Visitor = {
   [SyntaxKinds.BinaryBigIntegerLiteral]: function (_node: BinaryIntegerLiteral, _visitor: Visitor) {},
   [SyntaxKinds.OctalBigIntegerLiteral]: function (_node: OctalBigIntegerLiteral, _visitor: Visitor) {},
   [SyntaxKinds.HexBigIntegerLiteral]: function (_node: HexBigIntegerLiteral, _visitor: Visitor) {},
-  [SyntaxKinds.Identifier]: function bindIdentifier(_node: Identifier, _visitor: Visitor) {},
+  [SyntaxKinds.Identifier]: function bindIdentifier(node: Identifier, visitor: Visitor) {
+    visitNode(node.typeAnnotation, visitor);
+  },
   [SyntaxKinds.Super]: function bindSuper(_node: Super, _visitor: Visitor) {},
   [SyntaxKinds.Import]: function bindImport(_node: Import, _visitor: Visitor) {},
   [SyntaxKinds.ThisExpression]: function bindThisExpression(_node: ThisExpression, _visitor: Visitor) {},
@@ -263,12 +357,16 @@ export const PropagationtVisitorTable: Visitor = {
     visitor: Visitor,
   ) {
     visitNode(node.key, visitor);
+    visitNode(node.typeParameters, visitor);
     visitNodes(node.params, visitor);
+    visitNode(node.returnType, visitor);
     visitNode(node.body, visitor);
   },
   [SyntaxKinds.ObjectAccessor]: function bindObjectAccessor(node: ObjectAccessor, visitor: Visitor) {
     visitNode(node.key, visitor);
+    visitNode(node.typeParameters, visitor);
     visitNodes(node.params, visitor);
+    visitNode(node.returnType, visitor);
     visitNode(node.body, visitor);
   },
   [SyntaxKinds.SpreadElement]: function bindSpreadElement(node: SpreadElement, visitor: Visitor) {
@@ -287,15 +385,19 @@ export const PropagationtVisitorTable: Visitor = {
     visitor: Visitor,
   ) {
     visitNode(node.name, visitor);
+    visitNode(node.typeParameters, visitor);
     visitNodes(node.params, visitor);
+    visitNode(node.returnType, visitor);
     visitNode(node.body, visitor);
   },
   [SyntaxKinds.ArrowFunctionExpression]: function bindArrowFunctionExpression(
     node: ArrorFunctionExpression,
     visitor: Visitor,
   ) {
-    visitNode(node.body, visitor);
+    visitNode(node.typeParameters, visitor);
     visitNodes(node.arguments, visitor);
+    visitNode(node.returnType, visitor);
+    visitNode(node.body, visitor);
   },
   [SyntaxKinds.MetaProperty]: function bindMetaProperty(node: MetaProperty, visitor: Visitor) {
     visitNode(node.meta, visitor);
@@ -306,6 +408,7 @@ export const PropagationtVisitorTable: Visitor = {
   },
   [SyntaxKinds.NewExpression]: function bindNewExpression(node: NewExpression, visitor: Visitor) {
     visitNode(node.callee, visitor);
+    visitNode(node.typeArguments, visitor);
     visitNodes(node.arguments, visitor);
   },
   [SyntaxKinds.MemberExpression]: function bindMemberExpression(node: MemberExpression, visitor: Visitor) {
@@ -315,6 +418,7 @@ export const PropagationtVisitorTable: Visitor = {
   [SyntaxKinds.CallExpression]: function bindCallExpression(node: CallExpression, visitor: Visitor) {
     visitNode(node.callee, visitor);
     visitNodes(node.arguments, visitor);
+    visitNode(node.typeArguments, visitor);
   },
   [SyntaxKinds.TaggedTemplateExpression]: function bindTaggTemplateExpression(
     node: TaggedTemplateExpression,
@@ -368,6 +472,7 @@ export const PropagationtVisitorTable: Visitor = {
   },
   [SyntaxKinds.ObjectPattern]: function bindObjectPattern(node: ObjectPattern, visitor: Visitor) {
     visitNodes(node.properties, visitor);
+    visitNode(node.typeAnnotation, visitor);
   },
   [SyntaxKinds.ObjectPatternProperty]: function bindObjectPatternProperty(
     node: ObjectPatternProperty,
@@ -378,13 +483,16 @@ export const PropagationtVisitorTable: Visitor = {
   },
   [SyntaxKinds.ArrayPattern]: function bindArrayPattern(node: ArrayPattern, visitor: Visitor) {
     visitNodes(node.elements, visitor);
+    visitNode(node.typeAnnotation, visitor);
   },
   [SyntaxKinds.AssignmentPattern]: function bindAssigmentPattern(node: AssignmentPattern, visitor: Visitor) {
     visitNode(node.left, visitor);
     visitNode(node.right, visitor);
+    visitNode(node.typeAnnotation, visitor);
   },
   [SyntaxKinds.RestElement]: function bindRestElement(node: RestElement, visitor: Visitor) {
     visitNode(node.argument, visitor);
+    visitNode(node.typeAnnotation, visitor);
   },
   [SyntaxKinds.IfStatement]: function bindIfStatement(node: IfStatement, visitor: Visitor) {
     visitNode(node.test, visitor);
@@ -481,7 +589,9 @@ export const PropagationtVisitorTable: Visitor = {
     visitor: Visitor,
   ) {
     visitNode(node.name, visitor);
+    visitNode(node.typeParameters, visitor);
     visitNodes(node.params, visitor);
+    visitNode(node.returnType, visitor);
     visitNode(node.body, visitor);
   },
   [SyntaxKinds.ClassBody]: function bindClassBody(node: ClassBody, visitor: Visitor) {
@@ -502,18 +612,23 @@ export const PropagationtVisitorTable: Visitor = {
     visitor: Visitor,
   ) {
     visitNode(node.key, visitor);
+    visitNode(node.typeParameters, visitor);
     visitNodes(node.params, visitor);
+    visitNode(node.returnType, visitor);
     visitNode(node.body, visitor);
     visitNodes(node.decorators, visitor);
   },
   [SyntaxKinds.ClassConstructor]: function bindClassConstructor(node: ClassConstructor, visitor: Visitor) {
     visitNode(node.key, visitor);
     visitNodes(node.params, visitor);
+    visitNode(node.returnType, visitor);
     visitNode(node.body, visitor);
   },
   [SyntaxKinds.ClassAccessor]: function bindClassAccessor(node: ClassAccessor, visitor: Visitor) {
     visitNode(node.key, visitor);
+    visitNode(node.typeParameters, visitor);
     visitNodes(node.params, visitor);
+    visitNode(node.returnType, visitor);
     visitNode(node.body, visitor);
     visitNodes(node.decorators, visitor);
   },
@@ -618,6 +733,154 @@ export const PropagationtVisitorTable: Visitor = {
   },
   [SyntaxKinds.JSXOpeningFragment]: function (_node: JSXOpeningFragment, _visitor: Visitor) {},
   [SyntaxKinds.JSXClosingFragment]: function (_node: JSXClosingFragment, _visitor: Visitor) {},
+  [SyntaxKinds.TSConditionalType]: function (node: TSConditionalType, visitor: Visitor) {
+    visitNode(node.checkType, visitor);
+    visitNode(node.extendType, visitor);
+    visitNode(node.trueType, visitor);
+    visitNode(node.falseType, visitor);
+  },
+  [SyntaxKinds.TSUnionType]: function (node: TSUnionType, visitor: Visitor) {
+    visitNodes(node.types, visitor);
+  },
+  [SyntaxKinds.TSIntersectionType]: function (node: TSIntersectionType, visitor: Visitor) {
+    visitNodes(node.types, visitor);
+  },
+  [SyntaxKinds.TSArrayType]: function (node: TSArrayType, visitor: Visitor) {
+    visitNode(node.elementType, visitor);
+  },
+  [SyntaxKinds.TSTypeOperator]: function (node: TSTypeOperator, visitor: Visitor) {
+    visitNode(node.typeAnnotation, visitor);
+  },
+  [SyntaxKinds.TSIndexedAccessType]: function (node: TSIndexedAccessType, visitor: Visitor) {
+    visitNode(node.indexedType, visitor);
+    visitNode(node.objectType, visitor);
+  },
+  [SyntaxKinds.TSFunctionType]: function (node: TSFunctionType, visitor: Visitor) {
+    visitNode(node.typeParameters, visitor);
+    visitNodes(node.parameters, visitor);
+    visitNode(node.returnType, visitor);
+  },
+  [SyntaxKinds.TSConstructorType]: function (node: TSConstrcutorType, visitor: Visitor) {
+    visitNode(node.typeParameters, visitor);
+    visitNodes(node.parameters, visitor);
+    visitNode(node.returnType, visitor);
+  },
+  [SyntaxKinds.TSTypeAliasDeclaration]: function (node: TSTypeAliasDeclaration, visitor: Visitor) {
+    visitNode(node.typeAnnotation, visitor);
+    visitNode(node.typeParameters, visitor);
+  },
+  [SyntaxKinds.TSInterfaceDeclaration]: function (node: TSInterfaceDeclaration, visitor: Visitor) {
+    visitNode(node.body, visitor);
+    visitNode(node.typeParameters, visitor);
+    visitNodes(node.extends, visitor);
+  },
+  [SyntaxKinds.TSTypeLiteral]: function (node: TSTypeLiteral, visitor: Visitor) {
+    visitNodes(node.members, visitor);
+  },
+  [SyntaxKinds.TSCallSignatureDeclaration]: function (node: TSCallSignatureDeclaration, visitor: Visitor) {
+    visitNodes(node.parameters, visitor);
+    visitNode(node.returnType, visitor);
+  },
+  [SyntaxKinds.TSConstructSignatureDeclaration]: function (
+    node: TSConstructSignatureDeclaration,
+    visitor: Visitor,
+  ) {
+    visitNodes(node.parameters, visitor);
+    visitNode(node.returnType, visitor);
+  },
+  [SyntaxKinds.TSPropertySignature]: function (node: TSPropertySignature, visitor: Visitor) {
+    visitNode(node.key, visitor);
+    visitNode(node.typeAnnotation, visitor);
+  },
+  [SyntaxKinds.TSMethodSignature]: function (node: TSMethodSignature, visitor: Visitor) {
+    visitNode(node.key, visitor);
+    visitNode(node.typeParameters, visitor);
+    visitNodes(node.parameters, visitor);
+    visitNode(node.returnType, visitor);
+  },
+  [SyntaxKinds.TSQualifiedName]: function (node: TSQualifiedName, visitor: Visitor) {
+    visitNode(node.left, visitor);
+    visitNode(node.right, visitor);
+  },
+  [SyntaxKinds.TSTypePredicate]: function (node: TSTypePredicate, visitor: Visitor) {
+    visitNode(node.parameterName, visitor);
+    visitNode(node.typeAnnotation, visitor);
+  },
+  [SyntaxKinds.TSTypeAnnotation]: function (node: TSTypeAnnotation, visitor: Visitor) {
+    visitNode(node.typeAnnotation, visitor);
+  },
+  [SyntaxKinds.TSTypeReference]: function (node: TSTypeReference, visitor: Visitor) {
+    visitNode(node.typeArguments, visitor);
+    visitNode(node.typeName, visitor);
+  },
+  [SyntaxKinds.TSInstantiationExpression]: function (node: TSInstantiationExpression, visitor: Visitor) {
+    visitNode(node.expression, visitor);
+    visitNode(node.typeArguments, visitor);
+  },
+  [SyntaxKinds.TSStringKeyword]: function (_node: TSStringKeyword, _visitor: Visitor) {},
+  [SyntaxKinds.TSNumberKeyword]: function (_node: TSNumberKeyword, _visitor: Visitor) {},
+  [SyntaxKinds.TSBigIntKeyword]: function (_node: TSBigIntKeyword, _visitor: Visitor) {},
+  [SyntaxKinds.TSBooleanKeyword]: function (_node: TSBooleanKeyword, _visitor: Visitor) {},
+  [SyntaxKinds.TSNullKeyword]: function (_node: TSNullKeyword, _visitor: Visitor) {},
+  [SyntaxKinds.TSUndefinedKeyword]: function (_node: TSUndefinedKeyword, _visitor: Visitor) {},
+  [SyntaxKinds.TSSymbolKeyword]: function (_node: TSSymbolKeyword, _visitor: Visitor) {},
+  [SyntaxKinds.TSAnyKeyword]: function (_node: TSAnyKeyword, _visitor: Visitor) {},
+  [SyntaxKinds.TSNeverKeyword]: function (_node: TSNeverKeyword, _visitor: Visitor) {},
+  [SyntaxKinds.TSUnknowKeyword]: function (_node: TSUnknowKeyword, _visitor: Visitor) {},
+  [SyntaxKinds.TSVoidKeyword]: function (_node: TSVoidKeyword, _visitor: Visitor) {},
+  [SyntaxKinds.TSInterfaceBody]: function (node: TSInterfaceBody, visitor: Visitor) {
+    visitNodes(node.body, visitor);
+  },
+  [SyntaxKinds.TSTypeParameterInstantiation]: function (
+    node: TSTypeParameterInstantiation,
+    visitor: Visitor,
+  ) {
+    visitNodes(node.params, visitor);
+  },
+  [SyntaxKinds.TSTypeParameterDeclaration]: function (node: TSTypeParameterDeclaration, visitor: Visitor) {
+    visitNodes(node.params, visitor);
+  },
+  [SyntaxKinds.TSTypeParameter]: function (node: TSTypeParameter, visitor: Visitor) {
+    visitNode(node.name, visitor);
+    visitNode(node.constraint, visitor);
+    visitNode(node.default, visitor);
+  },
+  [SyntaxKinds.TSInterfaceHeritage]: function (node: TSInterfaceHeritage, visitor: Visitor) {
+    visitNode(node.typeName, visitor);
+    visitNode(node.typeArguments, visitor);
+  },
+  [SyntaxKinds.TSTypeAssertionExpression]: function (node: TSTypeAssertionExpression, visitor: Visitor) {
+    visitNode(node.expression, visitor);
+    visitNode(node.typeAnnotation, visitor);
+  },
+  [SyntaxKinds.TSAsExpression]: function (node: TSAsExpression, visitor: Visitor) {
+    visitNode(node.expression, visitor);
+    visitNode(node.typeAnnotation, visitor);
+  },
+  [SyntaxKinds.TSSatisfiesExpression]: function (node: TSSatisfiesExpression, visitor: Visitor) {
+    visitNode(node.expression, visitor);
+    visitNode(node.typeAnnotation, visitor);
+  },
+  [SyntaxKinds.TSNonNullExpression]: function (node: TSNonNullExpression, visitor: Visitor) {
+    visitNode(node.expression, visitor);
+  },
+  [SyntaxKinds.TSEnumDeclaration]: function (node: TSEnumDeclaration, visitor: Visitor) {
+    visitNode(node.id, visitor);
+    visitNode(node.body, visitor);
+  },
+  [SyntaxKinds.TSEnumBody]: function (node: TSEnumBody, visitor: Visitor) {
+    visitNodes(node.members, visitor);
+  },
+  [SyntaxKinds.TSEnumMember]: function (node: TSEnumMember, visitor: Visitor) {
+    visitNode(node.init, visitor);
+    visitNode(node.id, visitor);
+  },
+  [SyntaxKinds.TSDeclareFunction]: function (node: TSDeclareFunction, visitor: Visitor) {
+    visitNode(node.name, visitor);
+    visitNodes(node.params, visitor);
+    visitNode(node.typeParameters, visitor);
+    visitNode(node.returnType, visitor);
+  },
 };
 
 export function visitNode<T extends ModuleItem>(node: T | null | undefined, visitor: Visitor) {

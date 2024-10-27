@@ -1,0 +1,241 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "TSDeclareFunction",
+                "name": {
+                    "kind": "Identifer",
+                    "name": "f",
+                    "start": {
+                        "row": 1,
+                        "col": 17,
+                        "index": 16
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 18,
+                        "index": 17
+                    }
+                },
+                "params": [
+                    {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "typeAnnotation": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSNumberKeyword",
+                                "start": {
+                                    "row": 1,
+                                    "col": 22,
+                                    "index": 21
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 28,
+                                    "index": 27
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 20,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 28,
+                                "index": 27
+                            }
+                        },
+                        "optional": false,
+                        "start": {
+                            "row": 1,
+                            "col": 19,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 20,
+                            "index": 19
+                        }
+                    }
+                ],
+                "returnType": {
+                    "kind": "TSTypeAnnotation",
+                    "typeAnnotation": {
+                        "kind": "TSNumberKeyword",
+                        "start": {
+                            "row": 1,
+                            "col": 31,
+                            "index": 30
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 37,
+                            "index": 36
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 29,
+                        "index": 28
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 37,
+                        "index": 36
+                    }
+                },
+                "generator": false,
+                "async": false,
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 1,
+                    "col": 37,
+                    "index": 36
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 37,
+                "index": 36
+            }
+        },
+        {
+            "kind": "ExportNamedDeclaration",
+            "specifiers": [],
+            "declaration": {
+                "kind": "TSDeclareFunction",
+                "name": {
+                    "kind": "Identifer",
+                    "name": "f",
+                    "start": {
+                        "row": 2,
+                        "col": 17,
+                        "index": 54
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 18,
+                        "index": 55
+                    }
+                },
+                "params": [
+                    {
+                        "kind": "Identifer",
+                        "name": "x",
+                        "typeAnnotation": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSStringKeyword",
+                                "start": {
+                                    "row": 2,
+                                    "col": 22,
+                                    "index": 59
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 28,
+                                    "index": 65
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 20,
+                                "index": 57
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 28,
+                                "index": 65
+                            }
+                        },
+                        "optional": false,
+                        "start": {
+                            "row": 2,
+                            "col": 19,
+                            "index": 56
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 20,
+                            "index": 57
+                        }
+                    }
+                ],
+                "returnType": {
+                    "kind": "TSTypeAnnotation",
+                    "typeAnnotation": {
+                        "kind": "TSStringKeyword",
+                        "start": {
+                            "row": 2,
+                            "col": 31,
+                            "index": 68
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 37,
+                            "index": 74
+                        }
+                    },
+                    "start": {
+                        "row": 2,
+                        "col": 29,
+                        "index": 66
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 37,
+                        "index": 74
+                    }
+                },
+                "generator": false,
+                "async": false,
+                "start": {
+                    "row": 2,
+                    "col": 8,
+                    "index": 45
+                },
+                "end": {
+                    "row": 2,
+                    "col": 37,
+                    "index": 74
+                }
+            },
+            "source": null,
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 38
+            },
+            "end": {
+                "row": 2,
+                "col": 37,
+                "index": 74
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 76
+    }
+}

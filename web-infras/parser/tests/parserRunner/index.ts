@@ -103,6 +103,9 @@ function reportTestSuit(testResult: TestCaseResultSuite): boolean {
   console.log(
     `== ${chalk.red("Timeout Test Case")} : ${testResult.timeoutResult.length} / ${allTestCaseCount}`,
   );
+  if (isVerbose || isCI) {
+    for (const failedcase of testResult.timeoutResult) console.log(`  |---> File ${failedcase.fileId}`);
+  }
   return (
     testResult.timeoutResult.length === 0 &&
     expectFailedButPass.length === 0 &&

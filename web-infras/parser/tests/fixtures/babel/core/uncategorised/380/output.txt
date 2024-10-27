@@ -1,1 +1,1 @@
-[Error]: Lexical Error, SyntaxError: Invalid regular expression flags, start position is (1, 9)
+[Error]: Lexical Error, Invalid regular expression flags, start position is (1, 9)

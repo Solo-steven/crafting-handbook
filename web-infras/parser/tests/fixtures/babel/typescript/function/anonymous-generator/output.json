@@ -1,0 +1,298 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "const",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "fn",
+                        "optional": false,
+                        "start": {
+                            "row": 1,
+                            "col": 7,
+                            "index": 6
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 9,
+                            "index": 8
+                        }
+                    },
+                    "init": {
+                        "kind": "FunctionExpression",
+                        "name": null,
+                        "generator": true,
+                        "async": false,
+                        "body": {
+                            "kind": "FunctionBody",
+                            "body": [
+                                {
+                                    "kind": "ExpressionStatement",
+                                    "expr": {
+                                        "kind": "YieldExpression",
+                                        "argument": {
+                                            "kind": "DecimalLiteral",
+                                            "rawValue": "2",
+                                            "start": {
+                                                "row": 2,
+                                                "col": 11,
+                                                "index": 66
+                                            },
+                                            "end": {
+                                                "row": 2,
+                                                "col": 12,
+                                                "index": 67
+                                            }
+                                        },
+                                        "delegate": false,
+                                        "start": {
+                                            "row": 2,
+                                            "col": 5,
+                                            "index": 60
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 12,
+                                            "index": 67
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 2,
+                                        "col": 5,
+                                        "index": 60
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 12,
+                                        "index": 67
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 55,
+                                "index": 54
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 4,
+                                "index": 72
+                            }
+                        },
+                        "params": [
+                            {
+                                "kind": "Identifer",
+                                "name": "input",
+                                "typeAnnotation": {
+                                    "kind": "TSTypeAnnotation",
+                                    "typeAnnotation": {
+                                        "kind": "TSTypeReference",
+                                        "typeName": {
+                                            "kind": "Identifer",
+                                            "name": "T",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 33,
+                                                "index": 32
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 34,
+                                                "index": 33
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 1,
+                                            "col": 33,
+                                            "index": 32
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 34,
+                                            "index": 33
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 31,
+                                        "index": 30
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 34,
+                                        "index": 33
+                                    }
+                                },
+                                "optional": false,
+                                "start": {
+                                    "row": 1,
+                                    "col": 26,
+                                    "index": 25
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 31,
+                                    "index": 30
+                                }
+                            }
+                        ],
+                        "typeParameters": {
+                            "kind": "TSTypeParameterDeclaration",
+                            "params": [
+                                {
+                                    "kind": "TSTypeParameter",
+                                    "name": {
+                                        "kind": "Identifer",
+                                        "name": "T",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 23,
+                                            "index": 22
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 24,
+                                            "index": 23
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 23,
+                                        "index": 22
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 24,
+                                        "index": 23
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 22,
+                                "index": 21
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 25,
+                                "index": 24
+                            }
+                        },
+                        "returnType": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSTypeReference",
+                                "typeName": {
+                                    "kind": "Identifer",
+                                    "name": "Generator",
+                                    "start": {
+                                        "row": 1,
+                                        "col": 37,
+                                        "index": 36
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 46,
+                                        "index": 45
+                                    }
+                                },
+                                "typeArguments": {
+                                    "kind": "TSTypeParameterInstantiation",
+                                    "params": [
+                                        {
+                                            "kind": "TSNumberKeyword",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 47,
+                                                "index": 46
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 53,
+                                                "index": 52
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 1,
+                                        "col": 46,
+                                        "index": 45
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 54,
+                                        "index": 53
+                                    }
+                                },
+                                "start": {
+                                    "row": 1,
+                                    "col": 37,
+                                    "index": 36
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 46,
+                                    "index": 45
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 35,
+                                "index": 34
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 46,
+                                "index": 45
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 12,
+                            "index": 11
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 4,
+                            "index": 72
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 7,
+                        "index": 6
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 4,
+                        "index": 72
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 3,
+                "col": 4,
+                "index": 72
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 3,
+        "index": 75
+    }
+}

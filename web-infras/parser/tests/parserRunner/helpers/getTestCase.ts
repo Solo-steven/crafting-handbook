@@ -4,7 +4,7 @@ import { ExpectPassTestCase, ExpectFailedTestCase, ExpectConfig, TestCase } from
 import { readFile } from "fs/promises";
 import { existsSync } from "fs";
 
-const jsFileRegex = new RegExp(".*.js$");
+const jsFileRegex = new RegExp(".*.(js|ts)$");
 
 async function getExpectObj(dirPath: string): Promise<ExpectConfig> {
   const expectFilePath = path.join(dirPath, "expect.json");

@@ -1,0 +1,160 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "VariableDeclaration",
+            "variant": "var",
+            "declarations": [
+                {
+                    "kind": "VariableDeclarator",
+                    "id": {
+                        "kind": "Identifer",
+                        "name": "asserted1",
+                        "optional": false,
+                        "start": {
+                            "row": 1,
+                            "col": 5,
+                            "index": 4
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 14,
+                            "index": 13
+                        }
+                    },
+                    "init": {
+                        "kind": "TSTypeAssertionExpression",
+                        "expression": {
+                            "kind": "ArrowFunctionExpression",
+                            "expressionBody": false,
+                            "async": false,
+                            "arguments": [
+                                {
+                                    "kind": "Identifer",
+                                    "name": "n",
+                                    "optional": false,
+                                    "start": {
+                                        "row": 1,
+                                        "col": 24,
+                                        "index": 23
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 25,
+                                        "index": 24
+                                    }
+                                }
+                            ],
+                            "body": {
+                                "kind": "FunctionBody",
+                                "body": [
+                                    {
+                                        "kind": "ReturnStatement",
+                                        "argu": {
+                                            "kind": "Identifer",
+                                            "name": "n",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 39,
+                                                "index": 38
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 40,
+                                                "index": 39
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 1,
+                                            "col": 32,
+                                            "index": 31
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 40,
+                                            "index": 39
+                                        }
+                                    }
+                                ],
+                                "start": {
+                                    "row": 1,
+                                    "col": 30,
+                                    "index": 29
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 43,
+                                    "index": 42
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 23,
+                                "index": 22
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 43,
+                                "index": 42
+                            },
+                            "parentheses": true
+                        },
+                        "typeAnnotation": {
+                            "kind": "TSAnyKeyword",
+                            "start": {
+                                "row": 1,
+                                "col": 18,
+                                "index": 17
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 21,
+                                "index": 20
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 17,
+                            "index": 16
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 44,
+                            "index": 43
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 44,
+                        "index": 43
+                    }
+                }
+            ],
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 44,
+                "index": 43
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 45
+    }
+}

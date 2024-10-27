@@ -1,4 +1,4 @@
-import { createParser } from "@/src/parser";
+import { Parser } from "@/src/parser";
 import { createLexer } from "@/src/lexer";
 import { Token } from "@/src/lexer/type";
 import { SyntaxKinds } from "web-infra-common";
@@ -7,8 +7,8 @@ import { createErrorHandler } from "./errorHandler";
 
 export function parse(code: string, config?: ParserUserConfig) {
   const errorHandler = createErrorHandler(code);
-  const parser = createParser(code, errorHandler, config);
-  const program = parser.parse();
+  const parser = new Parser(code, errorHandler, config);
+  const program = parser.parseProgram();
   if (errorHandler.haveError()) {
     throw new Error(errorHandler.formatErrorString());
   }

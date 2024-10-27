@@ -1,0 +1,114 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "TSInterfaceDeclaration",
+            "name": {
+                "kind": 10130,
+                "name": "I",
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "extends": [],
+            "body": {
+                "kind": "TSInterfaceBody",
+                "body": [
+                    {
+                        "kind": "TSMethodSignature",
+                        "key": {
+                            "kind": "Identifer",
+                            "name": "catch",
+                            "start": {
+                                "row": 2,
+                                "col": 5,
+                                "index": 18
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 23
+                            }
+                        },
+                        "computed": false,
+                        "optional": false,
+                        "parameters": [],
+                        "returnType": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSVoidKeyword",
+                                "start": {
+                                    "row": 2,
+                                    "col": 14,
+                                    "index": 27
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 18,
+                                    "index": 31
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 12,
+                                "index": 25
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 18,
+                                "index": 31
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 18,
+                            "index": 31
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                },
+                "end": {
+                    "row": 3,
+                    "col": 2,
+                    "index": 34
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 3,
+                "col": 2,
+                "index": 34
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 35
+    }
+}

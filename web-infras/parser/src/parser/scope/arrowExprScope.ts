@@ -17,6 +17,8 @@ function mergeScope(target: AsyncArrowExpressionScope, source: AsyncArrowExpress
   );
 }
 
+export type AsyncArrowExpressionScopeRecorder = ReturnType<typeof createAsyncArrowExpressionScopeRecorder>;
+
 export function createAsyncArrowExpressionScopeRecorder() {
   const asyncArrowExpressionScopes: Array<AsyncArrowExpressionScope | null> = [];
 

@@ -1,1 +1,1 @@
-[Unreach Zone]: this piece of code should not be reach (1, 8), have a unexpect token 10130 (async)., please report to developer.
+[Syntax Error]: Unexpect token Identifer(1, 8).

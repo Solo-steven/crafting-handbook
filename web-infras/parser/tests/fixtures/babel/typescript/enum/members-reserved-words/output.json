@@ -1,0 +1,113 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "TSEnumDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "E",
+                "start": {
+                    "row": 1,
+                    "col": 6,
+                    "index": 5
+                },
+                "end": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                }
+            },
+            "body": {
+                "kind": "TSEnumBody",
+                "members": [
+                    {
+                        "kind": "TSEnumMember",
+                        "computed": false,
+                        "id": {
+                            "kind": "Identifer",
+                            "name": "const",
+                            "start": {
+                                "row": 2,
+                                "col": 5,
+                                "index": 13
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 18
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 13
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 10,
+                            "index": 18
+                        }
+                    },
+                    {
+                        "kind": "TSEnumMember",
+                        "computed": false,
+                        "id": {
+                            "kind": "Identifer",
+                            "name": "default",
+                            "start": {
+                                "row": 3,
+                                "col": 5,
+                                "index": 24
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 12,
+                                "index": 31
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 5,
+                            "index": 24
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 12,
+                            "index": 31
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                },
+                "end": {
+                    "row": 4,
+                    "col": 2,
+                    "index": 33
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 4,
+                "col": 2,
+                "index": 33
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 5,
+        "col": 1,
+        "index": 34
+    }
+}

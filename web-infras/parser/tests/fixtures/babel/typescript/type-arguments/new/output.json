@@ -1,0 +1,208 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "NewExpression",
+                "callee": {
+                    "kind": "Identifer",
+                    "name": "C",
+                    "start": {
+                        "row": 1,
+                        "col": 5,
+                        "index": 4
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 6,
+                        "index": 5
+                    }
+                },
+                "arguments": [],
+                "typeArguments": {
+                    "kind": "TSTypeParameterInstantiation",
+                    "params": [
+                        {
+                            "kind": "TSTypeReference",
+                            "typeName": {
+                                "kind": "Identifer",
+                                "name": "T",
+                                "start": {
+                                    "row": 1,
+                                    "col": 7,
+                                    "index": 6
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 8,
+                                    "index": 7
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 7,
+                                "index": 6
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 8,
+                                "index": 7
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 6,
+                        "index": 5
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 9,
+                        "index": 8
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 1,
+                    "index": 0
+                },
+                "end": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 11,
+                "index": 10
+            }
+        },
+        {
+            "kind": "ExpressionStatement",
+            "expr": {
+                "kind": "NewExpression",
+                "callee": {
+                    "kind": "Identifer",
+                    "name": "C",
+                    "start": {
+                        "row": 2,
+                        "col": 5,
+                        "index": 16
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 6,
+                        "index": 17
+                    }
+                },
+                "arguments": [],
+                "typeArguments": {
+                    "kind": "TSTypeParameterInstantiation",
+                    "params": [
+                        {
+                            "kind": "TSTypeReference",
+                            "typeName": {
+                                "kind": "Identifer",
+                                "name": "T",
+                                "start": {
+                                    "row": 2,
+                                    "col": 7,
+                                    "index": 18
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 8,
+                                    "index": 19
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 7,
+                                "index": 18
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 8,
+                                "index": 19
+                            }
+                        },
+                        {
+                            "kind": "TSTypeReference",
+                            "typeName": {
+                                "kind": "Identifer",
+                                "name": "U",
+                                "start": {
+                                    "row": 2,
+                                    "col": 10,
+                                    "index": 21
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 11,
+                                    "index": 22
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 21
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 11,
+                                "index": 22
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 2,
+                        "col": 6,
+                        "index": 17
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 12,
+                        "index": 23
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 1,
+                    "index": 12
+                },
+                "end": {
+                    "row": 2,
+                    "col": 14,
+                    "index": 25
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 12
+            },
+            "end": {
+                "row": 2,
+                "col": 14,
+                "index": 25
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 3,
+        "col": 1,
+        "index": 27
+    }
+}

@@ -1,0 +1,421 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "asserts1",
+                "start": {
+                    "row": 1,
+                    "col": 10,
+                    "index": 9
+                },
+                "end": {
+                    "row": 1,
+                    "col": 18,
+                    "index": 17
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [],
+                "start": {
+                    "row": 1,
+                    "col": 61,
+                    "index": 60
+                },
+                "end": {
+                    "row": 1,
+                    "col": 63,
+                    "index": 62
+                }
+            },
+            "params": [
+                {
+                    "kind": "Identifer",
+                    "name": "value",
+                    "typeAnnotation": {
+                        "kind": "TSTypeAnnotation",
+                        "typeAnnotation": {
+                            "kind": "TSUnknowKeyword",
+                            "start": {
+                                "row": 1,
+                                "col": 27,
+                                "index": 26
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 34,
+                                "index": 33
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 25,
+                            "index": 24
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 34,
+                            "index": 33
+                        }
+                    },
+                    "optional": false,
+                    "start": {
+                        "row": 1,
+                        "col": 20,
+                        "index": 19
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 25,
+                        "index": 24
+                    }
+                }
+            ],
+            "returnType": {
+                "kind": "TSTypeAnnotation",
+                "typeAnnotation": {
+                    "kind": "TSTypePredicate",
+                    "parameterName": {
+                        "kind": "Identifer",
+                        "name": "value",
+                        "start": {
+                            "row": 1,
+                            "col": 45,
+                            "index": 44
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 50,
+                            "index": 49
+                        }
+                    },
+                    "asserts": true,
+                    "typeAnnotation": {
+                        "kind": "TSTypeAnnotation",
+                        "typeAnnotation": {
+                            "kind": "TSStringKeyword",
+                            "start": {
+                                "row": 1,
+                                "col": 54,
+                                "index": 53
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 60,
+                                "index": 59
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 54,
+                            "index": 53
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 60,
+                            "index": 59
+                        }
+                    },
+                    "start": {
+                        "row": 1,
+                        "col": 35,
+                        "index": 34
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 60,
+                        "index": 59
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 35,
+                    "index": 34
+                },
+                "end": {
+                    "row": 1,
+                    "col": 60,
+                    "index": 59
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 63,
+                "index": 62
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "asserts2",
+                "start": {
+                    "row": 2,
+                    "col": 10,
+                    "index": 73
+                },
+                "end": {
+                    "row": 2,
+                    "col": 18,
+                    "index": 81
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [],
+                "start": {
+                    "row": 2,
+                    "col": 51,
+                    "index": 114
+                },
+                "end": {
+                    "row": 2,
+                    "col": 53,
+                    "index": 116
+                }
+            },
+            "params": [
+                {
+                    "kind": "Identifer",
+                    "name": "value",
+                    "typeAnnotation": {
+                        "kind": "TSTypeAnnotation",
+                        "typeAnnotation": {
+                            "kind": "TSUnknowKeyword",
+                            "start": {
+                                "row": 2,
+                                "col": 27,
+                                "index": 90
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 34,
+                                "index": 97
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 25,
+                            "index": 88
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 34,
+                            "index": 97
+                        }
+                    },
+                    "optional": false,
+                    "start": {
+                        "row": 2,
+                        "col": 20,
+                        "index": 83
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 25,
+                        "index": 88
+                    }
+                }
+            ],
+            "returnType": {
+                "kind": "TSTypeAnnotation",
+                "typeAnnotation": {
+                    "kind": "TSTypePredicate",
+                    "parameterName": {
+                        "kind": "Identifer",
+                        "name": "value",
+                        "start": {
+                            "row": 2,
+                            "col": 45,
+                            "index": 108
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 50,
+                            "index": 113
+                        }
+                    },
+                    "asserts": true,
+                    "start": {
+                        "row": 2,
+                        "col": 35,
+                        "index": 98
+                    },
+                    "end": {
+                        "row": 2,
+                        "col": 50,
+                        "index": 113
+                    }
+                },
+                "start": {
+                    "row": 2,
+                    "col": 35,
+                    "index": 98
+                },
+                "end": {
+                    "row": 2,
+                    "col": 50,
+                    "index": 113
+                }
+            },
+            "start": {
+                "row": 2,
+                "col": 1,
+                "index": 64
+            },
+            "end": {
+                "row": 2,
+                "col": 53,
+                "index": 116
+            }
+        },
+        {
+            "kind": "FunctionDeclaration",
+            "name": {
+                "kind": "Identifer",
+                "name": "asserts3",
+                "start": {
+                    "row": 3,
+                    "col": 10,
+                    "index": 126
+                },
+                "end": {
+                    "row": 3,
+                    "col": 18,
+                    "index": 134
+                }
+            },
+            "generator": false,
+            "async": false,
+            "body": {
+                "kind": "FunctionBody",
+                "body": [],
+                "start": {
+                    "row": 3,
+                    "col": 45,
+                    "index": 161
+                },
+                "end": {
+                    "row": 3,
+                    "col": 47,
+                    "index": 163
+                }
+            },
+            "params": [
+                {
+                    "kind": "Identifer",
+                    "name": "value",
+                    "typeAnnotation": {
+                        "kind": "TSTypeAnnotation",
+                        "typeAnnotation": {
+                            "kind": "TSUnknowKeyword",
+                            "start": {
+                                "row": 3,
+                                "col": 27,
+                                "index": 143
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 34,
+                                "index": 150
+                            }
+                        },
+                        "start": {
+                            "row": 3,
+                            "col": 25,
+                            "index": 141
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 34,
+                            "index": 150
+                        }
+                    },
+                    "optional": false,
+                    "start": {
+                        "row": 3,
+                        "col": 20,
+                        "index": 136
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 25,
+                        "index": 141
+                    }
+                }
+            ],
+            "returnType": {
+                "kind": "TSTypeAnnotation",
+                "typeAnnotation": {
+                    "kind": "TSTypeReference",
+                    "typeName": {
+                        "kind": "Identifer",
+                        "name": "asserts",
+                        "start": {
+                            "row": 3,
+                            "col": 37,
+                            "index": 153
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 44,
+                            "index": 160
+                        }
+                    },
+                    "start": {
+                        "row": 3,
+                        "col": 37,
+                        "index": 153
+                    },
+                    "end": {
+                        "row": 3,
+                        "col": 44,
+                        "index": 160
+                    }
+                },
+                "start": {
+                    "row": 3,
+                    "col": 35,
+                    "index": 151
+                },
+                "end": {
+                    "row": 3,
+                    "col": 44,
+                    "index": 160
+                }
+            },
+            "start": {
+                "row": 3,
+                "col": 1,
+                "index": 117
+            },
+            "end": {
+                "row": 3,
+                "col": 47,
+                "index": 163
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 164
+    }
+}

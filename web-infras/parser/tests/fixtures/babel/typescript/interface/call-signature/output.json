@@ -1,0 +1,140 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "TSInterfaceDeclaration",
+            "name": {
+                "kind": 10130,
+                "name": "I",
+                "start": {
+                    "row": 1,
+                    "col": 11,
+                    "index": 10
+                },
+                "end": {
+                    "row": 1,
+                    "col": 12,
+                    "index": 11
+                }
+            },
+            "extends": [],
+            "body": {
+                "kind": "TSInterfaceBody",
+                "body": [
+                    {
+                        "kind": "TSCallSignatureDeclaration",
+                        "parameters": [
+                            {
+                                "kind": "Identifer",
+                                "name": "x",
+                                "typeAnnotation": {
+                                    "kind": "TSTypeAnnotation",
+                                    "typeAnnotation": {
+                                        "kind": "TSNumberKeyword",
+                                        "start": {
+                                            "row": 2,
+                                            "col": 9,
+                                            "index": 22
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 15,
+                                            "index": 28
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 2,
+                                        "col": 7,
+                                        "index": 20
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 15,
+                                        "index": 28
+                                    }
+                                },
+                                "optional": false,
+                                "start": {
+                                    "row": 2,
+                                    "col": 6,
+                                    "index": 19
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 7,
+                                    "index": 20
+                                }
+                            }
+                        ],
+                        "returnType": {
+                            "kind": "TSTypeAnnotation",
+                            "typeAnnotation": {
+                                "kind": "TSVoidKeyword",
+                                "start": {
+                                    "row": 2,
+                                    "col": 18,
+                                    "index": 31
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 22,
+                                    "index": 35
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 16,
+                                "index": 29
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 22,
+                                "index": 35
+                            }
+                        },
+                        "start": {
+                            "row": 2,
+                            "col": 5,
+                            "index": 18
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 22,
+                            "index": 35
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 13,
+                    "index": 12
+                },
+                "end": {
+                    "row": 3,
+                    "col": 2,
+                    "index": 38
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 3,
+                "col": 2,
+                "index": 38
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 39
+    }
+}

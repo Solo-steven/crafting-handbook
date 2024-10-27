@@ -1,0 +1,7 @@
+{
+    "expect": "Pass",
+    "config": {
+        "sourceType": "module",
+        "plugins": ["typescript"]
+    }
+}

@@ -1,1 +1,1 @@
-[Error]: Lexical Error, SyntaxError: Invalid Unicode escape sequence, start position is (3, 3)
+[Error]: Lexical Error, Invalid Unicode escape sequence, start position is (3, 3)

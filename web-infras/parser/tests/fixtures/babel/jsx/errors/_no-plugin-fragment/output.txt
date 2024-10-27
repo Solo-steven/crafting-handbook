@@ -1,3 +1,1 @@
-[SyntaxError]: This experimental syntax requires enabling jsx plugins. (3,5)
-3|    <>Hello</>
- |   ^
+[Syntax Error]: Unexpect token >(3, 6).

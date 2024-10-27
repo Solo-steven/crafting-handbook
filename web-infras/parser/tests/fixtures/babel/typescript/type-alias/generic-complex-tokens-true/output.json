@@ -1,0 +1,250 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "TSTypeAliasDeclaration",
+            "name": {
+                "kind": 10130,
+                "name": "T",
+                "start": {
+                    "row": 1,
+                    "col": 6,
+                    "index": 5
+                },
+                "end": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                }
+            },
+            "typeAnnotation": {
+                "kind": "TSTypeReference",
+                "typeName": {
+                    "kind": "Identifer",
+                    "name": "Array",
+                    "start": {
+                        "row": 1,
+                        "col": 44,
+                        "index": 43
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 49,
+                        "index": 48
+                    }
+                },
+                "typeArguments": {
+                    "kind": "TSTypeParameterInstantiation",
+                    "params": [
+                        {
+                            "kind": "TSTypeReference",
+                            "typeName": {
+                                "kind": "Identifer",
+                                "name": "U",
+                                "start": {
+                                    "row": 1,
+                                    "col": 50,
+                                    "index": 49
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 51,
+                                    "index": 50
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 50,
+                                "index": 49
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 51,
+                                "index": 50
+                            }
+                        }
+                    ],
+                    "start": {
+                        "row": 1,
+                        "col": 49,
+                        "index": 48
+                    },
+                    "end": {
+                        "row": 1,
+                        "col": 52,
+                        "index": 51
+                    }
+                },
+                "start": {
+                    "row": 1,
+                    "col": 44,
+                    "index": 43
+                },
+                "end": {
+                    "row": 1,
+                    "col": 49,
+                    "index": 48
+                }
+            },
+            "typeParameters": {
+                "kind": "TSTypeParameterDeclaration",
+                "params": [
+                    {
+                        "kind": "TSTypeParameter",
+                        "constraint": {
+                            "kind": "TSTypeReference",
+                            "typeName": {
+                                "kind": "Identifer",
+                                "name": "object",
+                                "start": {
+                                    "row": 1,
+                                    "col": 18,
+                                    "index": 17
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "col": 24,
+                                    "index": 23
+                                }
+                            },
+                            "start": {
+                                "row": 1,
+                                "col": 18,
+                                "index": 17
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 24,
+                                "index": 23
+                            }
+                        },
+                        "default": {
+                            "kind": "TSTypeLiteral",
+                            "members": [
+                                {
+                                    "kind": "TSPropertySignature",
+                                    "key": {
+                                        "kind": "Identifer",
+                                        "name": "x",
+                                        "start": {
+                                            "row": 1,
+                                            "col": 29,
+                                            "index": 28
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 30,
+                                            "index": 29
+                                        }
+                                    },
+                                    "computed": false,
+                                    "optional": false,
+                                    "typeAnnotation": {
+                                        "kind": "TSTypeAnnotation",
+                                        "typeAnnotation": {
+                                            "kind": "TSNumberKeyword",
+                                            "start": {
+                                                "row": 1,
+                                                "col": 32,
+                                                "index": 31
+                                            },
+                                            "end": {
+                                                "row": 1,
+                                                "col": 38,
+                                                "index": 37
+                                            }
+                                        },
+                                        "start": {
+                                            "row": 1,
+                                            "col": 30,
+                                            "index": 29
+                                        },
+                                        "end": {
+                                            "row": 1,
+                                            "col": 38,
+                                            "index": 37
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 1,
+                                        "col": 29,
+                                        "index": 28
+                                    },
+                                    "end": {
+                                        "row": 1,
+                                        "col": 38,
+                                        "index": 37
+                                    }
+                                }
+                            ],
+                            "start": {
+                                "row": 1,
+                                "col": 27,
+                                "index": 26
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 40,
+                                "index": 39
+                            }
+                        },
+                        "name": {
+                            "kind": "Identifer",
+                            "name": "U",
+                            "start": {
+                                "row": 1,
+                                "col": 8,
+                                "index": 7
+                            },
+                            "end": {
+                                "row": 1,
+                                "col": 9,
+                                "index": 8
+                            }
+                        },
+                        "start": {
+                            "row": 1,
+                            "col": 8,
+                            "index": 7
+                        },
+                        "end": {
+                            "row": 1,
+                            "col": 40,
+                            "index": 39
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 41,
+                    "index": 40
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 1,
+                "col": 53,
+                "index": 52
+            }
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 2,
+        "col": 1,
+        "index": 53
+    }
+}
