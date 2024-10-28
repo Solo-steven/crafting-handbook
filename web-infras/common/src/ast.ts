@@ -641,27 +641,128 @@ export interface ClassBody extends ModuleItem {
   kind: SyntaxKinds.ClassBody;
   body: Array<ClassElement>;
 }
-export interface ClassProperty extends Property {
+export type ClassElementName = PropertyName | PrivateName;
+export interface ClassProperty extends ModuleItem {
   kind: SyntaxKinds.ClassProperty;
   decorators: Decorator[] | null;
+  // JS modifier
+  static: boolean;
+  // ClassElementName
+  key: ClassElementName;
+  computed: boolean;
+  // TS Modifier
+  accessibility: "private" | "public" | "protected" | null;
+  abstract: boolean;
+  // TS type
+  optional: boolean;
+  typeAnnotation: TSTypeAnnotation | undefined;
+  // Default value
+  value: Expression | undefined; // actually is assignment expression,
 }
-export interface ClassAccessorProperty extends Property {
+export interface ClassAccessorProperty extends ModuleItem {
   kind: SyntaxKinds.ClassAccessorProperty;
   decorators: Decorator[] | null;
+  // JS modifier
+  static: boolean;
+  // ClassElementName
+  key: ClassElementName;
+  computed: boolean;
+  // TS Modifier
+  accessibility: "private" | "public" | "protected" | null;
+  abstract: boolean;
+  // TS type
+  typeAnnotation: TSTypeAnnotation | undefined;
+  // Default value
+  value: Expression | undefined; // actually is assignment expression,
 }
-export interface ClassMethodDefinition extends Omit<MethodDefinition, "type"> {
+
+export interface ClassConstructor extends ModuleItem {
+  kind: SyntaxKinds.ClassConstructor;
+  // ClassElementName
+  key: Identifier;
+  // function
+  params: Array<Pattern>;
+  body: FunctionBody;
+  // TS type
+  returnType: TSTypeAnnotation | undefined;
+  // TS modifier
+  accessibility: "private" | "public" | "protected" | null;
+}
+export interface ClassMethodDefinition extends ModuleItem {
   kind: SyntaxKinds.ClassMethodDefinition;
   decorators: Decorator[] | null;
+  // JS modifier
+  generator: boolean;
+  async: boolean;
+  static: boolean;
+  // ClassElementName
+  key: ClassElementName;
+  computed: boolean;
+  // function
+  params: Array<Pattern>;
+  body: FunctionBody;
+  // TS type
+  typeParameters: TSTypeParameterDeclaration | undefined;
+  returnType: TSTypeAnnotation | undefined;
+  // TS modifier
+  optional: boolean;
+  accessibility: "private" | "public" | "protected" | null;
 }
-export interface ClassConstructor
-  extends Omit<MethodDefinition, "generator" | "async" | "static" | "computed" | "type" | "typeParameters"> {
-  kind: SyntaxKinds.ClassConstructor;
-  key: Identifier;
-}
-export interface ClassAccessor extends Omit<MethodDefinition, "generator" | "async" | "static"> {
-  kind: SyntaxKinds.ClassAccessor;
-  type: "get" | "set";
+export interface ClassMethodDeclaration extends ModuleItem {
+  kind: SyntaxKinds.ClassMethodDeclaration;
   decorators: Decorator[] | null;
+  // JS modifier
+  generator: boolean;
+  async: boolean;
+  static: boolean;
+  // ClassElementName
+  key: ClassElementName;
+  computed: boolean;
+  // function
+  params: Array<Pattern>;
+  // TS type
+  typeParameters: TSTypeParameterDeclaration | undefined;
+  returnType: TSTypeAnnotation | undefined;
+  // TS modifier
+  optional: boolean;
+  accessibility: "private" | "public" | "protected" | null;
+  abstract: boolean;
+}
+export interface ClassAccessor extends ModuleItem {
+  kind: SyntaxKinds.ClassAccessor;
+  decorators: Decorator[] | null;
+  // JS modifier
+  type: "get" | "set";
+  static: boolean;
+  // ClassElementName
+  key: ClassElementName;
+  computed: boolean;
+  // function
+  params: Array<Pattern>;
+  body: FunctionBody;
+  // TS type
+  typeParameters: TSTypeParameterDeclaration | undefined;
+  returnType: TSTypeAnnotation | undefined;
+  // TS modifier
+  accessibility: "private" | "public" | "protected" | null;
+}
+// NOTE: accessor must be abstract to be declaration.
+export interface TSAbstractClassAccessorDeclaration extends ModuleItem {
+  kind: SyntaxKinds.TSAbstractClassAccessorDeclaration;
+  decorators: Decorator[] | null;
+  // JS modifier
+  type: "get" | "set";
+  static: boolean;
+  // ClassElementName
+  key: ClassElementName;
+  computed: boolean;
+  // function
+  params: Array<Pattern>;
+  // TS type
+  typeParameters: TSTypeParameterDeclaration | undefined;
+  returnType: TSTypeAnnotation | undefined;
+  // TS modifier
+  accessibility: "private" | "public" | "protected" | null;
 }
 export interface ClassStaticBlock extends ModuleItem {
   kind: SyntaxKinds.ClassStaticBlock;
@@ -671,7 +772,9 @@ export type ClassElement =
   | ClassProperty
   | ClassAccessorProperty
   | ClassMethodDefinition
+  | ClassMethodDeclaration
   | ClassAccessor
+  | TSAbstractClassAccessorDeclaration
   | ClassConstructor
   | ClassStaticBlock;
 export interface ClassDeclaration extends ModuleItem, Class {

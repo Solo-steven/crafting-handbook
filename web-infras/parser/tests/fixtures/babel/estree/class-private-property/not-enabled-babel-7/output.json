@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "PrivateName",
                             "name": "foo",
@@ -55,6 +54,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -62,15 +64,14 @@
                         },
                         "end": {
                             "row": 2,
-                            "col": 7,
-                            "index": 16
+                            "col": 16,
+                            "index": 25
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": true,
-                        "shorted": false,
                         "key": {
                             "kind": "PrivateName",
                             "name": "bar",
@@ -100,15 +101,18 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 3,
-                            "col": 10,
-                            "index": 35
+                            "col": 3,
+                            "index": 28
                         },
                         "end": {
                             "row": 3,
-                            "col": 14,
-                            "index": 39
+                            "col": 21,
+                            "index": 46
                         }
                     }
                 ],

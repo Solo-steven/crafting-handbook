@@ -1,1 +1,3 @@
-[Syntax Error]: Unexpect token Identifer(1, 17).
+[SyntaxError]: getter can not be async or generator. (1,17)
+1|x = { async get g() {} }
+ |               ^

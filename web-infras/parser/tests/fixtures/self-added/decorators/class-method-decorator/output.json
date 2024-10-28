@@ -42,6 +42,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -86,9 +88,9 @@
                             }
                         ],
                         "start": {
-                            "row": 3,
+                            "row": 2,
                             "col": 5,
-                            "index": 45
+                            "index": 31
                         },
                         "end": {
                             "row": 5,

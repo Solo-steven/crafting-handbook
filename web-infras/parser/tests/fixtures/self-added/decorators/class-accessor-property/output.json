@@ -25,7 +25,7 @@
                         "kind": "ClassAccessorProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
+                        "abstract": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "prop",
@@ -55,15 +55,16 @@
                             }
                         },
                         "decorators": null,
+                        "accessibility": null,
                         "start": {
                             "row": 2,
-                            "col": 14,
-                            "index": 23
+                            "col": 5,
+                            "index": 14
                         },
                         "end": {
                             "row": 2,
-                            "col": 18,
-                            "index": 27
+                            "col": 24,
+                            "index": 33
                         }
                     },
                     {
@@ -87,6 +88,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],

@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": true,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "async",
@@ -41,10 +40,13 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 1,
-                            "col": 18,
-                            "index": 17
+                            "col": 11,
+                            "index": 10
                         },
                         "end": {
                             "row": 1,
@@ -73,6 +75,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],

@@ -1,1 +1,3 @@
-[Syntax Error]: Unexpect token }(1, 12).
+[SyntaxError]: Modifier await can not using in there. (1,12)
+1|({ async a });
+ |          ^

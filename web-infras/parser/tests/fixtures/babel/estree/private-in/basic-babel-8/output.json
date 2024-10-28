@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "PrivateName",
                             "name": "foo",
@@ -55,6 +54,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -62,8 +64,8 @@
                         },
                         "end": {
                             "row": 2,
-                            "col": 7,
-                            "index": 16
+                            "col": 16,
+                            "index": 25
                         }
                     },
                     {
@@ -102,6 +104,8 @@
                                 }
                             }
                         ],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [
@@ -175,8 +179,8 @@
                         "decorators": null,
                         "start": {
                             "row": 3,
-                            "col": 10,
-                            "index": 35
+                            "col": 3,
+                            "index": 28
                         },
                         "end": {
                             "row": 5,

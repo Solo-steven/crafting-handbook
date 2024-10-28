@@ -38,6 +38,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -53,12 +54,13 @@
                             }
                         },
                         "type": "get",
+                        "static": true,
                         "computed": false,
                         "decorators": null,
                         "start": {
                             "row": 2,
-                            "col": 10,
-                            "index": 19
+                            "col": 3,
+                            "index": 12
                         },
                         "end": {
                             "row": 2,
@@ -98,6 +100,7 @@
                                 }
                             }
                         ],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -113,12 +116,13 @@
                             }
                         },
                         "type": "set",
+                        "static": true,
                         "computed": false,
                         "decorators": null,
                         "start": {
                             "row": 3,
-                            "col": 10,
-                            "index": 40
+                            "col": 3,
+                            "index": 33
                         },
                         "end": {
                             "row": 3,

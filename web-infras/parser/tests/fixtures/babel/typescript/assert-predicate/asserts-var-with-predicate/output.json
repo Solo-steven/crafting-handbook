@@ -151,6 +151,8 @@
                                 "index": 69
                             }
                         },
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],

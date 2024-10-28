@@ -46,7 +46,6 @@
                                     "kind": "ClassProperty",
                                     "computed": false,
                                     "static": false,
-                                    "shorted": false,
                                     "key": {
                                         "kind": "Identifer",
                                         "name": "foo",
@@ -102,6 +101,8 @@
                                                         }
                                                     },
                                                     "params": [],
+                                                    "optional": false,
+                                                    "accessibility": null,
                                                     "body": {
                                                         "kind": "FunctionBody",
                                                         "body": [
@@ -181,6 +182,9 @@
                                         "decorators": null
                                     },
                                     "decorators": null,
+                                    "optional": false,
+                                    "abstract": false,
+                                    "accessibility": null,
                                     "start": {
                                         "row": 3,
                                         "col": 5,
@@ -188,8 +192,8 @@
                                     },
                                     "end": {
                                         "row": 3,
-                                        "col": 8,
-                                        "index": 35
+                                        "col": 43,
+                                        "index": 70
                                     }
                                 }
                             ],

@@ -46,6 +46,8 @@
                                     }
                                 }
                             ],
+                            "optional": false,
+                            "accessibility": null,
                             "body": {
                                 "kind": "FunctionBody",
                                 "body": [],
@@ -153,6 +155,8 @@
                                     }
                                 }
                             ],
+                            "optional": false,
+                            "accessibility": null,
                             "body": {
                                 "kind": "FunctionBody",
                                 "body": [],

@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "x",
@@ -41,6 +40,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 1,
                             "col": 11,
@@ -48,15 +50,14 @@
                         },
                         "end": {
                             "row": 1,
-                            "col": 12,
-                            "index": 11
+                            "col": 13,
+                            "index": 12
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "y",
@@ -72,6 +73,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 1,
                             "col": 14,
@@ -79,8 +83,8 @@
                         },
                         "end": {
                             "row": 1,
-                            "col": 15,
-                            "index": 14
+                            "col": 16,
+                            "index": 15
                         }
                     }
                 ],
@@ -131,7 +135,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "x",
@@ -161,6 +164,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 3,
                             "col": 11,
@@ -168,15 +174,14 @@
                         },
                         "end": {
                             "row": 3,
-                            "col": 12,
-                            "index": 30
+                            "col": 17,
+                            "index": 35
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "y",
@@ -206,6 +211,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 3,
                             "col": 18,
@@ -213,8 +221,8 @@
                         },
                         "end": {
                             "row": 3,
-                            "col": 19,
-                            "index": 37
+                            "col": 24,
+                            "index": 42
                         }
                     }
                 ],

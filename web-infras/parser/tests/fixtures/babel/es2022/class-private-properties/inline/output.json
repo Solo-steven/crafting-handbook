@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "PrivateName",
                             "name": "x",
@@ -41,6 +40,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 1,
                             "col": 11,
@@ -48,15 +50,14 @@
                         },
                         "end": {
                             "row": 1,
-                            "col": 13,
-                            "index": 12
+                            "col": 14,
+                            "index": 13
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "PrivateName",
                             "name": "y",
@@ -72,6 +73,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 1,
                             "col": 15,
@@ -79,8 +83,8 @@
                         },
                         "end": {
                             "row": 1,
-                            "col": 17,
-                            "index": 16
+                            "col": 18,
+                            "index": 17
                         }
                     }
                 ],
@@ -131,7 +135,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "PrivateName",
                             "name": "x",
@@ -161,6 +164,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 3,
                             "col": 11,
@@ -168,15 +174,14 @@
                         },
                         "end": {
                             "row": 3,
-                            "col": 13,
-                            "index": 33
+                            "col": 18,
+                            "index": 38
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "PrivateName",
                             "name": "y",
@@ -206,6 +211,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 3,
                             "col": 19,
@@ -213,8 +221,8 @@
                         },
                         "end": {
                             "row": 3,
-                            "col": 21,
-                            "index": 41
+                            "col": 26,
+                            "index": 46
                         }
                     }
                 ],

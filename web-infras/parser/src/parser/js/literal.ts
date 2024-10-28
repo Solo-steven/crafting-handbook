@@ -21,15 +21,10 @@ import {
   NumericLiteralKinds,
   isNumnerLiteral,
   Decorator,
-  ClassMethodDefinition,
   ObjectAccessor,
-  ClassAccessor,
-  ClassConstructor,
-  MethodDefinition,
   Keywords,
   Pattern,
   isRestElement,
-  isPrivateName,
   isSpreadElement,
   ArrorFunctionExpression,
   PropertyDefinition,
@@ -50,6 +45,7 @@ import {
   PreserveWordSet,
   KeywordSet,
 } from "@/src/parser/type";
+import { ModifierState } from "./declaration";
 
 export function parseRegexLiteral(this: Parser): RegexLiteral {
   this.expectButNotEat([SyntaxKinds.DivideOperator, SyntaxKinds.DivideAssignOperator]);
@@ -781,15 +777,6 @@ export function staticSematicHelperRecordPropertyNameForEarlyError(
  * Property := PropertyName '=' AssignmentExpression
  * SpreadElement := '...' AssigmentExpression
  * ```
- * ### How to parse
- * 1. start with `...` operator, must be SpreadElment
- * 2. start with privatename is syntax error, but it is common, so we handle it as sematic problem.
- * 3. check is start with method modifier prefix by helper function `checkIsMethodStartWithModifier`.
- * 4. default case, property name with colon operator.
- * 5. this is speical case, we accept a coverinit in object expression, because object expression
- *    might be transform into object pattern, so we mark accept it and mark it. it coverInit of
- *    object expression is not transform by `toAssignment` function, it would throw error in the
- *    end of `parseProgram`
  * #### ref: https://tc39.es/ecma262/#prod-PropertyDefinition
  */
 export function parsePropertyDefinition(
@@ -808,19 +795,15 @@ export function parsePropertyDefinition(
     const expr = this.parseAssignmentExpressionAllowIn();
     return Factory.createSpreadElement(expr, spreadElementStart, cloneSourcePosition(expr.end));
   }
-  // start with possible method modifier
-  if (this.checkIsMethodStartWithModifier()) {
-    return this.parseMethodDefintion() as ObjectMethodDefinition;
-  }
-  // otherwise, it would be Property start with PropertyName or MethodDeinftion start with PropertyName
+  const start = this.getStartPosition();
+  const modifierState = this.parsePropertyModifier();
   const isComputedRef = { isComputed: false };
   const propertyName = this.parsePropertyName(isComputedRef);
+  // method
   if (this.match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-    return this.parseMethodDefintion(false, [
-      propertyName,
-      isComputedRef.isComputed,
-    ]) as ObjectMethodDefinition;
+    return this.parseMethodDefintion(start, modifierState, propertyName, isComputedRef.isComputed);
   }
+  this.staticSematicForModifierInPropertyName(modifierState);
   if (isComputedRef.isComputed || this.match(SyntaxKinds.ColonPunctuator)) {
     staticSematicHelperRecordPropertyNameForEarlyError(
       protoPropertyNameLocations,
@@ -989,6 +972,14 @@ export function staticSematicForShortedPropertyNameInObjectExpression(
     this.raiseError(ErrorMessageMap.babel_error_unexpected_reserved_word, propertyName.start);
   }
 }
+export function staticSematicForModifierInPropertyName(this: Parser, state: ModifierState) {
+  if (state.isAsync) {
+    this.raiseError(ErrorMessageMap.ts_invalid_modifier.replace("{}", "await"), this.getStartPosition());
+  }
+  if (state.isGenerator) {
+    this.raiseError(ErrorMessageMap.ts_invalid_modifier.replace("{}", "generator"), this.getStartPosition());
+  }
+}
 /** Parse MethodDefintion, this method should allow using when in class or in object literal.
  *  1. ClassElement can be PrivateName, when it used in object literal, it should throw a error.
  *  2. It should parse modifier when `withPropertyName` is falsey.
@@ -1010,162 +1001,38 @@ export function staticSematicForShortedPropertyNameInObjectExpression(
  * ClassElementName := PropertyName
  *                   := PrivateName
  * ```
- * @param {boolean} inClass is used in class or not.
- * @param {PropertyName | PrivateName | undefined } withPropertyName parse methodDeinfition with exited propertyName or not
- * @param {boolean} isStatic
- * @returns {ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor  | ClassConstructor}
  */
 export function parseMethodDefintion(
   this: Parser,
-  inClass: boolean = false,
-  withPropertyName: [PropertyName | PrivateName, boolean] | undefined = undefined,
-  isStatic: boolean = false,
-  decorators: Decorator[] | null = null,
-): ObjectMethodDefinition | ClassMethodDefinition | ObjectAccessor | ClassAccessor | ClassConstructor {
-  if (!this.checkIsMethodStartWithModifier() && !withPropertyName) {
-    throw this.createUnreachError([SyntaxKinds.MultiplyAssignOperator, SyntaxKinds.Identifier]);
-  }
-  /**
-   * Step 1 : if not with propertyName , parse modifier frist, otherwise, if with propertyName, it shouldn't do anything.
-   * structure would be like : ('set' | 'get')? 'async' '*' PropertyName  ...., this strcuture isn't match the spec.
-   * but in this structure, we can detect some syntax error more concies, like set and get can not use with async
-   * or generator.
-   */
-  let type: MethodDefinition["type"] = "method";
-  let isAsync: MethodDefinition["async"] = false;
-  let generator: MethodDefinition["generator"] = false;
-  let computed: MethodDefinition["computed"] = withPropertyName ? withPropertyName[1] : false;
-  let start: SourcePosition | null = null;
-  let propertyName: PropertyName;
-  if (!withPropertyName) {
-    // frist, is setter or getter
-    if (this.isContextKeyword("set")) {
-      type = "set";
-      start = this.getStartPosition();
-      this.nextToken();
-    } else if (this.isContextKeyword("get")) {
-      type = "get";
-      start = this.getStartPosition();
-      this.nextToken();
-    }
-    // second, parser async and generator
-    const { kind } = this.lookahead();
-    if (this.isContextKeyword("async") && kind !== SyntaxKinds.ParenthesesLeftPunctuator) {
-      start = this.getStartPosition();
-      isAsync = true;
-      this.nextToken();
-      if (this.match(SyntaxKinds.MultiplyOperator)) {
-        this.nextToken();
-        generator = true;
-      }
-    } else if (this.match(SyntaxKinds.MultiplyOperator)) {
-      start = this.getStartPosition();
-      generator = true;
-      this.nextToken();
-    }
-    if (this.match(SyntaxKinds.PrivateName)) {
-      propertyName = this.parsePrivateName();
-      this.defPrivateName(
-        propertyName.name,
-        propertyName.start,
-        type === "method" ? "other" : isStatic ? `static-${type}` : type,
-      );
-    } else {
-      const isComputedRef = { isComputed: false };
-      propertyName = this.parsePropertyName(isComputedRef);
-      computed = isComputedRef.isComputed;
-    }
-    if (!start) start = cloneSourcePosition(propertyName.start);
-  } else {
-    start = cloneSourcePosition(withPropertyName[0].start);
-    propertyName = withPropertyName[0];
-  }
-  const isCtor = inClass && !isStatic && !computed && helperIsPropertyNameIsCtor(propertyName);
-  if (isCtor) {
-    this.lexicalScopeRecorder.enterCtor();
-    if (this.lexicalScopeRecorder.testAndSetCtor()) {
-      this.raiseError(ErrorMessageMap.v8_error_a_class_may_only_have_one_constructor, propertyName.start);
-    }
-  }
+  start: SourcePosition,
+  state: ModifierState,
+  propertyName: PropertyName,
+  isComputed: boolean,
+): ObjectMethodDefinition | ObjectAccessor {
   const typeParameters = this.tryParseTSTypeParameterDeclaration(false);
-  this.enterFunctionScope(isAsync, generator);
+  this.enterFunctionScope(state.isAsync, state.isGenerator);
   const [parmas, scope] = this.parseWithCatpureLayer(() => this.parseFunctionParam());
   const returnType = this.tryParseTSReturnTypeOrTypePredicate(SyntaxKinds.ColonPunctuator);
   const body = this.parseFunctionBody();
   this.postStaticSematicEarlyErrorForStrictModeOfFunction(null, scope);
   this.exitFunctionScope(true);
-  if (isCtor) this.lexicalScopeRecorder.exitCtor();
   /**
    * Step 2: semantic and more concise syntax check instead just throw a unexpect
    * token error.
    */
-  this.staticSematicEarlyErrorForClassMethodDefinition(
-    propertyName,
-    inClass,
-    isStatic,
-    isAsync,
-    generator,
-    parmas,
-    type,
-  );
+  this.staticSematicEarlyErrorForMethodDefinition(state, propertyName, parmas);
   /**
    * Step 3 return based on type, if accessor or methodDefintion
    */
-  if (inClass) {
-    if (isCtor) {
-      if (decorators) {
-        this.raiseError(
-          ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_constructor,
-          decorators[0].start,
-        );
-      }
-      return Factory.createClassConstructor(
-        propertyName as ClassConstructor["key"],
-        body,
-        parmas,
-        returnType,
-        start as SourcePosition,
-        cloneSourcePosition(body.end),
-      );
-    }
-    if (type === "set" || type === "get") {
-      return Factory.createClassAccessor(
-        propertyName,
-        body,
-        parmas,
-        typeParameters,
-        returnType,
-        type,
-        computed,
-        decorators,
-        start as SourcePosition,
-        cloneSourcePosition(body.end),
-      );
-    }
-    return Factory.createClassMethodDefintion(
-      propertyName,
-      body,
-      parmas,
-      typeParameters,
-      returnType,
-      isAsync,
-      generator,
-      computed,
-      isStatic,
-      decorators,
-      start ? start : cloneSourcePosition(propertyName.start),
-      cloneSourcePosition(body.end),
-    );
-  }
-  if (type === "set" || type === "get") {
+  if (state.type === "set" || state.type === "get") {
     return Factory.createObjectAccessor(
       propertyName,
       body,
       parmas,
       typeParameters,
       returnType,
-      type,
-      computed,
+      state.type,
+      isComputed,
       start as SourcePosition,
       cloneSourcePosition(body.end),
     );
@@ -1176,9 +1043,9 @@ export function parseMethodDefintion(
     parmas,
     typeParameters,
     returnType,
-    isAsync,
-    generator,
-    computed,
+    state.isAsync,
+    state.isGenerator,
+    isComputed,
     start ? start : cloneSourcePosition(propertyName.start),
     cloneSourcePosition(body.end),
   );
@@ -1215,19 +1082,6 @@ export function checkIsMethodStartWithModifier(this: Parser): boolean {
   }
   return false;
 }
-function helperIsPropertyNameIsCtor(propertyName: PropertyName) {
-  switch (propertyName.kind) {
-    case SyntaxKinds.Identifier: {
-      return propertyName.name === "constructor";
-    }
-    case SyntaxKinds.StringLiteral: {
-      return propertyName.value === "constructor";
-    }
-    default: {
-      return false;
-    }
-  }
-}
 /**
  * Spec def of class method, only implement some of spec.
  * @param propertyName
@@ -1239,21 +1093,17 @@ function helperIsPropertyNameIsCtor(propertyName: PropertyName) {
  * @param type
  * reference: https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
  */
-export function staticSematicEarlyErrorForClassMethodDefinition(
+export function staticSematicEarlyErrorForMethodDefinition(
   this: Parser,
+  state: ModifierState,
   propertyName: PropertyName,
-  isClass: boolean,
-  isStatic: boolean,
-  isAsync: boolean,
-  isGenerator: boolean,
   params: Array<Pattern>,
-  type: MethodDefinition["type"],
 ) {
   // general check
-  if (type === "get" && params.length > 0) {
+  if (state.type === "get" && params.length > 0) {
     this.raiseError(ErrorMessageMap.syntax_error_getter_functions_must_have_no_arguments, propertyName.start);
   }
-  if (type === "set") {
+  if (state.type === "set") {
     if (params.length !== 1) {
       this.raiseError(ErrorMessageMap.syntax_error_setter_functions_must_have_one_argument, params[0].start);
     }
@@ -1266,58 +1116,11 @@ export function staticSematicEarlyErrorForClassMethodDefinition(
       }
     }
   }
-  if (type === "get" && (isAsync || isGenerator)) {
+  if (state.type === "get" && (state.isAsync || state.isGenerator)) {
     this.raiseError(ErrorMessageMap.extra_error_getter_can_not_be_async_or_generator, propertyName.start);
   }
-  if (type === "set" && (isAsync || isGenerator)) {
+  if (state.type === "set" && (state.isAsync || state.isGenerator)) {
     this.raiseError(ErrorMessageMap.extra_error_setter_can_not_be_async_or_generator, propertyName.start);
-  }
-  // class check
-  if (isClass) {
-    let valueOfName: string | undefined,
-      isPrivate = false,
-      fromLiteral = false; //
-    if (isStringLiteral(propertyName)) {
-      valueOfName = propertyName.value;
-      fromLiteral = true;
-    } else if (isIdentifer(propertyName)) {
-      valueOfName = propertyName.name;
-    } else if (isPrivateName(propertyName)) {
-      valueOfName = propertyName.name;
-      isPrivate = true;
-    }
-    if (valueOfName === "constructor" && !fromLiteral) {
-      if (isAsync) {
-        this.raiseError(
-          ErrorMessageMap.v8_error_class_constructor_may_not_be_an_async_method,
-          propertyName.start,
-        );
-      }
-      if (isGenerator) {
-        this.raiseError(
-          ErrorMessageMap.v8_error_class_constructor_may_not_be_a_generator,
-          propertyName.start,
-        );
-      }
-      if (type === "get" || type === "set") {
-        this.raiseError(
-          ErrorMessageMap.v8_error_class_constructor_may_not_be_an_accessor,
-          propertyName.start,
-        );
-      }
-      if (isPrivate) {
-        this.raiseError(
-          ErrorMessageMap.v8_error_class_may_not_have_a_private_field_named_constructor,
-          propertyName.start,
-        );
-      }
-    }
-    if (valueOfName === "prototype" && !isPrivate && type === "method" && isStatic) {
-      this.raiseError(
-        ErrorMessageMap.v8_error_class_may_not_have_static_property_named_prototype,
-        propertyName.start,
-      );
-    }
   }
 }
 export function parseArrayExpression(this: Parser) {

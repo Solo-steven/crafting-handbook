@@ -42,6 +42,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -59,8 +61,8 @@
                         "decorators": null,
                         "start": {
                             "row": 1,
-                            "col": 17,
-                            "index": 16
+                            "col": 10,
+                            "index": 9
                         },
                         "end": {
                             "row": 1,
@@ -85,6 +87,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -100,12 +103,13 @@
                             }
                         },
                         "type": "get",
+                        "static": true,
                         "computed": false,
                         "decorators": null,
                         "start": {
                             "row": 1,
-                            "col": 30,
-                            "index": 29
+                            "col": 23,
+                            "index": 22
                         },
                         "end": {
                             "row": 1,
@@ -145,6 +149,7 @@
                                 }
                             }
                         ],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -160,12 +165,13 @@
                             }
                         },
                         "type": "set",
+                        "static": true,
                         "computed": false,
                         "decorators": null,
                         "start": {
                             "row": 1,
-                            "col": 47,
-                            "index": 46
+                            "col": 40,
+                            "index": 39
                         },
                         "end": {
                             "row": 1,

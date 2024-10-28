@@ -98,7 +98,6 @@
                                                     "kind": 10174,
                                                     "computed": false,
                                                     "static": false,
-                                                    "shorted": false,
                                                     "key": {
                                                         "kind": 10130,
                                                         "name": "x",
@@ -128,6 +127,9 @@
                                                         }
                                                     },
                                                     "decorators": null,
+                                                    "optional": false,
+                                                    "abstract": false,
+                                                    "accessibility": null,
                                                     "start": {
                                                         "row": 3,
                                                         "col": 32,
@@ -135,8 +137,8 @@
                                                     },
                                                     "end": {
                                                         "row": 3,
-                                                        "col": 33,
-                                                        "index": 40
+                                                        "col": 41,
+                                                        "index": 48
                                                     }
                                                 }
                                             ],

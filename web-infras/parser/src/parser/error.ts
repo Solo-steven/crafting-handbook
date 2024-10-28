@@ -240,4 +240,9 @@ export const ErrorMessageMap = {
   // try `yield *;` in generator
   extra_error_yield_deletgate_can_must_be_followed_by_assignment_expression:
     "yield deletegate must be followed by assignment expression",
+  /**
+   * TS Error
+   */
+  ts_invalid_modifier: "Modifier {} can not using in there.",
+  ts_invalid_modifier_error: "Modifier {} order is wrong.",
 };

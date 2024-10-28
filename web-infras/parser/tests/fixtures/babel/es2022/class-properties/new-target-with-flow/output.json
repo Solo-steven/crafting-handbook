@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": true,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "a",
@@ -82,22 +81,24 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 2,
-                            "col": 10,
-                            "index": 19
+                            "col": 3,
+                            "index": 12
                         },
                         "end": {
                             "row": 2,
-                            "col": 11,
-                            "index": 20
+                            "col": 25,
+                            "index": 34
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": true,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "b",
@@ -241,22 +242,24 @@
                             "parentheses": true
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 3,
-                            "col": 10,
-                            "index": 44
+                            "col": 3,
+                            "index": 37
                         },
                         "end": {
                             "row": 3,
-                            "col": 11,
-                            "index": 45
+                            "col": 42,
+                            "index": 76
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": true,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "c",
@@ -329,22 +332,24 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 4,
-                            "col": 10,
-                            "index": 86
+                            "col": 3,
+                            "index": 79
                         },
                         "end": {
                             "row": 4,
-                            "col": 11,
-                            "index": 87
+                            "col": 31,
+                            "index": 107
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": true,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "d",
@@ -459,22 +464,24 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 5,
-                            "col": 10,
-                            "index": 117
+                            "col": 3,
+                            "index": 110
                         },
                         "end": {
                             "row": 5,
-                            "col": 11,
-                            "index": 118
+                            "col": 39,
+                            "index": 146
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "e",
@@ -531,6 +538,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 6,
                             "col": 3,
@@ -538,15 +548,14 @@
                         },
                         "end": {
                             "row": 6,
-                            "col": 4,
-                            "index": 150
+                            "col": 18,
+                            "index": 164
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "f",
@@ -690,6 +699,9 @@
                             "parentheses": true
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 7,
                             "col": 3,
@@ -697,15 +709,14 @@
                         },
                         "end": {
                             "row": 7,
-                            "col": 4,
-                            "index": 168
+                            "col": 35,
+                            "index": 199
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "g",
@@ -778,6 +789,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 8,
                             "col": 3,
@@ -785,15 +799,14 @@
                         },
                         "end": {
                             "row": 8,
-                            "col": 4,
-                            "index": 203
+                            "col": 24,
+                            "index": 223
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "h",
@@ -908,6 +921,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 9,
                             "col": 3,
@@ -915,8 +931,8 @@
                         },
                         "end": {
                             "row": 9,
-                            "col": 4,
-                            "index": 227
+                            "col": 32,
+                            "index": 255
                         }
                     }
                 ],

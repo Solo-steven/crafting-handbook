@@ -67,6 +67,7 @@
                                 }
                             }
                         ],
+                        "accessibility": null,
                         "start": {
                             "row": 1,
                             "col": 11,

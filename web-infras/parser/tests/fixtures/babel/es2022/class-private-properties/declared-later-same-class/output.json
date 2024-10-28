@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "PrivateName",
                             "name": "x",
@@ -84,6 +83,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -91,15 +93,14 @@
                         },
                         "end": {
                             "row": 2,
-                            "col": 5,
-                            "index": 14
+                            "col": 16,
+                            "index": 25
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "PrivateName",
                             "name": "y",
@@ -115,6 +116,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 3,
                             "col": 3,
@@ -122,8 +126,8 @@
                         },
                         "end": {
                             "row": 3,
-                            "col": 5,
-                            "index": 30
+                            "col": 6,
+                            "index": 31
                         }
                     }
                 ],

@@ -1,1 +1,3 @@
-[Syntax Error]: Unexpect token Identifer(1, 16).
+[SyntaxError]: setter can not be async or generator. (1,16)
+1|x = {async set s(i) {} }
+ |              ^

@@ -38,6 +38,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [
@@ -96,6 +97,7 @@
                             }
                         },
                         "type": "get",
+                        "static": false,
                         "computed": false,
                         "decorators": null,
                         "start": {
@@ -141,6 +143,7 @@
                                 }
                             }
                         ],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [
@@ -214,6 +217,7 @@
                             }
                         },
                         "type": "set",
+                        "static": false,
                         "computed": false,
                         "decorators": null,
                         "start": {

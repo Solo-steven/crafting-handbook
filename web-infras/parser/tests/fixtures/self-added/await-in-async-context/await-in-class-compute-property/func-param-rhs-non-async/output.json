@@ -74,7 +74,6 @@
                                     "kind": "ClassProperty",
                                     "computed": true,
                                     "static": false,
-                                    "shorted": false,
                                     "key": {
                                         "kind": "Identifer",
                                         "name": "await",
@@ -104,15 +103,18 @@
                                         }
                                     },
                                     "decorators": null,
+                                    "optional": false,
+                                    "abstract": false,
+                                    "accessibility": null,
                                     "start": {
                                         "row": 3,
-                                        "col": 10,
-                                        "index": 57
+                                        "col": 9,
+                                        "index": 56
                                     },
                                     "end": {
                                         "row": 3,
-                                        "col": 15,
-                                        "index": 62
+                                        "col": 21,
+                                        "index": 68
                                     }
                                 }
                             ],

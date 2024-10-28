@@ -71,6 +71,8 @@
                                 }
                             }
                         ],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],

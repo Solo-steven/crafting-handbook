@@ -42,6 +42,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -59,8 +61,8 @@
                         "decorators": null,
                         "start": {
                             "row": 1,
-                            "col": 17,
-                            "index": 16
+                            "col": 10,
+                            "index": 9
                         },
                         "end": {
                             "row": 1,
@@ -89,6 +91,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -106,8 +110,8 @@
                         "decorators": null,
                         "start": {
                             "row": 1,
-                            "col": 32,
-                            "index": 31
+                            "col": 25,
+                            "index": 24
                         },
                         "end": {
                             "row": 1,

@@ -38,6 +38,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -53,12 +54,13 @@
                             }
                         },
                         "type": "get",
+                        "static": true,
                         "computed": true,
                         "decorators": null,
                         "start": {
                             "row": 1,
-                            "col": 18,
-                            "index": 17
+                            "col": 11,
+                            "index": 10
                         },
                         "end": {
                             "row": 1,

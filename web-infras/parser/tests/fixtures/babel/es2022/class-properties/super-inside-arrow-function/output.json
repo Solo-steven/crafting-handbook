@@ -38,7 +38,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "foo",
@@ -128,6 +127,9 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "accessibility": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -135,8 +137,8 @@
                         },
                         "end": {
                             "row": 2,
-                            "col": 6,
-                            "index": 25
+                            "col": 25,
+                            "index": 44
                         }
                     }
                 ],
