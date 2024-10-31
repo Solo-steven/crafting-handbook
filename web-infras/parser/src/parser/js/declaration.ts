@@ -63,8 +63,8 @@ export type ModifierState = {
 };
 
 /**
- * Parse Declaration
- *
+ * Parse Declaration, accept both JS production rule and TS production rule.
+ * - JS spec:
  * ```
  *  Declaration := ('let' | 'const') BindingLst
  *              := FunctionDeclaration
@@ -73,13 +73,14 @@ export type ModifierState = {
  *              := 'async' FunctionGeneratorDeclaration
  *              := ClassDeclaration
  * ```
- * when call parseDeclaration, please make sure currentToken is
- * - `let` or `const` keyword
- * - `function` keyword
- * - `class` keyword
- * - `async` with `function` keyword
- *
- * ref: https://tc39.es/ecma262/#prod-Declaration
+ * - TS spec:
+ * ```
+ * Declaration := <enum-token> TSEnum
+ *             := 'interface' TSInterfaceDeclaration
+ *             := 'type' TSTypeAliasDeclaration
+ *             := TSFunctionDeclaration
+ * ```
+ * - js spec: https://tc39.es/ecma262/#prod-Declaration
  * @returns
  */
 export function parseDeclaration(this: Parser): Declaration {

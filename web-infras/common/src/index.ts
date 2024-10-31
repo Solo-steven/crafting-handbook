@@ -1,5 +1,6 @@
-export * from "./ast";
-export * as Factory from "./factory";
+export * from "./ast/index";
+export * from "./visitor/index";
+export * as Factory from "./factory/index";
+export * from "./helper";
 export * from "./kind";
 export * from "./position";
-export * from "./visitor";

@@ -325,6 +325,11 @@ export function parseTSFunctionType(this: Parser): TSFunctionType {
     this.getLastTokenEndPositon(),
   );
 }
+/**
+ *
+ * @param this
+ * @returns
+ */
 export function parseTSGenericArrowFunctionExpression(this: Parser): ArrorFunctionExpression | undefined {
   const result = this.tryParse(
     (): [
@@ -671,6 +676,8 @@ export function parsePossibleArugmentDefaultValue(this: Parser, left: Expression
 }
 /**
  * Util helper for parse qustion mark for function param type
+ * - return true when token is `?`
+ * - return false when token is not `?`.
  * @returns
  */
 export function tryParseOptionalTypeParam(this: Parser) {
@@ -681,6 +688,14 @@ export function tryParseOptionalTypeParam(this: Parser) {
   }
   return optional;
 }
+/**
+ * Parse TS Type Reference, expect pattern:
+ * ```
+ * TSTypeReference := <TSEntityName>(<TSTypeParameterInstantiation>)?
+ * ```
+ * @param this
+ * @returns
+ */
 export function parseTSTypeReference(this: Parser): TSTypeReference {
   // TODO: TS garud
   const typeName = this.parseTSEntityName();
@@ -692,6 +707,14 @@ export function parseTSTypeReference(this: Parser): TSTypeReference {
     cloneSourcePosition(typeName.end),
   );
 }
+/**
+ * Parse TS Entity name, expect pattern:
+ * ```
+ * TSEntityName = <Identifier>[`.`<Identifier>]
+ * ```
+ * @param this
+ * @returns
+ */
 export function parseTSEntityName(this: Parser): TSEntityName {
   let left: TSEntityName = this.parseIdentifierReference();
   while (this.match(SyntaxKinds.DotOperator)) {
@@ -739,6 +762,21 @@ export function tryParseTSReturnTypeOrTypePredicate(this: Parser, expectToken: S
   }
   return this.parseTSReturnTypeOrTypePredicate(expectToken);
 }
+/**
+ * Parse return type, start token indicate the token start return type, in typescript,
+ * it should only be `:` or `=>` token. expect parsing pattern
+ * ```
+ * <expect-token> TypeNode
+ * <expect-token> TypePredicate
+ *
+ * TypePredicate := <Idenifier> `is` <TypeNode>
+ *               := asserts <Identifer>
+ *               := asserts <Identifier> `is` <TypeNode>
+ * ```
+ * @param this
+ * @param expectToken
+ * @returns
+ */
 export function parseTSReturnTypeOrTypePredicate(
   this: Parser,
   expectToken: SyntaxKinds,
@@ -787,16 +825,42 @@ export function parseTSReturnTypeOrTypePredicate(
   );
   return returnType;
 }
+/**
+ * Is return type or type predicate have `asserts` contextual keyword ?
+ * - There is some condition we need to consider:
+ * ```
+ * `asserts`
+ * `asserts` <identifier>
+ * `asserts` `is` <TypeNode>
+ * ```
+ * - case 1: `asserts` serve as Type.
+ * - case 2: `asserts` is contextual keyword
+ * - case 3: `asserts` is a identifier (should be in param).
+ * @param this
+ * @returns
+ */
 export function parseTSAssertionInReturnType(this: Parser): boolean {
   if (this.isContextKeyword("asserts")) {
     const { kind: lookaheadToken, value, lineTerminatorFlag } = this.lookahead();
-    if ((lookaheadToken === SyntaxKinds.Identifier || value === "is") && !lineTerminatorFlag) {
+    if (lookaheadToken === SyntaxKinds.Identifier && value !== "is" && !lineTerminatorFlag) {
       this.nextToken();
       return true;
     }
   }
   return false;
 }
+/**
+ * Is return type is TypeRedicate ?
+ *
+ * This function must used after `parseTSAssertionInReturnType` since which will
+ * eat `asserts` token, this function return true when pattern is type predicate
+ * ```
+ * <identifier> `is` <TypeNode>
+ * <idenifier>
+ * ```
+ * @param this
+ * @returns
+ */
 export function parseTypePredicatePrefixInReturnType(this: Parser) {
   return this.match(SyntaxKinds.Identifier) && this.lookahead().value === "is";
 }
