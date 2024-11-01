@@ -63,6 +63,7 @@ export interface ClassProperty extends ModuleItem {
   // TS Modifier
   accessibility: "private" | "public" | "protected" | null;
   abstract: boolean;
+  declare: boolean;
   // TS type
   optional: boolean;
   typeAnnotation: TSTypeAnnotation | undefined;

@@ -128,6 +128,7 @@ export const ErrorMessageMap = {
     "Nullish coalescing operator(??) requires parens when mixing with logical operators",
   v8_error_expont_operator_need_parans:
     "Illegal expression. Wrap left hand side or entire exponentiation in parentheses",
+  v8_error_async_of_forbidden: "he left-hand side of a for-of loop may not be 'async'.",
   // try: using keyword as shorted property.
   babel_error_unexpected_keyword: "Unexpect keyword in property name.",
   // try: using presvered word as shorted property in strict mode

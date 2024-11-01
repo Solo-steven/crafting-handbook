@@ -1,1 +1,1 @@
-keyword can not have any escap unicode
+[Syntax Error]: Unexpect token import(1, 5).

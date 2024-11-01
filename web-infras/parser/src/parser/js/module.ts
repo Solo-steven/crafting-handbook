@@ -388,7 +388,7 @@ export function parseExportDefaultDeclaration(this: Parser, start: SourcePositio
       if (this.match(SyntaxKinds.AtPunctuator)) {
         decoratorList = this.mergeDecoratorList(decoratorList, this.parseDecoratorList());
       }
-      const classDeclar = Factory.transFormClassToClassDeclaration(this.parseClass(decoratorList));
+      const classDeclar = Factory.transFormClassToClassDeclaration(this.parseClass(decoratorList, false));
       this.staticSematicForDuplicateDefaultExport(classDeclar);
       return Factory.createExportDefaultDeclaration(
         classDeclar as ClassDeclaration | ClassExpression,

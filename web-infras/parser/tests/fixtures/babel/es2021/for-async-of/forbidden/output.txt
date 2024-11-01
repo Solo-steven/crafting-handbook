@@ -1,0 +1,6 @@
+[SyntaxError]: he left-hand side of a for-of loop may not be 'async'. (1,6)
+1|for (async of x);
+ |    ^
+[SyntaxError]: he left-hand side of a for-of loop may not be 'async'. (4,8)
+4|  for (async of x);
+ |      ^

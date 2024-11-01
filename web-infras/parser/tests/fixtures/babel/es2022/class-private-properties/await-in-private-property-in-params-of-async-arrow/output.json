@@ -66,6 +66,7 @@
                                         "decorators": null,
                                         "optional": false,
                                         "abstract": false,
+                                        "declare": false,
                                         "accessibility": null,
                                         "start": {
                                             "row": 1,

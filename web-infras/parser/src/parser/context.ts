@@ -18,12 +18,17 @@ import { FunctionSymbolScope, NonFunctionalSymbolType, SymbolType } from "./scop
 import type { Parser } from "@/src/parser";
 
 export interface Context {
+  // lexical check context
   maybeArrowStart: number;
+  startOfFunctionBody: number;
+  lastTokenIndexOfIfStmt: number;
   isInType: boolean;
+  // In operator context.
   inOperatorStack: Array<boolean>;
+  // object pattern and object literal init property
   propertiesInitSet: Set<ModuleItem>;
   propertiesProtoDuplicateSet: Set<PropertyName>;
-  lastTokenIndexOfIfStmt: number;
+  // decorator cache.
   cache: {
     decorators: Decorator[] | null;
   };
@@ -35,6 +40,7 @@ export interface Context {
 export function createContext(): Context {
   return {
     maybeArrowStart: -1,
+    startOfFunctionBody: -1,
     isInType: false,
     inOperatorStack: [],
     propertiesInitSet: new Set(),
@@ -514,6 +520,9 @@ export function getCurrentInOperatorStack(this: Parser): boolean {
   }
   return this.context.inOperatorStack[this.context.inOperatorStack.length - 1];
 }
+export function isCurrentFunctionArrow(this: Parser): boolean {
+  return this.lexicalScopeRecorder.isCurrentFunctionArrow();
+}
 export function isTopLevel(this: Parser): boolean {
   return this.lexicalScopeRecorder.isInTopLevel();
 }
@@ -538,8 +547,8 @@ export function isParentFunctionAsync(this: Parser): boolean {
 export function isParentFunctionGenerator(this: Parser): boolean {
   return this.lexicalScopeRecorder.isParentFunctionGenerator();
 }
-export function enterClassScope(this: Parser, isExtend: boolean = false) {
-  this.lexicalScopeRecorder.enterClassLexicalScope(isExtend);
+export function enterClassScope(this: Parser, isExtend: boolean, isAbstract: boolean) {
+  this.lexicalScopeRecorder.enterClassLexicalScope(isExtend, isAbstract);
   this.asyncArrowExprScopeRecorder.enterAsyncArrowExpressionScope();
   this.symbolScopeRecorder.enterClassSymbolScope();
 }

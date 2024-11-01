@@ -59,6 +59,7 @@ export type ModifierState = {
   type: "set" | "get" | "method";
   readonly: boolean;
   abstract: boolean;
+  declare: boolean;
   accessibility: "private" | "protected" | "public" | null;
 };
 
@@ -102,9 +103,9 @@ export function parseDeclaration(this: Parser): Declaration {
     case SyntaxKinds.LetKeyword:
       return this.parseVariableDeclaration();
     case SyntaxKinds.AtPunctuator:
-      return this.parseClassDeclaration(this.parseDecoratorList());
+      return this.parseClassDeclaration(this.parseDecoratorList(), false);
     case SyntaxKinds.ClassKeyword:
-      return this.parseClassDeclaration(null);
+      return this.parseClassDeclaration(null, false);
     default:
       throw this.createUnexpectError();
   }
@@ -140,6 +141,13 @@ export function tryParseDeclarationWithIdentifierStart(this: Parser): Declaratio
         return;
       }
       return this.parseTSInterfaceDeclaration();
+    }
+    case "abstract": {
+      if (!(lookaheadToken === SyntaxKinds.ClassKeyword && !lineTerminatorFlag)) {
+        return;
+      }
+      this.nextToken();
+      return this.parseClassDeclaration(null, true);
     }
     default: {
       return;
@@ -442,7 +450,8 @@ export function parseFunctionName(this: Parser, optionalName: boolean): Identifi
  * @return {FunctionBody}
  */
 export function parseFunctionBody(this: Parser): FunctionBody {
-  const { start } = this.expect(SyntaxKinds.BracesLeftPunctuator);
+  const { start, end: endOfStart } = this.expect(SyntaxKinds.BracesLeftPunctuator);
+  this.context.startOfFunctionBody = endOfStart.index;
   const body: Array<StatementListItem> = [];
   while (!this.match(SyntaxKinds.BracesRightPunctuator) && !this.match(SyntaxKinds.EOFToken)) {
     body.push(this.parseStatementListItem());
@@ -604,10 +613,14 @@ export function parseDecorator(this: Parser): Decorator {
 /**
  *
  */
-export function parseClassDeclaration(this: Parser, decoratorList: Decorator[] | null): ClassDeclaration {
+export function parseClassDeclaration(
+  this: Parser,
+  decoratorList: Decorator[] | null,
+  isAbstract: boolean,
+): ClassDeclaration {
   this.expectButNotEat(SyntaxKinds.ClassKeyword);
   decoratorList = decoratorList || this.takeCacheDecorator();
-  const classDelcar = this.parseClass(decoratorList);
+  const classDelcar = this.parseClass(decoratorList, isAbstract);
   if (classDelcar.id === null) {
     this.raiseError(ErrorMessageMap.babel_error_a_class_name_is_required, classDelcar.start);
   }
@@ -620,7 +633,7 @@ export function parseClassDeclaration(this: Parser, decoratorList: Decorator[] |
  * ```
  * @returns {Class}
  */
-export function parseClass(this: Parser, decoratorList: Decorator[] | null): Class {
+export function parseClass(this: Parser, decoratorList: Decorator[] | null, isAbstract: boolean): Class {
   const { start } = this.expect(SyntaxKinds.ClassKeyword);
   let name: Identifier | null = null;
   if (this.match(BindingIdentifierSyntaxKindArray)) {
@@ -629,11 +642,11 @@ export function parseClass(this: Parser, decoratorList: Decorator[] | null): Cla
   }
   let superClass: Expression | null = null;
   if (this.match(SyntaxKinds.ExtendsKeyword)) {
-    this.enterClassScope(true);
+    this.enterClassScope(true, isAbstract);
     this.nextToken();
     superClass = this.parseLeftHandSideExpression();
   } else {
-    this.enterClassScope(false);
+    this.enterClassScope(false, isAbstract);
   }
   const body = this.parseClassBody();
   this.existClassScope();
@@ -744,6 +757,7 @@ export function parseClassElement(this: Parser): ClassElement {
     computed,
     modifierState.isStatic,
     modifierState.abstract,
+    modifierState.declare,
     decorators,
     optional,
     typeNode,
@@ -779,6 +793,7 @@ export function parsePropertyModifier(this: Parser) {
     accessibility: null,
     readonly: false,
     abstract: false,
+    declare: false,
     isAccessor: false,
   };
   // TODO: check double condition and order
@@ -844,6 +859,11 @@ export function parsePropertyModifier(this: Parser) {
       case "abstract": {
         if (lineBreak) break loop;
         state.abstract = true;
+        break;
+      }
+      case "declare": {
+        if (lineBreak) break loop;
+        state.declare = true;
         break;
       }
       default: {

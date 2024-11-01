@@ -211,8 +211,14 @@ export function staticSematicForIdentifierDefault(this: Parser, value: string, s
  * @returns {Identifier}
  */
 export function parseIdentifierName(this: Parser): Identifier {
+  this.recoverKeywordEscapError();
   const { value, start, end } = this.expect(IdentiferWithKeyworArray);
   return Factory.createIdentifier(value, start, end, undefined, undefined);
+}
+export function recoverKeywordEscapError(this: Parser) {
+  if (this.getEscFlag()) {
+    this.errorHandler.popError();
+  }
 }
 /**
  * ECMA spec has every strict rule to private name, but in this parser, most of
@@ -1162,7 +1168,7 @@ export function parseFunctionExpression(this: Parser, isAsync: boolean) {
   return Factory.transFormFunctionToFunctionExpression(funcExpr);
 }
 export function parseClassExpression(this: Parser, decoratorList: Decorator[] | null) {
-  return Factory.transFormClassToClassExpression(this.parseClass(decoratorList));
+  return Factory.transFormClassToClassExpression(this.parseClass(decoratorList, false));
 }
 export function parseCoverExpressionORArrowFunction(this: Parser) {
   const possibleBeArrow = this.canParseAsArrowFunction();

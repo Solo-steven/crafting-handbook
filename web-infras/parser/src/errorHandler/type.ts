@@ -10,4 +10,5 @@ export type SyntaxErrorHandler = {
   formatErrorString: () => string;
   markAsTry(): number;
   restoreTryFail(index: number): void;
+  popError(): void;
 };

@@ -42,6 +42,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 2,
@@ -75,6 +76,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 4,
@@ -152,6 +154,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 7,
@@ -229,6 +232,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 8,
@@ -306,6 +310,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 9,
@@ -383,6 +388,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 10,
@@ -460,6 +466,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 11,
@@ -630,6 +637,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 19,
@@ -756,6 +764,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 24,
@@ -789,6 +798,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 26,
@@ -866,6 +876,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 29,
@@ -957,6 +968,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 32,

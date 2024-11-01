@@ -83,6 +83,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 2,
@@ -244,6 +245,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 3,
@@ -334,6 +336,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 4,
@@ -466,6 +469,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 5,
@@ -540,6 +544,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 6,
@@ -701,6 +706,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 7,
@@ -791,6 +797,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 8,
@@ -923,6 +930,7 @@
                         "decorators": null,
                         "optional": false,
                         "abstract": false,
+                        "declare": false,
                         "accessibility": null,
                         "start": {
                             "row": 9,
