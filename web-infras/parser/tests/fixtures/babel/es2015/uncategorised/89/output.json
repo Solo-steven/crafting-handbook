@@ -107,6 +107,7 @@
                             "index": 55
                         }
                     },
+                    "isTypeOnly": false,
                     "local": null,
                     "start": {
                         "row": 3,
@@ -135,6 +136,7 @@
                             "index": 64
                         }
                     },
+                    "isTypeOnly": false,
                     "local": {
                         "kind": "Identifer",
                         "name": "dec",

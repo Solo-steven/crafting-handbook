@@ -79,6 +79,7 @@
                             "index": 34
                         }
                     },
+                    "isTypeOnly": false,
                     "local": null,
                     "start": {
                         "row": 4,

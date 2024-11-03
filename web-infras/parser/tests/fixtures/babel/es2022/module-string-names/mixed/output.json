@@ -34,6 +34,7 @@
                             "index": 21
                         }
                     },
+                    "isTypeOnly": false,
                     "start": {
                         "row": 1,
                         "col": 10,
@@ -75,6 +76,7 @@
                             "index": 39
                         }
                     },
+                    "isTypeOnly": false,
                     "start": {
                         "row": 1,
                         "col": 24,
@@ -172,6 +174,7 @@
                             "index": 110
                         }
                     },
+                    "isTypeOnly": false,
                     "local": {
                         "kind": "StringLiteral",
                         "value": "quux",

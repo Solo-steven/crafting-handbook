@@ -21,6 +21,7 @@
                         }
                     },
                     "local": null,
+                    "isTypeOnly": false,
                     "start": {
                         "row": 3,
                         "col": 9,

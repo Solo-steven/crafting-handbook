@@ -34,6 +34,7 @@
                             "index": 23
                         }
                     },
+                    "isTypeOnly": false,
                     "start": {
                         "row": 1,
                         "col": 10,

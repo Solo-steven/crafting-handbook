@@ -264,4 +264,6 @@ export const ErrorMessageMap = {
     "TS 1245: Method {} cannot have an implementation because it is marked abstract.",
   ts_1267_property_cannot_have_an_initializer_because_it_is_marked_abstract:
     "TS 1267: Property '{}' cannot have an initializer because it is marked abstract.",
+  ts_1363_A_type_only_import_can_specify_a_default_import_or_named_bindings_but_not_both:
+    "TS 1363: A type-only import can specify a default import or named bindings, but not both.",
 };

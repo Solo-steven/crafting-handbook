@@ -15,6 +15,7 @@ import { Declaration, ClassDeclaration, FunctionDeclaration, TSDeclaration } fro
 export interface ImportDeclaration extends ModuleItem {
   kind: SyntaxKinds.ImportDeclaration;
   specifiers: Array<ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier>;
+  importKind: "type" | "value";
   source: StringLiteral;
   attributes: ImportAttribute[] | undefined;
 }
@@ -25,6 +26,7 @@ export interface ImportDefaultSpecifier extends ModuleItem {
 export interface ImportSpecifier extends ModuleItem {
   kind: SyntaxKinds.ImportSpecifier;
   imported: Identifier | StringLiteral;
+  isTypeOnly: boolean;
   local: Identifier | null;
 }
 export interface ImportNamespaceSpecifier extends ModuleItem {
@@ -44,6 +46,7 @@ export interface ExportNamedDeclarations extends ModuleItem {
 export interface ExportSpecifier extends ModuleItem {
   kind: SyntaxKinds.ExportSpecifier;
   exported: Identifier | StringLiteral;
+  isTypeOnly: boolean;
   local: Identifier | StringLiteral | null;
 }
 export interface ExportDefaultDeclaration extends ModuleItem {

@@ -20,6 +20,7 @@
                             "index": 14
                         }
                     },
+                    "isTypeOnly": false,
                     "local": null,
                     "start": {
                         "row": 1,

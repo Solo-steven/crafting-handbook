@@ -12,6 +12,7 @@ export function createProgram(
 export function createImportDeclaration(
   specifiers: AST.ImportDeclaration["specifiers"],
   source: AST.ImportDeclaration["source"],
+  importKind: AST.ImportDeclaration["importKind"],
   attributes: AST.ImportDeclaration["attributes"],
   start: SourcePosition,
   end: SourcePosition,
@@ -19,6 +20,7 @@ export function createImportDeclaration(
   return {
     kind: SyntaxKinds.ImportDeclaration,
     specifiers,
+    importKind,
     source,
     attributes,
     start,
@@ -52,6 +54,7 @@ export function createImportNamespaceSpecifier(
 export function createImportSpecifier(
   imported: AST.ImportSpecifier["imported"],
   local: AST.ImportSpecifier["local"],
+  isTypeOnly: AST.ImportSpecifier["isTypeOnly"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.ImportSpecifier {
@@ -59,6 +62,7 @@ export function createImportSpecifier(
     kind: SyntaxKinds.ImportSpecifier,
     imported,
     local,
+    isTypeOnly,
     start,
     end,
   };
@@ -82,6 +86,7 @@ export function createExportNamedDeclaration(
   specifiers: AST.ExportNamedDeclarations["specifiers"],
   declaration: AST.ExportNamedDeclarations["declaration"],
   source: AST.ExportNamedDeclarations["source"],
+
   start: SourcePosition,
   end: SourcePosition,
 ): AST.ExportNamedDeclarations {
@@ -97,12 +102,14 @@ export function createExportNamedDeclaration(
 export function createExportSpecifier(
   exported: AST.ExportSpecifier["exported"],
   local: AST.ExportSpecifier["local"],
+  isTypeOnly: AST.ExportSpecifier["isTypeOnly"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.ExportSpecifier {
   return {
     kind: SyntaxKinds.ExportSpecifier,
     exported,
+    isTypeOnly,
     local,
     start,
     end,

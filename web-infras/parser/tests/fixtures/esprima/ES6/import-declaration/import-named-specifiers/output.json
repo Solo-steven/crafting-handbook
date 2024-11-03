@@ -21,6 +21,7 @@
                         }
                     },
                     "local": null,
+                    "isTypeOnly": false,
                     "start": {
                         "row": 1,
                         "col": 9,
@@ -49,6 +50,7 @@
                         }
                     },
                     "local": null,
+                    "isTypeOnly": false,
                     "start": {
                         "row": 1,
                         "col": 14,

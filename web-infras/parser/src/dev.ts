@@ -5,6 +5,7 @@ import { transformSyntaxKindToLiteral } from "../tests/parserRunner/helpers/tran
 import fs from "fs";
 import path from "path";
 import { ParserPlugin } from "./parser/config";
+import { createErrorHandler } from "./errorHandler";
 // import { ParserPlugin } from "./parser/config";
 const code = fs.readFileSync(path.join(__dirname, "test.ts")).toString();
 // console.log(code);
@@ -32,7 +33,7 @@ function printLexer(code: string) {
   console.log("============ lexer ==============");
   console.log("=================================");
 
-  const lexer = createLexer(code);
+  const lexer = createLexer(code, createErrorHandler(code));
   while (lexer.getTokenKind() != SyntaxKinds.EOFToken) {
     console.log(
       lexer.getTokenKind(),
@@ -51,7 +52,7 @@ function printLexer(code: string) {
   );
 }
 function printParser(code: string) {
-  const ast = parse(code, { sourceType: "script", plugins: [ParserPlugin.TypeScript] });
+  const ast = parse(code, { sourceType: "module", plugins: [ParserPlugin.TypeScript] });
   transformSyntaxKindToLiteral(ast);
   const astJsonString = JSON.stringify(ast, null, 4);
   fs.writeFileSync("./test.json", astJsonString);

@@ -20,6 +20,7 @@
                             "index": 11
                         }
                     },
+                    "isTypeOnly": false,
                     "local": {
                         "kind": "Identifer",
                         "name": "default",
@@ -61,6 +62,7 @@
                             "index": 27
                         }
                     },
+                    "isTypeOnly": false,
                     "local": null,
                     "start": {
                         "row": 1,
