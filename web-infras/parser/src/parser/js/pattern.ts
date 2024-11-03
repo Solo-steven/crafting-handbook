@@ -578,7 +578,7 @@ export function parseObjectPatternPossibelProperty(
     );
   }
   // parse object pattern as shorted property.
-  this.staticSematicForShortedPropertyNameInObjectLike(propertyName);
+  this.staticSemanticForNameOfObjectLikePropertyShorted(propertyName);
   this.declarateNonFunctionalSymbol((propertyName as Identifier).name, propertyName.start);
   return Factory.createObjectPatternProperty(
     propertyName,

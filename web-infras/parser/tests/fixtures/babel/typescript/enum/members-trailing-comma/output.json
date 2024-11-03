@@ -17,6 +17,7 @@
                     "index": 6
                 }
             },
+            "isConst": false,
             "body": {
                 "kind": "TSEnumBody",
                 "members": [

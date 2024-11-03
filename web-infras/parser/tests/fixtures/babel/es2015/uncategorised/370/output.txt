@@ -1,1 +1,1 @@
-[Syntax Error]: Unexpect token enum(1, 7).
+[Syntax Error]: Unexpect token =(1, 12).

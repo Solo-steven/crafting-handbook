@@ -570,12 +570,14 @@ export function createTSNonNullExpression(
 export function createTSEnumDeclaration(
   id: AST.TSEnumDeclaration["id"],
   body: AST.TSEnumDeclaration["body"],
+  isConst: AST.TSEnumDeclaration["isConst"],
   start: SourcePosition,
   end: SourcePosition,
 ): AST.TSEnumDeclaration {
   return {
     kind: SyntaxKinds.TSEnumDeclaration,
     id,
+    isConst,
     body,
     start,
     end,

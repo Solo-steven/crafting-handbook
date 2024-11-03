@@ -20,6 +20,7 @@
                         "index": 13
                     }
                 },
+                "isConst": false,
                 "body": {
                     "kind": "TSEnumBody",
                     "members": [],

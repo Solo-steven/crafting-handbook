@@ -35,37 +35,22 @@ import {
   ClassAccessor,
   ClassElementName,
   SourcePosition,
-  NumericLiteralKinds,
   ClassMethodDeclaration,
   TSAbstractClassAccessorDeclaration,
   TSTypeParameterDeclaration,
   TSTypeAnnotation,
+  ClassStaticBlock,
+  ClassProperty,
+  ClassAccessorProperty,
 } from "web-infra-common";
 import { ErrorMessageMap } from "@/src/parser/error";
 import { ExportContext } from "@/src/parser/scope/lexicalScope";
 import { StrictModeScope } from "@/src/parser/scope/strictModeScope";
 import { SymbolType } from "@/src/parser/scope/symbolScope";
-import {
-  BindingIdentifierSyntaxKindArray,
-  IdentiferWithKeyworArray,
-  PreserveWordSet,
-} from "@/src/parser/type";
-
-export type ModifierState = {
-  isStatic: boolean;
-  isAsync: boolean;
-  isGenerator: boolean;
-  isAccessor: boolean;
-  type: "set" | "get" | "method";
-  readonly: boolean;
-  abstract: boolean;
-  declare: boolean;
-  accessibility: "private" | "protected" | "public" | null;
-};
-
+import { BindingIdentifierSyntaxKindArray, PreserveWordSet, ModifierState } from "@/src/parser/type";
 /**
  * Parse Declaration, accept both JS production rule and TS production rule.
- * - JS spec:
+ * ### JS spec:
  * ```
  *  Declaration := ('let' | 'const') BindingLst
  *              := FunctionDeclaration
@@ -74,14 +59,14 @@ export type ModifierState = {
  *              := 'async' FunctionGeneratorDeclaration
  *              := ClassDeclaration
  * ```
- * - TS spec:
+ * - js spec: https://tc39.es/ecma262/#prod-Declaration
+ * ### TS spec:
  * ```
  * Declaration := <enum-token> TSEnum
  *             := 'interface' TSInterfaceDeclaration
  *             := 'type' TSTypeAliasDeclaration
  *             := TSFunctionDeclaration
  * ```
- * - js spec: https://tc39.es/ecma262/#prod-Declaration
  * @returns
  */
 export function parseDeclaration(this: Parser): Declaration {
@@ -99,7 +84,14 @@ export function parseDeclaration(this: Parser): Declaration {
     // function delcaration
     case SyntaxKinds.FunctionKeyword:
       return this.parseFunctionDeclaration(false, false);
-    case SyntaxKinds.ConstKeyword:
+    case SyntaxKinds.ConstKeyword: {
+      if (this.lookahead().kind === SyntaxKinds.EnumKeyword) {
+        this.nextToken();
+        return this.parseTSEnumDeclaration(true);
+      }
+      // fail to variable declaration
+    }
+    // eslint-disable-next-line no-fallthrough
     case SyntaxKinds.LetKeyword:
       return this.parseVariableDeclaration();
     case SyntaxKinds.AtPunctuator:
@@ -108,50 +100,6 @@ export function parseDeclaration(this: Parser): Declaration {
       return this.parseClassDeclaration(null, false);
     default:
       throw this.createUnexpectError();
-  }
-}
-export function tryParseDeclarationWithIdentifierStart(this: Parser): Declaration | undefined {
-  if (this.getEscFlag()) {
-    return;
-  }
-  if (this.match(SyntaxKinds.EnumKeyword)) {
-    return this.parseTSEnumDeclaration();
-  }
-  const { kind: lookaheadToken, lineTerminatorFlag } = this.lookahead();
-  const sourceValue = this.getSourceValue();
-  switch (sourceValue) {
-    case "async": {
-      if (!(lookaheadToken === SyntaxKinds.FunctionKeyword && !lineTerminatorFlag)) {
-        return;
-      }
-      this.nextToken();
-      if (this.getLineTerminatorFlag()) {
-        this.raiseError(ErrorMessageMap.missing_semicolon, this.getStartPosition());
-      }
-      return this.parseFunctionDeclaration(true, false);
-    }
-    case "type": {
-      if (!(lookaheadToken === SyntaxKinds.Identifier && !lineTerminatorFlag)) {
-        return;
-      }
-      return this.parseTSTypeAlias();
-    }
-    case "interface": {
-      if (!(lookaheadToken === SyntaxKinds.Identifier && !lineTerminatorFlag)) {
-        return;
-      }
-      return this.parseTSInterfaceDeclaration();
-    }
-    case "abstract": {
-      if (!(lookaheadToken === SyntaxKinds.ClassKeyword && !lineTerminatorFlag)) {
-        return;
-      }
-      this.nextToken();
-      return this.parseClassDeclaration(null, true);
-    }
-    default: {
-      return;
-    }
   }
 }
 /**
@@ -673,99 +621,14 @@ export function parseClassBody(this: Parser): ClassBody {
   return Factory.createClassBody(classbody, cloneSourcePosition(start), cloneSourcePosition(end));
 }
 /**
- * Parse ClassElement
+ * Parse ClassElementName, expect pattern:
  * ```
- * ClassElement := MethodDefinition
- *              := 'static' MethodDefinition
- *              := FieldDefintion ;
- *              := 'static' FieldDefintion ;
- *              := ClassStaticBlock
- *              := ; (this production rule handle by caller)
- * FieldDefintion := ClassElementName ('=' AssignmentExpression)?
+ * PropertyName | PrivateName
  * ```
- * - frist, parse 'static' keyword if possible, next follow cases
- *   1. start with some method modifier like 'set', 'get', 'async', '*' must be methodDefintion
- *   2. start with '{', must be static block
- * - then parse ClassElement
- *    1. if next token is '(', must be MethodDefintion,
- *    2. else this only case is FieldDefinition with init or not.
- * @returns {ClassElement}
+ * @param this
+ * @param state
+ * @returns
  */
-export function parseClassElement(this: Parser): ClassElement {
-  const start = this.getStartPosition();
-  let decorators: Decorator[] | null = null;
-  if (this.match(SyntaxKinds.AtPunctuator)) {
-    decorators = this.parseDecoratorList();
-  } else {
-    decorators = this.takeCacheDecorator();
-  }
-  const modifierState = this.parsePropertyModifier();
-  // parse static block
-  if (this.match(SyntaxKinds.BracesLeftPunctuator) && modifierState.isStatic) {
-    if (decorators) {
-      this.raiseError(
-        ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_static_block,
-        decorators[0].start,
-      );
-    }
-    const { start } = this.expect(SyntaxKinds.BracesLeftPunctuator);
-    this.symbolScopeRecorder.enterFunctionSymbolScope();
-    const body: Array<StatementListItem> = [];
-    while (!this.match(SyntaxKinds.BracesRightPunctuator) && !this.match(SyntaxKinds.EOFToken)) {
-      body.push(this.parseStatementListItem());
-    }
-    this.symbolScopeRecorder.exitSymbolScope();
-    const { end } = this.expect(SyntaxKinds.BracesRightPunctuator);
-    return Factory.createClassStaticBlock(body, start, end);
-  }
-  // parse ClassElementName
-  const [name, computed] = this.parseClassElementName(modifierState);
-  // parse class method or declaration
-  if (this.match(SyntaxKinds.ParenthesesLeftPunctuator)) {
-    return this.parseClassMethodDefinition(start, decorators, modifierState, name, computed);
-  }
-  // Class Property or accessor
-  this.staticSematicForModifierInPropertyName(modifierState);
-  this.staticSematicForClassPropertyName(name, computed, modifierState.isStatic);
-  const optional = this.tryParseOptionalTypeParam();
-  const typeNode = this.tryParseTypeAnnotation();
-  let propertyValue = undefined;
-  if (this.match([SyntaxKinds.AssginOperator])) {
-    this.nextToken();
-    const [value, scope] = this.parseWithCatpureLayer(() => this.parseAssignmentExpressionAllowIn());
-    propertyValue = value;
-    this.staticSematicForClassPropertyValue(scope);
-  }
-  this.shouldInsertSemi();
-  if (modifierState.isAccessor) {
-    return Factory.createClassAccessorProperty(
-      name,
-      propertyValue,
-      computed,
-      modifierState.isStatic,
-      modifierState.abstract,
-      decorators,
-      typeNode,
-      modifierState.accessibility,
-      start,
-      this.getLastTokenEndPositon(),
-    );
-  }
-  return Factory.createClassProperty(
-    name,
-    propertyValue,
-    computed,
-    modifierState.isStatic,
-    modifierState.abstract,
-    modifierState.declare,
-    decorators,
-    optional,
-    typeNode,
-    modifierState.accessibility,
-    start,
-    this.getLastTokenEndPositon(),
-  );
-}
 export function parseClassElementName(this: Parser, state: ModifierState): [ClassElementName, boolean] {
   const isComputedRef = { isComputed: false };
   let key: PropertyName | PrivateName | undefined;
@@ -782,127 +645,238 @@ export function parseClassElementName(this: Parser, state: ModifierState): [Clas
   return [key, isComputedRef.isComputed];
 }
 /**
- *
+ * Parse ClassElement
+ * ```
+ * ClassElement := MethodDefinition
+ *              := 'static' MethodDefinition
+ *              := FieldDefintion ;
+ *              := 'static' FieldDefintion ;
+ *              := ClassStaticBlock
+ *              := ; (this production rule handle by caller)
+ * FieldDefintion := ClassElementName ('=' AssignmentExpression)?
+ * ```
+ * @returns {ClassElement}
  */
-export function parsePropertyModifier(this: Parser) {
-  const state: ModifierState = {
-    isAsync: false,
-    isGenerator: false,
-    isStatic: false,
-    type: "method",
-    accessibility: null,
-    readonly: false,
-    abstract: false,
-    declare: false,
-    isAccessor: false,
-  };
-  // TODO: check double condition and order
-  loop: while (
-    (this.match(SyntaxKinds.Identifier) && !this.getEscFlag()) ||
-    this.match(SyntaxKinds.MultiplyOperator)
-  ) {
-    if (this.match(SyntaxKinds.MultiplyOperator)) {
-      this.nextToken();
-      state.isGenerator = true;
-      continue;
-    }
-    const [shouldContinue, lineBreak] = this.isLookAheadCanStartPropertyName();
-    if (!shouldContinue) {
-      break;
-    }
-    switch (this.getSourceValue()) {
-      case "async": {
-        if (lineBreak) break loop;
-        state.isAsync = true;
-        break;
-      }
-      case "set": {
-        state.type = "set";
-        break;
-      }
-      case "get": {
-        state.type = "get";
-        break;
-      }
-      case "static": {
-        state.isStatic = true;
-        if (state.isAsync) {
-          this.raiseError(ErrorMessageMap.ts_invalid_modifier_error, this.getStartPosition());
-        }
-        break;
-      }
-      case "readonly": {
-        if (lineBreak) break loop;
-        state.readonly = true;
-        break;
-      }
-      case "private": {
-        if (lineBreak) break loop;
-        state.accessibility = "private";
-        break;
-      }
-      case "protected": {
-        if (lineBreak) break loop;
-        state.accessibility = "public";
-        break;
-      }
-      case "public": {
-        if (lineBreak) break loop;
-        state.accessibility = "public";
-        break;
-      }
-      case "accessor": {
-        if (lineBreak) break loop;
-        state.isAccessor = true;
-        break;
-      }
-      case "abstract": {
-        if (lineBreak) break loop;
-        state.abstract = true;
-        break;
-      }
-      case "declare": {
-        if (lineBreak) break loop;
-        state.declare = true;
-        break;
-      }
-      default: {
-        // possible to be like
-        // static a
-        // static
-        break loop;
-      }
-    }
-    this.nextToken();
+export function parseClassElement(this: Parser): ClassElement {
+  const start = this.getStartPosition();
+  let decorators: Decorator[] | null = null;
+  if (this.match(SyntaxKinds.AtPunctuator)) {
+    decorators = this.parseDecoratorList();
+  } else {
+    decorators = this.takeCacheDecorator();
   }
-  return state;
+  const modifierState = this.parsePropertyModifier(false);
+  // parse static block
+  if (this.match(SyntaxKinds.BracesLeftPunctuator) && modifierState.isStatic) {
+    return this.parseClassStaticBlock(start, decorators, modifierState);
+  }
+  // parse ClassElementName
+  const [name, computed] = this.parseClassElementName(modifierState);
+  // parse class method or declaration
+  if (this.match(SyntaxKinds.ParenthesesLeftPunctuator) || this.match(SyntaxKinds.LtOperator)) {
+    return this.parseClassMethodDefinition(start, decorators, modifierState, name, computed);
+  }
+  // Class Property or accessor
+  return this.parseClassPropertyOrClassAccessorProperty(start, decorators, modifierState, name, computed);
 }
-export function isLookAheadCanStartPropertyName(this: Parser): [boolean, boolean] {
-  const { kind, lineTerminatorFlag } = this.lookahead();
-  switch (kind) {
-    case SyntaxKinds.MultiplyOperator:
-    case SyntaxKinds.BracketLeftPunctuator:
-    case SyntaxKinds.BracesLeftPunctuator:
-    case SyntaxKinds.StringLiteral:
-    case SyntaxKinds.PrivateName:
-      return [true, lineTerminatorFlag];
-    default: {
-      if (NumericLiteralKinds.includes(kind) || IdentiferWithKeyworArray.includes(kind)) {
-        return [true, lineTerminatorFlag];
+/**
+ * Parse Class Static block
+ */
+export function parseClassStaticBlock(
+  this: Parser,
+  start: SourcePosition,
+  decorators: Decorator[] | null,
+  _modifier: ModifierState,
+): ClassStaticBlock {
+  if (decorators) {
+    this.raiseError(
+      ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_static_block,
+      decorators[0].start,
+    );
+  }
+  this.expect(SyntaxKinds.BracesLeftPunctuator);
+  this.symbolScopeRecorder.enterFunctionSymbolScope();
+  const body: Array<StatementListItem> = [];
+  while (!this.match(SyntaxKinds.BracesRightPunctuator) && !this.match(SyntaxKinds.EOFToken)) {
+    body.push(this.parseStatementListItem());
+  }
+  this.symbolScopeRecorder.exitSymbolScope();
+  const { end } = this.expect(SyntaxKinds.BracesRightPunctuator);
+  return Factory.createClassStaticBlock(body, start, end);
+}
+/**
+ *
+ * @param this
+ * @param start
+ * @param decorators
+ * @param modifiers
+ * @param classElementName
+ * @param isComputed
+ * @returns
+ */
+export function parseClassPropertyOrClassAccessorProperty(
+  this: Parser,
+  start: SourcePosition,
+  decorators: Decorator[] | null,
+  modifiers: ModifierState,
+  classElementName: ClassElementName,
+  isComputed: boolean,
+): ClassAccessorProperty | ClassProperty {
+  // Class Property or accessor
+  const optional = this.tryParseOptionalTypeParam();
+  const typeNode = this.tryParseTypeAnnotation();
+  let initalizer = undefined,
+    scope = undefined;
+  if (this.match([SyntaxKinds.AssginOperator])) {
+    this.nextToken();
+    [initalizer, scope] = this.parseWithCatpureLayer(() => this.parseAssignmentExpressionAllowIn());
+  }
+  this.shouldInsertSemi();
+  this.staticSemanticForClasPropertyOrClassAcceesor(
+    modifiers,
+    classElementName,
+    isComputed,
+    optional,
+    typeNode,
+    initalizer,
+    scope,
+  );
+  if (modifiers.isAccessor) {
+    return Factory.createClassAccessorProperty(
+      classElementName,
+      initalizer,
+      isComputed,
+      modifiers.isStatic,
+      modifiers.abstract,
+      decorators,
+      typeNode,
+      modifiers.accessibility,
+      start,
+      this.getLastTokenEndPositon(),
+    );
+  }
+  return Factory.createClassProperty(
+    classElementName,
+    initalizer,
+    isComputed,
+    modifiers.isStatic,
+    modifiers.abstract,
+    modifiers.declare,
+    decorators,
+    optional,
+    typeNode,
+    modifiers.accessibility,
+    start,
+    this.getLastTokenEndPositon(),
+  );
+}
+/**
+ * Static Syntax or Semantic check for class property or
+ * class accessor property  of following rules:
+ * - `constructor` can not used as property name.
+ * - `prototype` can not be a static property.
+ * - `abstract` can not  have initalizer.
+ * - `declare` can not have initalizer.
+ * - `async`, `*`, `get`, `set`, `readonly` can not use in class property
+ * - property init should not voliate strict mode rule.
+ */
+export function staticSemanticForClasPropertyOrClassAcceesor(
+  this: Parser,
+  modifier: ModifierState,
+  classElementName: ClassElementName,
+  isComputed: boolean,
+  _optional: boolean,
+  _typeAnnotation: TSTypeAnnotation | undefined,
+  initalizer: Expression | undefined,
+  scope: StrictModeScope | undefined,
+) {
+  /**
+   * - `constructor` can not used as property name.
+   * - `prototype` can not be a static property.
+   */
+  if (!isComputed) {
+    let value;
+    if (isPrivateName(classElementName) || isIdentifer(classElementName)) {
+      value = classElementName.name;
+    } else if (isStringLiteral(classElementName)) {
+      value = classElementName.value;
+    }
+    if (value) {
+      if (value === "constructor") {
+        // recoverable error
+        this.raiseError(
+          ErrorMessageMap.babel_error_classe_may_not_have_a_field_named_constructor,
+          classElementName.start,
+        );
+      }
+      if (value === "prototype" && modifier.isStatic) {
+        this.raiseError(
+          ErrorMessageMap.v8_error_class_may_not_have_static_property_named_prototype,
+          classElementName.start,
+        );
       }
     }
   }
-  return [false, lineTerminatorFlag];
+  /**
+   * - `async`, `*`, `get`, `set`, `readonly` can not use in class property
+   */
+  if (modifier.isAsync) {
+    this.raiseError(
+      ErrorMessageMap.ts_class_property_modifier_error.replace("{}", "async"),
+      classElementName.start,
+    );
+  }
+  if (modifier.isGenerator) {
+    this.raiseError(
+      ErrorMessageMap.ts_class_property_modifier_error.replace("{}", "*"),
+      classElementName.start,
+    );
+  }
+  if (modifier.type === "get" || modifier.type === "set") {
+    this.raiseError(
+      ErrorMessageMap.ts_class_property_modifier_error.replace("{}", modifier.type),
+      classElementName.start,
+    );
+  }
+  if (modifier.readonly) {
+    this.raiseError(
+      ErrorMessageMap.ts_class_property_modifier_error.replace("{}", "readonly"),
+      classElementName.start,
+    );
+  }
+  /**
+   * - `abstract` can not  have initalizer.
+   * - `declare` can not have initalizer.
+   */
+  if (modifier.abstract && initalizer) {
+    this.raiseError(
+      ErrorMessageMap.ts_1267_property_cannot_have_an_initializer_because_it_is_marked_abstract.replace(
+        "{}",
+        "",
+      ),
+      classElementName.start,
+    );
+  }
+  if (modifier.declare && initalizer) {
+    this.raiseError(
+      ErrorMessageMap.ts_1039_initializers_are_not_allowed_in_ambient_contexts,
+      initalizer.start,
+    );
+  }
+  /**
+   * - property init should not voliate strict mode rule.
+   */
+  if (scope && scope.kind === "CatpureLayer") {
+    for (const pos of scope.argumentsIdentifier) {
+      this.raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, pos);
+    }
+  }
 }
 /**
  * Parse Class Method
  * ```
  *  (`?`)? (<Type-Parameters>)? <FunctionParams> (<function-body>)?
  * ```
- * @param this
- * @param propertyName
- * @param isComputed
- * @param state
  */
 export function parseClassMethodDefinition(
   this: Parser,
@@ -939,8 +913,17 @@ export function parseClassMethodDefinition(
   this.exitFunctionScope(true);
   // post check for parse
   if (isCtor) this.lexicalScopeRecorder.exitCtor();
-  this.staticSematicEarlyErrorForMethodDefinition(state, propertyName, parmas);
-  this.staticSematicForClassMethod(propertyName, state);
+  this.staticSematicForClassMethod(
+    isCtor,
+    state,
+    propertyName,
+    isComputed,
+    optional,
+    typeParameters,
+    parmas,
+    returnType,
+    body,
+  );
   // create by variant
   return this.helperCreateClassElement(
     isCtor,
@@ -964,66 +947,43 @@ export function helperIsPropertyNameIsCtor(propertyName: PropertyName) {
     case SyntaxKinds.StringLiteral: {
       return propertyName.value === "constructor";
     }
+    case SyntaxKinds.PrivateName: {
+      return propertyName.name === "constructor";
+    }
     default: {
       return false;
     }
   }
 }
 /**
- * For a class scope, it must be strict mode, so argument identifier can
- * @param {StrictModeScope} scope
- * @returns
+ * Static Syntax or Semantic check for class method, class accessor, and
+ * class constructor and relate class declaration.
+ *
+ * ### For All (gernal check)
+ * - `abtract` can not have implement body.
+ * - `declare` can not have implement body.
+ * - `readonly` can not using as function.
+ * ### For Class constructor
+ * - `abstract`, `declare`, `async`, generator, `set`, `get` can not use with ctor.
+ * - private name can not name as `constructor`.
+ * ### For Class Method
+ * - `prototype` can not be a static method.
+ * ### For class accessor and declaration
+ * - for accessor declaration, must be abstract.
+ * - for accessor declaration, must not be declare.
+ * - accessor following the same rule as object method.
  */
-export function staticSematicForClassPropertyValue(this: Parser, scope: StrictModeScope) {
-  if (scope.kind !== "CatpureLayer") {
-    return;
-  }
-  for (const pos of scope.argumentsIdentifier) {
-    this.raiseError(ErrorMessageMap.syntax_error_bad_strict_arguments_eval, pos);
-  }
-}
-/**
- * Check sematic for class property name.
- *  - `constructor` can not used as property name
- *  - `prototype` can not be a static property
- * @param {PropertyName | PrivateName} propertyName
- * @param isComputed
- * @param {boolean} isStatic
- * @returns
- */
-export function staticSematicForClassPropertyName(
-  this: Parser,
-  propertyName: PropertyName | PrivateName,
-  isComputed: boolean,
-  isStatic: boolean,
-) {
-  if (isComputed) return;
-  let value;
-  if (isPrivateName(propertyName) || isIdentifer(propertyName)) {
-    value = propertyName.name;
-  } else if (isStringLiteral(propertyName)) {
-    value = propertyName.value;
-  }
-  if (value) {
-    if (value === "constructor") {
-      // recoverable error
-      this.raiseError(
-        ErrorMessageMap.babel_error_classe_may_not_have_a_field_named_constructor,
-        propertyName.start,
-      );
-    }
-    if (value === "prototype" && isStatic) {
-      this.raiseError(
-        ErrorMessageMap.v8_error_class_may_not_have_static_property_named_prototype,
-        propertyName.start,
-      );
-    }
-  }
-}
 export function staticSematicForClassMethod(
   this: Parser,
+  isCtor: boolean,
+  modifiers: ModifierState,
   classElementName: ClassElementName,
-  state: ModifierState,
+  _isComputed: boolean,
+  _optional: boolean,
+  _typeParameters: TSTypeParameterDeclaration | undefined,
+  params: Pattern[],
+  _returnType: TSTypeAnnotation | undefined,
+  body: FunctionBody | undefined,
 ) {
   let valueOfName: string | undefined,
     isPrivate = false,
@@ -1037,20 +997,48 @@ export function staticSematicForClassMethod(
     valueOfName = classElementName.name;
     isPrivate = true;
   }
-  if (valueOfName === "constructor" && !fromLiteral) {
-    if (state.isAsync) {
+  /**
+   * General check for Class function
+   */
+  if (body) {
+    if (modifiers.abstract) {
+      this.raiseError(
+        ErrorMessageMap.ts_1245_method_a_cannot_have_an_implementation_because_it_is_marked_abstract,
+        classElementName.start,
+      );
+    }
+    if (modifiers.declare) {
+      this.raiseError(
+        ErrorMessageMap.ts_1183_an_implementation_cannot_be_declared_in_ambient_contexts,
+        classElementName.start,
+      );
+    }
+  }
+  if (modifiers.readonly) {
+    this.raiseError(
+      ErrorMessageMap.ts_1024_readonly_modifier_can_only_appear_on_a_property_declaration_or_index_signature,
+      classElementName.start,
+    );
+  }
+  /**
+   * Class constructor
+   * - `abstract`, `declare`, `async`, generator, `set`, `get` can not use with ctor.
+   * - private name can not name as `constructor`.
+   */
+  if (isCtor && !fromLiteral) {
+    if (modifiers.isAsync) {
       this.raiseError(
         ErrorMessageMap.v8_error_class_constructor_may_not_be_an_async_method,
         classElementName.start,
       );
     }
-    if (state.isGenerator) {
+    if (modifiers.isGenerator) {
       this.raiseError(
         ErrorMessageMap.v8_error_class_constructor_may_not_be_a_generator,
         classElementName.start,
       );
     }
-    if (state.type === "get" || state.type === "set") {
+    if (modifiers.type === "get" || modifiers.type === "set") {
       this.raiseError(
         ErrorMessageMap.v8_error_class_constructor_may_not_be_an_accessor,
         classElementName.start,
@@ -1063,11 +1051,35 @@ export function staticSematicForClassMethod(
       );
     }
   }
-  if (valueOfName === "prototype" && !isPrivate && state.type === "method" && state.isStatic) {
+  /**
+   * Class method
+   * - `prototype` can not be a static method.
+   */
+  if (valueOfName === "prototype" && !isPrivate && modifiers.type === "method" && modifiers.isStatic) {
     this.raiseError(
       ErrorMessageMap.v8_error_class_may_not_have_static_property_named_prototype,
       classElementName.start,
     );
+  }
+  /**
+   * Class Accessor
+   * - for accessor declaration, must be abstract.
+   * - for accessor declaration, must not be declare.
+   * - accessor following the same rule as object method.
+   */
+  if (modifiers.type === "get" || modifiers.type === "set") {
+    if (!body) {
+      if (!modifiers.abstract) {
+        throw this.createUnexpectError();
+      }
+      if (modifiers.declare) {
+        this.raiseError(
+          ErrorMessageMap.ts_1031_declare_modifier_cannot_appear_on_class_elements_of_this_kind,
+          classElementName.start,
+        );
+      }
+    }
+    this.staticSematicEarlyErrorForMethodDefinition(modifiers, classElementName, params);
   }
 }
 export function helperCreateClassElement(
@@ -1091,12 +1103,6 @@ export function helperCreateClassElement(
         decorators[0].start,
       );
     }
-    // if(!body) {
-    //   this.raiseError(
-    //     ErrorMessageMap.babel_error_decorators_can_not_be_used_with_a_constructor,
-    //     this.getLastTokenEndPositon(),
-    //   );
-    // }
     return Factory.createClassConstructor(
       classElementName as ClassConstructor["key"],
       body!,
@@ -1109,9 +1115,6 @@ export function helperCreateClassElement(
   }
   if (state.type === "set" || state.type === "get") {
     if (!body) {
-      if (!state.abstract) {
-        // should error,
-      }
       return Factory.createTSAbstractClassAccessorDeclaration(
         classElementName,
         parmas,
@@ -1158,9 +1161,6 @@ export function helperCreateClassElement(
       start,
       this.getLastTokenEndPositon(),
     );
-  }
-  if (state.abstract) {
-    // reoverable error.
   }
   return Factory.createClassMethodDefintion(
     classElementName,

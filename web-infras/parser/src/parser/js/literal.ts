@@ -44,8 +44,8 @@ import {
   IdentiferWithKeyworArray,
   PreserveWordSet,
   KeywordSet,
+  ModifierState,
 } from "@/src/parser/type";
-import { ModifierState } from "./declaration";
 
 export function parseRegexLiteral(this: Parser): RegexLiteral {
   this.expectButNotEat([SyntaxKinds.DivideOperator, SyntaxKinds.DivideAssignOperator]);
@@ -775,7 +775,7 @@ export function staticSematicHelperRecordPropertyNameForEarlyError(
   }
 }
 /**
- * Parse PropertyDefinition
+ * Parse PropertyDefinition, expect pattern:
  * ```
  *  PropertyDefinition := MethodDefintion
  *                     := Property
@@ -783,6 +783,10 @@ export function staticSematicHelperRecordPropertyNameForEarlyError(
  * Property := PropertyName '=' AssignmentExpression
  * SpreadElement := '...' AssigmentExpression
  * ```
+ * ### Object Property Init problem
+ *
+ * ### Why the parser branch so ugly ?
+ *
  * #### ref: https://tc39.es/ecma262/#prod-PropertyDefinition
  */
 export function parsePropertyDefinition(
@@ -802,14 +806,14 @@ export function parsePropertyDefinition(
     return Factory.createSpreadElement(expr, spreadElementStart, cloneSourcePosition(expr.end));
   }
   const start = this.getStartPosition();
-  const modifierState = this.parsePropertyModifier();
+  const modifierState = this.parsePropertyModifier(true);
   const isComputedRef = { isComputed: false };
   const propertyName = this.parsePropertyName(isComputedRef);
   // method
   if (this.match(SyntaxKinds.ParenthesesLeftPunctuator)) {
     return this.parseMethodDefintion(start, modifierState, propertyName, isComputedRef.isComputed);
   }
-  this.staticSematicForModifierInPropertyName(modifierState);
+  this.staticSemanticForModifierInObjectProperty(modifierState);
   if (isComputedRef.isComputed || this.match(SyntaxKinds.ColonPunctuator)) {
     staticSematicHelperRecordPropertyNameForEarlyError(
       protoPropertyNameLocations,
@@ -847,8 +851,7 @@ export function parsePropertyDefinition(
     this.context.propertiesInitSet.add(property);
     return property;
   }
-  this.staticSematicForShortedPropertyNameInObjectLike(propertyName);
-  this.staticSematicForShortedPropertyNameInObjectExpression(propertyName as Identifier);
+  this.staticSemanticForNameOfObjectPropertyShorted(propertyName);
   return Factory.createObjectProperty(
     propertyName,
     undefined,
@@ -881,11 +884,8 @@ export function recordIdentifierValue(this: Parser, propertyName: ModuleItem) {
   }
 }
 /**
- * Parse PropertyName, using context ref which passed in to record this property is computed or not.
- *
- * ### Extra action need for callee
- * In this function, we accept keywrod as property name, but when the property name use as a shorted
- * property name, it will be a syntax error, so father syntax check is needed handle by callee.
+ * Parse PropertyName, using context ref which passed in to record this property is computed or not,
+ * expect pattern:
  * ```
  * PropertyName := Identifer (IdentifierName, not BindingIdentifier)
  *              := NumberLiteral
@@ -893,8 +893,12 @@ export function recordIdentifierValue(this: Parser, propertyName: ModuleItem) {
  *              := ComputedPropertyName
  * ComputedPropertyName := '[' AssignmentExpression ']'
  * ```
- * ref: https://tc39.es/ecma262/#prod-PropertyName
- * @returns {PropertyName}
+ *
+ * ### Extra action need for callee
+ * In this function, we accept keywrod as property name, but when the property name use as a shorted
+ * property name, it will be a syntax error, so father syntax check is needed handle by callee.
+ *
+ * ### ref: https://tc39.es/ecma262/#prod-PropertyName
  */
 export function parsePropertyName(this: Parser, isComputedRef: { isComputed: boolean }): PropertyName {
   this.expectButNotEat([
@@ -931,29 +935,42 @@ export function parsePropertyName(this: Parser, isComputedRef: { isComputed: boo
   }
 }
 /**
- * Sematic check when a property name is shorted property
- * @param {PropertyName} propertyName
- * @returns
+ * Syntax and Semantic check for modifier of object property, since `parseModifiers` accept modifier for
+ * object method and object property, object property is not able to accept most of modifier.
+ *
+ * - `async`, `generator(*)`, `accessor(set, get)`, `static` can not use with object property.
+ * - other ts modifier will raise error in `parseModifiers`.
  */
-export function staticSematicForShortedPropertyNameInObjectLike(this: Parser, propertyName: PropertyName) {
-  if (isStringLiteral(propertyName) || isNumnerLiteral(propertyName)) {
-    // recoverable error.
+export function staticSemanticForModifierInObjectProperty(this: Parser, modifiers: ModifierState) {
+  if (modifiers.isAsync) {
+    this.raiseError(ErrorMessageMap.ts_invalid_modifier.replace("{}", "await"), this.getStartPosition());
+  }
+  if (modifiers.isGenerator) {
+    this.raiseError(ErrorMessageMap.ts_invalid_modifier.replace("{}", "generator"), this.getStartPosition());
+  }
+  if (modifiers.type === "get" || modifiers.type === "set") {
     this.raiseError(
-      ErrorMessageMap.extra_error_when_binding_pattern_property_name_is_literal_can_not_be_shorted,
-      propertyName.start,
+      ErrorMessageMap.ts_1042_modifier_cannot_be_used_here.replace("{}", "accessor"),
+      this.getStartPosition(),
+    );
+  }
+  if (modifiers.isStatic) {
+    this.raiseError(
+      ErrorMessageMap.ts_1042_modifier_cannot_be_used_here.replace("{}", "static"),
+      this.getStartPosition(),
     );
   }
 }
 /**
- * Like `staticCheckForPropertyNameAsSingleBinding` for object pattern, when shorted property in
- * object expression, if will no longer just
- * @param {PropertyName} propertyName
- * @returns
+ * Syntax and Semantic check for object property name when is shorted
+ * - can not be `string literal`, `number literal`, checked by `staticSemanticForNameOfObjectLikePropertyShorted`.
+ * - identifier should be a reference, not a identifier name.
  */
-export function staticSematicForShortedPropertyNameInObjectExpression(
-  this: Parser,
-  propertyName: Identifier,
-) {
+export function staticSemanticForNameOfObjectPropertyShorted(this: Parser, propertyName: PropertyName) {
+  this.staticSemanticForNameOfObjectLikePropertyShorted(propertyName);
+  if (!isIdentifer(propertyName)) {
+    return;
+  }
   if (propertyName.name === "await") {
     if (this.isCurrentScopeParseAwaitAsExpression() || this.config.sourceType === "module") {
       this.raiseError(
@@ -978,22 +995,22 @@ export function staticSematicForShortedPropertyNameInObjectExpression(
     this.raiseError(ErrorMessageMap.babel_error_unexpected_reserved_word, propertyName.start);
   }
 }
-export function staticSematicForModifierInPropertyName(this: Parser, state: ModifierState) {
-  if (state.isAsync) {
-    this.raiseError(ErrorMessageMap.ts_invalid_modifier.replace("{}", "await"), this.getStartPosition());
-  }
-  if (state.isGenerator) {
-    this.raiseError(ErrorMessageMap.ts_invalid_modifier.replace("{}", "generator"), this.getStartPosition());
+/**
+ * Syntax and Semantic check for object property shorted in object like (object expression, object pattern)
+ * - the shorted of object property in pattern and expression can
+ *   not be string literal and number literal.
+ */
+export function staticSemanticForNameOfObjectLikePropertyShorted(this: Parser, propertyName: PropertyName) {
+  if (isStringLiteral(propertyName) || isNumnerLiteral(propertyName)) {
+    // recoverable error.
+    this.raiseError(
+      ErrorMessageMap.extra_error_when_binding_pattern_property_name_is_literal_can_not_be_shorted,
+      propertyName.start,
+    );
   }
 }
-/** Parse MethodDefintion, this method should allow using when in class or in object literal.
- *  1. ClassElement can be PrivateName, when it used in object literal, it should throw a error.
- *  2. It should parse modifier when `withPropertyName` is falsey.
- *
- * ### Parse Modifier
- * we parse modifier according to the pattern `('set' | 'get')? 'async' '*' ClassElement `, this
- * is not a regulat syntax, it may accept wrong syntax, but by accept more case then spec, we cam
- * provide more concies sematic message to developer.
+/**
+ * Parse MethodDefintion, this method should allow using when in class or in object literal.
  * ```
  * MethodDefintion := ClassElementName BindingList FunctionBody
  *                 := AyncMethod

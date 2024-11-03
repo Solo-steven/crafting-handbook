@@ -109,6 +109,7 @@ export interface TSConstrcutorType extends TSFunctionSignatureBase {
 export interface TSEnumDeclaration extends ModuleItem {
   id: Identifier;
   kind: SyntaxKinds.TSEnumDeclaration;
+  isConst: boolean;
   body: TSEnumBody;
 }
 
