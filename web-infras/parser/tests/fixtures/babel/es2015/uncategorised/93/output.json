@@ -63,6 +63,7 @@
                     }
                 }
             ],
+            "importKind": "value",
             "source": {
                 "kind": "StringLiteral",
                 "value": "crypto",

@@ -47,6 +47,7 @@
                     }
                 }
             ],
+            "importKind": "value",
             "source": {
                 "kind": "StringLiteral",
                 "value": "bar",

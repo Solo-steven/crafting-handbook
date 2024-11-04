@@ -89,6 +89,7 @@
                     }
                 }
             ],
+            "importKind": "value",
             "source": {
                 "kind": "StringLiteral",
                 "value": "module-a",

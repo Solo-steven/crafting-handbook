@@ -4,6 +4,7 @@
         {
             "kind": "ImportDeclaration",
             "specifiers": [],
+            "importKind": "value",
             "source": {
                 "kind": "StringLiteral",
                 "value": "jquery",
