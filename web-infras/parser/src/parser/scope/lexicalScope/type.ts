@@ -24,6 +24,7 @@ export interface FunctionLexicalScope {
 export interface ClassLexicalScope {
   readonly type: "ClassLexicalScope";
   isExtend: boolean;
+  isAbstract: boolean;
   isInCtor: boolean;
   haveCtor: boolean;
   isInDelete: boolean;

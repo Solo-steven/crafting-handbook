@@ -277,10 +277,11 @@ export function createLexicalScopeRecorder() {
    * Private API called when start parse class scope.
    * @param {boolean} isExtend
    */
-  function enterClassLexicalScope(isExtend: boolean) {
+  function enterClassLexicalScope(isExtend: boolean, isAbstract: boolean) {
     lexicalScopes.push({
       type: "ClassLexicalScope",
       isExtend,
+      isAbstract,
       isInCtor: false,
       haveCtor: false,
       isInDelete: false,
@@ -408,6 +409,10 @@ export function createLexicalScopeRecorder() {
    * Scope Attribute condition
    * =============================================
    */
+  function isCurrentFunctionArrow() {
+    const scope = helperFindLastFunctionLexicalScope();
+    return scope.type === "FunctionLexicalScope" && scope.isArrow;
+  }
   /**
    * Private API to know is current recursion parse in the
    * function param or not (used by yeild and await)
@@ -643,6 +648,7 @@ export function createLexicalScopeRecorder() {
      * Scope condition
      */
     // for function
+    isCurrentFunctionArrow,
     isInStrictMode,
     isInTopLevel,
     isDirectToFunctionContext,

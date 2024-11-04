@@ -146,7 +146,8 @@ export function parseForStatement(this: Parser): ForStatement | ForInStatement |
   // false to disallow parseExpression to take in  as operator
   let isAwait: SourcePosition | null = null,
     isParseLetAsExpr: SourcePosition | null = null,
-    leftOrInit: VariableDeclaration | Expression | null = null;
+    leftOrInit: VariableDeclaration | Expression | null = null,
+    isEscap = false;
   if (this.match(SyntaxKinds.AwaitKeyword)) {
     isAwait = this.getStartPosition();
     this.nextToken();
@@ -166,6 +167,7 @@ export function parseForStatement(this: Parser): ForStatement | ForInStatement |
     // for test case `for(;;)`
     leftOrInit = null;
   } else {
+    isEscap = this.getEscFlag();
     leftOrInit = this.parseExpressionDisallowIn();
   }
   // Second is branching part, determinate the branch by following token
@@ -268,6 +270,15 @@ export function parseForStatement(this: Parser): ForStatement | ForInStatement |
     }
     if (isParseLetAsExpr) {
       this.raiseError(ErrorMessageMap.extra_error_for_of_can_not_use_let_as_identifier, isParseLetAsExpr);
+    }
+    if (
+      !isAwait &&
+      !isEscap &&
+      isIdentifer(leftOrInit) &&
+      leftOrInit.name === "async" &&
+      !leftOrInit.parentheses
+    ) {
+      this.raiseError(ErrorMessageMap.v8_error_async_of_forbidden, leftOrInit.start);
     }
     this.nextToken();
     const right = this.parseAssignmentExpressionAllowIn();

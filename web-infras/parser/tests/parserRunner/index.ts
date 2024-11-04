@@ -14,35 +14,7 @@ const isVerbose = Boolean(process.env.TEST_VERBOSE) || false;
 // const gate = Number(process.env.TEST_GATE) || .95;
 const isCI = Boolean(process.env.TEST_CI) || false;
 
-const TempIgnoreCases: Set<string> = new Set([
-  /**
-   * Hard to do it
-   */
-  // === (feature) use strict active timing.
-  "/babel/core/regression/use-strict-with-pre-semi",
-  // === (feature) regex content and flag check
-  "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-4-hex",
-  "/esprima/expression/primary/literal/regular-expression/u-flag-invalid-range-var-hex",
-  // === (lone surrofate)
-  "/babel/es2022/module-string-names/export-name-has-lone-surrogate",
-  "/esprima/ES6/identifier/invalid_lone_surrogate",
-  // === (sematnic regex)
-  "/esprima/expression/primary/literal/regular-expression/migrated_0006",
-  "/babel/core/escape-keyword/used-as-property",
-  /**
-   * Experimental Feature
-   */
-  // (featture) ts or flow
-  "/babel/estree/class-method/typescript",
-  "/babel/estree/class-private-property/typescript",
-  // (feature?) async do plugin
-  "/babel/comments/basic/async-do-expression",
-  /**
-   * Relative easy
-   */
-  // === (feature) ban async of
-  "/babel/es2021/for-async-of/forbidden",
-]);
+const TempIgnoreCases: Set<string> = new Set([]);
 
 function getFailedKindCount(failedTestCases: Array<FailedTestCasesResult>) {
   const expectFailedButPass: Array<FailedTestCasesResult> = [];

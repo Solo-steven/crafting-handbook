@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "property",
@@ -71,6 +70,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 2,
                             "col": 5,
@@ -78,8 +81,8 @@
                         },
                         "end": {
                             "row": 2,
-                            "col": 13,
-                            "index": 29
+                            "col": 27,
+                            "index": 43
                         }
                     }
                 ],

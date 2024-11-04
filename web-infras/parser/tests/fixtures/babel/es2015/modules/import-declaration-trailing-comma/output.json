@@ -21,6 +21,7 @@
                         }
                     },
                     "local": null,
+                    "isTypeOnly": false,
                     "start": {
                         "row": 2,
                         "col": 13,
@@ -33,6 +34,7 @@
                     }
                 }
             ],
+            "importKind": "value",
             "source": {
                 "kind": "StringLiteral",
                 "value": "foo",

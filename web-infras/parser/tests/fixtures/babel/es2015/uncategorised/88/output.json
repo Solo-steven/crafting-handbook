@@ -32,6 +32,7 @@
                     }
                 }
             ],
+            "importKind": "value",
             "source": {
                 "kind": "StringLiteral",
                 "value": "",
@@ -76,6 +77,7 @@
                             "index": 40
                         }
                     },
+                    "isTypeOnly": false,
                     "local": {
                         "kind": "Identifer",
                         "name": "default",

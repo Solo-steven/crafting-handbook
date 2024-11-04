@@ -21,6 +21,7 @@
                         }
                     },
                     "local": null,
+                    "isTypeOnly": false,
                     "start": {
                         "row": 1,
                         "col": 10,
@@ -33,6 +34,7 @@
                     }
                 }
             ],
+            "importKind": "value",
             "source": {
                 "kind": "StringLiteral",
                 "value": "bar",

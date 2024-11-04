@@ -128,6 +128,7 @@ export const ErrorMessageMap = {
     "Nullish coalescing operator(??) requires parens when mixing with logical operators",
   v8_error_expont_operator_need_parans:
     "Illegal expression. Wrap left hand side or entire exponentiation in parentheses",
+  v8_error_async_of_forbidden: "he left-hand side of a for-of loop may not be 'async'.",
   // try: using keyword as shorted property.
   babel_error_unexpected_keyword: "Unexpect keyword in property name.",
   // try: using presvered word as shorted property in strict mode
@@ -240,4 +241,29 @@ export const ErrorMessageMap = {
   // try `yield *;` in generator
   extra_error_yield_deletgate_can_must_be_followed_by_assignment_expression:
     "yield deletegate must be followed by assignment expression",
+  /**
+   * TS Error
+   */
+  ts_invalid_modifier: "Modifier {} can not using in there.",
+  ts_invalid_modifier_error: "Modifier {} order is wrong.",
+  // modifier error
+  ts_class_property_modifier_error: "modifier {} can not use with class property.",
+  ts_modifier_duplication: "Duplicate modifier {}.",
+  //
+  ts_1024_readonly_modifier_can_only_appear_on_a_property_declaration_or_index_signature:
+    "Ts 1024: 'readonly' modifier can only appear on a property declaration or index signature.",
+  ts_1030_modifier_already_seen: "TS 1030: {} modifier already seen.",
+  ts_1031_declare_modifier_cannot_appear_on_class_elements_of_this_kind:
+    "TS 1031: 'declare' modifier cannot appear on class elements of this kind.",
+  ts_1039_initializers_are_not_allowed_in_ambient_contexts:
+    "TS 1039: Initializers are not allowed in ambient contexts.",
+  ts_1042_modifier_cannot_be_used_here: "TS 1042: {} modifier cannot be used here.",
+  ts_1183_an_implementation_cannot_be_declared_in_ambient_contexts:
+    "TS 1183: An implementation cannot be declared in ambient contexts.",
+  ts_1245_method_a_cannot_have_an_implementation_because_it_is_marked_abstract:
+    "TS 1245: Method {} cannot have an implementation because it is marked abstract.",
+  ts_1267_property_cannot_have_an_initializer_because_it_is_marked_abstract:
+    "TS 1267: Property '{}' cannot have an initializer because it is marked abstract.",
+  ts_1363_A_type_only_import_can_specify_a_default_import_or_named_bindings_but_not_both:
+    "TS 1363: A type-only import can specify a default import or named bindings, but not both.",
 };

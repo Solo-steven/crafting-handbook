@@ -53,7 +53,7 @@ export function parseExpressionStatement(this: Parser): ExpressionStatement {
   this.preStaticSematicEarlyErrorForExpressionStatement();
   const lastTokenIndex = this.lexer.getLastTokenEndPositon().index;
   const expr = this.parseExpressionAllowIn();
-  this.checkStrictMode(expr);
+  this.checkStrictMode(expr, lastTokenIndex);
   this.postStaticSematicEarlyErrorForExpressionStatement(expr, lastTokenIndex);
   this.shouldInsertSemi();
   return Factory.createExpressionStatement(
@@ -120,10 +120,15 @@ export function postStaticSematicEarlyErrorForExpressionStatement(
  * ref: https://tc39.es/ecma262/#use-strict-directive
  * @param {Expression} expr
  */
-export function checkStrictMode(this: Parser, expr: Expression) {
+export function checkStrictMode(this: Parser, expr: Expression, lastTokenIndex: number) {
   if (isStringLiteral(expr)) {
     if (expr.value === "use strict" && !expr.parentheses) {
-      if (this.isDirectToFunctionContext()) {
+      if (
+        this.isDirectToFunctionContext() &&
+        (this.context.startOfFunctionBody === -1 ||
+          lastTokenIndex === this.context.startOfFunctionBody ||
+          this.isCurrentFunctionArrow())
+      ) {
         if (!this.isCurrentFunctionParameterListSimple()) {
           // recoverable error
           this.raiseError(

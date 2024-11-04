@@ -1,1 +1,6 @@
-keyword can not have any escap unicode
+[SyntaxError]: keyword can not have any escap unicode (1,1)
+1|im\u0070ort.meta;
+ |^
+[SyntaxError]: import.meta may appear only with 'sourceType: "module" (1,1)
+1|im\u0070ort.meta;
+ |^

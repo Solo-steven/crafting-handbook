@@ -1,1 +1,6 @@
-[Syntax Error]: Unexpect token Identifer(1, 26).
+[SyntaxError]: Missing semicolon or line terminator. (1,26)
+1|class X { async function f() { let await } }
+ |                        ^
+[SyntaxError]: modifier async can not use with class property. (1,17)
+1|class X { async function f() { let await } }
+ |               ^

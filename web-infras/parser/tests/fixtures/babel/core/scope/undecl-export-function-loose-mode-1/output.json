@@ -64,6 +64,7 @@
                             "index": 27
                         }
                     },
+                    "isTypeOnly": false,
                     "local": null,
                     "start": {
                         "row": 3,

@@ -92,6 +92,7 @@
                             "index": 25
                         }
                     },
+                    "isTypeOnly": false,
                     "local": {
                         "kind": "Identifer",
                         "name": "bar",

@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": true,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "a",
@@ -41,10 +40,14 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
-                            "row": 3,
+                            "row": 2,
                             "col": 3,
-                            "index": 22
+                            "index": 13
                         },
                         "end": {
                             "row": 3,
@@ -56,7 +59,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "static",
@@ -72,6 +74,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 4,
                             "col": 3,
@@ -131,7 +137,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "a",
@@ -147,6 +152,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 7,
                             "col": 12,
@@ -206,7 +215,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "get",
@@ -222,6 +230,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 8,
                             "col": 12,
@@ -281,7 +293,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "set",
@@ -297,6 +308,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 9,
                             "col": 12,
@@ -356,7 +371,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "static",
@@ -372,6 +386,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 10,
                             "col": 12,
@@ -431,7 +449,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "async",
@@ -447,6 +464,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 11,
                             "col": 12,
@@ -523,6 +544,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -539,9 +562,9 @@
                         },
                         "decorators": null,
                         "start": {
-                            "row": 15,
+                            "row": 14,
                             "col": 3,
-                            "index": 147
+                            "index": 138
                         },
                         "end": {
                             "row": 15,
@@ -597,7 +620,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "async",
@@ -613,6 +635,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 19,
                             "col": 3,
@@ -645,6 +671,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -719,7 +747,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": true,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "async",
@@ -735,10 +762,14 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
-                            "row": 25,
+                            "row": 24,
                             "col": 3,
-                            "index": 210
+                            "index": 201
                         },
                         "end": {
                             "row": 25,
@@ -750,7 +781,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "a",
@@ -766,6 +796,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 26,
                             "col": 3,
@@ -825,7 +859,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "static",
@@ -841,6 +874,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 29,
                             "col": 13,
@@ -848,8 +885,8 @@
                         },
                         "end": {
                             "row": 29,
-                            "col": 19,
-                            "index": 241
+                            "col": 20,
+                            "index": 242
                         }
                     }
                 ],
@@ -900,7 +937,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "Identifer",
                             "name": "static",
@@ -930,6 +966,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 32,
                             "col": 3,
@@ -937,8 +977,8 @@
                         },
                         "end": {
                             "row": 32,
-                            "col": 9,
-                            "index": 266
+                            "col": 14,
+                            "index": 271
                         }
                     }
                 ],
@@ -1002,6 +1042,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -1017,6 +1058,7 @@
                             }
                         },
                         "type": "get",
+                        "static": false,
                         "computed": true,
                         "decorators": null,
                         "start": {
@@ -1091,6 +1133,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -1106,12 +1149,13 @@
                             }
                         },
                         "type": "get",
+                        "static": true,
                         "computed": false,
                         "decorators": null,
                         "start": {
-                            "row": 42,
+                            "row": 41,
                             "col": 3,
-                            "index": 331
+                            "index": 322
                         },
                         "end": {
                             "row": 44,

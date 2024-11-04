@@ -1,0 +1,257 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "A",
+                "start": {
+                    "row": 1,
+                    "col": 7,
+                    "index": 6
+                },
+                "end": {
+                    "row": 1,
+                    "col": 8,
+                    "index": 7
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "foo",
+                            "start": {
+                                "row": 2,
+                                "col": 3,
+                                "index": 12
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 7,
+                                "index": 16
+                            }
+                        },
+                        "value": {
+                            "kind": "StringLiteral",
+                            "value": "bar",
+                            "start": {
+                                "row": 2,
+                                "col": 10,
+                                "index": 19
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 15,
+                                "index": 24
+                            }
+                        },
+                        "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 12
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 16,
+                            "index": 25
+                        }
+                    },
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": true,
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "bar",
+                            "start": {
+                                "row": 3,
+                                "col": 10,
+                                "index": 35
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 14,
+                                "index": 39
+                            }
+                        },
+                        "value": {
+                            "kind": "Identifer",
+                            "name": "foo",
+                            "start": {
+                                "row": 3,
+                                "col": 17,
+                                "index": 42
+                            },
+                            "end": {
+                                "row": 3,
+                                "col": 20,
+                                "index": 45
+                            }
+                        },
+                        "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
+                        "start": {
+                            "row": 3,
+                            "col": 3,
+                            "index": 28
+                        },
+                        "end": {
+                            "row": 3,
+                            "col": 21,
+                            "index": 46
+                        }
+                    },
+                    {
+                        "kind": "ClassProperty",
+                        "computed": false,
+                        "static": false,
+                        "key": {
+                            "kind": "PrivateName",
+                            "name": "qux",
+                            "start": {
+                                "row": 4,
+                                "col": 11,
+                                "index": 57
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 15,
+                                "index": 61
+                            }
+                        },
+                        "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": true,
+                        "accessibility": null,
+                        "typeAnnotation": {
+                            "kind": 10261,
+                            "typeAnnotation": {
+                                "kind": 10262,
+                                "typeName": {
+                                    "kind": 10130,
+                                    "name": "Array",
+                                    "start": {
+                                        "row": 4,
+                                        "col": 17,
+                                        "index": 63
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 22,
+                                        "index": 68
+                                    }
+                                },
+                                "typeArguments": {
+                                    "kind": 10256,
+                                    "params": [
+                                        {
+                                            "kind": 10270,
+                                            "start": {
+                                                "row": 4,
+                                                "col": 23,
+                                                "index": 69
+                                            },
+                                            "end": {
+                                                "row": 4,
+                                                "col": 29,
+                                                "index": 75
+                                            }
+                                        }
+                                    ],
+                                    "start": {
+                                        "row": 4,
+                                        "col": 22,
+                                        "index": 68
+                                    },
+                                    "end": {
+                                        "row": 4,
+                                        "col": 30,
+                                        "index": 76
+                                    }
+                                },
+                                "start": {
+                                    "row": 4,
+                                    "col": 17,
+                                    "index": 63
+                                },
+                                "end": {
+                                    "row": 4,
+                                    "col": 22,
+                                    "index": 68
+                                }
+                            },
+                            "start": {
+                                "row": 4,
+                                "col": 15,
+                                "index": 61
+                            },
+                            "end": {
+                                "row": 4,
+                                "col": 22,
+                                "index": 68
+                            }
+                        },
+                        "start": {
+                            "row": 4,
+                            "col": 3,
+                            "index": 49
+                        },
+                        "end": {
+                            "row": 4,
+                            "col": 31,
+                            "index": 77
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 9,
+                    "index": 8
+                },
+                "end": {
+                    "row": 5,
+                    "col": 2,
+                    "index": 79
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 1,
+                "index": 0
+            },
+            "end": {
+                "row": 5,
+                "col": 2,
+                "index": 79
+            },
+            "decorators": null
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 1,
+        "index": 0
+    },
+    "end": {
+        "row": 6,
+        "col": 1,
+        "index": 80
+    }
+}

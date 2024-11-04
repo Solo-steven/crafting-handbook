@@ -34,6 +34,7 @@
                             "index": 22
                         }
                     },
+                    "isTypeOnly": false,
                     "start": {
                         "row": 1,
                         "col": 9,
@@ -46,6 +47,7 @@
                     }
                 }
             ],
+            "importKind": "value",
             "source": {
                 "kind": "StringLiteral",
                 "value": "foo",

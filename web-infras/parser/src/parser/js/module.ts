@@ -25,7 +25,7 @@ import {
 import { ParserPlugin } from "@/src/parser/config";
 import { ErrorMessageMap } from "@/src/parser/error";
 import { ExportContext } from "@/src/parser/scope/lexicalScope";
-import { KeywordSet } from "@/src/parser/type";
+import { IdentiferWithKeyworArray, KeywordSet } from "@/src/parser/type";
 import { Parser } from "@/src/parser";
 
 export function parseProgram(this: Parser) {
@@ -114,6 +114,14 @@ export function parseImportDeclaration(this: Parser): ImportDeclaration {
       start,
     );
   }
+  let importKind: ImportDeclaration["importKind"] = "value";
+  if (this.isContextKeyword("type")) {
+    const { kind, value } = this.lookahead();
+    if (!((kind === SyntaxKinds.Identifier && value === "from") || kind === SyntaxKinds.StringLiteral)) {
+      this.nextToken();
+      importKind = "type";
+    }
+  }
   const specifiers: Array<ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportSpecifier> = [];
   if (this.match(SyntaxKinds.StringLiteral)) {
     const source = this.parseStringLiteral();
@@ -122,6 +130,7 @@ export function parseImportDeclaration(this: Parser): ImportDeclaration {
     return Factory.createImportDeclaration(
       specifiers,
       source,
+      importKind,
       attributes,
       start,
       cloneSourcePosition(source.end),
@@ -136,6 +145,7 @@ export function parseImportDeclaration(this: Parser): ImportDeclaration {
     return Factory.createImportDeclaration(
       specifiers,
       source,
+      importKind,
       attributes,
       start,
       cloneSourcePosition(source.end),
@@ -150,6 +160,7 @@ export function parseImportDeclaration(this: Parser): ImportDeclaration {
     return Factory.createImportDeclaration(
       specifiers,
       source,
+      importKind,
       attributes,
       start,
       cloneSourcePosition(source.end),
@@ -159,8 +170,18 @@ export function parseImportDeclaration(this: Parser): ImportDeclaration {
   if (this.match(SyntaxKinds.CommaToken)) {
     this.nextToken();
     if (this.match(SyntaxKinds.BracesLeftPunctuator)) {
+      if (importKind === "type")
+        this.raiseError(
+          ErrorMessageMap.ts_1363_A_type_only_import_can_specify_a_default_import_or_named_bindings_but_not_both,
+          this.getStartPosition(),
+        );
       this.parseImportSpecifiers(specifiers);
     } else if (this.match(SyntaxKinds.MultiplyOperator)) {
+      if (importKind === "type")
+        this.raiseError(
+          ErrorMessageMap.ts_1363_A_type_only_import_can_specify_a_default_import_or_named_bindings_but_not_both,
+          this.getStartPosition(),
+        );
       specifiers.push(this.parseImportNamespaceSpecifier());
     } else {
       throw this.createMessageError(
@@ -175,6 +196,7 @@ export function parseImportDeclaration(this: Parser): ImportDeclaration {
   return Factory.createImportDeclaration(
     specifiers,
     source,
+    importKind,
     attributes,
     start,
     cloneSourcePosition(source.end),
@@ -239,43 +261,90 @@ export function parseImportSpecifiers(
     if (this.match(SyntaxKinds.BracesRightPunctuator) || this.match(SyntaxKinds.EOFToken)) {
       break;
     }
-    const imported = this.parseModuleExportName();
-    if (!this.isContextKeyword("as")) {
-      if (isIdentifer(imported) && KeywordSet.has(imported.name)) {
-        // recoverable error
-        this.raiseError(ErrorMessageMap.extra_error_unexpect_keyword_in_module_name, imported.start);
-      } else if (isStringLiteral(imported)) {
-        // recoverable error
-        this.raiseError(
-          ErrorMessageMap.babel_error_string_literal_cannot_be_used_as_an_imported_binding,
-          imported.start,
-        );
-      }
-      if (isIdentifer(imported)) this.declarateLetSymbol(imported.name, imported.start);
-      specifiers.push(
-        Factory.createImportSpecifier(
-          imported,
-          null,
-          cloneSourcePosition(imported.start),
-          cloneSourcePosition(imported.end),
-        ),
-      );
-      continue;
-    }
-    this.nextToken();
-    const local = this.parseIdentifierReference();
-    this.declarateLetSymbol(local.name, local.start);
-    specifiers.push(
-      Factory.createImportSpecifier(
-        imported,
-        local,
-        cloneSourcePosition(imported.start),
-        cloneSourcePosition(local.end),
-      ),
-    );
+    specifiers.push(this.parseImportSpecifier());
   }
   this.expect(SyntaxKinds.BracesRightPunctuator);
 }
+
+export function parseImportSpecifier(this: Parser): ImportSpecifier {
+  const start = this.getStartPosition();
+  // eslint-disable-next-line prefer-const
+  let [shouleParseAs, imported, local, isTypeOnly] = this.parseTypePrefixOfSpecifier("import");
+  if (shouleParseAs && this.isContextKeyword("as")) {
+    this.nextToken();
+    local = this.parseIdentifierReference();
+    this.declarateLetSymbol(local.name, local.start);
+    return Factory.createImportSpecifier(imported, local, isTypeOnly, start, this.getLastTokenEndPositon());
+  }
+  if (isIdentifer(imported) && KeywordSet.has(imported.name)) {
+    // recoverable error
+    this.raiseError(ErrorMessageMap.extra_error_unexpect_keyword_in_module_name, imported.start);
+  } else if (isStringLiteral(imported)) {
+    // recoverable error
+    this.raiseError(
+      ErrorMessageMap.babel_error_string_literal_cannot_be_used_as_an_imported_binding,
+      imported.start,
+    );
+  }
+  if (isIdentifer(imported)) this.declarateLetSymbol(imported.name, imported.start);
+  return Factory.createImportSpecifier(
+    imported,
+    local as Identifier | null,
+    isTypeOnly,
+    cloneSourcePosition(imported.start),
+    cloneSourcePosition(imported.end),
+  );
+}
+
+export function parseTypePrefixOfSpecifier(
+  this: Parser,
+  kind: "import" | "export",
+): [boolean, StringLiteral | Identifier, Identifier | StringLiteral | null, boolean] {
+  const maybeType = this.isContextKeyword("type");
+  let isTypeOnly = false;
+  let imported = this.parseModuleExportName();
+  let local: Identifier | StringLiteral | null = null;
+  let shouleParseAs = true;
+  // https://github.com/microsoft/TypeScript/blob/fc4f9d83d5939047aa6bb2a43965c6e9bbfbc35b/src/compiler/parser.ts#L7411-L7456
+  // import { type } from "mod";          - hasTypeSpecifier: false, leftOfAs: type
+  // import { type as } from "mod";       - hasTypeSpecifier: true,  leftOfAs: as
+  // import { type as as } from "mod";    - hasTypeSpecifier: false, leftOfAs: type, rightOfAs: as
+  // import { type as as as } from "mod"; - hasTypeSpecifier: true,  leftOfAs: as,   rightOfAs: as
+  if (maybeType) {
+    if (this.isContextKeyword("as")) {
+      const firstAs = this.parseIdentifierName();
+      if (this.isContextKeyword("as")) {
+        const secondAs = this.parseIdentifierName();
+        if (this.match(IdentiferWithKeyworArray)) {
+          // type as as <id or keyword>
+          shouleParseAs = false;
+          isTypeOnly = true;
+          imported = firstAs;
+          local = kind === "import" ? this.parseIdentifierReference() : this.parseModuleExportName();
+        } else {
+          // type as as <not id or keyword>
+          shouleParseAs = false;
+          local = secondAs;
+        }
+      } else if (this.match(IdentiferWithKeyworArray)) {
+        // type as <id-or-keyword-but-not-`as`>
+        local = kind === "import" ? this.parseIdentifierReference() : this.parseModuleExportName();
+        shouleParseAs = false;
+      } else {
+        // type as <not id or keyword>
+        imported = firstAs;
+        shouleParseAs = false;
+        isTypeOnly = true;
+      }
+    } else if (this.match(IdentiferWithKeyworArray)) {
+      // type somthing
+      imported = this.parseIdentifierReference();
+      isTypeOnly = true;
+    }
+  }
+  return [shouleParseAs, imported, local, isTypeOnly];
+}
+
 export function parseImportAttributesOptional(this: Parser): ImportAttribute[] | undefined {
   if (
     (this.requirePlugin(ParserPlugin.ImportAttribute) && this.match(SyntaxKinds.WithKeyword)) ||
@@ -388,7 +457,7 @@ export function parseExportDefaultDeclaration(this: Parser, start: SourcePositio
       if (this.match(SyntaxKinds.AtPunctuator)) {
         decoratorList = this.mergeDecoratorList(decoratorList, this.parseDecoratorList());
       }
-      const classDeclar = Factory.transFormClassToClassDeclaration(this.parseClass(decoratorList));
+      const classDeclar = Factory.transFormClassToClassDeclaration(this.parseClass(decoratorList, false));
       this.staticSematicForDuplicateDefaultExport(classDeclar);
       return Factory.createExportDefaultDeclaration(
         classDeclar as ClassDeclaration | ClassExpression,
@@ -455,33 +524,7 @@ export function parseExportNamedDeclaration(this: Parser, start: SourcePosition)
     if (this.match(Keywords)) {
       isMatchKeyword = true;
     }
-    const exported = this.parseModuleExportName();
-    if (!this.isVariableDeclarated(helperGetValueOfExportName(exported))) {
-      undefExportSymbols.push([helperGetValueOfExportName(exported), exported.start]);
-    }
-    if (this.isContextKeyword("as")) {
-      this.nextToken();
-      const local = this.parseModuleExportName();
-      this.staticSematicForDuplicateExportName(local);
-      specifier.push(
-        Factory.createExportSpecifier(
-          exported,
-          local,
-          cloneSourcePosition(exported.start),
-          cloneSourcePosition(local.end),
-        ),
-      );
-      continue;
-    }
-    this.staticSematicForDuplicateExportName(exported);
-    specifier.push(
-      Factory.createExportSpecifier(
-        exported,
-        null,
-        cloneSourcePosition(exported.start),
-        cloneSourcePosition(exported.end),
-      ),
-    );
+    specifier.push(this.parseExportSpecifier(undefExportSymbols));
   }
   const { end: bracesRightPunctuatorEnd } = this.expect(SyntaxKinds.BracesRightPunctuator);
   let source: StringLiteral | null = null;
@@ -506,6 +549,36 @@ export function parseExportNamedDeclaration(this: Parser, start: SourcePosition)
       ? bracesRightPunctuatorEnd
       : specifier[specifier.length - 1].end;
   return Factory.createExportNamedDeclaration(specifier, null, source, start, cloneSourcePosition(end));
+}
+export function parseExportSpecifier(
+  this: Parser,
+  undefExportSymbols: Array<[string, SourcePosition]>,
+): ExportSpecifier {
+  // eslint-disable-next-line prefer-const
+  let [shouleParseAs, exported, local, isTypeOnly] = this.parseTypePrefixOfSpecifier("export");
+  if (!this.isVariableDeclarated(helperGetValueOfExportName(exported))) {
+    undefExportSymbols.push([helperGetValueOfExportName(exported), exported.start]);
+  }
+  if (shouleParseAs && this.isContextKeyword("as")) {
+    this.nextToken();
+    local = this.parseModuleExportName();
+    this.staticSematicForDuplicateExportName(local);
+    return Factory.createExportSpecifier(
+      exported,
+      local,
+      isTypeOnly,
+      cloneSourcePosition(exported.start),
+      cloneSourcePosition(local.end),
+    );
+  }
+  this.staticSematicForDuplicateExportName(exported);
+  return Factory.createExportSpecifier(
+    exported,
+    local,
+    isTypeOnly,
+    cloneSourcePosition(exported.start),
+    cloneSourcePosition(exported.end),
+  );
 }
 /**
  * Static Sematic Check based on

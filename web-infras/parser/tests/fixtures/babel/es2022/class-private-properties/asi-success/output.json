@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "PrivateName",
                             "name": "x",
@@ -41,6 +40,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -56,7 +59,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "PrivateName",
                             "name": "y",
@@ -72,6 +74,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 3,
                             "col": 3,

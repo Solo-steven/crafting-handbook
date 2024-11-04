@@ -3,9 +3,11 @@
  * as a format message
  */
 import { SourcePosition } from "web-infra-common";
-import { SyntaxError, SyntaxErrorHandler } from "./type";
+import { SyntaxError } from "./type";
 
-export function createErrorHandler(code: string): SyntaxErrorHandler {
+export type SyntaxErrorHandler = ReturnType<typeof createErrorHandler>;
+
+export function createErrorHandler(code: string) {
   let errors: Array<SyntaxError> = [];
   function pushSyntaxErrors(...syntaxErrors: Array<SyntaxError>) {
     errors.push(...syntaxErrors);
@@ -52,11 +54,15 @@ export function createErrorHandler(code: string): SyntaxErrorHandler {
   function restoreTryFail(index: number) {
     errors = errors.slice(0, index);
   }
+  function popError() {
+    errors.pop();
+  }
   return {
     pushSyntaxErrors,
     haveError,
     formatErrorString,
     markAsTry,
     restoreTryFail,
+    popError,
   };
 }

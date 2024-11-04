@@ -1,0 +1,163 @@
+{
+    "kind": "Program",
+    "body": [
+        {
+            "kind": "ClassDeclaration",
+            "id": {
+                "kind": "Identifer",
+                "name": "TSAbstractClass",
+                "start": {
+                    "row": 1,
+                    "col": 16,
+                    "index": 15
+                },
+                "end": {
+                    "row": 1,
+                    "col": 31,
+                    "index": 30
+                }
+            },
+            "superClass": null,
+            "body": {
+                "kind": "ClassBody",
+                "body": [
+                    {
+                        "kind": 10267,
+                        "async": false,
+                        "generator": false,
+                        "computed": true,
+                        "static": false,
+                        "abstract": false,
+                        "key": {
+                            "kind": 10130,
+                            "name": "foo",
+                            "start": {
+                                "row": 2,
+                                "col": 12,
+                                "index": 44
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 15,
+                                "index": 47
+                            }
+                        },
+                        "params": [
+                            {
+                                "kind": 10130,
+                                "name": "name",
+                                "typeAnnotation": {
+                                    "kind": 10261,
+                                    "typeAnnotation": {
+                                        "kind": 10270,
+                                        "start": {
+                                            "row": 2,
+                                            "col": 22,
+                                            "index": 54
+                                        },
+                                        "end": {
+                                            "row": 2,
+                                            "col": 28,
+                                            "index": 60
+                                        }
+                                    },
+                                    "start": {
+                                        "row": 2,
+                                        "col": 20,
+                                        "index": 52
+                                    },
+                                    "end": {
+                                        "row": 2,
+                                        "col": 28,
+                                        "index": 60
+                                    }
+                                },
+                                "optional": false,
+                                "start": {
+                                    "row": 2,
+                                    "col": 16,
+                                    "index": 48
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 20,
+                                    "index": 52
+                                }
+                            }
+                        ],
+                        "returnType": {
+                            "kind": 10261,
+                            "typeAnnotation": {
+                                "kind": 10273,
+                                "start": {
+                                    "row": 2,
+                                    "col": 31,
+                                    "index": 63
+                                },
+                                "end": {
+                                    "row": 2,
+                                    "col": 38,
+                                    "index": 70
+                                }
+                            },
+                            "start": {
+                                "row": 2,
+                                "col": 29,
+                                "index": 61
+                            },
+                            "end": {
+                                "row": 2,
+                                "col": 38,
+                                "index": 70
+                            }
+                        },
+                        "optional": false,
+                        "accessibility": null,
+                        "decorators": null,
+                        "start": {
+                            "row": 2,
+                            "col": 3,
+                            "index": 35
+                        },
+                        "end": {
+                            "row": 2,
+                            "col": 38,
+                            "index": 70
+                        }
+                    }
+                ],
+                "start": {
+                    "row": 1,
+                    "col": 32,
+                    "index": 31
+                },
+                "end": {
+                    "row": 3,
+                    "col": 2,
+                    "index": 73
+                }
+            },
+            "start": {
+                "row": 1,
+                "col": 10,
+                "index": 9
+            },
+            "end": {
+                "row": 3,
+                "col": 2,
+                "index": 73
+            },
+            "decorators": null
+        }
+    ],
+    "start": {
+        "row": 1,
+        "col": 10,
+        "index": 9
+    },
+    "end": {
+        "row": 4,
+        "col": 1,
+        "index": 74
+    }
+}

@@ -1,1 +1,3 @@
-keyword can not have any escap unicode
+[SyntaxError]: keyword can not have any escap unicode (1,1)
+1|nul\u{6c}
+ |^

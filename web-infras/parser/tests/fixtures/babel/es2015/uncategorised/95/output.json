@@ -48,6 +48,7 @@
                         }
                     },
                     "local": null,
+                    "isTypeOnly": false,
                     "start": {
                         "row": 1,
                         "col": 18,
@@ -89,6 +90,7 @@
                             "index": 40
                         }
                     },
+                    "isTypeOnly": false,
                     "start": {
                         "row": 1,
                         "col": 27,
@@ -101,6 +103,7 @@
                     }
                 }
             ],
+            "importKind": "value",
             "source": {
                 "kind": "StringLiteral",
                 "value": "crypto",

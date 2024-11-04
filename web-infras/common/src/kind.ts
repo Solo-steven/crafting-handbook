@@ -293,7 +293,11 @@ export enum SyntaxKinds {
   TSTypeQuery,
   TSTupleType,
   TSLiteralType,
+  // ====== Function and class method declaration
   TSDeclareFunction,
+  ClassMethodDeclaration,
+  TSAbstractClassAccessorDeclaration,
+  TSClassConstructorDeclaration,
   // ======= Atom Basic Type ======
   TSStringKeyword,
   TSNumberKeyword,
@@ -793,6 +797,9 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.TSEnumBody]: "TSEnumBody",
   [SyntaxKinds.TSEnumMember]: "TSEnumMember",
   [SyntaxKinds.TSDeclareFunction]: "TSDeclareFunction",
+  [SyntaxKinds.TSAbstractClassAccessorDeclaration]: "TSAbstractClassAccessorDeclaration",
+  [SyntaxKinds.ClassMethodDeclaration]: "ClassMethodDeclaration",
+  [SyntaxKinds.TSClassConstructorDeclaration]: "TSClassConstructorDeclaration",
 };
 /** ===================================
  *          Union SytaxKinds

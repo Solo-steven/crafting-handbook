@@ -35,7 +35,6 @@
                                         "kind": "ClassProperty",
                                         "computed": false,
                                         "static": false,
-                                        "shorted": false,
                                         "key": {
                                             "kind": "PrivateName",
                                             "name": "p",
@@ -93,6 +92,10 @@
                                             }
                                         },
                                         "decorators": null,
+                                        "optional": false,
+                                        "abstract": false,
+                                        "declare": false,
+                                        "accessibility": null,
                                         "start": {
                                             "row": 4,
                                             "col": 5,
@@ -100,8 +103,8 @@
                                         },
                                         "end": {
                                             "row": 4,
-                                            "col": 7,
-                                            "index": 77
+                                            "col": 21,
+                                            "index": 91
                                         }
                                     }
                                 ],

@@ -34,6 +34,7 @@
                             "index": 21
                         }
                     },
+                    "isTypeOnly": false,
                     "start": {
                         "row": 1,
                         "col": 10,
@@ -75,6 +76,7 @@
                             "index": 39
                         }
                     },
+                    "isTypeOnly": false,
                     "start": {
                         "row": 1,
                         "col": 24,
@@ -87,6 +89,7 @@
                     }
                 }
             ],
+            "importKind": "value",
             "source": {
                 "kind": "StringLiteral",
                 "value": "module-a",
@@ -172,6 +175,7 @@
                             "index": 110
                         }
                     },
+                    "isTypeOnly": false,
                     "local": {
                         "kind": "StringLiteral",
                         "value": "quux",

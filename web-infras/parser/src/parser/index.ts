@@ -32,7 +32,7 @@ export class Parser {
   // error
   errorHandler: SyntaxErrorHandler;
   constructor(code: string, errorHandler: SyntaxErrorHandler, config?: ParserUserConfig) {
-    this.lexer = createLexer(code);
+    this.lexer = createLexer(code, errorHandler);
     this.context = ContextImpl.createContext();
     this.config = getConfigFromUserInput(config);
     this.strictModeScopeRecorder = createStrictModeScopeRecorder();

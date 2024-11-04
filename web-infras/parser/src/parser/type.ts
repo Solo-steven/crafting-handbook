@@ -26,3 +26,18 @@ export interface ASTArrayWithMetaData<T> {
   start: SourcePosition;
   end: SourcePosition;
 }
+/**
+ * Modifier state used for parse modifier, including JS
+ * and TS modifier kind.
+ */
+export type ModifierState = {
+  isStatic: boolean;
+  isAsync: boolean;
+  isGenerator: boolean;
+  isAccessor: boolean;
+  type: "set" | "get" | "method";
+  readonly: boolean;
+  abstract: boolean;
+  declare: boolean;
+  accessibility: "private" | "protected" | "public" | null;
+};

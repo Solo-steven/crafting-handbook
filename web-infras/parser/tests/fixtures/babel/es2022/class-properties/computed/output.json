@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": true,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "x",
@@ -41,22 +40,25 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 2,
-                            "col": 4,
-                            "index": 15
+                            "col": 3,
+                            "index": 14
                         },
                         "end": {
                             "row": 2,
-                            "col": 5,
-                            "index": 16
+                            "col": 6,
+                            "index": 17
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": true,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "StringLiteral",
                             "value": "y",
@@ -72,15 +74,19 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 3,
-                            "col": 4,
-                            "index": 21
+                            "col": 3,
+                            "index": 20
                         },
                         "end": {
                             "row": 3,
-                            "col": 7,
-                            "index": 24
+                            "col": 8,
+                            "index": 25
                         }
                     }
                 ],
@@ -131,7 +137,6 @@
                         "kind": "ClassProperty",
                         "computed": true,
                         "static": false,
-                        "shorted": true,
                         "key": {
                             "kind": "Identifer",
                             "name": "p",
@@ -147,15 +152,19 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 7,
-                            "col": 4,
-                            "index": 45
+                            "col": 3,
+                            "index": 44
                         },
                         "end": {
                             "row": 7,
-                            "col": 5,
-                            "index": 46
+                            "col": 6,
+                            "index": 47
                         }
                     },
                     {
@@ -179,6 +188,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -196,8 +207,8 @@
                         "decorators": null,
                         "start": {
                             "row": 8,
-                            "col": 4,
-                            "index": 51
+                            "col": 3,
+                            "index": 50
                         },
                         "end": {
                             "row": 8,

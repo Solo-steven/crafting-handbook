@@ -64,6 +64,7 @@
                             "index": 20
                         }
                     },
+                    "isTypeOnly": false,
                     "local": null,
                     "start": {
                         "row": 2,
@@ -92,6 +93,7 @@
                             "index": 25
                         }
                     },
+                    "isTypeOnly": false,
                     "local": null,
                     "start": {
                         "row": 2,

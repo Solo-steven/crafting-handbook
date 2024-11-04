@@ -14,6 +14,7 @@ import {
   isIdentifierStart,
   UnicodePoints,
 } from "./unicode-helper";
+import { SyntaxErrorHandler } from "@/src/errorHandler/index";
 import { ErrorMessageMap } from "./error";
 
 const KeywordLiteralSet = new Set([
@@ -25,7 +26,7 @@ const KeywordLiteralSet = new Set([
 
 export type Lexer = ReturnType<typeof createLexer>;
 
-export function createLexer(code: string) {
+export function createLexer(code: string, errorHandler: SyntaxErrorHandler) {
   /**
    * state and context for lexer,
    * - state serve as input of DFA.
@@ -1975,7 +1976,11 @@ export function createLexer(code: string) {
       // @ts-expect-error When word exist in keyword literal set, it must can map to syntaxkind
       const keywordKind = KeywordLiteralMapSyntaxKind[word];
       if (state.semantic.isKeywordContainUnicodeEscap) {
-        throw new Error("keyword can not have any escap unicode");
+        errorHandler.pushSyntaxErrors({
+          message: "keyword can not have any escap unicode",
+          position: getStartPosition(),
+        });
+        // throw new Error("keyword can not have any escap unicode");
       }
       return finishToken(keywordKind as SyntaxKinds, word);
     }

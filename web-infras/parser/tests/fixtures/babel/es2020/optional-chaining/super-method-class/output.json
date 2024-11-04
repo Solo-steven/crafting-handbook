@@ -150,6 +150,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "start": {
                             "row": 2,
                             "col": 5,

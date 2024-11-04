@@ -38,6 +38,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -53,12 +54,13 @@
                             }
                         },
                         "type": "get",
+                        "static": true,
                         "computed": false,
                         "decorators": null,
                         "start": {
                             "row": 1,
-                            "col": 18,
-                            "index": 17
+                            "col": 11,
+                            "index": 10
                         },
                         "end": {
                             "row": 1,
@@ -98,6 +100,7 @@
                                 }
                             }
                         ],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -113,12 +116,13 @@
                             }
                         },
                         "type": "set",
+                        "static": true,
                         "computed": false,
                         "decorators": null,
                         "start": {
                             "row": 1,
-                            "col": 38,
-                            "index": 37
+                            "col": 31,
+                            "index": 30
                         },
                         "end": {
                             "row": 1,
@@ -143,6 +147,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -158,6 +163,7 @@
                             }
                         },
                         "type": "get",
+                        "static": false,
                         "computed": false,
                         "decorators": null,
                         "start": {
@@ -203,6 +209,7 @@
                                 }
                             }
                         ],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -218,6 +225,7 @@
                             }
                         },
                         "type": "set",
+                        "static": false,
                         "computed": false,
                         "decorators": null,
                         "start": {

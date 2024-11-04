@@ -42,6 +42,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -89,6 +91,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -136,6 +140,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -183,6 +189,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -230,6 +238,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -277,6 +287,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -324,6 +336,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -371,6 +385,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -387,9 +403,9 @@
                         },
                         "decorators": null,
                         "start": {
-                            "row": 26,
+                            "row": 25,
                             "col": 3,
-                            "index": 141
+                            "index": 132
                         },
                         "end": {
                             "row": 27,
@@ -418,6 +434,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -434,9 +452,9 @@
                         },
                         "decorators": null,
                         "start": {
-                            "row": 30,
+                            "row": 29,
                             "col": 3,
-                            "index": 165
+                            "index": 156
                         },
                         "end": {
                             "row": 31,
@@ -465,6 +483,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -481,9 +501,9 @@
                         },
                         "decorators": null,
                         "start": {
-                            "row": 34,
+                            "row": 33,
                             "col": 3,
-                            "index": 189
+                            "index": 180
                         },
                         "end": {
                             "row": 35,
@@ -512,6 +532,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -528,9 +550,9 @@
                         },
                         "decorators": null,
                         "start": {
-                            "row": 38,
+                            "row": 37,
                             "col": 3,
-                            "index": 216
+                            "index": 207
                         },
                         "end": {
                             "row": 39,
@@ -559,6 +581,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -575,9 +599,9 @@
                         },
                         "decorators": null,
                         "start": {
-                            "row": 42,
+                            "row": 41,
                             "col": 3,
-                            "index": 242
+                            "index": 233
                         },
                         "end": {
                             "row": 43,
@@ -602,6 +626,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -617,6 +642,7 @@
                             }
                         },
                         "type": "get",
+                        "static": false,
                         "computed": false,
                         "decorators": null,
                         "start": {
@@ -647,6 +673,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -662,12 +689,13 @@
                             }
                         },
                         "type": "get",
+                        "static": true,
                         "computed": false,
                         "decorators": null,
                         "start": {
-                            "row": 52,
+                            "row": 51,
                             "col": 3,
-                            "index": 289
+                            "index": 280
                         },
                         "end": {
                             "row": 54,

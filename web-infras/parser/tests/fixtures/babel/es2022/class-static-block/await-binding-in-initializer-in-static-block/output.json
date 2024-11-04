@@ -98,7 +98,6 @@
                                                     "kind": 10174,
                                                     "computed": false,
                                                     "static": false,
-                                                    "shorted": false,
                                                     "key": {
                                                         "kind": 10130,
                                                         "name": "x",
@@ -128,6 +127,10 @@
                                                         }
                                                     },
                                                     "decorators": null,
+                                                    "optional": false,
+                                                    "abstract": false,
+                                                    "declare": false,
+                                                    "accessibility": null,
                                                     "start": {
                                                         "row": 3,
                                                         "col": 32,
@@ -135,8 +138,8 @@
                                                     },
                                                     "end": {
                                                         "row": 3,
-                                                        "col": 33,
-                                                        "index": 40
+                                                        "col": 41,
+                                                        "index": 48
                                                     }
                                                 }
                                             ],
@@ -166,8 +169,8 @@
                                 ],
                                 "start": {
                                     "row": 3,
-                                    "col": 20,
-                                    "index": 27
+                                    "col": 13,
+                                    "index": 20
                                 },
                                 "end": {
                                     "row": 3,

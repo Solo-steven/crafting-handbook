@@ -25,7 +25,6 @@
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "PrivateName",
                             "name": "x",
@@ -55,6 +54,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 2,
                             "col": 3,
@@ -62,15 +65,14 @@
                         },
                         "end": {
                             "row": 2,
-                            "col": 5,
-                            "index": 18
+                            "col": 10,
+                            "index": 23
                         }
                     },
                     {
                         "kind": "ClassProperty",
                         "computed": false,
                         "static": false,
-                        "shorted": false,
                         "key": {
                             "kind": "PrivateName",
                             "name": "y",
@@ -100,6 +102,10 @@
                             }
                         },
                         "decorators": null,
+                        "optional": false,
+                        "abstract": false,
+                        "declare": false,
+                        "accessibility": null,
                         "start": {
                             "row": 3,
                             "col": 3,
@@ -107,8 +113,8 @@
                         },
                         "end": {
                             "row": 3,
-                            "col": 5,
-                            "index": 28
+                            "col": 10,
+                            "index": 33
                         }
                     },
                     {
@@ -422,6 +428,7 @@
                                 }
                             }
                         ],
+                        "accessibility": null,
                         "start": {
                             "row": 5,
                             "col": 3,
@@ -450,6 +457,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [
@@ -522,6 +530,7 @@
                             }
                         },
                         "type": "get",
+                        "static": false,
                         "computed": false,
                         "decorators": null,
                         "start": {
@@ -567,6 +576,7 @@
                                 }
                             }
                         ],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [
@@ -681,6 +691,7 @@
                             }
                         },
                         "type": "set",
+                        "static": false,
                         "computed": false,
                         "decorators": null,
                         "start": {
@@ -711,6 +722,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [
@@ -783,6 +795,7 @@
                             }
                         },
                         "type": "get",
+                        "static": false,
                         "computed": false,
                         "decorators": null,
                         "start": {
@@ -828,6 +841,7 @@
                                 }
                             }
                         ],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [
@@ -942,6 +956,7 @@
                             }
                         },
                         "type": "set",
+                        "static": false,
                         "computed": false,
                         "decorators": null,
                         "start": {
@@ -991,6 +1006,8 @@
                                 }
                             }
                         ],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [
@@ -1266,6 +1283,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [

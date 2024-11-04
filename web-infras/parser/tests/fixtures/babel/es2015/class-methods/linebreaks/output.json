@@ -38,6 +38,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -53,6 +54,7 @@
                             }
                         },
                         "type": "get",
+                        "static": false,
                         "computed": false,
                         "decorators": null,
                         "start": {
@@ -98,6 +100,7 @@
                                 }
                             }
                         ],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -113,6 +116,7 @@
                             }
                         },
                         "type": "set",
+                        "static": false,
                         "computed": false,
                         "decorators": null,
                         "start": {
@@ -157,6 +161,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "start": {
                             "row": 10,
                             "col": 3,
@@ -189,6 +194,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -236,6 +243,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -279,6 +288,7 @@
                             }
                         },
                         "params": [],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -294,12 +304,13 @@
                             }
                         },
                         "type": "get",
+                        "static": true,
                         "computed": false,
                         "decorators": null,
                         "start": {
-                            "row": 21,
+                            "row": 20,
                             "col": 3,
-                            "index": 113
+                            "index": 104
                         },
                         "end": {
                             "row": 23,
@@ -339,6 +350,7 @@
                                 }
                             }
                         ],
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -354,12 +366,13 @@
                             }
                         },
                         "type": "set",
+                        "static": true,
                         "computed": false,
                         "decorators": null,
                         "start": {
-                            "row": 26,
+                            "row": 25,
                             "col": 3,
-                            "index": 141
+                            "index": 132
                         },
                         "end": {
                             "row": 28,
@@ -388,6 +401,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -404,9 +419,9 @@
                         },
                         "decorators": null,
                         "start": {
-                            "row": 31,
+                            "row": 30,
                             "col": 3,
-                            "index": 170
+                            "index": 161
                         },
                         "end": {
                             "row": 32,
@@ -435,6 +450,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -451,9 +468,9 @@
                         },
                         "decorators": null,
                         "start": {
-                            "row": 35,
+                            "row": 34,
                             "col": 3,
-                            "index": 202
+                            "index": 193
                         },
                         "end": {
                             "row": 36,
@@ -482,6 +499,8 @@
                             }
                         },
                         "params": [],
+                        "optional": false,
+                        "accessibility": null,
                         "body": {
                             "kind": "FunctionBody",
                             "body": [],
@@ -498,9 +517,9 @@
                         },
                         "decorators": null,
                         "start": {
-                            "row": 39,
+                            "row": 38,
                             "col": 3,
-                            "index": 224
+                            "index": 215
                         },
                         "end": {
                             "row": 41,
