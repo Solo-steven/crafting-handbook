@@ -1,0 +1,6 @@
+## tsconfig
+**/tsconfig.json
+## rollup config
+**/rollup.config.js
+## README
+**/README.md

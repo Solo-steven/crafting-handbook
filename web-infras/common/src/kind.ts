@@ -590,7 +590,7 @@ export const SytaxKindsMapLexicalLiteral: Record<SyntaxKinds, string> = {
   [SyntaxKinds.BitwiseRightShiftFillAssginOperator]: ">>>=", // >>>=
   [SyntaxKinds.NullishAssignOperator]: "??=",
   // ========= Token (Maybe Punctuator and Operator) =====
-  [SyntaxKinds.CommaToken]: "CommaToken",
+  [SyntaxKinds.CommaToken]: ",",
   // ========== Punctuator ===========
   [SyntaxKinds.BracesLeftPunctuator]: "{", // {
   [SyntaxKinds.BracesRightPunctuator]: "}", // }

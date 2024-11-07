@@ -3,6 +3,7 @@
   "workspaces": [
     "web-infras/parser",
     "web-infras/common",
+    "web-infras/generator",
     "web-infras/analyzer",
     "website/frontend"
   ],
