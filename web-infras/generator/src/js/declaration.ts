@@ -1,4 +1,4 @@
-import { Generaotr } from "@/src/index";
+import { Generator } from "@/src/generator";
 import {
   SyntaxKinds,
   Pattern,
@@ -8,7 +8,7 @@ import {
   VariableDeclarator,
 } from "web-infra-common";
 
-export function genVariableDeclaration(this: Generaotr, variableDeclaration: VariableDeclaration) {
+export function genVariableDeclaration(this: Generator, variableDeclaration: VariableDeclaration) {
   this.writeRawString(variableDeclaration.variant);
   this.writeSpace();
   this.genVariableDeclarator(variableDeclaration.declarations[0]);
@@ -19,7 +19,7 @@ export function genVariableDeclaration(this: Generaotr, variableDeclaration: Var
   this.writeToken(SyntaxKinds.SemiPunctuator);
   this.writeLineTerminator();
 }
-export function genVariableDeclarator(this: Generaotr, declarator: VariableDeclarator) {
+export function genVariableDeclarator(this: Generator, declarator: VariableDeclarator) {
   this.genModuleItem(declarator.id);
   if (declarator.init) {
     this.writeSpace();
@@ -28,7 +28,7 @@ export function genVariableDeclarator(this: Generaotr, declarator: VariableDecla
     this.genModuleItem(declarator.init);
   }
 }
-export function genFunctionDeclaration(this: Generaotr, functionDeclar: FunctionDeclaration) {
+export function genFunctionDeclaration(this: Generator, functionDeclar: FunctionDeclaration) {
   if (functionDeclar.async) {
     this.writeRawString("async");
     this.writeSpace();
@@ -43,9 +43,10 @@ export function genFunctionDeclaration(this: Generaotr, functionDeclar: Function
   this.genFunctionParam(functionDeclar.params);
   this.writeSpace();
   this.genFunctionBody(functionDeclar.body);
+  this.writeLineTerminator();
 }
 
-export function genFunctionParam(this: Generaotr, params: Pattern[]) {
+export function genFunctionParam(this: Generator, params: Pattern[]) {
   this.writeWithParan(() => {
     params.forEach((param, index) => {
       this.genModuleItem(param);
@@ -53,7 +54,7 @@ export function genFunctionParam(this: Generaotr, params: Pattern[]) {
     });
   });
 }
-export function genFunctionBody(this: Generaotr, body: FunctionBody) {
+export function genFunctionBody(this: Generator, body: FunctionBody) {
   this.writeWithBraces(true, () => {
     for (const statementItem of body.body) {
       this.writePrefixSpace();

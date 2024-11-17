@@ -1,7 +1,7 @@
 import { parse } from "web-infra-parser";
-import { Generaotr } from "@/src/index";
+import { Generator } from "@/src/generator";
 const ast = parse("function a(c) { const cc = 10+c; return cc; }");
-const generator = new Generaotr();
+const generator = new Generator();
 
 generator.genProgram(ast);
 

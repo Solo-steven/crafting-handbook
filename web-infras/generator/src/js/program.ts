@@ -1,4 +1,4 @@
-import { Generaotr } from "../index";
+import { Generator } from "@/src/generator";
 import {
   SyntaxKinds,
   ModuleItem,
@@ -50,15 +50,19 @@ import {
   ArrayExpression,
   FunctionExpression,
   ArrorFunctionExpression,
+  ObjectPattern,
+  ObjectProperty,
+  ObjectMethodDefinition,
+  ObjectAccessor,
 } from "web-infra-common";
 
-export function genProgram(this: Generaotr, program: Program) {
+export function genProgram(this: Generator, program: Program) {
   for (const item of program.body) {
     this.genModuleItem(item);
   }
 }
 
-export function genModuleItem(this: Generaotr, item: ModuleItem) {
+export function genModuleItem(this: Generator, item: ModuleItem) {
   switch (item.kind) {
     /**
      * Declaration
@@ -171,6 +175,15 @@ export function genModuleItem(this: Generaotr, item: ModuleItem) {
     case SyntaxKinds.ObjectExpression:
       this.genObjectExpression(item as ObjectExpression);
       break;
+    case SyntaxKinds.ObjectProperty:
+      this.genObjectProperty(item as ObjectProperty);
+      break;
+    case SyntaxKinds.ObjectMethodDefintion:
+      this.genObjectMethod(item as ObjectMethodDefinition);
+      break;
+    case SyntaxKinds.ObjectAccessor:
+      this.genObjectAccessor(item as ObjectAccessor);
+      break;
     case SyntaxKinds.ArrayExpression:
       this.genArrayExpression(item as ArrayExpression);
       break;
@@ -218,6 +231,12 @@ export function genModuleItem(this: Generaotr, item: ModuleItem) {
       break;
     case SyntaxKinds.SequenceExpression:
       this.genSequenceExpression(item as SequenceExpression);
+      break;
+    /**
+     * Pattern
+     */
+    case SyntaxKinds.ObjectPattern:
+      this.genObjectPattern(item as ObjectPattern);
       break;
   }
 }

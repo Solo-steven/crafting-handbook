@@ -5927,6 +5927,32 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"web-infra-bundler@workspace:web-infras/bundler":
+  version: 0.0.0-use.local
+  resolution: "web-infra-bundler@workspace:web-infras/bundler"
+  dependencies:
+    "@eslint/js": "npm:^9.14.0"
+    "@rollup/plugin-typescript": "npm:^11.1.5"
+    "@swc/core": "npm:^1.7.10"
+    "@types/eslint": "npm:^9"
+    "@types/eslint__js": "npm:^8.42.3"
+    chalk: "npm:4.1.2"
+    eslint: "npm:^9.14.0"
+    nodemon: "npm:^3.0.1"
+    prettier: "npm:^3.3.2"
+    rollup: "npm:^4.1.4"
+    rollup-plugin-dts: "npm:^6.1.0"
+    ts-node: "npm:^10.9.1"
+    tsconfig-paths: "npm:^4.2.0"
+    tslib: "npm:^2.6.2"
+    typescript: "npm:^5.6.3"
+    typescript-eslint: "npm:^8.13.0"
+    web-infra-common: "workspace:*"
+    web-infra-generator: "workspace:*"
+    web-infra-parser: "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "web-infra-common@workspace:*, web-infra-common@workspace:web-infras/common":
   version: 0.0.0-use.local
   resolution: "web-infra-common@workspace:web-infras/common"
@@ -5946,7 +5972,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"web-infra-generator@workspace:web-infras/generator":
+"web-infra-generator@workspace:*, web-infra-generator@workspace:web-infras/generator":
   version: 0.0.0-use.local
   resolution: "web-infra-generator@workspace:web-infras/generator"
   dependencies:

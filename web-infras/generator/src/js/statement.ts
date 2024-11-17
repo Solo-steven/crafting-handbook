@@ -19,9 +19,9 @@ import {
   SwitchCase,
   DebuggerStatement,
 } from "web-infra-common";
-import { Generaotr } from "@/src/index";
+import { Generator } from "@/src/generator";
 
-export function genIfStatement(this: Generaotr, ifStatement: IfStatement) {
+export function genIfStatement(this: Generator, ifStatement: IfStatement) {
   this.writeToken(SyntaxKinds.IfKeyword);
   this.writeWithParan(() => {
     this.genModuleItem(ifStatement.test);
@@ -32,7 +32,7 @@ export function genIfStatement(this: Generaotr, ifStatement: IfStatement) {
     this.genModuleItem(ifStatement.alternative);
   }
 }
-export function genBlockStatement(this: Generaotr, blockStatement: BlockStatement) {
+export function genBlockStatement(this: Generator, blockStatement: BlockStatement) {
   this.writeWithBraces(true, () => {
     for (const item of blockStatement.body) {
       this.writePrefixSpace();
@@ -40,7 +40,7 @@ export function genBlockStatement(this: Generaotr, blockStatement: BlockStatemen
     }
   });
 }
-export function genSwitchStatement(this: Generaotr, switchStatement: SwitchStatement) {
+export function genSwitchStatement(this: Generator, switchStatement: SwitchStatement) {
   this.writeToken(SyntaxKinds.SwitchKeyword);
   this.writeWithParan(() => {
     this.genModuleItem(switchStatement.discriminant);
@@ -53,7 +53,7 @@ export function genSwitchStatement(this: Generaotr, switchStatement: SwitchState
   });
   this.writeLineTerminator();
 }
-export function genSwitchCase(this: Generaotr, switchCase: SwitchCase) {
+export function genSwitchCase(this: Generator, switchCase: SwitchCase) {
   if (switchCase.test) {
     this.writeToken(SyntaxKinds.CaseKeyword);
     this.genModuleItem(switchCase.test);
@@ -66,7 +66,7 @@ export function genSwitchCase(this: Generaotr, switchCase: SwitchCase) {
     this.genModuleItem(item);
   }
 }
-export function genForInStatement(this: Generaotr, forInStatement: ForInStatement) {
+export function genForInStatement(this: Generator, forInStatement: ForInStatement) {
   this.writeToken(SyntaxKinds.ForKeyword);
   this.writeWithParan(() => {
     this.genModuleItem(forInStatement.left);
@@ -76,7 +76,7 @@ export function genForInStatement(this: Generaotr, forInStatement: ForInStatemen
   this.genModuleItem(forInStatement.body);
   this.writeLineTerminator();
 }
-export function genForOfStatement(this: Generaotr, forOfStatement: ForOfStatement) {
+export function genForOfStatement(this: Generator, forOfStatement: ForOfStatement) {
   this.writeToken(SyntaxKinds.ForKeyword);
   this.writeWithParan(() => {
     this.genModuleItem(forOfStatement.left);
@@ -86,38 +86,41 @@ export function genForOfStatement(this: Generaotr, forOfStatement: ForOfStatemen
   this.genModuleItem(forOfStatement.body);
   this.writeLineTerminator();
 }
-export function genBreakStatement(this: Generaotr, breakStatement: BreakStatement) {
+export function genBreakStatement(this: Generator, breakStatement: BreakStatement) {
   this.writeToken(SyntaxKinds.BreakKeyword);
   if (breakStatement.label) {
     this.genModuleItem(breakStatement.label);
   }
   this.writeLineTerminator();
 }
-export function genContinueStatement(this: Generaotr, continueStatement: ContinueStatement) {
+export function genContinueStatement(this: Generator, continueStatement: ContinueStatement) {
   this.writeToken(SyntaxKinds.ContinueKeyword);
   if (continueStatement.label) {
     this.genModuleItem(continueStatement.label);
   }
   this.writeLineTerminator();
 }
-export function genReturnStatement(this: Generaotr, returnStatement: ReturnStatement) {
+export function genReturnStatement(this: Generator, returnStatement: ReturnStatement) {
   this.writeToken(SyntaxKinds.ReturnKeyword);
-  if (returnStatement.argu) this.genModuleItem(returnStatement.argu);
+  if (returnStatement.argu) {
+    this.writeSpace();
+    this.genModuleItem(returnStatement.argu);
+  }
   this.writeLineTerminator();
 }
-export function genLabeledStatement(this: Generaotr, labeledStatement: LabeledStatement) {
+export function genLabeledStatement(this: Generator, labeledStatement: LabeledStatement) {
   this.genModuleItem(labeledStatement.label);
   this.writeToken(SyntaxKinds.CommaToken);
   this.genModuleItem(labeledStatement.body);
 }
-export function genWhileStatment(this: Generaotr, whileStatement: WhileStatement) {
+export function genWhileStatment(this: Generator, whileStatement: WhileStatement) {
   this.writeToken(SyntaxKinds.WhileKeyword);
   this.writeWithParan(() => {
     this.genModuleItem(whileStatement.test);
   });
   this.genModuleItem(whileStatement.body);
 }
-export function genDoWhileStatement(this: Generaotr, doWhileStatement: DoWhileStatement) {
+export function genDoWhileStatement(this: Generator, doWhileStatement: DoWhileStatement) {
   this.writeToken(SyntaxKinds.DoKeyword);
   this.genModuleItem(doWhileStatement.body);
   this.writeToken(SyntaxKinds.WhileKeyword);
@@ -125,7 +128,7 @@ export function genDoWhileStatement(this: Generaotr, doWhileStatement: DoWhileSt
     this.genModuleItem(doWhileStatement.test);
   });
 }
-export function genTryStatement(this: Generaotr, tryStatement: TryStatement) {
+export function genTryStatement(this: Generator, tryStatement: TryStatement) {
   this.writeToken(SyntaxKinds.TrueKeyword);
   this.genBlockStatement(tryStatement.block);
   this.writeToken(SyntaxKinds.CatchKeyword);
@@ -142,7 +145,7 @@ export function genTryStatement(this: Generaotr, tryStatement: TryStatement) {
     });
   }
 }
-export function genCatchClause(this: Generaotr, catchClause: CatchClause) {
+export function genCatchClause(this: Generator, catchClause: CatchClause) {
   this.writeToken(SyntaxKinds.CatchKeyword);
   if (catchClause.param) {
     this.writeWithParan(() => {
@@ -151,12 +154,12 @@ export function genCatchClause(this: Generaotr, catchClause: CatchClause) {
   }
   this.genBlockStatement(catchClause.body);
 }
-export function genThrowStatment(this: Generaotr, throwStatement: ThrowStatement) {
+export function genThrowStatment(this: Generator, throwStatement: ThrowStatement) {
   this.writeToken(SyntaxKinds.ThrowKeyword);
   this.genModuleItem(throwStatement.argu);
   this.writeLineTerminator();
 }
-export function genWithStatement(this: Generaotr, withStatement: WithStatement) {
+export function genWithStatement(this: Generator, withStatement: WithStatement) {
   this.writeToken(SyntaxKinds.WithKeyword);
   this.writeWithParan(() => {
     this.genModuleItem(withStatement.object);
@@ -164,12 +167,12 @@ export function genWithStatement(this: Generaotr, withStatement: WithStatement) 
   this.writeToken(SyntaxKinds.ColonPunctuator);
   this.genModuleItem(withStatement.body);
 }
-export function genDebugerStatement(this: Generaotr, _debuggerStatement: DebuggerStatement) {
+export function genDebugerStatement(this: Generator, _debuggerStatement: DebuggerStatement) {
   this.writeToken(SyntaxKinds.DebuggerKeyword);
   this.writeToken(SyntaxKinds.ColonPunctuator);
   this.writeLineTerminator();
 }
-export function genExpressionStatement(this: Generaotr, exprStatement: ExpressionStatement) {
+export function genExpressionStatement(this: Generator, exprStatement: ExpressionStatement) {
   this.genModuleItem(exprStatement.expr);
   this.writeToken(SyntaxKinds.SemiPunctuator);
   this.writeLineTerminator();

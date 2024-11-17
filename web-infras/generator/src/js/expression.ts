@@ -1,4 +1,4 @@
-import { Generaotr } from "@/src/index";
+import { Generator } from "@/src/generator";
 import {
   SyntaxKinds,
   Super,
@@ -35,71 +35,73 @@ import {
   ArrorFunctionExpression,
 } from "web-infra-common";
 
-export function writeParanIfNeed(this: Generaotr, isParan: boolean | undefined, callback: () => void) {
+export function writeParanIfNeed(this: Generator, isParan: boolean | undefined, callback: () => void) {
   if (isParan) {
     this.writeWithParan(callback);
   } else {
     callback();
   }
 }
-export function genSuper(this: Generaotr, superExpr: Super) {
+export function genSuper(this: Generator, superExpr: Super) {
   this.writeParanIfNeed(superExpr.parentheses, () => {
     this.writeToken(SyntaxKinds.SuperKeyword);
   });
 }
-export function genImport(this: Generaotr, importExpr: Import) {
+export function genImport(this: Generator, importExpr: Import) {
   this.writeParanIfNeed(importExpr.parentheses, () => {
     this.writeToken(SyntaxKinds.ImportKeyword);
   });
 }
-export function genThisExpression(this: Generaotr, thisExpr: ThisExpression) {
+export function genThisExpression(this: Generator, thisExpr: ThisExpression) {
   this.writeParanIfNeed(thisExpr.parentheses, () => {
     this.writeToken(SyntaxKinds.ThisKeyword);
   });
 }
-export function genIdentifier(this: Generaotr, identifer: Identifier) {
+export function genIdentifier(this: Generator, identifer: Identifier) {
   this.writeParanIfNeed(identifer.parentheses, () => {
     this.writeRawString(identifer.name);
   });
 }
-export function genPrivateName(this: Generaotr, privateName: PrivateName) {
+export function genPrivateName(this: Generator, privateName: PrivateName) {
   this.writeParanIfNeed(privateName.parentheses, () => {
     this.writeToken(SyntaxKinds.HashTagPunctuator);
     this.writeRawString(privateName.name);
   });
 }
-export function genNumberLiteral(this: Generaotr, numberLiteral: NumberLiteral) {
+export function genNumberLiteral(this: Generator, numberLiteral: NumberLiteral) {
   this.writeParanIfNeed(numberLiteral.parentheses, () => {
     this.writeRawString(numberLiteral.rawValue);
   });
 }
-export function genStringLiteral(this: Generaotr, stringLiteral: StringLiteral) {
+export function genStringLiteral(this: Generator, stringLiteral: StringLiteral) {
   this.writeParanIfNeed(stringLiteral.parentheses, () => {
+    this.writeToken(SyntaxKinds.SingleQuotationPunctuator);
     this.writeRawString(stringLiteral.value);
+    this.writeToken(SyntaxKinds.SingleQuotationPunctuator);
   });
 }
-export function genBoolLiteral(this: Generaotr, boolLiteral: BoolLiteral) {
+export function genBoolLiteral(this: Generator, boolLiteral: BoolLiteral) {
   this.writeParanIfNeed(boolLiteral.parentheses, () => {
     this.writeRawString(boolLiteral.value.toString());
   });
 }
-export function genNullLiteral(this: Generaotr, nullLiteral: NullLiteral) {
+export function genNullLiteral(this: Generator, nullLiteral: NullLiteral) {
   this.writeParanIfNeed(nullLiteral.parentheses, () => {
     this.writeToken(SyntaxKinds.NullKeyword);
   });
 }
-export function genUndefiniedLiteral(this: Generaotr, undefinbedLiteral: UndefinbedLiteral) {
+export function genUndefiniedLiteral(this: Generator, undefinbedLiteral: UndefinbedLiteral) {
   this.writeParanIfNeed(undefinbedLiteral.parentheses, () => {
     this.writeToken(SyntaxKinds.UndefinedKeyword);
   });
 }
-export function genRegexLiteral(this: Generaotr, regexLiteral: RegexLiteral) {
+export function genRegexLiteral(this: Generator, regexLiteral: RegexLiteral) {
   this.writeParanIfNeed(regexLiteral.parentheses, () => {
     this.writeRawString(`/${regexLiteral.pattern}/`);
     this.writeRawString(regexLiteral.pattern);
   });
 }
-export function genObjectExpression(this: Generaotr, objectExpression: ObjectExpression) {
+export function genObjectExpression(this: Generator, objectExpression: ObjectExpression) {
   this.writeParanIfNeed(objectExpression.parentheses, () => {
     this.writeWithBraces(true, () => {
       for (const def of objectExpression.properties) {
@@ -111,7 +113,7 @@ export function genObjectExpression(this: Generaotr, objectExpression: ObjectExp
     });
   });
 }
-export function genObjectProperty(this: Generaotr, objectProperty: ObjectProperty) {
+export function genObjectProperty(this: Generator, objectProperty: ObjectProperty) {
   this.genPropertyName(objectProperty.key, objectProperty.computed);
   this.writeToken(SyntaxKinds.ColonPunctuator);
   this.writeSpace();
@@ -119,7 +121,7 @@ export function genObjectProperty(this: Generaotr, objectProperty: ObjectPropert
     this.genModuleItem(objectProperty.value);
   }
 }
-export function genPropertyName(this: Generaotr, propertyName: PropertyName, isComputed: boolean) {
+export function genPropertyName(this: Generator, propertyName: PropertyName, isComputed: boolean) {
   if (isComputed) {
     this.writeToken(SyntaxKinds.BracketLeftPunctuator);
     this.genModuleItem(propertyName);
@@ -128,7 +130,7 @@ export function genPropertyName(this: Generaotr, propertyName: PropertyName, isC
     this.genModuleItem(propertyName);
   }
 }
-export function genObjectMethod(this: Generaotr, objectMethod: ObjectMethodDefinition) {
+export function genObjectMethod(this: Generator, objectMethod: ObjectMethodDefinition) {
   if (objectMethod.async) {
     this.writeRawString("async");
     this.writeSpace();
@@ -141,14 +143,14 @@ export function genObjectMethod(this: Generaotr, objectMethod: ObjectMethodDefin
   this.genFunctionParam(objectMethod.params);
   this.genFunctionBody(objectMethod.body);
 }
-export function genObjectAccessor(this: Generaotr, objectAccessor: ObjectAccessor) {
+export function genObjectAccessor(this: Generator, objectAccessor: ObjectAccessor) {
   this.writeRawString(objectAccessor.type);
   this.writeSpace();
   this.genPropertyName(objectAccessor.key, objectAccessor.computed);
   this.genFunctionParam(objectAccessor.params);
   this.genFunctionBody(objectAccessor.body);
 }
-export function genArrayExpression(this: Generaotr, arrayExpression: ArrayExpression) {
+export function genArrayExpression(this: Generator, arrayExpression: ArrayExpression) {
   this.writeParanIfNeed(arrayExpression.parentheses, () => {
     this.writeToken(SyntaxKinds.BracketLeftPunctuator);
     if (arrayExpression.elements[0]) this.genModuleItem(arrayExpression.elements[0]);
@@ -159,7 +161,7 @@ export function genArrayExpression(this: Generaotr, arrayExpression: ArrayExpres
     this.writeToken(SyntaxKinds.BracketRightPunctuator);
   });
 }
-export function genFunctionExpression(this: Generaotr, functionExpression: FunctionExpression) {
+export function genFunctionExpression(this: Generator, functionExpression: FunctionExpression) {
   this.writeParanIfNeed(functionExpression.parentheses, () => {
     if (functionExpression.async) {
       this.writeRawString("async");
@@ -177,9 +179,10 @@ export function genFunctionExpression(this: Generaotr, functionExpression: Funct
     this.genFunctionParam(functionExpression.params);
     this.writeSpace();
     this.genFunctionBody(functionExpression.body);
+    this.writeLineTerminator();
   });
 }
-export function genArrowFunctionExpression(this: Generaotr, arrowExpr: ArrorFunctionExpression) {
+export function genArrowFunctionExpression(this: Generator, arrowExpr: ArrorFunctionExpression) {
   this.writeParanIfNeed(arrowExpr.parentheses, () => {
     if (arrowExpr.async) {
       this.writeRawString("async");
@@ -192,20 +195,20 @@ export function genArrowFunctionExpression(this: Generaotr, arrowExpr: ArrorFunc
     this.genModuleItem(arrowExpr.body);
   });
 }
-export function genSpreadElement(this: Generaotr, spreadElement: SpreadElement) {
+export function genSpreadElement(this: Generator, spreadElement: SpreadElement) {
   this.writeParanIfNeed(spreadElement.parentheses, () => {
     this.writeToken(SyntaxKinds.SpreadOperator);
     this.genModuleItem(spreadElement.argument);
   });
 }
-export function genAwaitExpression(this: Generaotr, awaitElement: AwaitExpression) {
+export function genAwaitExpression(this: Generator, awaitElement: AwaitExpression) {
   this.writeParanIfNeed(awaitElement.parentheses, () => {
     this.writeRawString("await");
     this.writeSpace();
     this.genModuleItem(awaitElement.argument);
   });
 }
-export function genNewExpression(this: Generaotr, newExpression: NewExpression) {
+export function genNewExpression(this: Generator, newExpression: NewExpression) {
   this.writeParanIfNeed(newExpression.parentheses, () => {
     this.writeToken(SyntaxKinds.NewKeyword);
     this.writeSpace();
@@ -217,7 +220,7 @@ export function genNewExpression(this: Generaotr, newExpression: NewExpression) 
     });
   });
 }
-export function genMemberExpression(this: Generaotr, memberExpression: MemberExpression) {
+export function genMemberExpression(this: Generator, memberExpression: MemberExpression) {
   this.writeParanIfNeed(memberExpression.parentheses, () => {
     this.genModuleItem(memberExpression.object);
     if (memberExpression.computed) {
@@ -237,7 +240,7 @@ export function genMemberExpression(this: Generaotr, memberExpression: MemberExp
     }
   });
 }
-export function genCallExpression(this: Generaotr, callExpression: CallExpression) {
+export function genCallExpression(this: Generator, callExpression: CallExpression) {
   this.writeParanIfNeed(callExpression.parentheses, () => {
     this.genModuleItem(callExpression.callee);
     if (callExpression.optional) {
@@ -246,16 +249,17 @@ export function genCallExpression(this: Generaotr, callExpression: CallExpressio
     this.writeWithParan(() => {
       for (const item of callExpression.arguments) {
         this.genModuleItem(item);
+        this.writeToken(SyntaxKinds.CommaToken);
       }
     });
   });
 }
-export function genChainExpression(this: Generaotr, chainExpression: ChainExpression) {
+export function genChainExpression(this: Generator, chainExpression: ChainExpression) {
   this.writeParanIfNeed(chainExpression.parentheses, () => {
     this.genModuleItem(chainExpression.expression);
   });
 }
-export function genUpdateExpression(this: Generaotr, updateExpression: UpdateExpression) {
+export function genUpdateExpression(this: Generator, updateExpression: UpdateExpression) {
   this.writeParanIfNeed(updateExpression.parentheses, () => {
     if (updateExpression.prefix) {
       this.writeToken(updateExpression.operator);
@@ -268,14 +272,14 @@ export function genUpdateExpression(this: Generaotr, updateExpression: UpdateExp
     }
   });
 }
-export function genUnaryExpression(this: Generaotr, unaryExpression: UnaryExpression) {
+export function genUnaryExpression(this: Generator, unaryExpression: UnaryExpression) {
   this.writeParanIfNeed(unaryExpression.parentheses, () => {
     this.writeToken(unaryExpression.operator);
     this.writeSpace();
     this.genModuleItem(unaryExpression.argument);
   });
 }
-export function genBinaryExpression(this: Generaotr, binaryExpression: BinaryExpression) {
+export function genBinaryExpression(this: Generator, binaryExpression: BinaryExpression) {
   this.writeParanIfNeed(binaryExpression.parentheses, () => {
     this.genModuleItem(binaryExpression.left);
     this.writeSpace();
@@ -284,7 +288,7 @@ export function genBinaryExpression(this: Generaotr, binaryExpression: BinaryExp
     this.genModuleItem(binaryExpression.right);
   });
 }
-export function genConditionalExpression(this: Generaotr, conditionalExpression: ConditionalExpression) {
+export function genConditionalExpression(this: Generator, conditionalExpression: ConditionalExpression) {
   this.writeParanIfNeed(conditionalExpression.parentheses, () => {
     this.genModuleItem(conditionalExpression.test);
     this.writeToken(SyntaxKinds.QustionOperator);
@@ -296,7 +300,7 @@ export function genConditionalExpression(this: Generaotr, conditionalExpression:
     this.genModuleItem(conditionalExpression.alter);
   });
 }
-export function genYieldExpression(this: Generaotr, yeildExpression: YieldExpression) {
+export function genYieldExpression(this: Generator, yeildExpression: YieldExpression) {
   this.writeParanIfNeed(yeildExpression.parentheses, () => {
     this.writeToken(SyntaxKinds.YieldKeyword);
     if (yeildExpression.delegate) {
@@ -308,7 +312,7 @@ export function genYieldExpression(this: Generaotr, yeildExpression: YieldExpres
     }
   });
 }
-export function genAssignmentExpression(this: Generaotr, assigmentExpression: AssigmentExpression) {
+export function genAssignmentExpression(this: Generator, assigmentExpression: AssigmentExpression) {
   this.writeParanIfNeed(assigmentExpression.parentheses, () => {
     this.genModuleItem(assigmentExpression.left);
     this.writeSpace();
@@ -317,7 +321,7 @@ export function genAssignmentExpression(this: Generaotr, assigmentExpression: As
     this.genModuleItem(assigmentExpression.right);
   });
 }
-export function genSequenceExpression(this: Generaotr, sequenceExpression: SequenceExpression) {
+export function genSequenceExpression(this: Generator, sequenceExpression: SequenceExpression) {
   this.writeParanIfNeed(sequenceExpression.parentheses, () => {
     this.genModuleItem(sequenceExpression.exprs[0]);
     for (const expr of sequenceExpression.exprs.slice(1)) {
