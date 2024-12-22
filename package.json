@@ -1,8 +1,10 @@
 {
   "private": true,
   "workspaces": [
-    "web-infras/parser",
     "web-infras/common",
+    "web-infras/parser",
+    "web-infras/generator",
+    "web-infras/bundler",
     "web-infras/analyzer",
     "website/frontend"
   ],

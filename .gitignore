@@ -16,3 +16,5 @@ node_modules
 !.yarn/versions
 ## for some test file start 
 test.*
+## for build file
+**/dist/*

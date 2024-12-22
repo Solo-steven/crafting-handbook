@@ -1,0 +1,43 @@
+{
+  "name": "web-infra-generator",
+  "packageManager": "yarn@3.6.3",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "rollup --config --bundleConfigAsCjs rollup.config.js",
+    "dev": "ts-node --swc ./src/dev.ts",
+    "format": "yarn prettier . --check",
+    "format:write": "yarn prettier . --write",
+    "lint": "yarn eslint",
+    "lint:fix": "yarn eslint --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@swc/core": "^1.7.10",
+    "@types/eslint": "^9",
+    "@types/eslint__js": "^8.42.3",
+    "chalk": "4.1.2",
+    "eslint": "^9.14.0",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.3.2",
+    "rollup": "^4.1.4",
+    "rollup-plugin-dts": "^6.1.0",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.13.0",
+    "web-infra-common": "workspace:*",
+    "web-infra-parser": "workspace:*"
+  },
+  "lint-staged": {
+    "*.{ts}": [
+      "yarn format:write",
+      "yarn lint:fix"
+    ],
+    "*.md": [
+      "yarn format:write"
+    ]
+  }
+}
