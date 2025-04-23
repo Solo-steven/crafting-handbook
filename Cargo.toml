@@ -16,5 +16,7 @@ members = [
     # "compilers/mscript/vm",
     # "compilers/mscript/optimizer"
 
+    "compilers/zhu/zhu_ir"
+
 ]
 resolver = "2"
