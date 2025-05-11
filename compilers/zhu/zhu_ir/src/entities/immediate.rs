@@ -46,3 +46,6 @@ impl fmt::Display for Immediate {
         Ok(())
     }
 }
+
+#[derive(Debug, PartialEq, Clone, Eq)]
+pub struct Offset(pub i32);

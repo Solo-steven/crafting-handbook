@@ -1,6 +1,6 @@
 [package]
 name = "zsh_ir"
-description = "IR for "
+description = "IR for Zhu."
 version = "0.1.0"
 edition = "2021"
 

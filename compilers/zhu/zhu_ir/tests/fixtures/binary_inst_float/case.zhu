@@ -1,0 +1,9 @@
+func binary_inst_float (reg0: f32, reg1: f32) {
+block0:
+  reg2 = fadd reg1 reg0
+  reg3 = fsub reg2 reg1
+  reg4 = fmul reg3 reg2
+  reg5 = fdivide reg4 reg3
+  reg6 = freminder reg5 reg4
+  ret
+}

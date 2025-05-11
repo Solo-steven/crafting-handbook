@@ -1,0 +1,9 @@
+func binary_immi_inst (reg0: u16, reg1: u16) {
+block0:
+  reg2 = addi reg1 5
+  reg3 = subi reg2 10
+  reg4 = muli reg3 15
+  reg5 = dividei reg4 20
+  reg6 = reminderi reg5 25
+  ret
+}

@@ -1,0 +1,6 @@
+func unary_inst (reg0: i16, reg1: i16) {
+block0:
+    reg2 = mov reg0
+    reg3 = neg reg1
+    ret
+}

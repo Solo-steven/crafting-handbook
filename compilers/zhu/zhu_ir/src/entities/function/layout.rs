@@ -50,6 +50,7 @@ impl FunctionLayout {
                     last_inst: None,
                 },
             );
+            self.last_block = Some(block);
         } else {
             self.first_block = Some(block);
             self.last_block = Some(block);

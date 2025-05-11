@@ -1,9 +1,10 @@
 pub mod block;
 pub mod constant;
+pub mod external_name;
 pub mod function;
 pub mod global_value;
 pub mod immediate;
 pub mod instruction;
-pub mod symbol_name;
+pub mod module;
 pub mod r#type;
 pub mod value;

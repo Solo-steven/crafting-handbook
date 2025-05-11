@@ -1,4 +1,4 @@
-use crate::entities::symbol_name::SymbolName;
+use crate::entities::external_name::ExternalName;
 #[derive(Debug, PartialEq, Clone, Eq)]
 pub enum ValueType {
     U8,
@@ -10,9 +10,7 @@ pub enum ValueType {
     I64,
     F32,
     F64,
-    Pointer,
-    Mem(MemType),
-    Void,
+    Mem(MemType), // register store a address to memory
 }
 
 #[derive(Debug, PartialEq, Clone, Eq, Hash, Copy)]
@@ -21,11 +19,12 @@ pub struct MemType(pub u32);
 pub enum MemTypeData {
     Struct(StructTypeData),
     Array(ArrayTypeData),
+    Unknow
 }
 
 #[derive(Debug, PartialEq, Clone, Eq)]
 pub struct StructTypeData {
-    pub name: SymbolName,
+    pub name: ExternalName,
     pub size: u32,
     pub fields: Vec<StructTypeDataField>,
 }

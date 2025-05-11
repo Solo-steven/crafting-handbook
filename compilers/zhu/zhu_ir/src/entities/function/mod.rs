@@ -1,15 +1,14 @@
 use crate::entities::block::{Block, BlockData};
 use crate::entities::constant::{Constant, ConstantData};
+use crate::entities::external_name::ExternalName;
 use crate::entities::function::entites::FunctionEntities;
 use crate::entities::function::layout::FunctionLayout;
 use crate::entities::global_value::{GlobalValue, GlobalValueData};
 use crate::entities::instruction::{Instruction, InstructionData};
 use crate::entities::r#type::{MemType, MemTypeData, ValueType};
-use crate::entities::symbol_name::SymbolName;
 use crate::entities::value::{Value, ValueData};
 use std::collections::HashMap;
 
-pub mod debugger;
 pub mod entites;
 pub mod layout;
 
@@ -33,7 +32,7 @@ impl FunctionSignature {
 #[derive(Debug, PartialEq, Clone)]
 pub struct ExternalFunctionData {
     pub sig: FunctionSignature,
-    pub name: SymbolName,
+    pub name: ExternalName,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -71,7 +70,7 @@ impl Function {
         self.signature.params.push(ty.clone());
         let param = self.entities.create_value(ValueData::Param {
             ty,
-            index: self.signature.params.len(),
+            index: self.signature.params.len() - 1,
         });
         self.entities.mark_param(param);
         param

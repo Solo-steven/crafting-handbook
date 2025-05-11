@@ -1,6 +1,6 @@
 use crate::entities::block::Block;
 use crate::entities::function::FunctionRef;
-use crate::entities::immediate::Immediate;
+use crate::entities::immediate::{Immediate, Offset};
 use crate::entities::instruction::opcode::CmpFlag;
 use crate::entities::instruction::opcode::OpCode;
 use crate::entities::value::Value;
@@ -23,10 +23,6 @@ pub enum InstructionData {
     Unary {
         opcode: OpCode,
         value: Value,
-    },
-    UnaryI {
-        opcode: OpCode,
-        imm: Immediate,
     },
     Binary {
         opcode: OpCode,
@@ -76,23 +72,23 @@ pub enum InstructionData {
     LoadRegister {
         opcode: OpCode,
         base: Value,
-        offset: Value,
+        offset: Offset,
     },
     StoreRegister {
         opcode: OpCode,
         base: Value,
-        offset: Value,
+        offset: Offset,
         src: Value,
     },
     GlobalLoad {
         opcode: OpCode,
         base: GlobalValue,
-        offset: Value,
+        offset: Offset,
     },
     GlobalStore {
         opcode: OpCode,
         base: GlobalValue,
-        offset: Value,
+        offset: Offset,
         src: Value,
     },
     // Control instructions

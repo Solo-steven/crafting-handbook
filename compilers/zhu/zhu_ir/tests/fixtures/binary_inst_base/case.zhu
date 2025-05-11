@@ -1,0 +1,9 @@
+func binary_inst_base (reg0: u16, reg1: u16) {
+block0:
+  reg2 = add reg1 reg0
+  reg3 = sub reg2 reg1
+  reg4 = mul reg3 reg2
+  reg5 = divide reg4 reg3
+  reg6 = reminder reg5 reg4
+  ret
+}
