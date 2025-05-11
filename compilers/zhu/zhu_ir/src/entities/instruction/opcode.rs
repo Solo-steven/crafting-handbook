@@ -2,8 +2,8 @@ use std::fmt;
 #[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub enum OpCode {
     // const instruction
-    Uconst,   // uconst
-    Iconst,   // iconst
+    Uconst, // uconst
+    Iconst, // iconst
     Fconst,
     // int opcodes
     Add,

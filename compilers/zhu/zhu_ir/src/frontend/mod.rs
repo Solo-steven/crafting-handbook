@@ -1,7 +1,7 @@
+use crate::entities::module::Module;
 use lexer::Lexer;
 use parser::Parser;
 use token::{Token, TokenKind};
-use crate::entities::module::Module;
 
 pub mod lexer;
 pub mod parser;

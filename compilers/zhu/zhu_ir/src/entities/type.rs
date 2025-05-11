@@ -19,7 +19,7 @@ pub struct MemType(pub u32);
 pub enum MemTypeData {
     Struct(StructTypeData),
     Array(ArrayTypeData),
-    Unknow
+    Unknow,
 }
 
 #[derive(Debug, PartialEq, Clone, Eq)]

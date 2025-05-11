@@ -5,7 +5,7 @@ use crate::entities::global_value::GlobalValue;
 use crate::entities::immediate::{Immediate, Offset};
 use crate::entities::instruction::opcode::{CmpFlag, OpCode};
 use crate::entities::instruction::{Instruction, InstructionData};
-use crate::entities::r#type::{MemTypeData,  ValueType};
+use crate::entities::r#type::{MemTypeData, ValueType};
 use crate::entities::value::{Value, ValueData};
 
 /// Builder interface to build instruction in a function.
@@ -312,12 +312,12 @@ impl<'a> FunctionBuilder<'a> {
         self.build_inst_and_result(inst_data, ty)
     }
     /// Build load instruction
-    /// 
+    ///
     /// Input :
     /// - base: base register contain address
     /// - offset: constant offset from base register.
     /// - ty: what kind of type the loaded data should be
-    /// 
+    ///
     /// Output:
     /// - register point contain loaded data.
     ///  
@@ -330,12 +330,12 @@ impl<'a> FunctionBuilder<'a> {
         self.build_inst_and_result(inst_data, ty)
     }
     /// Build a store instruction
-    /// 
-    /// Input: 
+    ///
+    /// Input:
     /// - base: base register contain address
     /// - offset: constant offset from base register.
     /// - src: data source to store in memory.
-    /// 
+    ///
     /// Output:
     /// - None
     pub fn store_inst(&mut self, base: Value, offset: Offset, src: Value) {
@@ -348,7 +348,7 @@ impl<'a> FunctionBuilder<'a> {
         self.build_inst_without_result(inst_data);
     }
     /// Build a global load instruction
-    /// 
+    ///
     pub fn global_load_inst(&mut self, base: GlobalValue, offset: Offset, ty: ValueType) -> Value {
         let inst_data = InstructionData::GlobalLoad {
             opcode: OpCode::GlobalLoad,
@@ -397,7 +397,7 @@ impl<'a> FunctionBuilder<'a> {
     /// Output:
     ///  - a not of origin value.
     pub fn bnot_inst(&mut self, value: Value) -> Value {
-        self.build_unary_inst(OpCode::BitwiseNot, value )
+        self.build_unary_inst(OpCode::BitwiseNot, value)
     }
 }
 impl<'a> FunctionBuilder<'a> {
@@ -468,140 +468,140 @@ impl<'a> FunctionBuilder<'a> {
 /// Build binary instruction.
 impl<'a> FunctionBuilder<'a> {
     /// Build Add instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn add_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::Add, args)
     }
     /// Build Sub instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn sub_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::Sub, args)
     }
     /// Build Mul instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn mul_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::Mul, args)
     }
     /// Build Divide instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn divide_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::Divide, args)
     }
     /// Build Reminder instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn reminder_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::Reminder, args)
     }
     /// Build Fadd instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn fadd_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::FAdd, args)
     }
     /// Build Fsub instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn fsub_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::FSub, args)
     }
     /// Build Fmul instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn fmul_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::FMul, args)
     }
     /// Build Fdivide instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn fdivide_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::FDivide, args)
     }
     /// Build Freminder instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn freminder_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::FReminder, args)
     }
     /// Build Bor (Bitwise or) instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn bor_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::BitwiseOR, args)
     }
     /// Build Bor (Bitwise adn) instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn band_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::BitwiseAnd, args)
     }
     /// Build shit left instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn shl_inst(&mut self, args: [Value; 2]) -> Value {
         self.build_binary_inst(OpCode::ShiftLeft, args)
     }
     /// Build shit right instruction
-    /// 
-    /// Input 
+    ///
+    /// Input
     ///  - args: Operand of instruction
-    /// 
+    ///
     /// Output:
     ///  - result value
     pub fn shr_inst(&mut self, args: [Value; 2]) -> Value {

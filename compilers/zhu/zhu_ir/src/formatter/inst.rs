@@ -14,7 +14,13 @@ impl Formatter {
             InstructionData::UnaryConst { opcode, constant } => {
                 let value_type = function.value_type(inst_result.unwrap().clone()).clone();
                 let constant_data = function.constants.get(constant).unwrap();
-                format!("reg{} = {} {} {}", inst_result.unwrap().0, opcode, self.fmt_value_type(&value_type, function, module), constant_data)
+                format!(
+                    "reg{} = {} {} {}",
+                    inst_result.unwrap().0,
+                    opcode,
+                    self.fmt_value_type(&value_type, function, module),
+                    constant_data
+                )
             }
             InstructionData::Unary { opcode, value } => {
                 format!("reg{} = {} reg{}", inst_result.unwrap().0, opcode, value.0)

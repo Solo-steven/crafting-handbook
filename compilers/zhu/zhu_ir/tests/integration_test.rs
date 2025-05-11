@@ -1,10 +1,10 @@
 #![feature(macro_metavar_expr_concat)]
 mod fixtures;
 
-use zsh_ir::frontend::parse;
-use zsh_ir::formatter::format;
-use std::fs::read_to_string;
 use std::env::current_dir;
+use std::fs::read_to_string;
+use zsh_ir::formatter::format;
+use zsh_ir::frontend::parse;
 
 macro_rules! generate_test_cases {
     ( $($test_case: ident),* ) => {
@@ -45,7 +45,7 @@ macro_rules! generate_test_cases {
     };
 }
 
-generate_test_cases!{
+generate_test_cases! {
     unary_inst,
     binary_inst_base,
     binary_inst_byte,
@@ -54,6 +54,4 @@ generate_test_cases!{
 }
 
 #[test]
-fn when_reg_and_block_index_is_not_continue_module_create_by_parser_can_reset_the_index_correctly() {
-    
-}
+fn when_reg_and_block_index_is_not_continue_module_create_by_parser_can_reset_the_index_correctly() {}

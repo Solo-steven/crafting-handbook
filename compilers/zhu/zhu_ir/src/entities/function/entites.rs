@@ -27,7 +27,11 @@ impl FunctionEntities {
             values: Default::default(),
             insts_result: Default::default(),
             params: Default::default(),
-            next_context: FunctionEntitiesNextContext { next_block_index: 0, next_inst_index: 0, next_value_index: 0 }
+            next_context: FunctionEntitiesNextContext {
+                next_block_index: 0,
+                next_inst_index: 0,
+                next_value_index: 0,
+            },
         }
     }
 }
@@ -50,12 +54,12 @@ impl FunctionEntities {
     }
     /// Should be only used by parser, after parse the ir text format
     /// reset the next index context of block
-    pub (crate) fn set_block_next_index(&mut self, next_index: u32)  {
+    pub(crate) fn set_block_next_index(&mut self, next_index: u32) {
         self.next_context.next_block_index = next_index;
     }
     /// Should be only used by parser, after parse the ir text format,
     /// reset the next index context of value
-    pub (crate) fn set_value_next_index(&mut self, next_index: u32) {
+    pub(crate) fn set_value_next_index(&mut self, next_index: u32) {
         self.next_context.next_value_index = next_index;
     }
     /// Create a Value

@@ -1,18 +1,18 @@
 pub mod builder;
 pub mod entities;
-pub mod opti;
-pub mod frontend;
 pub mod formatter;
+pub mod frontend;
+pub mod opti;
 
 use builder::FunctionBuilder;
+use entities::function::Function;
 use entities::immediate::Offset;
 use entities::module::{DataDescription, Module, ModuleLevelId};
 use entities::r#type::ValueType;
-use entities::function::Function;
 use formatter::Formatter;
+use frontend::parser::Parser;
 use opti::cfg::ControlFlowGraph;
 use opti::domtree::DomTree;
-use frontend::parser::Parser;
 use serde::{Deserialize, Serialize};
 
 use frontend::to_tokens;
@@ -129,7 +129,7 @@ block100:
 
     let id = match module.get_module_id_by_symbol(func_name).unwrap() {
         ModuleLevelId::Func(func) => func.clone(),
-        _ => panic!()
+        _ => panic!(),
     };
 
     let func = module.get_mut_function(id).unwrap();
@@ -141,5 +141,4 @@ block100:
     let formatter = Formatter::new();
 
     println!("{}", formatter.fmt_module(&module));
-
 }

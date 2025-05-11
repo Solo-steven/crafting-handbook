@@ -10,7 +10,7 @@ use crate::entities::immediate::Offset;
 use crate::entities::module::DataDescription;
 use crate::entities::module::Module;
 use crate::entities::module::ModuleLevelId;
-use crate::entities::r#type::{ValueType, MemTypeData};
+use crate::entities::r#type::{MemTypeData, ValueType};
 use crate::entities::value::Value;
 use crate::entities::value::ValueData;
 use crate::frontend::utils::{map_token_to_cmp, map_token_to_opcode};
@@ -28,7 +28,12 @@ pub struct Parser<'a> {
 /// Panic when current token is unexpected.
 macro_rules! unexpect_token {
     ($lexer: expr) => {
-        panic!("[Error]: Unexpect token kind {:?} ({}, {}).", $lexer.get_token_kind(), $lexer.get_start_pos(), $lexer.get_end_pos())
+        panic!(
+            "[Error]: Unexpect token kind {:?} ({}, {}).",
+            $lexer.get_token_kind(),
+            $lexer.get_start_pos(),
+            $lexer.get_end_pos()
+        )
     };
 }
 /// Expect a token, call next token if match,
@@ -108,16 +113,14 @@ impl<'a> Parser<'a> {
         // overwrite entity
         let value_data = self.function.entities.values.remove(&dst).unwrap();
         let inst = match &value_data {
-            ValueData::Inst { inst, .. } => {
-                inst.clone()
-            }
-            _ => unreachable!()
+            ValueData::Inst { inst, .. } => inst.clone(),
+            _ => unreachable!(),
         };
         self.function.entities.values.insert(src, value_data);
         // overwrite inst result
         self.function.entities.insts_result.insert(inst, src);
     }
-    /// Helper function to rewrite the block in function entity and 
+    /// Helper function to rewrite the block in function entity and
     /// function layout.
     /// - Usage: all `dst` block will be rewrite by `src` block
     fn rewrite_block_when_def(&mut self, dst: Block, src: Block) {
@@ -143,8 +146,8 @@ impl<'a> Parser<'a> {
         self.function.layout.blocks.insert(src, block_node);
     }
     /// Helper function to reset next context in function entity according to current max block and value index.
-    fn reset_next_context_in_function_entities(&mut self ) {
-        let max_block_index =  self.function.entities.blocks.keys().map(|bb| bb.0).max().unwrap() + 1;
+    fn reset_next_context_in_function_entities(&mut self) {
+        let max_block_index = self.function.entities.blocks.keys().map(|bb| bb.0).max().unwrap() + 1;
         let max_value_index = self.function.entities.values.keys().map(|value| value.0).max().unwrap() + 1;
         self.function.entities.set_block_next_index(max_block_index);
         self.function.entities.set_value_next_index(max_value_index);
@@ -408,10 +411,10 @@ impl<'a> Parser<'a> {
                     | TokenKind::FMul
                     | TokenKind::FDivide
                     | TokenKind::FReminder
-                    | TokenKind::BitwiseOR 
+                    | TokenKind::BitwiseOR
                     | TokenKind::BitwiseAnd
                     | TokenKind::ShiftRight
-                    | TokenKind::ShiftLeft  => {
+                    | TokenKind::ShiftLeft => {
                         let opcode = map_token_to_opcode(self.lexer.get_token_kind());
                         self.lexer.next_token();
                         let args = [self.parse_reg(), self.parse_reg()];
@@ -443,9 +446,7 @@ impl<'a> Parser<'a> {
                         self.create_builder().build_convert_inst(opcode, arg)
                     }
                     // call with reg
-                    TokenKind::Call => {
-                        self.parse_right_hand_side_of_call_inst().unwrap()
-                    }
+                    TokenKind::Call => self.parse_right_hand_side_of_call_inst().unwrap(),
                     // Cmp
                     TokenKind::Icmp => {
                         self.lexer.next_token();
@@ -665,9 +666,9 @@ impl<'a> Parser<'a> {
             _ => unexpect_token!(self.lexer),
         }
     }
-    /// Parse Const data 
+    /// Parse Const data
     /// ```markdown
-    /// 
+    ///
     /// ```
     fn parse_const_data(&mut self) -> Vec<u8> {
         expect_token!(self.lexer, TokenKind::BracketLeft);
