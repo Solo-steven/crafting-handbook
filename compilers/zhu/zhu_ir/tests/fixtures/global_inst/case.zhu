@@ -1,0 +1,9 @@
+global_data = @data {}
+func global_inst (reg0: u8) {
+  greg0 = @global symbol global_data
+block0:
+  reg1 = gload u8 [greg0, 0]
+  reg2 = add reg0 reg1
+  gstore reg2 [greg0, 0]
+  ret
+}

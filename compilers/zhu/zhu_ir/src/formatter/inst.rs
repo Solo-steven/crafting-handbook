@@ -2,6 +2,7 @@ use crate::entities::function::Function;
 use crate::entities::instruction::{Instruction, InstructionData};
 use crate::entities::module::Module;
 
+use crate::entities::value::ValueData;
 use crate::formatter::Formatter;
 
 impl Formatter {
@@ -18,7 +19,7 @@ impl Formatter {
                     "reg{} = {} {} {}",
                     inst_result.unwrap().0,
                     opcode,
-                    self.fmt_value_type(&value_type, function, module),
+                    self.fmt_value_type(&value_type, function),
                     constant_data
                 )
             }
@@ -44,8 +45,8 @@ impl Formatter {
                 format!(
                     "reg{} = {} {} reg{} reg{}",
                     inst_result.unwrap().0,
-                    flag,
                     opcode,
+                    flag,
                     args[0].0,
                     args[1].0
                 )
@@ -58,13 +59,17 @@ impl Formatter {
                     if index == 0 {
                         param_string.push_str(format!("reg{}", param.0).as_str());
                     } else {
-                        param_string.push_str(format!(" ,reg{}", param.0).as_str());
+                        param_string.push_str(format!(", reg{}", param.0).as_str());
                     }
                     index += 1;
                 }
-
+                let result = match inst_result {
+                    Some(reg) => format!("reg{} = ", reg.0),
+                    None => String::new(),
+                };
                 format!(
-                    "{} func {} ({})",
+                    "{}{} func {}({})",
+                    result,
                     opcode,
                     self.fmt_external_name(&func_sign.name, module),
                     param_string
@@ -72,7 +77,7 @@ impl Formatter {
             }
             InstructionData::Ret { opcode, value } => {
                 if let Some(val) = value {
-                    format!("{}, {}", opcode, val.0)
+                    format!("{} reg{}", opcode, val.0)
                 } else {
                     format!("{}", opcode)
                 }
@@ -81,19 +86,31 @@ impl Formatter {
                 format!("reg{} = {} reg{}", inst_result.unwrap().0, opcode, src.0)
             }
             InstructionData::StackAlloc { opcode, size, align } => {
+                let inst_result_value = inst_result.unwrap();
+                let ty_from_inst = match function.entities.values.get(inst_result_value).unwrap() {
+                    ValueData::Inst { ty, .. } => ty,
+                    _ => panic!(),
+                };
                 format!(
-                    "reg{} = {}, size {}, align {}",
+                    "reg{} = {} {}, size {}, align {}",
                     inst_result.unwrap().0,
                     opcode,
-                    size.0,
+                    self.fmt_value_type(ty_from_inst, function),
+                    size,
                     align
                 )
             }
             InstructionData::LoadRegister { opcode, base, offset } => {
+                let inst_result_value = inst_result.unwrap();
+                let ty_from_inst = match function.entities.values.get(inst_result_value).unwrap() {
+                    ValueData::Inst { ty, .. } => ty,
+                    _ => panic!(),
+                };
                 format!(
-                    "reg{} = {} [reg{} reg{}]",
+                    "reg{} = {} {} [reg{}, {}]",
                     inst_result.unwrap().0,
                     opcode,
+                    self.fmt_value_type(ty_from_inst, function),
                     base.0,
                     offset.0
                 )
@@ -104,13 +121,19 @@ impl Formatter {
                 offset,
                 src,
             } => {
-                format!("{}, reg{} [reg{}, reg{}]", opcode, src.0, base.0, offset.0)
+                format!("{} reg{} [reg{}, {}]", opcode, src.0, base.0, offset.0)
             }
             InstructionData::GlobalLoad { opcode, base, offset } => {
+                let inst_result_value = inst_result.unwrap();
+                let ty_from_inst = match function.entities.values.get(inst_result_value).unwrap() {
+                    ValueData::Inst { ty, .. } => ty,
+                    _ => panic!(),
+                };
                 format!(
-                    "reg{} = {} [g{} reg{}]",
+                    "reg{} = {} {} [greg{}, {}]",
                     inst_result.unwrap().0,
                     opcode,
+                    self.fmt_value_type(ty_from_inst, function),
                     base.0,
                     offset.0
                 )
@@ -121,7 +144,7 @@ impl Formatter {
                 offset,
                 src,
             } => {
-                format!("{}, reg{} [@global{}, reg{}]", opcode, src.0, base.0, offset.0)
+                format!("{} reg{} [greg{}, {}]", opcode, src.0, base.0, offset.0)
             }
             InstructionData::BrIf {
                 opcode,
@@ -129,10 +152,10 @@ impl Formatter {
                 conseq,
                 alter,
             } => {
-                format!("{}, reg{} [block{}, block{}]", opcode, test.0, conseq.0, alter.0)
+                format!("{} reg{} block{} block{}", opcode, test.0, conseq.0, alter.0)
             }
             InstructionData::Jump { opcode, dst } => {
-                format!("{}, block{}", opcode, dst.0)
+                format!("{} block{}", opcode, dst.0)
             }
             InstructionData::Phi { opcode, from } => {
                 let mut phi_string = String::new();
@@ -141,11 +164,11 @@ impl Formatter {
                     if index == 0 {
                         phi_string.push_str(format!("block{} reg{}", block.0, value.0).as_str());
                     } else {
-                        phi_string.push_str(format!(" , block{} reg{}", block.0, value.0).as_str());
+                        phi_string.push_str(format!(", block{} reg{}", block.0, value.0).as_str());
                     }
                     index += 1;
                 }
-                format!("reg {} = {}, [{}]", inst_result.unwrap().0, opcode, phi_string)
+                format!("reg{} = {} [{}]", inst_result.unwrap().0, opcode, phi_string)
             }
             InstructionData::Comment(s) => {
                 format!(";;{}", s)

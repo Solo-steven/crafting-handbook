@@ -1,0 +1,20 @@
+func return_u8 (reg0: u8): u8 {
+block0:
+  ret reg0
+}
+func return_u8_multi_arguments (reg0: u8, reg1: u8): u8 {
+block0:
+  reg2 = add reg0 reg1
+  ret reg2
+}
+func return_none () {
+block0:
+  ret
+}
+func call_inst (reg0: u8, reg1: u8) {
+block0:
+  reg2 = call func return_u8(reg0)
+  call func return_none()
+  reg3 = call func return_u8_multi_arguments(reg0, reg1)
+  ret
+}

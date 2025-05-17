@@ -55,9 +55,9 @@ impl<'a> FunctionBuilder<'a> {
     /// Build a convert function. wrap `build_inst_and_result`, only provide opcode and
     /// converted value as parameter.
     pub(crate) fn build_convert_inst(&mut self, opcode: OpCode, value: Value) -> Value {
-        let unary_inst_data = InstructionData::Unary {
+        let unary_inst_data = InstructionData::Convert {
             opcode: opcode.clone(),
-            value,
+            src: value,
         };
         let target_ty = match opcode {
             OpCode::ToU8 => ValueType::U8,
@@ -69,6 +69,10 @@ impl<'a> FunctionBuilder<'a> {
             OpCode::ToI64 => ValueType::I64,
             OpCode::ToF32 => ValueType::F32,
             OpCode::ToF64 => ValueType::F64,
+            OpCode::ToAddress => {
+                let unknow_ty = self.function.declar_mem_type(MemTypeData::Unknow);
+                ValueType::Mem(unknow_ty)
+            }
             _ => panic!(),
         };
         self.build_inst_and_result(unary_inst_data, target_ty)
@@ -145,6 +149,8 @@ impl<'a> FunctionBuilder<'a> {
                 .function
                 .entities
                 .create_value(ValueData::Inst { inst, ty: ty.clone() });
+            println!("??");
+            self.function.entities.mark_inst_result(result, inst);
             Some(result)
         } else {
             None
@@ -251,18 +257,7 @@ impl<'a> FunctionBuilder<'a> {
     /// Output:
     ///   - a converted value with type `address`.
     pub fn to_address_inst(&mut self, src: Value) -> Value {
-        let unary_inst_data = InstructionData::Unary {
-            opcode: OpCode::ToAddress,
-            value: src,
-        };
-        let inst = self.function.entities.create_inst(unary_inst_data);
-        let unknow_mem_type = self.function.declar_mem_type(MemTypeData::Unknow);
-        let ty = ValueType::Mem(unknow_mem_type);
-        let result = self.function.entities.create_value(ValueData::Inst { inst, ty });
-        self.function
-            .layout
-            .append_inst(inst, self.current_block.clone().unwrap());
-        result
+        self.build_convert_inst(OpCode::ToAddress, src)
     }
 }
 /// Build conditional branch or unconditional branch instruction
@@ -303,7 +298,7 @@ impl<'a> FunctionBuilder<'a> {
 /// Build Memory relative instruction
 impl<'a> FunctionBuilder<'a> {
     /// Build stackalloc instruction
-    pub fn stack_alloc_inst(&mut self, size: Value, align: usize, ty: ValueType) -> Value {
+    pub fn stack_alloc_inst(&mut self, size: Immediate, align: Immediate, ty: ValueType) -> Value {
         let inst_data = InstructionData::StackAlloc {
             opcode: OpCode::StackAlloc,
             size,

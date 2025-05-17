@@ -8,23 +8,32 @@ IR for educational purpose, just for fun.
 // Top Level
 <Module>       := <DataStmts> | <Functions>
 
+// struct def
+<StructDefs>    := <StructDefs> <StructDef>
+                := <StructDef>
+
+<StructDef>     := <StructName> "=" "{" <StructDefField> "}"
+<StructName>    := "struct" "." <DecimalString>
+<StructDefFields>       := <StructDefFields> "," <StructDefField> 
+                        := <StructDefField>
+<StructDefField>  := <ValueType>
+
 // Data statement 
 <DataStmts>     := <DataStmts> <DataStmt>
                 := <DataStmt>
-<DataStmt>      := <Identifier> := "@" "data" "{""}"
+<DataStmt>      := <Identifier> "=" "@" "data" "{""}"
 
 // Function
 <Functions>     := <Functions> <Function>
                 := <Function>
-<Function>      := "func" <FunctionName> "(" <FunctionParams> ")" <FunctionBody>
+<Function>      := "func" <FunctionName> "(" <FunctionParams> ")" <FunctionReturnType>? <FunctionBody>
+<FunctionReturnType>    := ":" <ValueType>
 <FunctionName>  := <Identifier>
 <FunctionParams>:= <FunctionParams> "," <FunctionParam>
                 := FunctionParam
 <FunctionParam> := <VReg> ":" <ValueType>
-<FunctionBody>  := "{" <GlobalStmts> <Blocks> "}"
+<FunctionBody>  := "{" <StructDefs> <GlobalStmts> <Blocks> "}"
 
-<Instructions>  := <Instructions> "\n" <Instructions>
-                := <Instruction>
 <GlobalStmts>   := <GlobalStmts> <GlobalStmt>
                 := <GlobalStmt>
 <GlobalStmt>    := <GReg> "=" <GlobalSymbolDeclar>
@@ -63,8 +72,8 @@ IR for educational purpose, just for fun.
         := <VReg> "=" "shr" <VReg> <VReg> 
         := <VReg> "=" "mov" <VReg>
         := <VReg> "=" "neg" <VReg>
-        := <VReg> "=" "icmp" <CmpFlag> <VReg>  <VReg>
-        := <VReg> "=" "fcmp" <CmpFlag> <VReg>  <VReg>
+        := <VReg> "=" "icmp" <CmpFlag> <VReg> <VReg>
+        := <VReg> "=" "fcmp" <CmpFlag> <VReg> <VReg>
         := (<VReg> "=")? "call" "func" <Identifier> "(" <FunctionArguments> ")"
         := "ret" <VReg>?
         := <VReg> "=" "to.u8"  <VReg>
@@ -77,12 +86,12 @@ IR for educational purpose, just for fun.
         := <VReg> "=" "to.f32" <VReg>
         := <VReg> "=" "to.f64" <VReg>
         := <VReg> "=" "to.address" <VReg>
-        := <VReg> "=" "stackalloc" <ValueType> <Value> <DecimalString>
+        := <VReg> "=" "stackalloc" <ValueType> "," "size" <Immdiate> , "align" <Immdiate>
         := <VReg> "=" "stackaddr" <VReg>
         := <VReg> "=" "load" <ValueType> <Address>
         := "store" <VReg> <Address>
         := <VReg> "=" "gload" <ValueType> <GlobalAddress>
-        := "gstore" <GReg> <GlobalAddress>
+        := "gstore" <VReg> <GlobalAddress>
         := "brif" <VReg> <BlockLabel> <BlockLabel> 
         := "jump" <BlockLabel>
         := <VReg> "=" "phi" "[" <PhiArguments> "]"
@@ -115,7 +124,7 @@ IR for educational purpose, just for fun.
                 := "i64"
                 := "f32"
                 := "f64"
-                := "mem"
+                := "ptr"
                 := "struct" "." <Identifier>
                 := <ArrayVty>
 <ArrayVty>      := "[" <DecimalString> "*" "ValueTyep"(not array type) "]"
@@ -133,7 +142,7 @@ IR for educational purpose, just for fun.
 <HexChar>       := "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "A" | "B" | "C" | "D" | "E" | "F"
 
 /// 4. Punctuator
-<Punctuator> := "=" | "(" | ")" | "[" | "]" | "{" |"}" | "@" 
+<Punctuator> := "=" | "(" | ")" | "[" | "]" | "{" |"}" | "@" | ":"
 /// 5. Keyword
 <Keyword>
         := <CmpFlag>
@@ -143,6 +152,8 @@ IR for educational purpose, just for fun.
         := <FuncKeyword>
         := <DataKeyword>
         := <CallKeyword>
+        := <SizeKeyword>
+        := <AlignKeyword>
 
 <CmpFlag> := "eq"
           := "noteq"
@@ -206,6 +217,8 @@ IR for educational purpose, just for fun.
 <GlobalKeyword> := "global"
 <FuncKeyword>   := "func"
 <CallKeyword>   := "call"
+<SizeKeyword>   := "size"
+<AlignKeyword>  := "align"
 ```
 
 ## Test Strcuture

@@ -65,8 +65,8 @@ pub enum InstructionData {
     // stack related
     StackAlloc {
         opcode: OpCode,
-        size: Value,
-        align: usize,
+        size: Immediate,
+        align: Immediate,
     },
     // memory instruction
     LoadRegister {

@@ -1,0 +1,14 @@
+func phi_inst (reg0: u8, reg1: u8) {
+block0:
+  reg2 = icmp eq reg0 reg1
+  brif reg2 block1 block2
+block1:
+  reg3 = add reg0 reg1
+  jump block3
+block2:
+  reg4 = sub reg0 reg1
+  jump block3
+block3:
+  reg5 = phi [block1 reg3, block2 reg4]
+  ret
+}

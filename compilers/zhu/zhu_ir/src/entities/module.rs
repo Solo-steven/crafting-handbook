@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 
-use crate::entities::external_name::{ExternalName, UserDefNamespace};
-use crate::entities::function::{ExternalFunctionData, Function};
+use crate::entities::external_name::ExternalName;
+use crate::entities::function::{ExternalFunctionData, Function, FunctionRef};
 use crate::entities::global_value::{GlobalValue, GlobalValueData};
-// use crate::entities::r#type::{MemType, MemTypeData};
 
 /// Module level entity for compiler
 ///
@@ -13,8 +12,8 @@ pub struct Module {
     pub functions: HashMap<FuncId, Function>,
     pub data_objects: HashMap<DataId, DataDescription>,
     pub symbol_table: HashMap<String, ModuleLevelId>,
-    // mem_types: HashMap<MemType, MemTypeData>,
 }
+
 /// Reference to data in module
 #[derive(Debug, PartialEq, Clone, Eq, Hash, Copy)]
 pub struct DataId(pub u32);
@@ -34,7 +33,6 @@ pub struct FuncId(pub u32);
 pub enum ModuleLevelId {
     Func(FuncId),
     Data(DataId),
-    // Mem(MemType),
 }
 impl Module {
     /// Private method to get the next index of data objects
@@ -73,10 +71,7 @@ impl Module {
     pub fn declar_data_in_function(&mut self, data_id: DataId, function_id: FuncId) -> GlobalValue {
         let func = self.functions.get_mut(&function_id).unwrap();
         func.declar_global_value(GlobalValueData::Symbol {
-            name: ExternalName::UserDefName {
-                namespace: UserDefNamespace::Data,
-                value: data_id.0,
-            },
+            name: ExternalName::from_module_level_id(ModuleLevelId::Data(data_id)),
         })
     }
     /// Get data reference by Data Id
@@ -104,16 +99,13 @@ impl Module {
     }
     /// Declarare function signature to another function
     /// declar `source` function into the `target` function.
-    pub fn declar_function_in_function(&mut self, source: FuncId, target: FuncId) {
+    pub fn declar_function_in_function(&mut self, source: FuncId, target: FuncId) -> FunctionRef {
         let source_func_sig = self.functions.get(&source).unwrap().signature.clone();
         let target_func = self.functions.get_mut(&target).unwrap();
         target_func.declar_external_function(ExternalFunctionData {
             sig: source_func_sig,
-            name: ExternalName::UserDefName {
-                namespace: UserDefNamespace::Function,
-                value: source.0,
-            },
-        });
+            name: ExternalName::from_module_level_id(ModuleLevelId::Func(source)),
+        })
     }
     /// Get function reference by function id
     pub fn get_function(&self, func_id: FuncId) -> Option<&Function> {

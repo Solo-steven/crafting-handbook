@@ -27,6 +27,7 @@ pub enum TokenKind {
     Colon,        // :
     Assign,       // =
     At,           // @
+    Percent,      // %
     // Keywords
     Eq,
     NotEq,
@@ -88,6 +89,8 @@ pub enum TokenKind {
     DataKeyword,
     BlockLabel,
     MemKeyword,
+    AlignKeyword,
+    SizeKeyword,
     // Identifier
     Identifier,
     // Other

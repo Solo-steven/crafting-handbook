@@ -1,4 +1,3 @@
-use crate::entities::external_name::ExternalName;
 #[derive(Debug, PartialEq, Clone, Eq)]
 pub enum ValueType {
     U8,
@@ -21,10 +20,8 @@ pub enum MemTypeData {
     Array(ArrayTypeData),
     Unknow,
 }
-
 #[derive(Debug, PartialEq, Clone, Eq)]
 pub struct StructTypeData {
-    pub name: ExternalName,
     pub size: u32,
     pub fields: Vec<StructTypeDataField>,
 }

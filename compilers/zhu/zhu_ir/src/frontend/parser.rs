@@ -10,6 +10,9 @@ use crate::entities::immediate::Offset;
 use crate::entities::module::DataDescription;
 use crate::entities::module::Module;
 use crate::entities::module::ModuleLevelId;
+use crate::entities::r#type::MemType;
+use crate::entities::r#type::StructTypeData;
+use crate::entities::r#type::StructTypeDataField;
 use crate::entities::r#type::{MemTypeData, ValueType};
 use crate::entities::value::Value;
 use crate::entities::value::ValueData;
@@ -147,10 +150,34 @@ impl<'a> Parser<'a> {
     }
     /// Helper function to reset next context in function entity according to current max block and value index.
     fn reset_next_context_in_function_entities(&mut self) {
-        let max_block_index = self.function.entities.blocks.keys().map(|bb| bb.0).max().unwrap() + 1;
-        let max_value_index = self.function.entities.values.keys().map(|value| value.0).max().unwrap() + 1;
-        self.function.entities.set_block_next_index(max_block_index);
-        self.function.entities.set_value_next_index(max_value_index);
+        if let Some(max) = self.function.entities.blocks.keys().map(|bb| bb.0).max() {
+            self.function.entities.set_block_next_index(max + 1);
+        };
+        if let Some(max) = self.function.entities.values.keys().map(|value| value.0).max() {
+            self.function.entities.set_value_next_index(max + 1);
+        }
+    }
+    /// Helper to get size of value type, used when parse struct
+    fn get_value_type_size(&mut self, value_type: &ValueType) -> u32 {
+        match value_type {
+            ValueType::U8 => 8,
+            ValueType::U16 => 16,
+            ValueType::U32 => 32,
+            ValueType::U64 => 64,
+            ValueType::I16 => 16,
+            ValueType::I32 => 32,
+            ValueType::I64 => 64,
+            ValueType::F32 => 32,
+            ValueType::F64 => 64,
+            ValueType::Mem(mem_type) => {
+                let mem_type_data = self.function.mem_type.get(&mem_type).unwrap();
+                match mem_type_data {
+                    MemTypeData::Array(array_type) => array_type.size,
+                    MemTypeData::Struct(struct_type) => struct_type.size,
+                    MemTypeData::Unknow => 64,
+                }
+            }
+        }
     }
     /// Parse Module
     /// ```markdown
@@ -173,10 +200,11 @@ impl<'a> Parser<'a> {
     }
     /// Parse data statement
     /// ```markdown
-    /// <Identifier> := "@" "data" "{""}"
+    /// <Identifier> "=" "@" "data" "{""}"
     /// ```
     fn parse_data_statement(&mut self) {
         let id_str = parse_identifier!(self.lexer);
+        expect_token!(self.lexer, TokenKind::Assign);
         expect_token!(self.lexer, TokenKind::At);
         expect_token!(self.lexer, TokenKind::DataKeyword);
         expect_token!(self.lexer, TokenKind::BracesLeft);
@@ -202,6 +230,7 @@ impl<'a> Parser<'a> {
         expect_token!(self.lexer, TokenKind::FuncKeyword);
         let func_name = parse_identifier!(self.lexer);
         self.parse_function_params();
+        self.parse_function_return_type();
         self.parse_function_body();
         self.reset_next_context_in_function_entities();
         self.module
@@ -228,15 +257,63 @@ impl<'a> Parser<'a> {
         }
         expect_token!(self.lexer, TokenKind::ParanRight);
     }
+    /// Parse function return type
+    /// ```markdown
+    /// <FunctionReturnType> := ":" <ValueType>
+    /// ```
+    fn parse_function_return_type(&mut self) {
+        if match_tokens!(self.lexer, TokenKind::Colon) {
+            self.lexer.next_token();
+            let ty = self.parse_value_type();
+            self.function.set_return_type(ty)
+        }
+    }
     /// Parse function body
     /// ```markdown
     /// <FunctionBody>  := "{" <GlobalStmts> <Blocks> "}"
     /// ```
     fn parse_function_body(&mut self) {
         expect_token!(self.lexer, TokenKind::BracesLeft);
+        self.parse_structs();
         self.parse_global_statements();
         self.parse_blocks();
         expect_token!(self.lexer, TokenKind::BraceRight);
+    }
+    /// Parse struct defs
+    fn parse_structs(&mut self) {
+        while match_tokens!(self.lexer, TokenKind::StructKeyword) {
+            self.parse_struct();
+        }
+    }
+    /// Parse <StrcuDef>
+    fn parse_struct(&mut self) {
+        self.parse_struct_name();
+        expect_token!(self.lexer, TokenKind::Assign);
+        expect_token!(self.lexer, TokenKind::BracesLeft);
+        let mut is_start = true;
+        let mut offset = 0;
+        let mut size = 0;
+        let mut fields: Vec<StructTypeDataField> = Vec::new();
+        while !match_tokens!(self.lexer, TokenKind::BraceRight, TokenKind::EOF) {
+            if is_start {
+                is_start = false;
+            } else {
+                expect_token!(self.lexer, TokenKind::Comma);
+            }
+            let ty = self.parse_value_type();
+            size += self.get_value_type_size(&ty);
+            fields.push(StructTypeDataField { offset, ty });
+            offset += size
+        }
+        self.function
+            .declar_mem_type(MemTypeData::Struct(StructTypeData { size: 0, fields }));
+        expect_token!(self.lexer, TokenKind::BraceRight);
+    }
+    // Parse <StructName>
+    fn parse_struct_name(&mut self) -> u8 {
+        expect_token!(self.lexer, TokenKind::StructKeyword);
+        expect_token!(self.lexer, TokenKind::Percent);
+        self.parse_decimal_string::<u8>()
     }
     /// Parse global statements
     /// ```markdown
@@ -334,6 +411,7 @@ impl<'a> Parser<'a> {
             self.lexer,
             TokenKind::Reg,
             TokenKind::Ret,
+            TokenKind::Call,
             TokenKind::GlobalStore,
             TokenKind::StoreRegister,
             TokenKind::Jump,
@@ -451,12 +529,14 @@ impl<'a> Parser<'a> {
                     TokenKind::Icmp => {
                         self.lexer.next_token();
                         let cmp = map_token_to_cmp(self.lexer.get_token_kind());
+                        self.lexer.next_token();
                         let args = [self.parse_reg(), self.parse_reg()];
                         self.create_builder().icmp_inst(cmp, args)
                     }
                     TokenKind::Fcmp => {
                         self.lexer.next_token();
                         let cmp = map_token_to_cmp(self.lexer.get_token_kind());
+                        self.lexer.next_token();
                         let args = [self.parse_reg(), self.parse_reg()];
                         self.create_builder().fcmp_inst(cmp, args)
                     }
@@ -476,8 +556,12 @@ impl<'a> Parser<'a> {
                     TokenKind::StackAlloc => {
                         self.lexer.next_token();
                         let ty = self.parse_value_type();
-                        let size = self.parse_reg();
-                        let align = self.parse_decimal_string::<usize>();
+                        expect_token!(self.lexer, TokenKind::Comma);
+                        expect_token!(self.lexer, TokenKind::SizeKeyword);
+                        let size = self.parse_immediate_by_value_type(ValueType::U32);
+                        expect_token!(self.lexer, TokenKind::Comma);
+                        expect_token!(self.lexer, TokenKind::AlignKeyword);
+                        let align = self.parse_immediate_by_value_type(ValueType::U8);
                         self.create_builder().stack_alloc_inst(size, align, ty)
                     }
                     // Phi
@@ -513,7 +597,6 @@ impl<'a> Parser<'a> {
             }
             _ => unreachable!(),
         };
-        expect_token!(self.lexer, TokenKind::ParanLeft);
         let params = self.parse_call_arguments();
         self.create_builder().call_inst(params, func_ref)
     }
@@ -619,9 +702,9 @@ impl<'a> Parser<'a> {
                 ValueType::Mem(mem_type)
             }
             TokenKind::StructKeyword => {
-                self.lexer.next_token();
-                // TOOD: read memtype from mem type table.
-                todo!();
+                let mem_type_num = self.parse_struct_name();
+                let mem_type = MemType(mem_type_num as u32);
+                ValueType::Mem(mem_type)
             }
             _ => {
                 unexpect_token!(self.lexer)

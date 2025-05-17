@@ -122,6 +122,7 @@ impl<'a> Lexer<'a> {
                 ',' => finish_token_and_eat!(self, TokenKind::Comma),
                 '@' => finish_token_and_eat!(self, TokenKind::At),
                 ':' => finish_token_and_eat!(self, TokenKind::Colon),
+                '%' => finish_token_and_eat!(self, TokenKind::Percent),
                 '0'..'9' => {
                     if self.source.starts_with("0x") {
                         // eat "0x"
@@ -163,7 +164,7 @@ impl<'a> Lexer<'a> {
                 None => break,
                 Some(ch) => match ch {
                     '\n' | '\t' | ' ' => break,
-                    '{' | '}' | '[' | ']' | '(' | ')' | '=' | ',' | '@' | ':' => break,
+                    '{' | '}' | '[' | ']' | '(' | ')' | '=' | ',' | '@' | ':' | '%' => break,
                     _ => self.eat_char(),
                 },
             }
@@ -267,6 +268,8 @@ impl<'a> Lexer<'a> {
             "mem" => TokenKind::MemKeyword,
             "func" => TokenKind::FuncKeyword,
             "data" => TokenKind::DataKeyword,
+            "size" => TokenKind::SizeKeyword,
+            "align" => TokenKind::AlignKeyword,
             "u8" => TokenKind::U8Keyword,
             "u16" => TokenKind::U16Keyword,
             "i16" => TokenKind::I16Keyword,

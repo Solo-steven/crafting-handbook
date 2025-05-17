@@ -1,0 +1,13 @@
+func branch_inst (reg0: u8, reg1: u8) {
+block0:
+  jump block1
+block1:
+  reg2 = icmp eq reg0 reg1
+  brif reg2 block2 block3
+block2:
+  jump block4
+block3:
+  jump block4
+block4:
+  ret
+}

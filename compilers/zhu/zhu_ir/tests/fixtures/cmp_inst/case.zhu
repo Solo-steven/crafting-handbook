@@ -1,0 +1,16 @@
+func cmp_inst (reg0: u8, reg1: u8, reg2: f32, reg3: f32) {
+block0:
+  reg4 = icmp eq reg0 reg1
+  reg5 = icmp noteq reg0 reg1
+  reg6 = icmp gt reg0 reg1
+  reg7 = icmp gteq reg0 reg1
+  reg8 = icmp lt reg0 reg1
+  reg9 = icmp lteq reg0 reg1
+  reg10 = fcmp eq reg2 reg3
+  reg11 = fcmp noteq reg2 reg3
+  reg12 = fcmp gt reg2 reg3
+  reg13 = fcmp gteq reg2 reg3
+  reg14 = fcmp lt reg2 reg3
+  reg15 = fcmp lteq reg2 reg3
+  ret
+}

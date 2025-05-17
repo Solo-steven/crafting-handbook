@@ -1,0 +1,14 @@
+func convert_inst (reg0: u8) {
+block0:
+  reg1 = to.u8 reg0
+  reg2 = to.u16 reg1
+  reg3 = to.u32 reg2
+  reg4 = to.u64 reg3
+  reg5 = to.i16 reg4
+  reg6 = to.i32 reg5
+  reg7 = to.i64 reg6
+  reg8 = to.f32 reg7
+  reg9 = to.f64 reg8
+  reg10 = to.addr reg9
+  ret
+}

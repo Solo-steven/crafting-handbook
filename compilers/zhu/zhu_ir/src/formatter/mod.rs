@@ -2,10 +2,24 @@ use crate::entities::external_name::{ExternalName, UserDefNamespace};
 use crate::entities::function::Function;
 use crate::entities::global_value::{GlobalValue, GlobalValueData};
 use crate::entities::module::{DataDescription, DataId, FuncId, Module, ModuleLevelId};
-use crate::entities::r#type::{MemTypeData, ValueType};
+use crate::entities::r#type::{MemType, MemTypeData, ValueType};
+use std::cmp::Ordering;
 
 pub mod func;
 pub mod inst;
+
+fn sort_func_ids(mut ids: Vec<FuncId>) -> Vec<FuncId> {
+    ids.sort_by(|a, b| {
+        if a.0 == b.0 {
+            Ordering::Equal
+        } else if a.0 < b.0 {
+            Ordering::Less
+        } else {
+            Ordering::Greater
+        }
+    });
+    ids
+}
 
 pub struct Formatter {}
 
@@ -28,7 +42,9 @@ impl Formatter {
             module_in_string
                 .push_str(format!("{} = @data {}\n", sym_name, self.fmt_data_description(data_obj, module)).as_str())
         }
-        for (func_id, func) in &module.functions {
+        let func_ids = sort_func_ids(module.functions.keys().map(|k| k.clone()).collect());
+        for func_id in func_ids {
+            let func = module.functions.get(&func_id).unwrap();
             let sym_name = module
                 .get_symbol_by_module_id(ModuleLevelId::Func(func_id.clone()))
                 .unwrap();
@@ -42,29 +58,19 @@ impl Formatter {
         let global_data = function.global_values.get(global).unwrap();
         let rhs_text = match global_data {
             GlobalValueData::Symbol { name } => {
-                format!("sybmol {}", self.fmt_external_name(name, module))
+                format!("symbol {}", self.fmt_external_name(name, module))
             }
             GlobalValueData::Load { base, offset, ty } => {
-                format!(
-                    "{}, load [{}, {}]",
-                    self.fmt_value_type(ty, function, module),
-                    base.0,
-                    offset.0
-                )
+                format!("{}, load [{}, {}]", self.fmt_value_type(ty, function), base.0, offset.0)
             }
             GlobalValueData::AddI { base, offset, ty } => {
-                format!(
-                    "{}, addi [{}, {}]",
-                    self.fmt_value_type(ty, function, module),
-                    base.0,
-                    offset.0
-                )
+                format!("{}, addi [{}, {}]", self.fmt_value_type(ty, function), base.0, offset.0)
             }
         };
-        format!("g{} = @global {}", global.0, rhs_text)
+        format!("greg{} = @global {}", global.0, rhs_text)
     }
     /// Private method to format value type
-    fn fmt_value_type(&self, ty: &ValueType, function: &Function, module: &Module) -> String {
+    fn fmt_value_type(&self, ty: &ValueType, function: &Function) -> String {
         match ty {
             ValueType::U8 => format!("u8"),
             ValueType::U16 => format!("u16"),
@@ -83,12 +89,10 @@ impl Formatter {
                         format!(
                             "[{} * {}]",
                             array_type.size,
-                            self.fmt_value_type(&array_type.ty, function, module)
+                            self.fmt_value_type(&array_type.ty, function)
                         )
                     }
-                    MemTypeData::Struct(struct_type) => {
-                        format!("struct {}", self.fmt_external_name(&struct_type.name, module))
-                    }
+                    MemTypeData::Struct(_) => self.fmt_struct_name(mem_type),
                 }
             }
         }
@@ -113,14 +117,14 @@ impl Formatter {
                             .unwrap()
                     )
                 }
-                UserDefNamespace::MemType => {
-                    todo!()
-                }
                 UserDefNamespace::Other(other_ty) => {
                     format!("User_{}_{}", other_ty, value)
                 }
             },
         }
+    }
+    fn fmt_struct_name(&self, mem_type: &MemType) -> String {
+        format!("struct%{}", mem_type.0)
     }
 }
 

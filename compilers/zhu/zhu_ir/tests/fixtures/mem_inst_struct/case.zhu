@@ -1,0 +1,15 @@
+func mem_inst_struct (): i16 {
+struct%0 = { i16, i16 }
+struct%1 = { i16, struct%0 }
+block0:
+  reg0 = stackalloc struct%0, size 32, align 8
+  reg1 = load i16 [reg0, 0]
+  reg2 = load i16 [reg0, 16]
+  reg3 = add reg1 reg2
+  reg4 = stackalloc struct%1, size 32, align 8
+  reg5 = load i16 [reg4, 0]
+  reg6 = load i16 [reg4, 32]
+  reg7 = add reg5 reg6
+  reg8 = add reg3 reg7
+  ret reg8
+}

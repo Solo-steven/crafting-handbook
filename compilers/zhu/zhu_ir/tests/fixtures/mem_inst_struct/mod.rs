@@ -1,26 +1,11 @@
-pub mod builder;
-pub mod entities;
-pub mod formatter;
-pub mod frontend;
-pub mod opti;
-
-use builder::FunctionBuilder;
-use entities::function::Function;
-use entities::immediate::Offset;
-use entities::module::{DataDescription, Module, ModuleLevelId};
-use entities::r#type::ValueType;
-use formatter::Formatter;
-use frontend::parser::Parser;
-use opti::cfg::ControlFlowGraph;
-use opti::domtree::DomTree;
-use serde::{Deserialize, Serialize};
-
-use frontend::{parse, to_tokens};
-
-use crate::entities::r#type::{MemTypeData, StructTypeData, StructTypeDataField};
+use zsh_ir::builder::FunctionBuilder;
+use zsh_ir::entities::immediate::{Immediate, Offset};
+use zsh_ir::entities::module::Module;
+use zsh_ir::entities::r#type::{MemTypeData, StructTypeData, StructTypeDataField, ValueType};
 
 const FUNC_NAME: &'static str = "mem_inst_struct";
-fn build_module() -> Module {
+
+pub fn build_module() -> Module {
     let mut module = Module::new();
 
     let func_id = module.declar_function(FUNC_NAME);
@@ -56,20 +41,12 @@ fn build_module() -> Module {
     let mut builder = FunctionBuilder::new(func_mut_reference);
     builder.switch_to_block(bb);
     // build mem type 0
-    let reg0 = builder.stack_alloc_inst(
-        entities::immediate::Immediate::U32(32),
-        entities::immediate::Immediate::U8(8),
-        ValueType::Mem(mem_type_0),
-    );
+    let reg0 = builder.stack_alloc_inst(Immediate::U32(32), Immediate::U8(8), ValueType::Mem(mem_type_0));
     let reg1 = builder.load_inst(reg0, Offset(0), ValueType::I16);
     let reg2 = builder.load_inst(reg0, Offset(16), ValueType::I16);
     let reg3 = builder.add_inst([reg1, reg2]);
     // build mem type 1
-    let reg4 = builder.stack_alloc_inst(
-        entities::immediate::Immediate::U32(32),
-        entities::immediate::Immediate::U8(8),
-        ValueType::Mem(mem_type_1),
-    );
+    let reg4 = builder.stack_alloc_inst(Immediate::U32(32), Immediate::U8(8), ValueType::Mem(mem_type_1));
     let reg5 = builder.load_inst(reg4, Offset(0), ValueType::I16);
     let reg6 = builder.load_inst(reg4, Offset(32), ValueType::I16);
     let reg7 = builder.add_inst([reg5, reg6]);
@@ -78,26 +55,4 @@ fn build_module() -> Module {
     builder.ret_inst(Some(reg8));
 
     module
-}
-
-fn main() {
-    let formatter = Formatter::new();
-    let source = "func mem_inst_struct (): i16 {
-struct%0 = { i16, i16 }
-struct%1 = { i16, struct%0 }
-block0:
-  reg0 = stackalloc struct%0, size 32, align 8
-  reg1 = load i16 [reg0, 0]
-  reg2 = load i16 [reg0, 16]
-  reg3 = add reg1 reg2
-  reg4 = stackalloc struct%1, size 32, align 8
-  reg5 = load i16 [reg4, 0]
-  reg6 = load i16 [reg4, 32]
-  reg7 = add reg5 reg6
-  reg8 = add reg3 reg7
-  ret reg8
-}
-";
-    println!("{:?}", to_tokens(source));
-    println!("{}", formatter.fmt_module(&parse(source)));
 }
