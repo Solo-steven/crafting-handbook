@@ -1,5 +1,5 @@
 #![feature(macro_metavar_expr_concat)]
-mod fixtures;
+mod baseline;
 
 use std::env::current_dir;
 use std::fs::read_to_string;
@@ -10,12 +10,12 @@ use zsh_ir::entities::r#type::ValueType;
 use zsh_ir::formatter::format;
 use zsh_ir::frontend::parse;
 
-fn get_fixture_folder_path() -> PathBuf {
-    current_dir().unwrap().join("tests/fixtures")
+fn get_baseline_folder_path() -> PathBuf {
+    current_dir().unwrap().join("tests/baseline")
 }
 
 fn read_file_from_case_name(name: &str) -> String {
-    let path_buf = get_fixture_folder_path().join(name).join("case.zhu");
+    let path_buf = get_baseline_folder_path().join(name).join("case.zhu");
     read_to_string(path_buf)
         .unwrap_or_else(|_| panic!("[Error]: test file can not read. path. namespace is {:?}", name))
 }
@@ -25,7 +25,7 @@ macro_rules! generate_test_cases {
         $(
             #[test]
             fn ${concat($test_case, _buildable)}() {
-                fixtures::$test_case::build_module();
+                baseline::$test_case::build_module();
             }
             #[test]
             fn ${concat($test_case, _parseable)}() {
@@ -41,7 +41,7 @@ macro_rules! generate_test_cases {
             }
             #[test]
             fn ${concat($test_case, _build_match_formatter)}() {
-                let module = fixtures::$test_case::build_module();
+                let module = baseline::$test_case::build_module();
                 let result = format(&module);
                 let source = read_file_from_case_name(stringify!($test_case));
                 assert_eq!(result, source);
@@ -90,7 +90,7 @@ fn when_reg_and_block_index_is_not_continue_module_create_by_parser_can_reset_th
     assert_eq!(
         result,
         read_to_string(
-            get_fixture_folder_path()
+            get_baseline_folder_path()
                 .join("correct_module_after_parse")
                 .join("expect.zhu")
         )
