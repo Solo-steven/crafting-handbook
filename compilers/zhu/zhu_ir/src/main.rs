@@ -4,10 +4,11 @@ pub mod formatter;
 pub mod frontend;
 pub mod opti;
 
+use crate::opti::licm::natural_loop::NaturalLoopAnalysis;
 use builder::FunctionBuilder;
 use entities::function::Function;
 use entities::immediate::Offset;
-use entities::module::{DataDescription, Module, ModuleLevelId};
+use entities::module::{self, DataDescription, Module, ModuleLevelId};
 use entities::r#type::ValueType;
 use formatter::Formatter;
 use frontend::parser::Parser;
@@ -82,22 +83,80 @@ fn build_module() -> Module {
 
 fn main() {
     let formatter = Formatter::new();
-    let source = "func mem_inst_struct (): i16 {
-struct%0 = { i16, i16 }
-struct%1 = { i16, struct%0 }
+    let source = "
+func find_natural_loops (reg0: u8, reg1: u8) {
 block0:
-  reg0 = stackalloc struct%0, size 32, align 8
-  reg1 = load i16 [reg0, 0]
-  reg2 = load i16 [reg0, 16]
-  reg3 = add reg1 reg2
-  reg4 = stackalloc struct%1, size 32, align 8
-  reg5 = load i16 [reg4, 0]
-  reg6 = load i16 [reg4, 32]
-  reg7 = add reg5 reg6
-  reg8 = add reg3 reg7
-  ret reg8
+    jump block1
+block1:
+    reg2 = phi [block0 reg0, block4 reg4]
+    jump block2
+block2:
+    reg3 = icmp lt reg2 reg1
+    brif reg3 block3 block5
+block3:
+    jump block4
+block4:
+    reg4 = addi reg2 1
+    jump block1
+block5:
+    ret
 }
 ";
-    println!("{:?}", to_tokens(source));
-    println!("{}", formatter.fmt_module(&parse(source)));
+    let do_while_loop_source = "
+func find_natural_loops (reg0: u8, reg1: u8) {
+block0:
+    reg2 = mov reg0
+    jump block1
+block1:
+    reg3 = phi [block0 reg2, block2 reg4]
+    reg4 = addi reg3 1
+    jump block2
+block2:
+    reg5 = icmp lt reg4 reg1
+    brif reg5 block3 block1
+block3:
+    ret
+}
+";
+    let do_while_loop_have_loop_invariant_source = "
+func find_natural_loops (reg0: u8, reg1: u8) {
+block0:
+    reg2 = mov reg0
+    reg3 = add reg0 reg1
+    jump block1
+block1:
+    reg4 = phi [block0 reg2, block2 reg8]
+    reg5 = addi reg3 1
+    reg6 = add reg2 reg3
+    reg7 = add reg5 reg6
+    reg8 = addi reg4 1
+    jump block2
+block2:
+    reg9 = icmp lt reg8 reg1
+    brif reg6 block3 block1
+block3:
+    ret
+}
+";
+    // println!("{:?}", to_tokens(source));
+    // println!("{}", formatter.fmt_module(&parse(source)));
+    let mut module = parse(do_while_loop_have_loop_invariant_source);
+    let module_id = module.get_module_id_by_symbol("find_natural_loops").unwrap();
+    let func_id = match module_id {
+        ModuleLevelId::Func(func) => func,
+        ModuleLevelId::Data(_) => panic!("not a function"),
+    };
+    println!("{}", formatter.fmt_module(&module));
+    let func = module.get_mut_function(*func_id).unwrap();
+    let mut cfg = ControlFlowGraph::new();
+    cfg.process(&func);
+    let formatter = Formatter::new();
+    let mut dom = DomTree::new();
+    dom.process(&cfg);
+    let natural_loop_analysis = NaturalLoopAnalysis::new(&dom, &cfg);
+    let natural_loops = natural_loop_analysis.process();
+    println!("{:?}", natural_loops);
+    let mut licm = opti::licm::LoopInvariantCodeMotion::new(&cfg, &dom, func);
+    licm.process(&natural_loops);
+    println!("{}", formatter.fmt_module(&module));
 }

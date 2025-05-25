@@ -6,5 +6,4 @@ pub struct Value(pub u32);
 pub enum ValueData {
     Inst { inst: Instruction, ty: ValueType },
     Param { ty: ValueType, index: usize },
-    Alias { origin: Value },
 }

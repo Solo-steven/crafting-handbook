@@ -23,30 +23,6 @@ impl ControlFlowGraph {
             blocks: Default::default(),
         }
     }
-    fn connect(&mut self, predecessor: &Block, successor: &Block) {
-        self.blocks
-            .get_mut(predecessor)
-            .unwrap()
-            .successors
-            .insert(successor.clone());
-        self.blocks
-            .get_mut(successor)
-            .unwrap()
-            .predecessors
-            .insert(predecessor.clone());
-    }
-    fn init(&mut self, function: &Function) {
-        for block in function.entities.blocks.keys() {
-            self.blocks.insert(
-                block.clone(),
-                CFGNode {
-                    predecessors: Default::default(),
-                    successors: Default::default(),
-                },
-            );
-        }
-        self.entry = function.layout.first_block.clone();
-    }
     pub fn process(&mut self, function: &Function) {
         // init
         self.init(function);
@@ -68,5 +44,52 @@ impl ControlFlowGraph {
                 _ => { /* Should be unreach */ }
             }
         }
+    }
+}
+
+impl ControlFlowGraph {
+    pub fn get_entry(&self) -> Block {
+        self.entry.unwrap().clone()
+    }
+    pub fn get_exists(&self) -> &HashSet<Block> {
+        &self.exists
+    }
+    pub fn get_predecessors(&self, block: &Block) -> &HashSet<Block> {
+        &self.get_block_cfg_node(block).predecessors
+    }
+    pub fn get_successors(&self, block: &Block) -> &HashSet<Block> {
+        &self.get_block_cfg_node(block).successors
+    }
+}
+
+impl ControlFlowGraph {
+    fn get_block_cfg_node(&self, block: &Block) -> &CFGNode {
+        self.blocks
+            .get(block)
+            .expect(&format!("block {:?} not found in CFG", block))
+    }
+    fn connect(&mut self, predecessor: &Block, successor: &Block) {
+        self.blocks
+            .get_mut(predecessor)
+            .unwrap()
+            .successors
+            .insert(successor.clone());
+        self.blocks
+            .get_mut(successor)
+            .unwrap()
+            .predecessors
+            .insert(predecessor.clone());
+    }
+    fn init(&mut self, function: &Function) {
+        for block in function.blocks() {
+            self.blocks.insert(
+                block,
+                CFGNode {
+                    predecessors: Default::default(),
+                    successors: Default::default(),
+                },
+            );
+        }
+        self.entry = function.layout.first_block()
     }
 }

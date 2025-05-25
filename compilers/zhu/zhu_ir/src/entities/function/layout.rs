@@ -34,6 +34,32 @@ impl FunctionLayout {
     }
 }
 
+impl FunctionLayout {
+    pub fn blocks(&self) -> Vec<Block> {
+        self.blocks.keys().map(|b| b.clone()).collect()
+    }
+    pub fn insts(&self) -> Vec<Instruction> {
+        self.insts.keys().map(|i| i.clone()).collect()
+    }
+    /// Get first block of function
+    pub fn first_block(&self) -> Option<Block> {
+        self.first_block
+    }
+    /// Get last block of function
+    pub fn last_block(&self) -> Option<Block> {
+        self.last_block
+    }
+    pub fn get_last_inst(&self, block: Block) -> Instruction {
+        self.blocks.get(&block).unwrap().first_inst.unwrap().clone()
+    }
+    pub fn get_first_inst(&self, block: Block) -> Instruction {
+        self.blocks.get(&block).unwrap().last_inst.unwrap().clone()
+    }
+    pub fn get_block_of_inst(&self, inst: Instruction) -> Block {
+        self.insts.get(&inst).unwrap().block.unwrap()
+    }
+}
+
 /// Implement action for block layout
 impl FunctionLayout {
     /// Append block in the end dof program
@@ -98,6 +124,9 @@ impl FunctionLayout {
             let pre_block_node = self.blocks.get_mut(&pre_block).unwrap();
             pre_block_node.next = Some(block);
             block_node.prev = Some(pre_block);
+        } else {
+            // before block's previous block is None, means before block is first block.
+            self.first_block = Some(block);
         }
         self.blocks.insert(block, block_node);
     }

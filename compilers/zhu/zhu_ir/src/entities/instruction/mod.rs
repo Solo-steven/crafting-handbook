@@ -110,3 +110,31 @@ pub enum InstructionData {
     // comment,
     Comment(String),
 }
+
+impl InstructionData {
+    pub fn get_operands(&self) -> Vec<Value> {
+        match self {
+            InstructionData::UnaryConst { .. } => vec![],
+            InstructionData::Unary { value, .. } => vec![value.clone()],
+            InstructionData::Binary { args, .. } => args.to_vec(),
+            InstructionData::BinaryI { value, .. } => vec![value.clone()],
+            InstructionData::Move { src, .. } => vec![src.clone()],
+            InstructionData::Icmp { args, .. } | InstructionData::Fcmp { args, .. } => args.to_vec(),
+            InstructionData::Call { params, .. } => params.clone(),
+            InstructionData::Ret { value, .. } => value.iter().cloned().collect(),
+            InstructionData::Convert { src, .. } => vec![src.clone()],
+            InstructionData::StackAlloc { .. } => vec![],
+            InstructionData::LoadRegister { base, .. } | InstructionData::StoreRegister { base, .. } => {
+                vec![base.clone()]
+            }
+            InstructionData::GlobalLoad { .. } | InstructionData::GlobalStore { .. } => vec![],
+            InstructionData::BrIf { test, .. } => vec![test.clone()],
+            InstructionData::Jump { .. } => vec![],
+            InstructionData::Phi { from, .. } => from.iter().map(|(_, v)| v.clone()).collect(),
+            InstructionData::Comment(_) => vec![],
+        }
+    }
+    pub fn is_const(&self) -> bool {
+        matches!(self, InstructionData::UnaryConst { .. })
+    }
+}

@@ -1,7 +1,6 @@
 use crate::entities::block::Block;
 use crate::opti::cfg::ControlFlowGraph;
 use std::collections::{HashMap, HashSet};
-
 #[derive(Debug, Clone, PartialEq)]
 struct DomTableEntry {
     immediate_dominator: Option<Block>,
@@ -30,14 +29,14 @@ impl DomTree {
                 },
             );
         }
-        self.table.get_mut(&cfg.entry.unwrap()).unwrap().dominators = HashSet::from([cfg.entry.unwrap().clone()]);
+        self.table.get_mut(&cfg.get_entry()).unwrap().dominators = HashSet::from([cfg.get_entry()]);
         // iter
         let mut is_change = true;
         while is_change {
             is_change = false;
             for block in cfg.blocks.keys() {
                 let mut next_dom_of_bb = self.table.get_mut(block).unwrap().dominators.clone();
-                for predecessor in &cfg.blocks.get(block).unwrap().predecessors {
+                for predecessor in cfg.get_predecessors(block) {
                     let dom_of_predecessor = &self.table.get_mut(&predecessor).unwrap().dominators;
                     next_dom_of_bb = next_dom_of_bb
                         .intersection(dom_of_predecessor)
@@ -54,14 +53,7 @@ impl DomTree {
     }
     fn compute_idom(&mut self, cfg: &ControlFlowGraph) {
         for block in cfg.blocks.keys() {
-            let mut worklist: Vec<Block> = cfg
-                .blocks
-                .get(block)
-                .unwrap()
-                .predecessors
-                .iter()
-                .map(|b| b.clone())
-                .collect();
+            let mut worklist: Vec<Block> = cfg.get_predecessors(block).iter().map(|b| b.clone()).collect();
             let mut marks: HashSet<Block> = HashSet::from([block.clone()]);
             'backward_traversal: while worklist.len() != 0 {
                 let mut next_worklist = Vec::new();
@@ -75,7 +67,7 @@ impl DomTree {
                             self.table.get_mut(b).unwrap().dominate_children.insert(block.clone());
                             break 'backward_traversal;
                         }
-                        next_worklist.extend(cfg.blocks.get(b).unwrap().predecessors.iter().map(|b| b.clone()));
+                        next_worklist.extend(cfg.get_predecessors(b).iter().map(|b| b.clone()));
                     }
                 }
                 worklist = next_worklist;
@@ -99,7 +91,7 @@ impl DomTree {
             } else {
                 continue;
             };
-            for predeceesor_block in &cfg.blocks.get(&join_node).unwrap().predecessors {
+            for predeceesor_block in cfg.get_predecessors(&join_node) {
                 let mut runner_id = predeceesor_block.clone();
                 while runner_id != idom {
                     self.table
@@ -125,6 +117,8 @@ impl DomTree {
             table: Default::default(),
         }
     }
+    /// Is bloock a dominate block b
+    /// -> Dom(b) contain a
     pub fn dominate(&self, a: Block, b: Block) -> bool {
         if let Some(entry) = self.table.get(&b) {
             entry.dominators.contains(&a)
@@ -132,6 +126,8 @@ impl DomTree {
             panic!()
         }
     }
+    /// Get dominators of block
+    /// -> Dom(b)
     pub fn dom(&self, block: Block) -> &HashSet<Block> {
         if let Some(entry) = self.table.get(&block) {
             &entry.dominators
@@ -139,6 +135,8 @@ impl DomTree {
             panic!()
         }
     }
+    /// Get immediate dominator of block
+    /// -> idom(b)
     pub fn idom(&self, block: Block) -> Option<Block> {
         if let Some(entry) = self.table.get(&block) {
             entry.immediate_dominator.clone()
@@ -146,6 +144,8 @@ impl DomTree {
             panic!()
         }
     }
+    /// Get dominate frontier of block
+    /// -> DF(b)
     pub fn df(&self, block: Block) -> &HashSet<Block> {
         if let Some(entry) = self.table.get(&block) {
             &entry.dominate_frontier

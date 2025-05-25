@@ -392,12 +392,15 @@ impl<'a> Parser<'a> {
     /// <BlockLabel> := "block" <DecimalString>
     /// ```
     fn parse_block_label(&mut self) -> Block {
-        let bb_number = self.lexer.get_source_string()[5..].parse::<u32>().unwrap_or_else(|_| {
-            panic!(
-                "[Error]: block label {} can be parse as u32",
-                self.lexer.get_source_string()
-            )
-        });
+        let bb_number = self.lexer.get_source_string()[5..]
+            .parse::<u32>()
+            .unwrap_or_else(|error| {
+                panic!(
+                    "[Error]: block label `{}` parse error. {:?}",
+                    &self.lexer.get_source_string(),
+                    error
+                )
+            });
         self.lexer.next_token();
         Block(bb_number)
     }

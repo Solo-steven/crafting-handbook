@@ -63,7 +63,6 @@ impl Function {
         }
     }
 }
-
 /// Data mutation to signature.
 impl Function {
     pub fn def_func_param(&mut self, ty: ValueType) -> Value {
@@ -79,35 +78,20 @@ impl Function {
         self.signature.return_type = Some(ty);
     }
 }
-/// Data mutation to function block.
+
+/// immutatble data getters.
 impl Function {
-    /// Create Block in function. append block in the end of function.
-    pub fn create_block(&mut self) -> Block {
-        let block = self.entities.create_block(BlockData {
-            phis: Default::default(),
-            insts: Default::default(),
-        });
-        self.layout.append_block(block);
-        block
-    }
-    /// Create remove a inst in layout.
-    pub fn remove_inst(&mut self, inst: Instruction) {
-        self.layout.remove_inst(inst);
-    }
-    /// replace a inst with given new inst data.
-    pub fn replace_inst(&mut self, inst: Instruction, inst_data: InstructionData) {
-        self.entities.insts.insert(inst, inst_data);
-    }
-}
-impl Function {
+    /// Get type of value.
     pub fn value_type(&self, value: Value) -> &ValueType {
         let value_data = self.entities.values.get(&value).unwrap();
         match value_data {
             ValueData::Inst { ty, .. } => ty,
             ValueData::Param { index, .. } => &self.signature.params[*index],
-            ValueData::Alias { .. } => panic!(),
         }
     }
+}
+/// Data mutation for other entities.
+impl Function {
     pub fn declar_external_function(&mut self, exfun_data: ExternalFunctionData) -> FunctionRef {
         let func_ref = FunctionRef(self.external_funcs.len() as u32);
         self.external_funcs.insert(func_ref, exfun_data);
@@ -122,5 +106,113 @@ impl Function {
         let mem_type = MemType(self.mem_type.len() as u32);
         self.mem_type.insert(mem_type, mem_type_data);
         mem_type
+    }
+}
+/// Data mutation to function block. inherit from `layout` or `entities`
+/// or combine two structure to provide a more abstract interface.
+impl Function {
+    /// Create Block in function. append block in the end of function.
+    pub fn create_block(&mut self) -> Block {
+        let block = self.entities.create_block(BlockData {
+            phis: Default::default(),
+            insts: Default::default(),
+        });
+        self.layout.append_block(block);
+        block
+    }
+    /// Create a block without appending it to function.
+    pub fn create_block_only(&mut self) -> Block {
+        self.entities.create_block(BlockData {
+            phis: Default::default(),
+            insts: Default::default(),
+        })
+    }
+    /// Create remove a inst in layout.
+    pub fn remove_inst(&mut self, inst: Instruction) {
+        self.layout.remove_inst(inst);
+    }
+    /// replace a inst with given new inst data.
+    pub fn replace_inst(&mut self, inst: Instruction, inst_data: InstructionData) {
+        self.entities.insts.insert(inst, inst_data);
+    }
+    /// Move a inst to given block. usually used by code motion.
+    pub fn move_inst_to_end_of_block(&mut self, inst: Instruction, block: Block) {
+        self.layout.append_inst(inst, block);
+    }
+}
+
+/// Expose API from FunctionEntites.
+impl Function {
+    /// Inherit from `FunctionEntities`.
+    pub fn get_block_data(&self, block: Block) -> &BlockData {
+        self.entities.get_block_data(block)
+    }
+    /// Inherit from `FunctionEntities`.
+    pub fn get_inst_data(&self, inst: Instruction) -> &InstructionData {
+        self.entities.get_inst_data(inst)
+    }
+    /// Inherit from `FunctionEntities`.
+    pub fn get_value_data(&self, value: Value) -> &ValueData {
+        self.entities.get_value_data(value)
+    }
+    /// Iinherit from `FunctionEntities`.
+    pub fn get_block_data_mut(&mut self, block: Block) -> &mut BlockData {
+        self.entities.get_block_data_mut(block)
+    }
+    /// Inherit from `FunctionEntities`.
+    pub fn get_inst_data_mut(&mut self, inst: Instruction) -> &mut InstructionData {
+        self.entities.get_inst_data_mut(inst)
+    }
+    /// Inherit from `FunctionEntities`.
+    pub fn get_value_data_mut(&mut self, value: Value) -> &mut ValueData {
+        self.entities.get_value_data_mut(value)
+    }
+    /// Inherit from `FunctionEntities`.
+    pub fn get_inst_result(&self, inst: Instruction) -> Option<Value> {
+        self.entities.insts_result.get(&inst).cloned()
+    }
+}
+
+/// Expose API from FunctionLayout.
+impl Function {
+    /// Inherit from `FunctionLayout`.
+    pub fn blocks(&self) -> Vec<Block> {
+        self.layout.blocks()
+    }
+    /// Inherit from `FunctionLayout`.
+    pub fn insts(&self) -> Vec<Instruction> {
+        self.layout.insts()
+    }
+    /// Inherit from `FunctionLayout`.
+    pub fn first_block(&self) -> Option<Block> {
+        self.layout.first_block()
+    }
+    /// Inherit from `FunctionLayout`.
+    pub fn last_block(&self) -> Option<Block> {
+        self.layout.last_block()
+    }
+    /// Inherit from `FunctionLayout`.
+    pub fn insert_block_after(&mut self, block: Block, after: Block) {
+        self.layout.insert_block_after(block, after);
+    }
+    /// Inherit from `FunctionLayout`.
+    pub fn insert_block_before(&mut self, block: Block, before: Block) {
+        self.layout.insert_block_before(block, before);
+    }
+    /// Inherit from `FunctionLayout`.
+    pub fn append_inst(&mut self, inst: Instruction, block: Block) {
+        self.layout.append_inst(inst, block);
+    }
+    /// Inherit from `FunctionLayout`.
+    pub fn insert_inst_before(&mut self, inst: Instruction, before: Instruction) {
+        self.layout.insert_inst_before(inst, before);
+    }
+    /// Inherit from `FunctionLayout`.
+    pub fn insert_inst_after(&mut self, inst: Instruction, after: Instruction) {
+        self.layout.insert_inst_after(inst, after);
+    }
+    /// Inherit from `FunctionLayout`.
+    pub fn get_block_of_inst(&self, inst: Instruction) -> Block {
+        self.layout.get_block_of_inst(inst)
     }
 }

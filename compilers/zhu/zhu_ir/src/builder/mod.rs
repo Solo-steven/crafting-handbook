@@ -24,19 +24,23 @@ impl<'a> FunctionBuilder<'a> {
     pub fn switch_to_block(&mut self, block: Block) {
         self.current_block = Some(block);
     }
+    fn get_current_block(&self) -> Block {
+        self.current_block
+            .expect("current block is not set, please call `switch_to_block` first")
+    }
 }
 /// General function for building instruction in given function IR.
 impl<'a> FunctionBuilder<'a> {
     /// Shared function for `build_xxx_inst`, function, create information in both
     /// entities and layout.
     fn build_inst_and_result(&mut self, inst_data: InstructionData, ty: ValueType) -> Value {
+        let cur_block = self.get_current_block();
         // add instruction data into entities
         let inst = self.function.entities.create_inst(inst_data);
+        self.function.entities.mark_inst_block(inst, cur_block);
         let result = self.function.entities.create_value(ValueData::Inst { inst, ty });
         // add instruction into layout
-        self.function
-            .layout
-            .append_inst(inst, self.current_block.clone().unwrap());
+        self.function.layout.append_inst(inst, cur_block);
         // add result and inst relation
         self.function.entities.mark_inst_result(result, inst);
         result
@@ -44,12 +48,12 @@ impl<'a> FunctionBuilder<'a> {
     /// Shared function for `build_xxx_inst`, function, create information in both
     /// entities and layout.
     fn build_inst_without_result(&mut self, inst_data: InstructionData) -> Instruction {
+        let cur_block = self.get_current_block();
         // add instruction data into entities
         let inst = self.function.entities.create_inst(inst_data);
+        self.function.entities.mark_inst_block(inst, cur_block);
         // add instruction into layout
-        self.function
-            .layout
-            .append_inst(inst, self.current_block.clone().unwrap());
+        self.function.layout.append_inst(inst, cur_block);
         inst
     }
     /// Build a convert function. wrap `build_inst_and_result`, only provide opcode and
@@ -630,6 +634,7 @@ impl<'a> FunctionBuilder<'a> {
             from,
         });
         let result = self.function.entities.create_value(ValueData::Inst { inst, ty });
+        self.function.entities.mark_inst_block(inst, self.get_current_block());
         self.function.entities.mark_inst_result(result, inst);
         self.function
             .layout
