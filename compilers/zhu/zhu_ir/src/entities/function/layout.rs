@@ -35,11 +35,29 @@ impl FunctionLayout {
 }
 
 impl FunctionLayout {
+    /// Get blocks of function layout (in used function)
+    /// this function will not ensure the order of block
     pub fn blocks(&self) -> Vec<Block> {
         self.blocks.keys().map(|b| b.clone()).collect()
     }
+    /// Get instructions of function layout (in used function)
+    /// this function will not ensure the order of instruction
     pub fn insts(&self) -> Vec<Instruction> {
         self.insts.keys().map(|i| i.clone()).collect()
+    }
+    /// Get instructions of given block
+    /// this function will ensure the order of instruction in block
+    ///
+    /// NOTE: this function need to take liner time to get all
+    /// instructions of block,
+    pub fn get_insts_of_block(&self, block: Block) -> Vec<Instruction> {
+        let mut insts = Vec::new();
+        let mut cur_inst = self.blocks.get(&block).unwrap().first_inst;
+        while let Some(inst) = cur_inst {
+            insts.push(inst);
+            cur_inst = self.insts.get(&inst).unwrap().next.clone();
+        }
+        insts
     }
     /// Get first block of function
     pub fn first_block(&self) -> Option<Block> {
@@ -49,12 +67,15 @@ impl FunctionLayout {
     pub fn last_block(&self) -> Option<Block> {
         self.last_block
     }
+    /// Get first instruction of block
     pub fn get_last_inst(&self, block: Block) -> Instruction {
-        self.blocks.get(&block).unwrap().first_inst.unwrap().clone()
-    }
-    pub fn get_first_inst(&self, block: Block) -> Instruction {
         self.blocks.get(&block).unwrap().last_inst.unwrap().clone()
     }
+    /// Get first instruction of block
+    pub fn get_first_inst(&self, block: Block) -> Instruction {
+        self.blocks.get(&block).unwrap().first_inst.unwrap().clone()
+    }
+    /// Get block of given instruction
     pub fn get_block_of_inst(&self, inst: Instruction) -> Block {
         self.insts.get(&inst).unwrap().block.unwrap()
     }

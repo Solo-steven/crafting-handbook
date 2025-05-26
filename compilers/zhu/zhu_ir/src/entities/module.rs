@@ -34,6 +34,24 @@ pub enum ModuleLevelId {
     Func(FuncId),
     Data(DataId),
 }
+impl ModuleLevelId {
+    /// Force convert ModuleLevelId to FuncId, panic
+    /// if the ModuleLevelId is not a function id.
+    pub fn to_func_id(&self) -> FuncId {
+        match self {
+            ModuleLevelId::Func(id) => id.clone(),
+            _ => panic!("ModuleLevelId is not a function id."),
+        }
+    }
+    /// Force convert ModuleLevelId to DataId, panic
+    /// if the ModuleLevelId is not a data id.
+    pub fn to_data_id(&self) -> DataId {
+        match self {
+            ModuleLevelId::Data(id) => id.clone(),
+            _ => panic!("ModuleLevelId is not a data id."),
+        }
+    }
+}
 impl Module {
     /// Private method to get the next index of data objects
     fn get_data_len(&self) -> u32 {

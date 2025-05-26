@@ -1,0 +1,18 @@
+func do_while_loop (reg0: u8, reg1: u8) {
+block0:
+  reg2 = mov reg0
+  reg3 = add reg0 reg1
+  jump block1
+block1:
+  reg4 = phi [block0 reg2, block2 reg8]
+  reg5 = addi reg3 1
+  reg6 = add reg2 reg3
+  reg7 = add reg5 reg6
+  reg8 = addi reg4 1
+  jump block2
+block2:
+  reg9 = icmp lt reg8 reg1
+  brif reg6 block3 block1
+block3:
+  ret
+}

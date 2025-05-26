@@ -3,6 +3,10 @@ use crate::opti::cfg::ControlFlowGraph;
 use crate::opti::domtree::DomTree;
 use std::collections::HashSet;
 
+pub fn natural_loop_analysis<'a>(dom: &'a DomTree, cfg: &'a ControlFlowGraph) -> Vec<NaturalLoop> {
+    NaturalLoopAnalysis::new(dom, cfg).process()
+}
+
 #[derive(Debug, Clone)]
 pub struct NaturalLoopAnalysis<'a> {
     pub dom: &'a DomTree,

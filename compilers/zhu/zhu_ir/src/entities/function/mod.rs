@@ -215,4 +215,8 @@ impl Function {
     pub fn get_block_of_inst(&self, inst: Instruction) -> Block {
         self.layout.get_block_of_inst(inst)
     }
+    /// Inherit from `FunctionLayout`.
+    pub fn get_insts_of_block(&self, block: Block) -> Vec<Instruction> {
+        self.layout.get_insts_of_block(block)
+    }
 }

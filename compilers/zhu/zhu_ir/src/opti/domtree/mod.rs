@@ -1,6 +1,12 @@
 use crate::entities::block::Block;
 use crate::opti::cfg::ControlFlowGraph;
 use std::collections::{HashMap, HashSet};
+
+pub fn domtree_analysis(cfg: &ControlFlowGraph) -> DomTree {
+    let mut dom_tree = DomTree::new();
+    dom_tree.process(cfg);
+    dom_tree
+}
 #[derive(Debug, Clone, PartialEq)]
 struct DomTableEntry {
     immediate_dominator: Option<Block>,

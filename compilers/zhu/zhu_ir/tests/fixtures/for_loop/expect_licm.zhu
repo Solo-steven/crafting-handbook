@@ -1,0 +1,18 @@
+func for_loop_func (reg0: u8, reg1: u8) {
+block0:
+  jump block1
+block1:
+  reg2 = phi [block0 reg0, block4 reg5]
+  jump block2
+block2:
+  reg3 = icmp lt reg2 reg1
+  brif reg3 block3 block5
+block3:
+  reg4 = add reg0 reg1
+  jump block4
+block4:
+  reg5 = addi reg2 1
+  jump block1
+block5:
+  ret
+}

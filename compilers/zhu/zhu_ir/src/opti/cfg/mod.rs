@@ -3,6 +3,12 @@ use crate::entities::function::Function;
 use crate::entities::instruction::InstructionData;
 use std::collections::{HashMap, HashSet};
 
+pub fn cfg_anylysis(function: &Function) -> ControlFlowGraph {
+    let mut cfg = ControlFlowGraph::new();
+    cfg.process(function);
+    cfg
+}
+
 #[derive(Debug, PartialEq, Clone, Eq)]
 pub struct CFGNode {
     pub predecessors: HashSet<Block>,

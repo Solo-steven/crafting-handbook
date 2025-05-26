@@ -12,10 +12,13 @@ use entities::module::{self, DataDescription, Module, ModuleLevelId};
 use entities::r#type::ValueType;
 use formatter::Formatter;
 use frontend::parser::Parser;
-use opti::cfg::ControlFlowGraph;
-use opti::domtree::DomTree;
+use opti::cfg::{cfg_anylysis, ControlFlowGraph};
+use opti::domtree::{domtree_analysis, DomTree};
+use opti::licm::licm_pass;
+use opti::licm::natural_loop::natural_loop_analysis;
 use serde::{Deserialize, Serialize};
 
+use formatter::format;
 use frontend::{parse, to_tokens};
 
 use crate::entities::r#type::{MemTypeData, StructTypeData, StructTypeDataField};
@@ -84,19 +87,20 @@ fn build_module() -> Module {
 fn main() {
     let formatter = Formatter::new();
     let source = "
-func find_natural_loops (reg0: u8, reg1: u8) {
+func for_loop_func (reg0: u8, reg1: u8) {
 block0:
     jump block1
 block1:
-    reg2 = phi [block0 reg0, block4 reg4]
+    reg2 = phi [block0 reg0, block4 reg5]
     jump block2
 block2:
     reg3 = icmp lt reg2 reg1
     brif reg3 block3 block5
 block3:
+    reg4 = reg0 + reg1
     jump block4
 block4:
-    reg4 = addi reg2 1
+    reg5 = addi reg2 1
     jump block1
 block5:
     ret
@@ -141,22 +145,13 @@ block3:
     // println!("{:?}", to_tokens(source));
     // println!("{}", formatter.fmt_module(&parse(source)));
     let mut module = parse(do_while_loop_have_loop_invariant_source);
+    println!("{}", format(&module).as_str());
     let module_id = module.get_module_id_by_symbol("find_natural_loops").unwrap();
-    let func_id = match module_id {
-        ModuleLevelId::Func(func) => func,
-        ModuleLevelId::Data(_) => panic!("not a function"),
-    };
-    println!("{}", formatter.fmt_module(&module));
-    let func = module.get_mut_function(*func_id).unwrap();
-    let mut cfg = ControlFlowGraph::new();
-    cfg.process(&func);
-    let formatter = Formatter::new();
-    let mut dom = DomTree::new();
-    dom.process(&cfg);
-    let natural_loop_analysis = NaturalLoopAnalysis::new(&dom, &cfg);
-    let natural_loops = natural_loop_analysis.process();
-    println!("{:?}", natural_loops);
-    let mut licm = opti::licm::LoopInvariantCodeMotion::new(&cfg, &dom, func);
-    licm.process(&natural_loops);
-    println!("{}", formatter.fmt_module(&module));
+    let func_id = module_id.to_func_id();
+    let func = module.get_mut_function(func_id).unwrap();
+    let cfg = cfg_anylysis(func);
+    let dom = domtree_analysis(&cfg);
+    let natural_loops = natural_loop_analysis(&dom, &cfg);
+    licm_pass(func, &cfg, &dom, &natural_loops);
+    println!("{}", format(&module).as_str());
 }
