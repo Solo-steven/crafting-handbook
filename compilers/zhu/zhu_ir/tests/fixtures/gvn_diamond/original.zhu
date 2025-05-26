@@ -1,0 +1,16 @@
+func gvn_func (reg0: u8, reg1: u8) {
+block0:
+    reg2 = addi reg0 1
+    reg3 = addi reg1 1
+    reg4 = add reg2 reg3
+    brif reg0 block1 block2
+block1:
+    reg5 = addi reg1 1
+    jump block3
+block2:
+    reg6 = addi reg0 1
+    jump block3
+block3:
+    reg7 = phi [block1 reg5, block2 reg6]
+    ret
+}

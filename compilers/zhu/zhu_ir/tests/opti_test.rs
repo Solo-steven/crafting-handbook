@@ -8,8 +8,11 @@ use zsh_ir::frontend::parse;
 
 use zsh_ir::opti::cfg::cfg_anylysis;
 use zsh_ir::opti::domtree::domtree_analysis;
-use zsh_ir::opti::licm::licm_pass;
 use zsh_ir::opti::licm::natural_loop::natural_loop_analysis;
+use zsh_ir::opti::rpo::revrese_post_order_analysis;
+
+use zsh_ir::opti::gvn::gvn_pass;
+use zsh_ir::opti::licm::licm_pass;
 
 fn get_folder_path_by_case_name(name: &str) -> PathBuf {
     current_dir().unwrap().join("tests/fixtures").join(name)
@@ -76,6 +79,25 @@ generate_test_case! {
     (
         licm, for_loop, |mut module| {
             licm_pass_wrapper(&mut module, "for_loop_func");
+            module
+        }
+    )
+}
+
+fn gvn_pass_wrapper(module: &mut Module, func_name: &str) {
+    let module_id = module.get_module_id_by_symbol(func_name).unwrap();
+    let func_id = module_id.to_func_id();
+    let func = module.get_mut_function(func_id).unwrap();
+    let cfg = cfg_anylysis(func);
+    let dom = domtree_analysis(&cfg);
+    let rpo = revrese_post_order_analysis(&cfg);
+    gvn_pass(func, &dom, &cfg, &rpo);
+}
+
+generate_test_case! {
+    (
+        gvn, gvn_diamond, |mut module| {
+            gvn_pass_wrapper(&mut module, "gvn_func");
             module
         }
     )

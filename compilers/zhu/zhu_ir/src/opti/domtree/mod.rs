@@ -159,4 +159,11 @@ impl DomTree {
             panic!()
         }
     }
+    pub fn children(&self, block: Block) -> &HashSet<Block> {
+        if let Some(entry) = self.table.get(&block) {
+            &entry.dominate_children
+        } else {
+            panic!()
+        }
+    }
 }
