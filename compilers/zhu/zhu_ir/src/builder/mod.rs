@@ -628,13 +628,15 @@ impl<'a> FunctionBuilder<'a> {
 
 impl<'a> FunctionBuilder<'a> {
     pub fn phi_inst(&mut self, from: Vec<(Block, Value)>) -> Value {
+        let block = self.get_current_block();
         let ty = self.function.value_type(from[0].1).clone();
         let inst = self.function.entities.create_inst(InstructionData::Phi {
             opcode: OpCode::Phi,
             from,
         });
         let result = self.function.entities.create_value(ValueData::Inst { inst, ty });
-        self.function.entities.mark_inst_block(inst, self.get_current_block());
+        self.function.entities.mark_inst_block(inst, block);
+        self.function.entities.get_block_data_mut(block).phis.insert(inst);
         self.function.entities.mark_inst_result(result, inst);
         self.function
             .layout

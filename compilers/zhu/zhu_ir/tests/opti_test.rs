@@ -100,5 +100,11 @@ generate_test_case! {
             gvn_pass_wrapper(&mut module, "gvn_func");
             module
         }
+    ),
+    (
+        gvn, gvn_do_while_loop, |mut module| {
+            gvn_pass_wrapper(&mut module, "gvn_do_while_loop");
+            module
+        }
     )
 }

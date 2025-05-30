@@ -26,26 +26,25 @@ use opti::gvn::gvn_pass;
 
 fn main() {
     let source = "
-func gvn_func (reg0: u8, reg1: u8) {
+func gvn_do_while_loop  (reg0: u8, reg1: u8) {
 block0:
-    reg2 = addi reg0 1
-    reg3 = addi reg1 1
-    reg4 = add reg2 reg3
-    brif reg0 block1 block2
+    reg2 = add reg0 reg1
+    reg3 = addi reg0 1
+    jump block1
 block1:
-    reg5 = addi reg1 1
-    jump block3
+    reg4 = phi [block0 reg3, block2 reg5]
+    jump block2
 block2:
-    reg6 = addi reg0 1
-    jump block3
+    reg5 = add reg0 reg1
+    reg6 = icmp gt reg5 reg1
+    brif reg6 block1 block3
 block3:
-    reg7 = phi [block1 reg5, block2 reg6]
     ret
 }
 ";
     let mut module = parse(source);
     println!("{}", format(&module).as_str());
-    let module_id = module.get_module_id_by_symbol("gvn_func").unwrap();
+    let module_id = module.get_module_id_by_symbol("gvn_do_while_loop").unwrap();
     let func_id = module_id.to_func_id();
     let func = module.get_mut_function(func_id).unwrap();
     let cfg = cfg_anylysis(func);
