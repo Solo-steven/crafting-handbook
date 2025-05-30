@@ -123,7 +123,7 @@ impl<'a> Lexer<'a> {
                 '@' => finish_token_and_eat!(self, TokenKind::At),
                 ':' => finish_token_and_eat!(self, TokenKind::Colon),
                 '%' => finish_token_and_eat!(self, TokenKind::Percent),
-                '0'| '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
+                '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                     if self.source.starts_with("0x") {
                         // eat "0x"
                         self.eat_char();

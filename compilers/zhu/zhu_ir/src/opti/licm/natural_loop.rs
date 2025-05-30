@@ -44,21 +44,14 @@ impl<'a> NaturalLoopAnalysis<'a> {
         edges
     }
     /// find natural loop blocks by reverse DFS.
-    fn find_natural_loop_blocks(
-        &self,
-        header: Block,
-        vertex: Block,
-        visited: &mut HashSet<Block>,
-        blocks: &mut HashSet<Block>,
-    ) {
+    fn find_natural_loop_blocks(&self, header: Block, vertex: Block, blocks: &mut HashSet<Block>) {
         if vertex == header {
             return;
         }
-        visited.insert(vertex.clone());
         blocks.insert(vertex.clone());
         for predecessor in self.cfg.get_predecessors(&vertex) {
-            if !visited.contains(predecessor) {
-                self.find_natural_loop_blocks(header.clone(), predecessor.clone(), visited, blocks);
+            if !blocks.contains(predecessor) {
+                self.find_natural_loop_blocks(header.clone(), predecessor.clone(), blocks);
             }
         }
     }
@@ -81,7 +74,7 @@ impl<'a> NaturalLoopAnalysis<'a> {
         let mut natural_loops: Vec<NaturalLoop> = Vec::new();
         for (tail, header) in backward_edges {
             let mut blocks = HashSet::from([header, tail]);
-            self.find_natural_loop_blocks(header, tail, &mut HashSet::new(), &mut blocks);
+            self.find_natural_loop_blocks(header, tail, &mut blocks);
             let mut exits = HashSet::new();
             self.find_exits_block_for_natural_loop(&header, &blocks, &mut exits);
             natural_loops.push(NaturalLoop {
