@@ -1,5 +1,6 @@
 use crate::entities::block::Block;
 use crate::opti::cfg::ControlFlowGraph;
+use crate::opti::AnalysisPass;
 use std::collections::{HashMap, HashSet};
 
 pub fn domtree_analysis(cfg: &ControlFlowGraph) -> DomTree {
@@ -20,7 +21,18 @@ pub struct DomTree {
     table: HashMap<Block, DomTableEntry>,
 }
 
+impl AnalysisPass for DomTree {
+    fn process(&mut self, cfg: &ControlFlowGraph) {
+        self.compute_dom(cfg);
+        self.compute_idom(cfg);
+        self.compute_df(cfg);
+    }
+}
+
 impl DomTree {
+    /// Compute dom by flow equation.
+    ///
+    /// Dominator is a forward flow anaylsis
     fn compute_dom(&mut self, cfg: &ControlFlowGraph) {
         // init
         for block in cfg.blocks.keys() {
@@ -36,7 +48,7 @@ impl DomTree {
             );
         }
         self.table.get_mut(&cfg.get_entry()).unwrap().dominators = HashSet::from([cfg.get_entry()]);
-        // iter
+        // WorkList Iteration
         let mut is_change = true;
         while is_change {
             is_change = false;
@@ -57,6 +69,9 @@ impl DomTree {
             }
         }
     }
+    /// Compute immediate dominator
+    ///
+    /// Using BFS on predecessor edge to get the closest dominator
     fn compute_idom(&mut self, cfg: &ControlFlowGraph) {
         for block in cfg.blocks.keys() {
             let mut worklist: Vec<Block> = cfg.get_predecessors(block).iter().map(|b| b.clone()).collect();
@@ -109,11 +124,6 @@ impl DomTree {
                 }
             }
         }
-    }
-    pub fn process(&mut self, cfg: &ControlFlowGraph) {
-        self.compute_dom(cfg);
-        self.compute_idom(cfg);
-        self.compute_df(cfg);
     }
 }
 
