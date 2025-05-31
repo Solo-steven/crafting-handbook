@@ -21,7 +21,6 @@ pub struct DomTree {
     table: HashMap<Block, DomTableEntry>,
 }
 
-
 impl AnalysisPass for DomTree {
     fn process(&mut self, cfg: &ControlFlowGraph) {
         self.compute_dom(cfg);
@@ -32,7 +31,7 @@ impl AnalysisPass for DomTree {
 
 impl DomTree {
     /// Compute dom by flow equation.
-    /// 
+    ///
     /// Dominator is a forward flow anaylsis
     fn compute_dom(&mut self, cfg: &ControlFlowGraph) {
         // init
@@ -71,7 +70,7 @@ impl DomTree {
         }
     }
     /// Compute immediate dominator
-    /// 
+    ///
     /// Using BFS on predecessor edge to get the closest dominator
     fn compute_idom(&mut self, cfg: &ControlFlowGraph) {
         for block in cfg.blocks.keys() {
