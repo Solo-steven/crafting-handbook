@@ -137,4 +137,7 @@ impl InstructionData {
     pub fn is_const(&self) -> bool {
         matches!(self, InstructionData::UnaryConst { .. })
     }
+    pub fn is_branch(&self) -> bool {
+        matches!(self, InstructionData::BrIf { .. } | InstructionData::Jump { .. })
+    }
 }

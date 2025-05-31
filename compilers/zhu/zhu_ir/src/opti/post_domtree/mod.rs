@@ -33,7 +33,7 @@ impl PostDomTree {
             std::mem::swap(&mut cfg_node.predecessors, &mut cfg_node.successors);
         }
         // If we only have one exit, just swap exit and entry
-        if reverse_cfg.exists.len() == 0 {
+        if reverse_cfg.exists.len() == 1 {
             let original_exit = {
                 let mut exit = None;
                 for e in &reverse_cfg.exists {

@@ -1,4 +1,5 @@
 pub mod cfg;
+pub mod dce;
 pub mod domtree;
 pub mod gvn;
 pub mod licm;
