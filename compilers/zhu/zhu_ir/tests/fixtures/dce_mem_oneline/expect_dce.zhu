@@ -1,0 +1,12 @@
+func dce_mem_oneline (reg0: u8, reg1: u8): u8 {
+block0:
+  reg2 = add reg0 reg1
+  brif reg1 block1 block2
+block1:
+  reg3 = load u8 [reg0, 0]
+  reg4 = add reg3 reg2
+  jump block2
+block2:
+  reg5 = phi [block0 reg2, block1 reg4]
+  ret reg5
+}

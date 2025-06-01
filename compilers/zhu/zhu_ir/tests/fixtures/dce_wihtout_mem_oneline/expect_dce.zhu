@@ -1,0 +1,9 @@
+func dce_wihtout_mem_oneline (reg0: u8, reg1: u8) {
+block0:
+  brif reg1 block1 block2
+block1:
+  reg3 = load u8 [reg0, 0]
+  jump block2
+block2:
+  ret
+}

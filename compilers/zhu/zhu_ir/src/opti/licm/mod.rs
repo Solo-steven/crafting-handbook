@@ -49,10 +49,10 @@ impl<'a> LoopInvariantCodeMotion<'a> {
     ///
     /// - defined outside the loop (base condition)
     /// - also a loop invariant (recursive condition)
-    /// - A const instruction is also a loop invariant
+    ///     - A const instruction is also a loop invariant
     ///
     /// If inst A using a loop invariant inst B and C as operand, it's order in return
-    /// vec will after B and C, so return vec will be topological order of loop invariants.  
+    /// vec will after B and C, so return vec will be topological order of loop invariants.
     fn find_loop_invariants(&self, func: &Function, natural_loop: &NaturalLoop) -> Vec<Instruction> {
         let mut loop_invariants = Vec::new();
         let mut loop_invariants_in_value = HashSet::new();

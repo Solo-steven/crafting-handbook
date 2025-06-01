@@ -1,0 +1,10 @@
+func dce_diamond_return_void (reg0: i16, reg1: i16) {
+block0:
+  jump block3
+block1:
+  jump block3
+block2:
+  jump block3
+block3:
+  ret
+}

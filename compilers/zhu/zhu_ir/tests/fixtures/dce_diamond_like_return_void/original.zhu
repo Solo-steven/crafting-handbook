@@ -1,0 +1,14 @@
+func dce_diamond_like_return_void (reg0: i16, reg1: i16) {
+block0:
+  reg2 = add reg1 reg2
+  brif reg2 block1 block2
+block1:
+  reg3 = addi reg2 10 
+  jump block3
+block2:
+  reg4 = addi reg2 20
+  ret
+block3:
+  reg5 = addi reg3 100
+  ret
+}

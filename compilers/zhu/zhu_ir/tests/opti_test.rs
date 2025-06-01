@@ -9,8 +9,10 @@ use zsh_ir::frontend::parse;
 use zsh_ir::opti::cfg::cfg_anylysis;
 use zsh_ir::opti::domtree::domtree_analysis;
 use zsh_ir::opti::licm::natural_loop::natural_loop_analysis;
+use zsh_ir::opti::post_domtree::post_domtree_analysis;
 use zsh_ir::opti::rpo::revrese_post_order_analysis;
 
+use zsh_ir::opti::dce::dce_pass;
 use zsh_ir::opti::gvn::gvn_pass;
 use zsh_ir::opti::licm::licm_pass;
 
@@ -108,3 +110,35 @@ generate_test_case! {
         }
     )
 }
+
+fn dce_pass_wrapper(module: &mut Module, func_name: &str) {
+    let module_id = module.get_module_id_by_symbol(func_name).unwrap();
+    let func_id = module_id.to_func_id();
+    let func = module.get_mut_function(func_id).unwrap();
+    let cfg = cfg_anylysis(func);
+    let post_dom = post_domtree_analysis(&cfg);
+    dce_pass(func, &post_dom);
+}
+
+generate_test_case!(
+    (dce, dce_diamond_return_void, |mut module| {
+        dce_pass_wrapper(&mut module, "dce_diamond_return_void");
+        module
+    }),
+    (dce, dce_diamond_return_i16, |mut module| {
+        dce_pass_wrapper(&mut module, "dce_diamond_return_i16");
+        module
+    }),
+    (dce, dce_diamond_like_return_void, |mut module| {
+        dce_pass_wrapper(&mut module, "dce_diamond_like_return_void");
+        module
+    }),
+    (dce, dce_mem_oneline, |mut module| {
+        dce_pass_wrapper(&mut module, "dce_mem_oneline");
+        module
+    }),
+    (dce, dce_wihtout_mem_oneline, |mut module| {
+        dce_pass_wrapper(&mut module, "dce_wihtout_mem_oneline");
+        module
+    })
+);
