@@ -27,27 +27,33 @@ use frontend::{parse, to_tokens};
 use opti::gvn::gvn_pass;
 
 fn main() {
-    let dce_triangle = "
-func dce_triangle (reg0: i8, reg1: i8) {
+    let source = "
+func licm_topo_order (reg0: i16, reg1: i16) {
 block0:
-  reg2 = add reg0 reg1
-  brif reg2 block1 block2
+  reg2 = addi reg0 10
+  reg3 = subi reg1 10
+  jump block1
 block1:
-  ret
+  reg4 = phi [block0 reg0, block2 reg7]
+  reg5 = add reg2 reg3
+  jump block2
 block2:
-  ret
+  reg6 = addi reg5 10
+  reg7 = subi reg4 1
+  brif reg7 block1 block3
+block3:
+  ret 
 }
 ";
-    let mut module = parse(dce_triangle);
+    let mut module = parse(source);
     println!("{}", format(&module).as_str());
-    let module_id = module.get_module_id_by_symbol("dce_triangle").unwrap();
+    let module_id = module.get_module_id_by_symbol("licm_topo_order").unwrap();
     let func_id = module_id.to_func_id();
     let func = module.get_mut_function(func_id).unwrap();
     let cfg = cfg_anylysis(func);
-    // let rpo = revrese_post_order_analysis(&cfg);
-    // println!("RPO:{:?}", rpo.get_blocks_in_rpo());
-    let dom = post_domtree_analysis(&cfg);
-    dce_pass(func, &dom);
-    println!("{:?}", dom.dom_tree);
+    let rpo = revrese_post_order_analysis(&cfg);
+    let dom = domtree_analysis(&cfg);
+    let natural_loops = natural_loop_analysis(&dom, &cfg);
+    licm_pass(func, &cfg, &dom, &rpo, &natural_loops);
     println!("{}", format(&module).as_str());
 }

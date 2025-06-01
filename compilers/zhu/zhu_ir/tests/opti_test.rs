@@ -66,9 +66,10 @@ fn licm_pass_wrapper(module: &mut Module, func_name: &str) {
     let func_id = module_id.to_func_id();
     let func = module.get_mut_function(func_id).unwrap();
     let cfg = cfg_anylysis(func);
+    let rpo = revrese_post_order_analysis(&cfg);
     let dom = domtree_analysis(&cfg);
     let natural_loops = natural_loop_analysis(&dom, &cfg);
-    licm_pass(func, &cfg, &dom, &natural_loops);
+    licm_pass(func, &cfg, &dom, &rpo, &natural_loops);
 }
 
 generate_test_case! {
@@ -81,6 +82,18 @@ generate_test_case! {
     (
         licm, for_loop, |mut module| {
             licm_pass_wrapper(&mut module, "for_loop_func");
+            module
+        }
+    ),
+    (
+        licm, licm_diamond_like, |mut module| {
+            licm_pass_wrapper(&mut module, "licm_diamond_like");
+            module
+        }
+    ),
+    (
+        licm, licm_topo_order, |mut module| {
+            licm_pass_wrapper(&mut module, "licm_topo_order");
             module
         }
     )

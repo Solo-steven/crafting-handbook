@@ -1,0 +1,23 @@
+func licm_diamond_like (reg0: i16, reg1: i16) {
+block0:
+  reg2 = addi reg0 10
+  reg3 = addi reg1 10
+  jump block1
+block1:
+  reg4 = sub reg2 reg3
+  brif reg4 block2 block3
+block2:
+  reg5 = addi reg4 20
+  reg6 = addi reg0 10
+  jump block4
+block3:
+  reg7 = subi reg4 20
+  reg8 = icmp gt reg4 reg0
+  brif reg8 block4 block5
+  jump block4
+block4:
+  reg8 = phi [block2 reg6, block3 reg7]
+  ret
+block5:
+  ret
+}

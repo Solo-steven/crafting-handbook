@@ -3,22 +3,32 @@ pub mod natural_loop;
 use std::collections::HashSet;
 
 use crate::builder::FunctionBuilder;
+use crate::entities::block::Block;
 use crate::entities::function::Function;
 use crate::entities::instruction::Instruction;
+use crate::entities::set_operation::intersection_sets;
 use crate::entities::value::ValueData;
 use crate::opti::cfg::ControlFlowGraph;
 use crate::opti::domtree::DomTree;
+use crate::opti::rpo::RevresePostOrder;
 use crate::opti::OptiPass;
 use natural_loop::NaturalLoop;
 
 /// Perform Loop Invariant Code Motion (LICM) optimization on the function.
-pub fn licm_pass(func: &mut Function, cfg: &ControlFlowGraph, dom: &DomTree, natural_loops: &Vec<NaturalLoop>) {
-    let mut licm = LoopInvariantCodeMotion::new(cfg, dom, natural_loops);
+pub fn licm_pass(
+    func: &mut Function,
+    cfg: &ControlFlowGraph,
+    dom: &DomTree,
+    rpo: &RevresePostOrder,
+    natural_loops: &Vec<NaturalLoop>,
+) {
+    let mut licm = LoopInvariantCodeMotion::new(cfg, dom, rpo, natural_loops);
     licm.process(func);
 }
 /// Implementation of Loop Invariant Code Motion (LICM) optimization pass.
 pub struct LoopInvariantCodeMotion<'a> {
     pub cfg: &'a ControlFlowGraph,
+    pub rpo: &'a RevresePostOrder,
     pub dom: &'a DomTree,
     pub natural_loops: &'a Vec<NaturalLoop>,
 }
@@ -38,9 +48,15 @@ impl<'a> OptiPass for LoopInvariantCodeMotion<'a> {
 }
 
 impl<'a> LoopInvariantCodeMotion<'a> {
-    pub fn new(cfg: &'a ControlFlowGraph, dom: &'a DomTree, natural_loops: &'a Vec<NaturalLoop>) -> Self {
+    pub fn new(
+        cfg: &'a ControlFlowGraph,
+        dom: &'a DomTree,
+        rpo: &'a RevresePostOrder,
+        natural_loops: &'a Vec<NaturalLoop>,
+    ) -> Self {
         Self {
             cfg,
+            rpo,
             dom,
             natural_loops,
         }
@@ -56,8 +72,11 @@ impl<'a> LoopInvariantCodeMotion<'a> {
     fn find_loop_invariants(&self, func: &Function, natural_loop: &NaturalLoop) -> Vec<Instruction> {
         let mut loop_invariants = Vec::new();
         let mut loop_invariants_in_value = HashSet::new();
-        for block in natural_loop.blocks.iter() {
-            for inst in &func.get_insts_of_block(*block) {
+        for block in self
+            .rpo
+            .sort_blocks_in_rpo(natural_loop.blocks.iter().map(|b| b.clone()).collect())
+        {
+            for inst in &func.get_insts_of_block(block) {
                 let inst_data = func.get_inst_data(*inst);
                 let oprands = inst_data.get_operands();
                 if (oprands.len() != 0
@@ -94,17 +113,17 @@ impl<'a> LoopInvariantCodeMotion<'a> {
         loop_invariants: Vec<Instruction>,
     ) -> Vec<Instruction> {
         let mut code_mentional_loop_invariants = Vec::new();
-        let blocks_dominate_exits = natural_loop
+        let dominators_of_each_exit = natural_loop
             .exits
             .iter()
-            .map(|exit| self.dom.dom(*exit).iter().map(|b| b.clone()))
-            .flatten()
-            .collect::<HashSet<_>>();
+            .map(|exit| self.dom.dom(*exit))
+            .collect::<Vec<&HashSet<Block>>>();
+        let blocks_dominate_all_exis = intersection_sets(dominators_of_each_exit);
         for inst in loop_invariants {
             // get block of inst
             let block = func.get_block_of_inst(inst);
             // Is block dominate all exist ?
-            if blocks_dominate_exits.contains(&block) {
+            if blocks_dominate_all_exis.contains(&block) {
                 code_mentional_loop_invariants.push(inst);
             };
         }

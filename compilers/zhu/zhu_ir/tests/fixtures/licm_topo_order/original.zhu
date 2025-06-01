@@ -1,0 +1,16 @@
+func licm_topo_order (reg0: i16, reg1: i16) {
+block0:
+  reg2 = addi reg0 10
+  reg3 = subi reg1 10
+  jump block1
+block1:
+  reg4 = phi [block0 reg0, block2 reg7]
+  reg5 = add reg2 reg3
+  jump block2
+block2:
+  reg6 = addi reg5 10
+  reg7 = subi reg4 1
+  brif reg7 block1 block3
+block3:
+  ret 
+}
