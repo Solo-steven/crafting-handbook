@@ -67,7 +67,7 @@ fn licm_pass_wrapper(module: &mut Module, func_name: &str) {
     let func = module.get_mut_function(func_id).unwrap();
     let cfg = cfg_anylysis(func);
     let rpo = revrese_post_order_analysis(&cfg);
-    let dom = domtree_analysis(&cfg);
+    let dom = domtree_analysis(&func, &cfg);
     let natural_loops = natural_loop_analysis(&dom, &cfg);
     licm_pass(func, &cfg, &dom, &rpo, &natural_loops);
 }
@@ -104,7 +104,7 @@ fn gvn_pass_wrapper(module: &mut Module, func_name: &str) {
     let func_id = module_id.to_func_id();
     let func = module.get_mut_function(func_id).unwrap();
     let cfg = cfg_anylysis(func);
-    let dom = domtree_analysis(&cfg);
+    let dom = domtree_analysis(&func, &cfg);
     let rpo = revrese_post_order_analysis(&cfg);
     gvn_pass(func, &dom, &cfg, &rpo);
 }
@@ -129,7 +129,7 @@ fn dce_pass_wrapper(module: &mut Module, func_name: &str) {
     let func_id = module_id.to_func_id();
     let func = module.get_mut_function(func_id).unwrap();
     let cfg = cfg_anylysis(func);
-    let post_dom = post_domtree_analysis(&cfg);
+    let post_dom = post_domtree_analysis(&func, &cfg);
     dce_pass(func, &post_dom);
 }
 

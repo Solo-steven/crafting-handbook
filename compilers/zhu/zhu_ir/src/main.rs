@@ -52,7 +52,7 @@ block3:
     let func = module.get_mut_function(func_id).unwrap();
     let cfg = cfg_anylysis(func);
     let rpo = revrese_post_order_analysis(&cfg);
-    let dom = domtree_analysis(&cfg);
+    let dom = domtree_analysis(&func, &cfg);
     let natural_loops = natural_loop_analysis(&dom, &cfg);
     licm_pass(func, &cfg, &dom, &rpo, &natural_loops);
     println!("{}", format(&module).as_str());

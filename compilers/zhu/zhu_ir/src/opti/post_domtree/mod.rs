@@ -1,14 +1,15 @@
 use std::collections::HashSet;
 
 use crate::entities::block::Block;
+use crate::entities::function::Function;
 use crate::opti::cfg::{CFGNode, ControlFlowGraph};
+use crate::opti::domtree::domtree_analysis;
 use crate::opti::domtree::DomTree;
 use crate::opti::AnalysisPass;
 
-pub fn post_domtree_analysis(cfg: &ControlFlowGraph) -> PostDomTree {
-    let mut post_dommtree = PostDomTree::new();
-    post_dommtree.process(cfg);
-    post_dommtree
+pub fn post_domtree_analysis(func: &Function, cfg: &ControlFlowGraph) -> PostDomTree {
+    let mut post_dommtree_pass = PostDomTreePass::new(cfg);
+    post_dommtree_pass.process(func)
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -17,76 +18,7 @@ pub struct PostDomTree {
     pub exit: Option<Block>,
 }
 
-impl AnalysisPass for PostDomTree {
-    fn process(&mut self, cfg: &ControlFlowGraph) {
-        let (reverse_cfg, exit) = Self::create_reverse_cfg(cfg);
-        self.exit = exit;
-        self.dom_tree.process(&reverse_cfg);
-    }
-}
-
 impl PostDomTree {
-    fn create_reverse_cfg(cfg: &ControlFlowGraph) -> (ControlFlowGraph, Option<Block>) {
-        let mut reverse_cfg = cfg.clone();
-        // swap predeceesor and successor of every blocks
-        for (_, cfg_node) in &mut reverse_cfg.blocks {
-            std::mem::swap(&mut cfg_node.predecessors, &mut cfg_node.successors);
-        }
-        // If we only have one exit, just swap exit and entry
-        if reverse_cfg.exists.len() == 1 {
-            let original_exit = {
-                let mut exit = None;
-                for e in &reverse_cfg.exists {
-                    if exit.is_none() {
-                        exit = Some(e.clone());
-                        break;
-                    }
-                }
-                exit
-            };
-            let original_entry = cfg.get_entry();
-            reverse_cfg.entry = original_exit;
-            reverse_cfg.exists = HashSet::from([original_entry]);
-            (reverse_cfg, None)
-        // otherwise, create a new exit, connect original exits to exit
-        // and swap entry and exit.
-        } else {
-            // find next block index
-            let exit_block = {
-                let mut max_block_index = 0;
-                for b in cfg.blocks.keys() {
-                    if b.0 > max_block_index {
-                        max_block_index = b.0
-                    }
-                }
-                Block(max_block_index + 1)
-            };
-            // Create new exit, connect to original exit as predecessors
-            reverse_cfg.blocks.insert(
-                exit_block,
-                CFGNode {
-                    predecessors: reverse_cfg.exists.clone(),
-                    successors: Default::default(),
-                },
-            );
-            for origin_exit in reverse_cfg.exists {
-                let origin_exit_cfg_node = reverse_cfg.blocks.get_mut(&origin_exit).unwrap();
-                origin_exit_cfg_node.predecessors = HashSet::from([exit_block]);
-            }
-            // swap exit and entry
-            let original_entry = cfg.get_entry();
-            reverse_cfg.entry = Some(exit_block);
-            reverse_cfg.exists = HashSet::from([original_entry]);
-            (reverse_cfg, Some(exit_block))
-        }
-    }
-}
-
-impl PostDomTree {
-    pub fn new() -> Self {
-        let dom_tree = DomTree::new();
-        Self { dom_tree, exit: None }
-    }
     /// Is post dominator need a extra block for single exit ?
     pub fn is_add_exit_block(&self) -> bool {
         self.exit.is_some()
@@ -114,5 +46,77 @@ impl PostDomTree {
     /// Get post childrens of blocks
     pub fn children(&self, block: Block) -> &HashSet<Block> {
         self.dom_tree.children(block)
+    }
+}
+
+struct PostDomTreePass<'a> {
+    cfg: &'a ControlFlowGraph,
+}
+
+impl<'a> AnalysisPass<PostDomTree> for PostDomTreePass<'a> {
+    fn process(&mut self, func: &Function) -> PostDomTree {
+        let (reverse_cfg, exit) = self.create_reverse_cfg();
+        let dom_tree = domtree_analysis(func, &reverse_cfg);
+        PostDomTree { dom_tree, exit }
+    }
+}
+
+impl<'a> PostDomTreePass<'a> {
+    pub fn new(cfg: &'a ControlFlowGraph) -> Self {
+        Self { cfg }
+    }
+    fn create_reverse_cfg(&self) -> (ControlFlowGraph, Option<Block>) {
+        let mut reverse_cfg = self.cfg.clone();
+        // swap predeceesor and successor of every blocks
+        for (_, cfg_node) in &mut reverse_cfg.blocks {
+            std::mem::swap(&mut cfg_node.predecessors, &mut cfg_node.successors);
+        }
+        // If we only have one exit, just swap exit and entry
+        if reverse_cfg.exists.len() == 1 {
+            let original_exit = {
+                let mut exit = None;
+                for e in &reverse_cfg.exists {
+                    if exit.is_none() {
+                        exit = Some(e.clone());
+                        break;
+                    }
+                }
+                exit
+            };
+            let original_entry = self.cfg.get_entry();
+            reverse_cfg.entry = original_exit;
+            reverse_cfg.exists = HashSet::from([original_entry]);
+            (reverse_cfg, None)
+        // otherwise, create a new exit, connect original exits to exit
+        // and swap entry and exit.
+        } else {
+            // find next block index
+            let exit_block = {
+                let mut max_block_index = 0;
+                for b in self.cfg.blocks.keys() {
+                    if b.0 > max_block_index {
+                        max_block_index = b.0
+                    }
+                }
+                Block(max_block_index + 1)
+            };
+            // Create new exit, connect to original exit as predecessors
+            reverse_cfg.blocks.insert(
+                exit_block,
+                CFGNode {
+                    predecessors: reverse_cfg.exists.clone(),
+                    successors: Default::default(),
+                },
+            );
+            for origin_exit in reverse_cfg.exists {
+                let origin_exit_cfg_node = reverse_cfg.blocks.get_mut(&origin_exit).unwrap();
+                origin_exit_cfg_node.predecessors = HashSet::from([exit_block]);
+            }
+            // swap exit and entry
+            let original_entry = self.cfg.get_entry();
+            reverse_cfg.entry = Some(exit_block);
+            reverse_cfg.exists = HashSet::from([original_entry]);
+            (reverse_cfg, Some(exit_block))
+        }
     }
 }
