@@ -1,5 +1,5 @@
 use crate::entities::block::Block;
-use crate::opti::cfg::ControlFlowGraph;
+use crate::pass::analysis::cfg::ControlFlowGraph;
 use std::collections::{HashMap, HashSet};
 
 pub fn revrese_post_order_analysis(cfg: &ControlFlowGraph) -> RevresePostOrder {
@@ -37,6 +37,9 @@ impl RevresePostOrder {
     /// Get the blocks in reverse post order
     pub fn get_blocks_in_rpo(&self) -> Vec<Block> {
         self.blocks_in_rpo.clone()
+    }
+    pub fn get_block_rpo(&self, block: Block) -> usize {
+        self.block_map_rpo.get(&block).unwrap().clone()
     }
     /// Post order visited blocks
     fn dfs_visit(&mut self, block: Block, cfg: &ControlFlowGraph, visited: &mut HashSet<Block>) {

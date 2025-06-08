@@ -3,10 +3,10 @@ use std::collections::{HashMap, HashSet};
 use crate::entities::block::Block;
 use crate::entities::function::Function;
 use crate::entities::instruction::Instruction;
-use crate::entities::set_operation::intersection_sets;
-use crate::opti::cfg::ControlFlowGraph;
-use crate::opti::rpo::RevresePostOrder;
-use crate::opti::AnalysisPass;
+use crate::entities::util::set_operation::{intersection_sets, union_sets};
+use crate::pass::analysis::cfg::ControlFlowGraph;
+use crate::pass::analysis::rpo::RevresePostOrder;
+use crate::pass::AnalysisPass;
 
 pub fn available_expression_analysis(
     func: &Function,
@@ -54,6 +54,11 @@ impl<'a> AvailableExpressionPass<'a> {
     pub fn new(cfg: &'a ControlFlowGraph, rpo: &'a RevresePostOrder) -> Self {
         Self { cfg, rpo }
     }
+    /// Add only needed instruction, skip all side effect instruction.
+    fn filter_inst(inst: Instruction, func: &Function) -> bool {
+        let inst_data = func.get_inst_data(inst);
+        inst_data.has_side_effect()
+    }
     /// Run fixed point iterative algorithm as forward data flow anaylsis.
     /// ```text
     /// avail_in = intersection of predecessors avail_out
@@ -66,7 +71,11 @@ impl<'a> AvailableExpressionPass<'a> {
     }
     /// Init in and out set as forward data flow
     fn init_sets(&mut self, function: &Function, exprs: &mut AvailableExpression) {
-        let all_insts: HashSet<Instruction> = function.insts().into_iter().collect();
+        let all_insts: HashSet<Instruction> = function
+            .insts()
+            .into_iter()
+            .filter(|inst| Self::filter_inst(*inst, function))
+            .collect();
         let entry = self.cfg.get_entry();
         for block in function.blocks() {
             if block == entry {
@@ -85,9 +94,14 @@ impl<'a> AvailableExpressionPass<'a> {
     ///      be kill in same block.
     fn compute_single_block_set(&mut self, function: &Function, exprs: &mut AvailableExpression) {
         for block in function.blocks() {
-            exprs
-                .downward_exposed_expr
-                .insert(block, function.get_insts_of_block(block).into_iter().collect());
+            exprs.downward_exposed_expr.insert(
+                block,
+                function
+                    .get_insts_of_block(block)
+                    .into_iter()
+                    .filter(|inst| Self::filter_inst(*inst, function))
+                    .collect(),
+            );
         }
     }
     /// Iterative forward data flow algorithm of available expression.
@@ -97,19 +111,22 @@ impl<'a> AvailableExpressionPass<'a> {
         while is_changed {
             is_changed = false;
             for block in &blocks_in_rpo {
-                let predecessors = self.cfg.get_predecessors(block);
-                let out_sets_of_predecessors: Vec<&HashSet<Instruction>> = predecessors
-                    .iter()
-                    .map(|predecessor| exprs.avail_expr_out.get(predecessor).unwrap())
-                    .collect();
-                let in_set_of_block = intersection_sets(out_sets_of_predecessors);
-                let next_in_set_of_block =
-                    intersection_sets(vec![&in_set_of_block, exprs.downward_exposed_expr.get(block).unwrap()]);
-                let exit_in_set_of_block = exprs.avail_expr_out.get(block).unwrap();
-
-                if next_in_set_of_block != *exit_in_set_of_block {
+                // Compute In and Out set
+                let in_set = {
+                    let predecessors = self.cfg.get_predecessors(block);
+                    let out_sets_of_predecessors: Vec<&HashSet<Instruction>> = predecessors
+                        .iter()
+                        .map(|predecessor| exprs.avail_expr_out.get(predecessor).unwrap())
+                        .collect();
+                    intersection_sets(out_sets_of_predecessors)
+                };
+                let next_out_set = union_sets(vec![&in_set, exprs.downward_exposed_expr.get(block).unwrap()]);
+                let current_out_set = exprs.avail_expr_out.get(block).unwrap();
+                // Insert in and out set
+                exprs.avail_expr_in.insert(*block, in_set);
+                if next_out_set != *current_out_set {
                     is_changed = true;
-                    exprs.avail_expr_out.insert(*block, next_in_set_of_block);
+                    exprs.avail_expr_out.insert(*block, next_out_set);
                 }
             }
         }

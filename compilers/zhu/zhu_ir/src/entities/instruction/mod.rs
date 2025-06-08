@@ -134,10 +134,50 @@ impl InstructionData {
             InstructionData::Comment(_) => vec![],
         }
     }
+    pub fn contain_operand(&self, operand: Value) -> bool {
+        match self {
+            InstructionData::UnaryConst { .. } => false,
+            InstructionData::Unary { value, .. } => (*value) == operand,
+            InstructionData::Binary { args, .. } => args.iter().any(|arg| *arg == operand),
+            InstructionData::BinaryI { value, .. } => *value == operand,
+            InstructionData::Move { src, .. } => *src == operand,
+            InstructionData::Icmp { args, .. } | InstructionData::Fcmp { args, .. } => {
+                args.iter().any(|arg| *arg == operand)
+            }
+            InstructionData::Call { params, .. } => params.iter().any(|param| *param == operand),
+            InstructionData::Ret { value, .. } => value.iter().any(|value| *value == operand),
+            InstructionData::Convert { src, .. } => *src == operand,
+            InstructionData::StackAlloc { .. } => false,
+            InstructionData::LoadRegister { base, .. } | InstructionData::StoreRegister { base, .. } => {
+                *base == operand
+            }
+            InstructionData::GlobalLoad { .. } | InstructionData::GlobalStore { .. } => false,
+            InstructionData::BrIf { test, .. } => *test == operand,
+            InstructionData::Jump { .. } => false,
+            InstructionData::Phi { from, .. } => from.iter().any(|(_, value)| *value == operand),
+            InstructionData::Comment(_) => false,
+        }
+    }
     pub fn is_const(&self) -> bool {
         matches!(self, InstructionData::UnaryConst { .. })
     }
     pub fn is_branch(&self) -> bool {
         matches!(self, InstructionData::BrIf { .. } | InstructionData::Jump { .. })
+    }
+    pub fn has_side_effect(&self) -> bool {
+        matches!(
+            self,
+            InstructionData::BrIf { .. }
+                | InstructionData::Jump { .. }
+                | InstructionData::Ret { .. }
+                | InstructionData::Call { .. }
+                | InstructionData::Comment(_)
+                | InstructionData::Phi { .. }
+                | InstructionData::LoadRegister { .. }
+                | InstructionData::GlobalLoad { .. }
+                | InstructionData::StoreRegister { .. }
+                | InstructionData::GlobalStore { .. }
+                | InstructionData::StackAlloc { .. }
+        )
     }
 }

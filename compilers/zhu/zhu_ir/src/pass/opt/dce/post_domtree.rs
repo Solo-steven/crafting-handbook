@@ -2,10 +2,10 @@ use std::collections::HashSet;
 
 use crate::entities::block::Block;
 use crate::entities::function::Function;
-use crate::opti::cfg::{CFGNode, ControlFlowGraph};
-use crate::opti::domtree::domtree_analysis;
-use crate::opti::domtree::DomTree;
-use crate::opti::AnalysisPass;
+use crate::pass::analysis::cfg::{CFGNode, ControlFlowGraph};
+use crate::pass::analysis::domtree::domtree_analysis;
+use crate::pass::analysis::domtree::DomTree;
+use crate::pass::AnalysisPass;
 
 pub fn post_domtree_analysis(func: &Function, cfg: &ControlFlowGraph) -> PostDomTree {
     let mut post_dommtree_pass = PostDomTreePass::new(cfg);

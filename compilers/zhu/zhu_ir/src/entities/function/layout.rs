@@ -205,6 +205,33 @@ impl FunctionLayout {
             block_node.last_inst = Some(inst);
         }
     }
+    pub fn unshift_inst(&mut self, inst: Instruction, block: Block) {
+        let block_node: &mut BlockNode = self.blocks.get_mut(&block).unwrap();
+        if let Some(first_inst) = block_node.first_inst {
+            let first_inst_data = self.insts.get_mut(&first_inst).unwrap();
+            first_inst_data.prev = Some(inst);
+            self.insts.insert(
+                inst,
+                InstNode {
+                    block: Some(block),
+                    prev: None,
+                    next: Some(first_inst),
+                },
+            );
+            block_node.first_inst = Some(inst);
+        } else {
+            self.insts.insert(
+                inst,
+                InstNode {
+                    block: Some(block),
+                    prev: None,
+                    next: None,
+                },
+            );
+            block_node.first_inst = Some(inst);
+            block_node.last_inst = Some(inst);
+        }
+    }
     /// Insert a block before given instruction.
     pub fn insert_inst_before(&mut self, inst: Instruction, before: Instruction) {
         let mut inst_node = InstNode {

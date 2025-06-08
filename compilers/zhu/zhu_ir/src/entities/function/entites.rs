@@ -22,8 +22,8 @@ impl FunctionEntitiesNextContext {
 pub struct FunctionEntities {
     pub blocks: HashMap<Block, BlockData>,
     pub insts: HashMap<Instruction, InstructionData>,
-    /// Map of value
     pub values: HashMap<Value, ValueData>,
+
     pub params: Vec<Value>,
     pub insts_result: HashMap<Instruction, Value>,
     next_context: FunctionEntitiesNextContext,
@@ -142,6 +142,9 @@ impl FunctionEntities {
     }
     pub fn mark_inst_block(&mut self, inst: Instruction, block: Block) {
         self.blocks.get_mut(&block).unwrap().insts.insert(inst);
+    }
+    pub fn mark_phi_block(&mut self, inst: Instruction, block: Block) {
+        self.blocks.get_mut(&block).unwrap().phis.insert(inst);
     }
     /// Create a block
     pub fn create_block(&mut self, block_data: BlockData) -> Block {

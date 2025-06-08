@@ -1,7 +1,7 @@
 use crate::entities::block::Block;
 use crate::entities::function::Function;
-use crate::opti::cfg::ControlFlowGraph;
-use crate::opti::AnalysisPass;
+use crate::pass::analysis::cfg::ControlFlowGraph;
+use crate::pass::AnalysisPass;
 use std::collections::{HashMap, HashSet};
 
 pub fn domtree_analysis(func: &Function, cfg: &ControlFlowGraph) -> DomTree {

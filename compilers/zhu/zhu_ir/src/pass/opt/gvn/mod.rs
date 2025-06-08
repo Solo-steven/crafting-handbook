@@ -1,15 +1,13 @@
-mod inst_operand_key;
-
 use crate::entities::block::Block;
 use crate::entities::function::Function;
 use crate::entities::instruction::Instruction;
 use crate::entities::instruction::InstructionData;
+use crate::entities::util::inst_operand_key::InstOperandKey;
 use crate::entities::value::Value;
-use crate::opti::cfg::ControlFlowGraph;
-use crate::opti::domtree::DomTree;
-use crate::opti::rpo::RevresePostOrder;
-use crate::opti::OptiPass;
-use inst_operand_key::InstOperandKey;
+use crate::pass::analysis::cfg::ControlFlowGraph;
+use crate::pass::analysis::domtree::DomTree;
+use crate::pass::analysis::rpo::RevresePostOrder;
+use crate::pass::OptiPass;
 use std::collections::HashMap;
 use std::collections::HashSet;
 

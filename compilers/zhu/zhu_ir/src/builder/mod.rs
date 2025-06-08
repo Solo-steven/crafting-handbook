@@ -31,18 +31,27 @@ impl<'a> FunctionBuilder<'a> {
 }
 /// General function for building instruction in given function IR.
 impl<'a> FunctionBuilder<'a> {
-    /// Shared function for `build_xxx_inst`, function, create information in both
-    /// entities and layout.
-    fn build_inst_and_result(&mut self, inst_data: InstructionData, ty: ValueType) -> Value {
+    pub(crate) fn build_inst_and_result_entities(
+        &mut self,
+        inst_data: InstructionData,
+        ty: ValueType,
+    ) -> (Value, Instruction) {
         let cur_block = self.get_current_block();
         // add instruction data into entities
         let inst = self.function.entities.create_inst(inst_data);
         self.function.entities.mark_inst_block(inst, cur_block);
         let result = self.function.entities.create_value(ValueData::Inst { inst, ty });
-        // add instruction into layout
-        self.function.layout.append_inst(inst, cur_block);
         // add result and inst relation
         self.function.entities.mark_inst_result(result, inst);
+        (result, inst)
+    }
+    /// Shared function for `build_xxx_inst`, function, create information in both
+    /// entities and layout.
+    pub(crate) fn build_inst_and_result(&mut self, inst_data: InstructionData, ty: ValueType) -> Value {
+        let cur_block = self.get_current_block();
+        let (result, inst) = self.build_inst_and_result_entities(inst_data, ty);
+        // add instruction into layout
+        self.function.layout.append_inst(inst, cur_block);
         result
     }
     /// Shared function for `build_xxx_inst`, function, create information in both
@@ -635,12 +644,11 @@ impl<'a> FunctionBuilder<'a> {
             from,
         });
         let result = self.function.entities.create_value(ValueData::Inst { inst, ty });
-        self.function.entities.mark_inst_block(inst, block);
-        self.function.entities.get_block_data_mut(block).phis.insert(inst);
+        self.function.entities.mark_phi_block(inst, block);
         self.function.entities.mark_inst_result(result, inst);
         self.function
             .layout
-            .append_inst(inst, self.current_block.clone().unwrap());
+            .unshift_inst(inst, self.current_block.clone().unwrap());
         result
     }
 }

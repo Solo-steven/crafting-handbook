@@ -1,4 +1,5 @@
 pub mod is_critical;
+pub mod post_domtree;
 use std::collections::HashSet;
 
 use crate::entities::block::Block;
@@ -6,8 +7,8 @@ use crate::entities::function::Function;
 use crate::entities::instruction::opcode::OpCode;
 use crate::entities::instruction::{Instruction, InstructionData};
 use crate::entities::value::ValueData;
-use crate::opti::post_domtree::PostDomTree;
-use crate::opti::OptiPass;
+use crate::pass::OptiPass;
+use post_domtree::PostDomTree;
 
 use is_critical::is_critical_inst;
 
@@ -48,7 +49,6 @@ impl<'a> DeadCodeEliminationPass<'a> {
             let block = func.get_block_of_inst(*inst);
             let inst_data = func.get_inst_data(*inst);
             if is_critical_inst(inst_data) {
-                println!("{:?}", inst_data);
                 self.mark_inst_and_block(*inst, block);
                 worklist.push(inst.clone());
             }

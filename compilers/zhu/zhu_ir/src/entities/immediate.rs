@@ -28,6 +28,19 @@ impl Immediate {
             Immediate::F64(_) => ValueType::F64,
         }
     }
+    pub fn get_bytes(&self) -> [u8; 8] {
+        match *self {
+            Immediate::U8(value) => (value as u64).to_le_bytes(),
+            Immediate::U16(value) => (value as u64).to_le_bytes(),
+            Immediate::U32(value) => (value as u64).to_le_bytes(),
+            Immediate::U64(value) => value.to_le_bytes(),
+            Immediate::I16(value) => (value as i64).to_le_bytes(),
+            Immediate::I32(value) => (value as i64).to_le_bytes(),
+            Immediate::I64(value) => value.to_le_bytes(),
+            Immediate::F32(value) => (value as f64).to_le_bytes(),
+            Immediate::F64(value) => value.to_le_bytes(),
+        }
+    }
 }
 
 impl fmt::Display for Immediate {

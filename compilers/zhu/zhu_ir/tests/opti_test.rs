@@ -6,15 +6,15 @@ use zsh_ir::entities::module::Module;
 use zsh_ir::formatter::format;
 use zsh_ir::frontend::parse;
 
-use zsh_ir::opti::cfg::cfg_anylysis;
-use zsh_ir::opti::domtree::domtree_analysis;
-use zsh_ir::opti::licm::natural_loop::natural_loop_analysis;
-use zsh_ir::opti::post_domtree::post_domtree_analysis;
-use zsh_ir::opti::rpo::revrese_post_order_analysis;
+use zsh_ir::pass::analysis::cfg::cfg_anylysis;
+use zsh_ir::pass::analysis::domtree::domtree_analysis;
+use zsh_ir::pass::analysis::rpo::revrese_post_order_analysis;
+use zsh_ir::pass::opt::dce::post_domtree::post_domtree_analysis;
+use zsh_ir::pass::opt::licm::natural_loop::natural_loop_analysis;
 
-use zsh_ir::opti::dce::dce_pass;
-use zsh_ir::opti::gvn::gvn_pass;
-use zsh_ir::opti::licm::licm_pass;
+use zsh_ir::pass::opt::dce::dce_pass;
+use zsh_ir::pass::opt::gvn::gvn_pass;
+use zsh_ir::pass::opt::licm::licm_pass;
 
 fn get_folder_path_by_case_name(name: &str) -> PathBuf {
     current_dir().unwrap().join("tests/fixtures").join(name)

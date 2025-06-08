@@ -1,5 +1,5 @@
 use std::fmt;
-#[derive(Debug, PartialEq, Clone, Eq, Hash)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash, Copy)]
 pub enum OpCode {
     // const instruction
     Uconst, // uconst
@@ -62,7 +62,7 @@ pub enum OpCode {
     // Phi Node
     Phi,
 }
-#[derive(Debug, PartialEq, Clone, Eq, Hash)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash, Copy)]
 pub enum CmpFlag {
     Eq,
     NotEq,

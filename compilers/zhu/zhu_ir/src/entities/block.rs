@@ -7,3 +7,12 @@ pub struct BlockData {
     pub phis: HashSet<Instruction>,
     pub insts: HashSet<Instruction>,
 }
+
+impl BlockData {
+    pub fn new() -> Self {
+        Self {
+            phis: Default::default(),
+            insts: Default::default(),
+        }
+    }
+}

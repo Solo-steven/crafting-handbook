@@ -131,13 +131,10 @@ impl Function {
     pub fn remove_inst(&mut self, inst: Instruction) {
         self.layout.remove_inst(inst);
     }
-    /// replace a inst with given new inst data.
+    /// replace a inst with given new inst data. callee must ensure instruction has
+    /// already exit in function.
     pub fn replace_inst(&mut self, inst: Instruction, inst_data: InstructionData) {
         self.entities.insts.insert(inst, inst_data);
-    }
-    /// Move a inst to given block. usually used by code motion.
-    pub fn move_inst_to_end_of_block(&mut self, inst: Instruction, block: Block) {
-        self.layout.append_inst(inst, block);
     }
 }
 
@@ -192,16 +189,19 @@ impl Function {
         self.layout.last_block()
     }
     /// Inherit from `FunctionLayout`.
-    pub fn insert_block_after(&mut self, block: Block, after: Block) {
-        self.layout.insert_block_after(block, after);
+    pub fn get_block_of_inst(&self, inst: Instruction) -> Block {
+        self.layout.get_block_of_inst(inst)
     }
     /// Inherit from `FunctionLayout`.
-    pub fn insert_block_before(&mut self, block: Block, before: Block) {
-        self.layout.insert_block_before(block, before);
+    pub fn get_insts_of_block(&self, block: Block) -> Vec<Instruction> {
+        self.layout.get_insts_of_block(block)
     }
     /// Inherit from `FunctionLayout`.
     pub fn append_inst(&mut self, inst: Instruction, block: Block) {
         self.layout.append_inst(inst, block);
+    }
+    pub fn unshift_inst(&mut self, inst: Instruction, block: Block) {
+        self.layout.unshift_inst(inst, block);
     }
     /// Inherit from `FunctionLayout`.
     pub fn insert_inst_before(&mut self, inst: Instruction, before: Instruction) {
@@ -211,12 +211,20 @@ impl Function {
     pub fn insert_inst_after(&mut self, inst: Instruction, after: Instruction) {
         self.layout.insert_inst_after(inst, after);
     }
-    /// Inherit from `FunctionLayout`.
-    pub fn get_block_of_inst(&self, inst: Instruction) -> Block {
-        self.layout.get_block_of_inst(inst)
+}
+
+/// Compsite method for block mutation
+impl Function {
+    /// Create block of given block data and insert this after the `after` block
+    pub fn create_and_insert_block_after(&mut self, block_data: BlockData, after: Block) -> Block {
+        let block = self.entities.create_block(block_data);
+        self.layout.insert_block_after(block, after);
+        block
     }
-    /// Inherit from `FunctionLayout`.
-    pub fn get_insts_of_block(&self, block: Block) -> Vec<Instruction> {
-        self.layout.get_insts_of_block(block)
+    /// Create block of given block data and insert this before the `before` block
+    pub fn create_and_insert_block_before(&mut self, block_data: BlockData, before: Block) -> Block {
+        let block = self.entities.create_block(block_data);
+        self.layout.insert_block_before(block, before);
+        block
     }
 }

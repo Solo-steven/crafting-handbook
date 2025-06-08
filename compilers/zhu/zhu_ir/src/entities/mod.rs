@@ -6,6 +6,6 @@ pub mod global_value;
 pub mod immediate;
 pub mod instruction;
 pub mod module;
-pub mod set_operation;
 pub mod r#type;
+pub mod util;
 pub mod value;

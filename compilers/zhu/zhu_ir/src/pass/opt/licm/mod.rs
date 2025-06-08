@@ -3,15 +3,15 @@ pub mod natural_loop;
 use std::collections::HashSet;
 
 use crate::builder::FunctionBuilder;
-use crate::entities::block::Block;
+use crate::entities::block::{Block, BlockData};
 use crate::entities::function::Function;
 use crate::entities::instruction::Instruction;
-use crate::entities::set_operation::intersection_sets;
+use crate::entities::util::set_operation::intersection_sets;
 use crate::entities::value::ValueData;
-use crate::opti::cfg::ControlFlowGraph;
-use crate::opti::domtree::DomTree;
-use crate::opti::rpo::RevresePostOrder;
-use crate::opti::OptiPass;
+use crate::pass::analysis::cfg::ControlFlowGraph;
+use crate::pass::analysis::domtree::DomTree;
+use crate::pass::analysis::rpo::RevresePostOrder;
+use crate::pass::OptiPass;
 use natural_loop::NaturalLoop;
 
 /// Perform Loop Invariant Code Motion (LICM) optimization on the function.
@@ -141,8 +141,7 @@ impl<'a> LoopInvariantCodeMotion<'a> {
         if loop_invariants.len() == 0 {
             return;
         }
-        let preheader = func.create_block_only();
-        func.insert_block_before(preheader, natural_loop.header);
+        let preheader = func.create_and_insert_block_before(BlockData::new(), natural_loop.header);
         // move loop invariants to preheader block, connect preheader to header
         for inst in loop_invariants {
             func.remove_inst(inst);

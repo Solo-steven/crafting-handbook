@@ -1,4 +1,5 @@
 use crate::entities::function::Function;
+use crate::entities::instruction::Instruction;
 use crate::entities::module::Module;
 use crate::entities::r#type::{MemType, MemTypeData};
 use crate::formatter::Formatter;
@@ -15,6 +16,19 @@ fn sort_mem_type(mut ids: Vec<MemType>) -> Vec<MemType> {
         }
     });
     ids
+}
+
+fn sort_insts(mut insts: Vec<Instruction>) -> Vec<Instruction> {
+    insts.sort_by(|a, b| {
+        if a.0 == b.0 {
+            Ordering::Equal
+        } else if a.0 < b.0 {
+            Ordering::Less
+        } else {
+            Ordering::Greater
+        }
+    });
+    insts
 }
 
 impl Formatter {
