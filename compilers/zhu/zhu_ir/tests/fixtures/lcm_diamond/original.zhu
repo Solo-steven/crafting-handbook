@@ -1,0 +1,13 @@
+func lcm_diamond (reg0: i16) {
+block0:
+  reg1 = addi reg0 10
+  brif reg0 block1 block2
+block1:
+  jump block3
+block2:
+  reg2 = add reg0 reg1
+  jump block3
+block3:
+  reg3 = add reg0 reg1
+  ret
+}

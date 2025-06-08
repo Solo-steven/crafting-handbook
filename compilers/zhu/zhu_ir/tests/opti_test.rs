@@ -14,6 +14,7 @@ use zsh_ir::pass::opt::licm::natural_loop::natural_loop_analysis;
 
 use zsh_ir::pass::opt::dce::dce_pass;
 use zsh_ir::pass::opt::gvn::gvn_pass;
+use zsh_ir::pass::opt::lcm::lcm_opt;
 use zsh_ir::pass::opt::licm::licm_pass;
 
 fn get_folder_path_by_case_name(name: &str) -> PathBuf {
@@ -152,6 +153,26 @@ generate_test_case!(
     }),
     (dce, dce_wihtout_mem_oneline, |mut module| {
         dce_pass_wrapper(&mut module, "dce_wihtout_mem_oneline");
+        module
+    })
+);
+
+fn lcm_pass_wrapper(module: &mut Module, func_name: &str) {
+    let module_id = module.get_module_id_by_symbol(func_name).unwrap();
+    let func_id = module_id.to_func_id();
+    let func = module.get_mut_function(func_id).unwrap();
+    let cfg = cfg_anylysis(func);
+    let rpo = revrese_post_order_analysis(&cfg);
+    lcm_opt(&cfg, &rpo, func);
+}
+
+generate_test_case!(
+    (lcm, lcm_diamond, |mut module| {
+        lcm_pass_wrapper(&mut module, "lcm_diamond");
+        module
+    }),
+    (lcm, lcm_cmu_example, |mut module| {
+        lcm_pass_wrapper(&mut module, "lcm_cmu_example");
         module
     })
 );

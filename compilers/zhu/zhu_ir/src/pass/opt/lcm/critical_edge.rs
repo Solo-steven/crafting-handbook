@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::builder::FunctionBuilder;
 use crate::entities::block::Block;
 use crate::entities::function::Function;
@@ -34,27 +36,45 @@ impl<'a> CritialEdgePass<'a> {
     }
 
     fn run(&mut self, function: &mut Function) {
-        self.find_edges(function);
+        self.find_edges(&function);
         self.insert_blocks(function);
     }
     /// find every edge lead to a bb that has multiple predecessor
     fn find_edges(&mut self, function: &Function) {
         for block in function.blocks() {
-            let successors = self.cfg.get_successors(&block);
+            let successors = self.cfg.get_successors(&block).clone();
             for sucessor in successors {
                 if self
                     .cfg
-                    .get_predecessors(sucessor)
+                    .get_predecessors(&sucessor)
                     .iter()
-                    .filter(|predeceesor| self.rpo.get_block_rpo(**predeceesor) < self.rpo.get_block_rpo(*sucessor))
+                    .filter(|predeceesor| self.rpo.get_block_rpo(**predeceesor) < self.rpo.get_block_rpo(sucessor))
                     .collect::<Vec<_>>()
                     .len()
                     > 1
                 {
-                    self.edges.push((block, *sucessor));
+                    self.edges.push((block, sucessor));
                 }
             }
         }
+        // NOTE: sort edge because i would like to let ouput text format stable
+        // since block in rpo or hash order is not stable, so we sort those by
+        // index.
+        self.edges.sort_by(|a, b| {
+            if a.0 == b.0 {
+                if a.1 .0 > b.1 .0 {
+                    Ordering::Greater
+                } else {
+                    Ordering::Less
+                }
+            } else {
+                if a.0 .0 > b.0 .0 {
+                    Ordering::Greater
+                } else {
+                    Ordering::Less
+                }
+            }
+        });
     }
     /// insert block to the edges
     fn insert_blocks(&self, function: &mut Function) {

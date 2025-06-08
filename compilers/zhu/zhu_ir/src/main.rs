@@ -53,30 +53,18 @@ block4:
   ret
 }
 ";
-    let lcm_complex_example = "
-func lcm_complex_example (reg0: u8) {
+    let lcm_diamond = "
+func lcm_diamond (reg0: i16) {
 block0:
-  jump block1
-block1:
   reg1 = addi reg0 10
-  jump block2
+  brif reg0 block1 block2
+block1:
+  jump block3
 block2:
-  brif reg0 block3 block6
-block3:
-  jump block4
-block4:
-  brif reg0 block3 block5
-block5:
-  jump block8
-block6:
   reg2 = add reg0 reg1
-  jump block7
-block7:
-  jump block8
-block8:
+  jump block3
+block3:
   reg3 = add reg0 reg1
-  jump block9
-block9:
   ret
 }
 ";
@@ -111,9 +99,9 @@ block9:
     //   ret
     // }
     // ";
-    let mut module = parse(lcm_complex_example);
+    let mut module = parse(lcm_diamond);
     println!("{}", format(&module).as_str());
-    let module_id = module.get_module_id_by_symbol("lcm_complex_example").unwrap();
+    let module_id = module.get_module_id_by_symbol("lcm_diamond").unwrap();
     let func_id = module_id.to_func_id();
     let func = module.get_mut_function(func_id).unwrap();
     let cfg = cfg_anylysis(func);

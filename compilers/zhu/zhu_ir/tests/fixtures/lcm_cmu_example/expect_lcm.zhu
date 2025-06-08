@@ -1,0 +1,31 @@
+func lcm_cmu_example (reg0: u8) {
+block0:
+  jump block1
+block1:
+  reg1 = addi reg0 10
+  jump block2
+block2:
+  brif reg0 block3 block6
+block3:
+  jump block4
+block4:
+  brif reg0 block3 block5
+block5:
+  jump block10
+block6:
+  reg2 = add reg0 reg1
+  jump block7
+block7:
+  jump block11
+block8:
+  reg5 = phi [block10 reg4, block11 reg2]
+  reg3 = mov reg5
+  jump block9
+block9:
+  ret
+block10:
+  reg4 = add reg0 reg1
+  jump block8
+block11:
+  jump block8
+}

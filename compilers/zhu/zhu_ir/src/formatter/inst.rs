@@ -160,7 +160,9 @@ impl Formatter {
             InstructionData::Phi { opcode, from } => {
                 let mut phi_string = String::new();
                 let mut index = 0;
-                for (block, value) in from {
+                let mut phi_source = from.clone();
+                phi_source.sort_by_key(|tuple| tuple.0 .0);
+                for (block, value) in phi_source {
                     if index == 0 {
                         phi_string.push_str(format!("block{} reg{}", block.0, value.0).as_str());
                     } else {
